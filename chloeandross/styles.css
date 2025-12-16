@@ -90,7 +90,8 @@ h3,
 
 .names {
     font-family: var(--font-script);
-    font-size: 3.5rem;
+    font-size: 5.5rem;
+    margin-bottom: -50px;
     /* Increased size for script font legibility */
     font-weight: 400;
     color: var(--text-primary);
