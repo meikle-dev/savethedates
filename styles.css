@@ -1,0 +1,391 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;500;600&family=Updock&display=swap');
+
+
+/* refined-pallete */
+:root {
+    --bg-color: #FAFAF9;
+    /* Warm off-white */
+    --text-primary: #2C2C2C;
+    --text-secondary: #6B6B6B;
+    --accent-gold: #C5A059;
+    --accent-soft-gold: #E5D5B5;
+    --placeholder-bg: #EAEAE5;
+    --placeholder-text: #A8A8A0;
+
+    --font-heading: 'Libre Baskerville', serif;
+    --font-script: 'Updock', cursive;
+    --font-body: 'Inter', sans-serif;
+
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 4rem;
+    --spacing-xl: 8rem;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-variant-numeric: lining-nums;
+    line-height: 1.6;
+    overflow-x: hidden;
+    font-size: 16px;
+    position: relative;
+    /* Needed for absolute/fixed positioning relative to view port if desired, though body is special */
+}
+
+/* Floral Borders */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    /* Adjust width as needed */
+    background-image: url('images/floral2.png');
+    background-repeat: repeat-y;
+    background-size: contain;
+    z-index: -1;
+    /* Behind content */
+    opacity: 0.8;
+    /* Subtle blend */
+    pointer-events: none;
+}
+
+body::before {
+    left: 0;
+    transform: scaleX(-1);
+    /* Mirror for left side to look symmetrical if needed, or just normal */
+}
+
+body::after {
+    right: 0;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+.eyebrow,
+.subtitle {
+    font-family: var(--font-heading);
+    font-weight: 400;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: var(--spacing-xs);
+}
+
+.names {
+    font-family: var(--font-script);
+    font-size: 3.5rem;
+    /* Increased size for script font legibility */
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.eyebrow {
+    font-style: italic;
+    font-size: 2rem;
+    color: var(--accent-gold);
+    display: block;
+    margin-bottom: var(--spacing-sm);
+}
+
+.date {
+    font-size: 4rem;
+    line-height: 1.1;
+    margin-bottom: var(--spacing-md);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.location {
+    font-family: var(--font-body);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-md);
+}
+
+/* Layout */
+.header {
+    padding: var(--spacing-md) var(--spacing-sm);
+    text-align: center;
+    position: relative;
+    /* Changed from absolute to relative to prevent overlap */
+    width: 100%;
+    z-index: 10;
+}
+
+main {
+    padding-top: 0;
+    /* No longer needed since header is relative */
+}
+
+/* Hero Section */
+.hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 var(--spacing-sm);
+    position: relative;
+}
+
+.hero-text {
+    margin-bottom: var(--spacing-lg);
+    z-index: 2;
+}
+
+.divider {
+    width: 60px;
+    height: 1px;
+    background-color: var(--accent-gold);
+    margin: 0 auto;
+}
+
+.hero-image-container {
+    width: 100%;
+    max-width: 1000px;
+    height: 60vh;
+    position: relative;
+    border-radius: 4px;
+    /* Softens corners slightly */
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Gallery Section - Spacious Update */
+.gallery-section {
+    padding: var(--spacing-xl) var(--spacing-sm);
+    max-width: 100%;
+    /* Use full width or very wide container */
+    padding-left: 5%;
+    padding-right: 5%;
+    margin: 0 auto;
+}
+
+.gallery-intro {
+    text-align: center;
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-secondary);
+}
+
+.masonry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Simple 2-column split */
+    gap: var(--spacing-lg);
+    /* Big breathing room */
+    align-items: center;
+    /* Center aligned vertical flow */
+}
+
+.grid-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    transition: transform 0.4s ease;
+    width: 100%;
+    /* Ensure they are tall enough to show off high res photos */
+    min-height: 70vh;
+}
+
+.grid-item:hover {
+    transform: translateY(-5px);
+}
+
+/* Varied Layout - subtle offsets for organic feel */
+.item-1 {
+    /* Full height column */
+}
+
+.item-2 {
+    /* Move down slightly to create staggered look */
+    margin-top: 6rem;
+}
+
+.item-3 {
+    margin-top: -6rem;
+    /* Pull up to interlock */
+}
+
+.item-4 {
+    /* Standard */
+}
+
+/* Placeholders */
+.placeholder-image {
+    width: 100%;
+    height: 100%;
+    background-color: var(--placeholder-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--placeholder-text);
+    text-align: center;
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    border: 1px dashed var(--accent-soft-gold);
+}
+
+.hero-img {
+    height: 100%;
+    /* Fill hero container */
+}
+
+.hero-image-container img,
+.grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* CTA Footer */
+.cta-section {
+    padding: var(--spacing-lg) var(--spacing-sm);
+    text-align: center;
+    background-color: #fff;
+    margin-top: var(--spacing-lg);
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    letter-spacing: 0.05em;
+    color: var(--text-primary);
+}
+
+footer {
+    text-align: center;
+    padding: var(--spacing-md);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+/* Animations */
+.fade-in-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 1s ease-out, transform 1s ease-out;
+    will-change: opacity, visibility;
+}
+
+.fade-in-section.visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    :root {
+        --spacing-md: 1.5rem;
+        --spacing-lg: 2.5rem;
+        --spacing-xl: 4rem;
+    }
+
+    .header {
+        position: relative;
+        /* Unstick header for better flow on small screens if needed, or keep absolute but adjust padding */
+        padding: var(--spacing-sm);
+    }
+
+    main {
+        padding-top: 0;
+    }
+
+    .names {
+        font-size: 3rem;
+        margin-bottom: -44px;
+    }
+
+    .eyebrow {
+        font-size: 1.2rem;
+    }
+
+    .subtitle {
+        font-size: 0.8rem;
+    }
+
+    .date {
+        font-size: 2.5rem;
+        /* Kept or slightly reduced */
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .location {
+        font-size: 0.8rem;
+        margin-top: var(--spacing-sm);
+    }
+
+    .hero {
+        min-height: auto;
+        /* Allow content to dictate height */
+        padding-top: var(--spacing-lg);
+        padding-bottom: var(--spacing-lg);
+    }
+
+    .hero-image-container {
+        height: 50vh;
+        /* Reduce height on mobile */
+        max-height: 400px;
+    }
+
+    /* Hide side florals on mobile to prevent clutter */
+    body::before,
+    body::after {
+        display: none;
+    }
+
+    .gallery-intro {
+        font-size: 1.1rem;
+    }
+
+    .masonry-grid {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .grid-item {
+        width: 100%;
+        height: 300px;
+        /* Smaller height for gallery items */
+        min-height: auto;
+    }
+
+    .item-2,
+    .item-3 {
+        margin-top: 0;
+        margin-left: 0;
+    }
+
+    .cta-section {
+        font-size: 1.2rem;
+        margin-top: var(--spacing-md);
+        padding: var(--spacing-md);
+    }
+}

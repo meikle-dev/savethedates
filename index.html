@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save the Date | 5th September 2026</title>
+    <meta name="description" content="We've set the date! Join us on 5th September 2025.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- Optional for icons if needed later -->
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <p class="subtitle">Save the Date</p>
+            <h1 class="names">Chloe & Ross</h1>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-text" id="hero-text">
+                <span class="eyebrow">We've Set the Date!</span>
+                <h2 class="date">5th September 2026</h2>
+                <div class="divider"></div>
+                <p class="location">St. Comgall's Church, Bangor | Manson's Cottage, Donaghadee</p>
+            </div>
+
+            <div class="hero-image-container">
+                <img src="images/engagement.jpg" alt="Alex & Taylor">
+            </div>
+        </section>
+
+        <section class="gallery-section">
+            <p class="gallery-intro">Engaged 6th June 2025 | Zell Am See, Austria</p>
+            <div class="masonry-grid">
+                <!-- Scattered Images -->
+                <div class="grid-item item-1">
+                    <img src="images/engagement2.jpg" alt="Gallery Photo 1">
+                </div>
+                <div class="grid-item item-2">
+                    <img src="images/engagement3.jpg" alt="Gallery Photo 2">
+                </div>
+                <div class="grid-item item-3">
+                    <img src="images/engagement4.jpg" alt="Gallery Photo 3">
+                </div>
+                <div class="grid-item item-4">
+                    <img src="images/engagement5.jpg" alt="Gallery Photo 4">
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <p>Formal Invitation to Follow</p>
+        </section>
+    </main>
+
+    <footer>
+        <p></p>
+    </footer>
+
+    <script>
+        // Simple intersection observer for fade-in animations on scroll
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.hero-text, .hero-image-container, .grid-item').forEach(el => {
+            el.classList.add('fade-in-section');
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>
