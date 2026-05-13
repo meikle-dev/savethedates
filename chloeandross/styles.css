@@ -267,6 +267,26 @@ main {
     display: block;
 }
 
+/* CTA Button */
+.cta-btn {
+    display: inline-block;
+    margin-top: var(--spacing-md);
+    padding: 0.9rem 2.5rem;
+    background-color: var(--text-primary);
+    color: var(--bg-color);
+    text-decoration: none;
+    border-radius: 50px;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: background-color 0.25s ease;
+}
+
+.cta-btn:hover {
+    background-color: var(--accent-gold);
+}
+
 /* CTA Footer */
 .cta-section {
     padding: var(--spacing-lg) var(--spacing-sm);

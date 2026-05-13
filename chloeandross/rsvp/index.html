@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP | Chloe & Ross</title>
+    <meta name="description" content="RSVP for the wedding of Chloe & Ross on 5th September 2026.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&family=Updock&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #FAFAF9;
+            --text-primary: #2C2C2C;
+            --text-secondary: #6B6B6B;
+            --accent-gold: #C5A059;
+            --accent-soft-gold: #E5D5B5;
+            --placeholder-text: #A8A8A0;
+            --font-heading: 'Libre Baskerville', serif;
+            --font-script: 'Updock', cursive;
+            --font-body: 'Inter', sans-serif;
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 2rem;
+            --spacing-lg: 4rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            overflow-x: hidden;
+            font-size: 16px;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background-image: url('../images/floral2.png');
+            background-repeat: repeat-y;
+            background-size: contain;
+            z-index: -1;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        body::before {
+            left: 0;
+            transform: scaleX(-1);
+        }
+
+        body::after {
+            right: 0;
+        }
+
+        .header {
+            padding: var(--spacing-md) var(--spacing-sm);
+            text-align: center;
+        }
+
+        .header-subtitle {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .names {
+            font-family: var(--font-script);
+            font-size: 5.5rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: -50px;
+        }
+
+        .rsvp-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-lg) var(--spacing-sm);
+        }
+
+        .rsvp-card {
+            max-width: 540px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .eyebrow {
+            font-family: var(--font-heading);
+            font-style: italic;
+            font-size: 1.4rem;
+            color: var(--accent-gold);
+            display: block;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .rsvp-title {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .divider {
+            width: 60px;
+            height: 1px;
+            background-color: var(--accent-gold);
+            margin: 0 auto var(--spacing-md);
+        }
+
+        .rsvp-intro {
+            font-family: var(--font-heading);
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.7;
+        }
+
+        /* Form */
+        .rsvp-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            text-align: left;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-family: var(--font-body);
+        }
+
+        .form-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--accent-soft-gold);
+            border-radius: 0;
+            padding: 0.65rem 0;
+            font-size: 1rem;
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            outline: none;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+
+        .form-input::placeholder {
+            color: var(--placeholder-text);
+        }
+
+        .form-input:focus {
+            border-bottom-color: var(--accent-gold);
+        }
+
+        .attendance-group {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-top: 0.25rem;
+        }
+
+        .attendance-btn {
+            flex: 1;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--accent-soft-gold);
+            border-radius: 50px;
+            background: transparent;
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            letter-spacing: 0.04em;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .attendance-btn:hover {
+            border-color: var(--accent-gold);
+            color: var(--text-primary);
+        }
+
+        .attendance-btn.selected {
+            background-color: var(--accent-gold);
+            border-color: var(--accent-gold);
+            color: #fff;
+        }
+
+        .error-msg {
+            font-size: 0.85rem;
+            color: #a05555;
+            display: none;
+            text-align: center;
+        }
+
+        .error-msg.visible {
+            display: block;
+        }
+
+        .submit-btn {
+            margin-top: var(--spacing-xs);
+            padding: 1rem 2rem;
+            background-color: var(--text-primary);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 50px;
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.25s ease;
+            align-self: center;
+            min-width: 180px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background-color: var(--accent-gold);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Success state */
+        #successView {
+            display: none;
+            text-align: center;
+        }
+
+        #successView.visible {
+            display: block;
+        }
+
+        .success-icon {
+            width: 52px;
+            height: 52px;
+            border: 1px solid var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-md);
+            color: var(--accent-gold);
+            font-size: 1.4rem;
+            font-family: var(--font-heading);
+        }
+
+        .success-title {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .success-message {
+            font-family: var(--font-heading);
+            font-style: italic;
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .another-btn {
+            display: inline-block;
+            margin-bottom: var(--spacing-sm);
+            padding: 0.9rem 2rem;
+            background-color: var(--text-primary);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 50px;
+            font-family: var(--font-heading);
+            font-size: 0.85rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.25s ease;
+        }
+
+        .another-btn:hover {
+            background-color: var(--accent-gold);
+        }
+
+        footer {
+            text-align: center;
+            padding: var(--spacing-md);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --spacing-md: 1.5rem;
+                --spacing-lg: 2.5rem;
+            }
+
+            .names {
+                font-size: 3rem;
+                margin-bottom: -44px;
+            }
+
+            body::before,
+            body::after {
+                display: none;
+            }
+
+            .rsvp-title {
+                font-size: 2rem;
+            }
+
+            .attendance-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <p class="header-subtitle">5th September 2026</p>
+            <h1 class="names">Chloe & Ross</h1>
+        </div>
+    </header>
+
+    <main>
+        <section class="rsvp-section">
+            <div class="rsvp-card fade-in-section">
+
+                <!-- Form view -->
+                <div id="formView">
+                    <span class="eyebrow">We'd love to see you there</span>
+                    <h2 class="rsvp-title">RSVP</h2>
+                    <div class="divider"></div>
+                    <p class="rsvp-intro">Please let us know if you'll be joining us<br>on our special day.</p>
+
+                    <form class="rsvp-form" id="rsvpForm" novalidate>
+                        <div class="form-group">
+                            <label class="form-label" for="nameInput">Your full name</label>
+                            <input
+                                type="text"
+                                id="nameInput"
+                                class="form-input"
+                                placeholder="e.g. Jane Smith"
+                                autocomplete="name"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Will you be attending?</label>
+                            <div class="attendance-group">
+                                <button type="button" class="attendance-btn" data-value="true">
+                                    Joyfully Accepts
+                                </button>
+                                <button type="button" class="attendance-btn" data-value="false">
+                                    Regretfully Declines
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="error-msg" id="errorMsg"></p>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">Send RSVP</button>
+                    </form>
+                </div>
+
+                <!-- Success view -->
+                <div id="successView">
+                    <div class="success-icon">✓</div>
+                    <h3 class="success-title" id="successTitle">Thank you!</h3>
+                    <p class="success-message" id="successMessage"></p>
+                    <div class="divider"></div>
+                    <br>
+                    <button type="button" class="another-btn" id="anotherBtn">Submit another RSVP</button>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p></p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script>
+        const { createClient } = supabase;
+        const client = createClient(
+            'https://vnropjxltgzzdlbacrmg.supabase.co',
+            'sb_publishable_HXlzCsU0gFBM3pyk3jvJKQ_N6h2F62w'
+        );
+
+        let selectedAttending = null;
+
+        document.querySelectorAll('.attendance-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.attendance-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedAttending = btn.dataset.value === 'true';
+            });
+        });
+
+        document.getElementById('rsvpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('nameInput').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            const submitBtn = document.getElementById('submitBtn');
+
+            errorMsg.classList.remove('visible');
+
+            if (!name) {
+                errorMsg.textContent = 'Please enter your name.';
+                errorMsg.classList.add('visible');
+                return;
+            }
+
+            if (selectedAttending === null) {
+                errorMsg.textContent = 'Please let us know if you\'ll be attending.';
+                errorMsg.classList.add('visible');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+
+            const { error } = await client
+                .from('rsvps')
+                .insert({ name, attending: selectedAttending });
+
+            if (error) {
+                errorMsg.textContent = 'Something went wrong — please try again.';
+                errorMsg.classList.add('visible');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send RSVP';
+                return;
+            }
+
+            const firstName = name.split(' ')[0];
+            document.getElementById('successTitle').textContent = `Thank you, ${firstName}!`;
+            document.getElementById('successMessage').textContent = selectedAttending
+                ? 'We\'re so excited to celebrate with you on the 5th of September.'
+                : 'We\'re sorry you can\'t make it — we appreciate you letting us know. You\'ll be in our thoughts on the day.';
+
+            document.getElementById('formView').style.display = 'none';
+            document.getElementById('successView').classList.add('visible');
+        });
+
+        document.getElementById('anotherBtn').addEventListener('click', () => {
+            document.getElementById('nameInput').value = '';
+            document.querySelectorAll('.attendance-btn').forEach(b => b.classList.remove('selected'));
+            selectedAttending = null;
+            document.getElementById('errorMsg').classList.remove('visible');
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').textContent = 'Send RSVP';
+            document.getElementById('successView').classList.remove('visible');
+            document.getElementById('formView').style.display = '';
+        });
+
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                document.querySelector('.fade-in-section').classList.add('visible');
+            }, 100);
+        });
+    </script>
+
+</body>
+
+</html>
