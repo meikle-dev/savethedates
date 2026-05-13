@@ -139,6 +139,15 @@
             line-height: 1.7;
         }
 
+        .rsvp-note {
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--placeholder-text);
+            margin-top: calc(var(--spacing-sm) * -0.5);
+            margin-bottom: var(--spacing-lg);
+        }
+
         /* Form */
         .rsvp-form {
             display: flex;
@@ -208,9 +217,15 @@
             color: var(--text-primary);
         }
 
-        .attendance-btn.selected {
+        .attendance-btn[data-value="true"].selected {
             background-color: var(--accent-gold);
             border-color: var(--accent-gold);
+            color: #fff;
+        }
+
+        .attendance-btn[data-value="false"].selected {
+            background-color: #9E8878;
+            border-color: #9E8878;
             color: #fff;
         }
 
@@ -376,6 +391,7 @@
                     <h2 class="rsvp-title">RSVP</h2>
                     <div class="divider"></div>
                     <p class="rsvp-intro">Please let us know if you'll be joining us<br>on our special day.</p>
+                    <p class="rsvp-note">One response per person, please.</p>
 
                     <form class="rsvp-form" id="rsvpForm" novalidate>
                         <div class="form-group">
