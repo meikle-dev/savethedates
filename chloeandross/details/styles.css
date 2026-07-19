@@ -1,0 +1,669 @@
+:root {
+    --cream: #f5f1e8;
+    --paper: #fffdf8;
+    --ink: #282b27;
+    --muted: #686b62;
+    --green: #66775e;
+    --green-dark: #44533f;
+    --green-soft: #dfe5d8;
+    --gold: #b58a42;
+    --gold-soft: #dfcda9;
+    --line: rgba(68, 83, 63, 0.18);
+    --serif: 'Libre Baskerville', Georgia, serif;
+    --script: 'Updock', cursive;
+    --sans: 'Inter', Arial, sans-serif;
+    --shadow: 0 20px 60px rgba(43, 47, 39, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-width: 320px;
+    overflow-x: hidden;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.9), transparent 32rem),
+        var(--cream);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    width: clamp(130px, 18vw, 270px);
+    background-image: url('../images/floral2.png');
+    background-position: center top;
+    background-repeat: repeat-y;
+    background-size: 100% auto;
+    opacity: 0.25;
+    pointer-events: none;
+}
+
+body::before {
+    left: 0;
+    transform: scaleX(-1);
+}
+
+body::after {
+    right: 0;
+}
+
+a {
+    color: inherit;
+}
+
+.skip-link {
+    position: fixed;
+    z-index: 100;
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    background: var(--ink);
+    color: white;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transform: translateY(-150%);
+    transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+.site-header {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: min(1180px, calc(100% - 3rem));
+    min-height: 76px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--line);
+}
+
+.back-link,
+.rsvp-link {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    color: var(--green-dark);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.back-link {
+    gap: 0.3rem;
+}
+
+.back-link svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+    transition: transform 0.2s ease;
+}
+
+.back-link:hover svg {
+    transform: translateX(-3px);
+}
+
+.rsvp-link {
+    justify-self: end;
+    padding-bottom: 0.18rem;
+    border-bottom: 1px solid var(--gold);
+}
+
+.wedding-date {
+    color: var(--muted);
+    font-family: var(--serif);
+    font-size: 0.76rem;
+    letter-spacing: 0.13em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+main {
+    position: relative;
+    z-index: 1;
+}
+
+.hero {
+    display: grid;
+    place-items: center;
+    min-height: 450px;
+    padding: 5.5rem 1.5rem 6.25rem;
+    text-align: center;
+}
+
+.hero-inner {
+    max-width: 760px;
+}
+
+.eyebrow,
+.section-kicker,
+.card-label {
+    color: var(--gold);
+    font-family: var(--serif);
+    font-style: italic;
+}
+
+.eyebrow {
+    margin-bottom: 0.85rem;
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+}
+
+h1 {
+    font-size: clamp(2.65rem, 7vw, 5.25rem);
+    line-height: 1.08;
+    letter-spacing: -0.045em;
+}
+
+.ornament {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin: 1.8rem auto;
+    color: var(--green);
+}
+
+.ornament span {
+    width: 45px;
+    height: 1px;
+    background: var(--gold-soft);
+}
+
+.ornament svg {
+    width: 32px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.2;
+}
+
+.hero-copy {
+    max-width: 540px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-family: var(--serif);
+    font-size: clamp(1rem, 2vw, 1.15rem);
+}
+
+.schedule-section {
+    width: min(940px, calc(100% - 3rem));
+    margin: 0 auto 2rem;
+    padding: clamp(2.5rem, 7vw, 5rem) clamp(1.4rem, 6vw, 5rem);
+    border: 1px solid rgba(181, 138, 66, 0.26);
+    border-radius: 28px;
+    background: rgba(255, 253, 248, 0.93);
+    box-shadow: var(--shadow);
+}
+
+.section-heading {
+    margin-bottom: 3.5rem;
+    text-align: center;
+}
+
+.section-kicker {
+    margin-bottom: 0.45rem;
+    font-size: 0.9rem;
+}
+
+.section-heading h2 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+}
+
+.timeline {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.timeline-item {
+    display: grid;
+    grid-template-columns: 105px 34px 1fr;
+    gap: 1.35rem;
+    position: relative;
+}
+
+.timeline-item:not(:last-child) {
+    padding-bottom: 3.5rem;
+}
+
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 27px;
+    bottom: -3px;
+    left: 121px;
+    width: 1px;
+    background: var(--gold-soft);
+}
+
+.timeline-time {
+    padding-top: 0.15rem;
+    color: var(--green-dark);
+    text-align: right;
+}
+
+.timeline-time span,
+.timeline-time small {
+    display: block;
+}
+
+.timeline-time span {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+}
+
+.timeline-time small {
+    color: var(--muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.timeline-marker {
+    z-index: 1;
+    width: 13px;
+    height: 13px;
+    margin: 8px auto 0;
+    border: 3px solid var(--paper);
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold);
+}
+
+.card-label {
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+}
+
+.timeline-copy h3,
+.detail-copy h2 {
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+.timeline-copy h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1.45rem;
+}
+
+.timeline-copy p:last-child,
+.detail-copy > p:last-child {
+    color: var(--muted);
+    font-size: 0.94rem;
+}
+
+.timeline-copy p strong {
+    color: var(--green-dark);
+    font-weight: 600;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    width: min(940px, calc(100% - 3rem));
+    margin: 0 auto;
+    padding: 1.25rem 0 6rem;
+}
+
+.detail-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.35rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    background: rgba(255, 253, 248, 0.86);
+}
+
+.detail-card--wide {
+    grid-column: 1 / -1;
+    padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.detail-card--taxi {
+    border-color: rgba(181, 138, 66, 0.34);
+    background: rgba(255, 250, 238, 0.94);
+}
+
+.icon-wrap {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--green-soft);
+    color: var(--green-dark);
+}
+
+.icon-wrap svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.4;
+}
+
+.detail-copy h2 {
+    margin-bottom: 0.8rem;
+    font-size: clamp(1.35rem, 3vw, 1.8rem);
+}
+
+.detail-copy > p:not(.card-label):not(.friendly-note) {
+    color: var(--muted);
+    font-size: 0.94rem;
+}
+
+address {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    max-width: 570px;
+    margin: 1.8rem 0 1.25rem;
+    padding: 1.1rem 1.25rem;
+    border-left: 2px solid var(--gold);
+    background: rgba(223, 229, 216, 0.42);
+    font-style: normal;
+}
+
+address span {
+    color: var(--green-dark);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+address strong {
+    font-family: var(--serif);
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: right;
+}
+
+.friendly-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    max-width: 620px;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    background: rgba(223, 229, 216, 0.34);
+    color: var(--green-dark);
+    font-family: var(--serif);
+    font-size: 0.88rem;
+    font-style: italic;
+    line-height: 1.65;
+}
+
+.friendly-note > span {
+    min-width: 0;
+}
+
+.friendly-note svg {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    margin-top: 0.18rem;
+    fill: none;
+    stroke: var(--gold);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+}
+
+.closing {
+    padding: 5.5rem 1.5rem 6rem;
+    background: var(--green-dark);
+    color: #fffdf8;
+    text-align: center;
+}
+
+.closing h2 {
+    margin-bottom: 0.75rem;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+}
+
+.closing > p:not(.eyebrow) {
+    max-width: 480px;
+    margin: 0 auto;
+    color: rgba(255, 253, 248, 0.76);
+    font-family: var(--serif);
+    font-size: 0.95rem;
+}
+
+.primary-button {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.95rem 1.8rem;
+    border: 1px solid var(--gold-soft);
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--green-dark);
+    font-family: var(--serif);
+    font-size: 0.76rem;
+    letter-spacing: 0.14em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.primary-button:hover {
+    background: var(--gold);
+    color: white;
+    transform: translateY(-2px);
+}
+
+footer {
+    padding: 2.75rem 1.5rem;
+    background: #344030;
+    color: rgba(255, 253, 248, 0.62);
+    font-size: 0.66rem;
+    letter-spacing: 0.13em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.footer-names {
+    margin-bottom: 0.15rem;
+    color: var(--gold-soft);
+    font-family: var(--script);
+    font-size: 2.2rem;
+    letter-spacing: 0;
+    line-height: 1;
+    text-transform: none;
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.75s ease, transform 0.75s ease;
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: none;
+}
+
+@media (max-width: 700px) {
+    body::before,
+    body::after {
+        display: none;
+    }
+
+    .site-header {
+        width: calc(100% - 2rem);
+        min-height: 64px;
+    }
+
+    .wedding-date {
+        font-size: 0.58rem;
+        letter-spacing: 0.08em;
+    }
+
+    .back-link,
+    .rsvp-link {
+        font-size: 0.66rem;
+        letter-spacing: 0.1em;
+    }
+
+    .hero {
+        min-height: 390px;
+        padding: 4.75rem 1.25rem 5.25rem;
+    }
+
+    .schedule-section,
+    .details-grid {
+        width: calc(100% - 2rem);
+    }
+
+    .schedule-section {
+        border-radius: 20px;
+    }
+
+    .section-heading {
+        margin-bottom: 2.75rem;
+    }
+
+    .timeline-item {
+        grid-template-columns: 66px 20px 1fr;
+        gap: 0.8rem;
+    }
+
+    .timeline-item:not(:last-child) {
+        padding-bottom: 3rem;
+    }
+
+    .timeline-item:not(:last-child)::after {
+        left: 75.5px;
+    }
+
+    .timeline-marker {
+        width: 11px;
+        height: 11px;
+        margin-top: 8px;
+        border-width: 2px;
+    }
+
+    .timeline-time span {
+        font-size: 0.92rem;
+    }
+
+    .timeline-time small {
+        font-size: 0.57rem;
+        letter-spacing: 0.06em;
+    }
+
+    .timeline-copy h3 {
+        font-size: 1.2rem;
+    }
+
+    .timeline-copy p:last-child {
+        font-size: 0.84rem;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+        padding-bottom: 4rem;
+    }
+
+    .detail-card,
+    .detail-card--wide {
+        grid-column: auto;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        border-radius: 20px;
+    }
+
+    .detail-card--directions {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .icon-wrap {
+        width: 44px;
+        height: 44px;
+    }
+
+    address {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    address strong {
+        text-align: left;
+    }
+
+    .friendly-note {
+        gap: 0.7rem;
+        padding: 0.9rem;
+        font-size: 0.86rem;
+        line-height: 1.6;
+    }
+
+    .closing {
+        padding: 4.5rem 1.25rem 5rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .wedding-date {
+        display: none;
+    }
+
+    .site-header {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}

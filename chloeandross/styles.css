@@ -287,6 +287,26 @@ main {
     background-color: var(--accent-gold);
 }
 
+.cta-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.cta-btn--outline {
+    border: 1px solid var(--text-primary);
+    background-color: transparent;
+    color: var(--text-primary);
+}
+
+.cta-btn--outline:hover {
+    border-color: var(--accent-gold);
+    background-color: transparent;
+    color: var(--accent-gold);
+}
+
 /* CTA Footer */
 .cta-section {
     padding: var(--spacing-lg) var(--spacing-sm);
@@ -408,5 +428,13 @@ footer {
         font-size: 1.2rem;
         margin-top: var(--spacing-md);
         padding: var(--spacing-md);
+    }
+
+    .cta-actions {
+        flex-direction: column;
+    }
+
+    .cta-actions .cta-btn {
+        width: min(100%, 260px);
     }
 }
