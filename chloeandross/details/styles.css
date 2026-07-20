@@ -391,6 +391,22 @@ h1 {
     font-size: 0.94rem;
 }
 
+.detail-copy .bar-note {
+    margin-top: 1.15rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    color: var(--green-dark);
+    font-family: var(--serif);
+    font-size: 0.84rem;
+    font-style: italic;
+    line-height: 1.6;
+}
+
+.bar-note strong {
+    color: var(--gold);
+    font-weight: 400;
+}
+
 address {
     display: flex;
     align-items: center;
