@@ -6,7 +6,7 @@ Read only what the current task needs. [Backlog](backlog.md) holds current state
 | --- | --- |
 | What is the product? | [Product overview](overview/product-overview.md) |
 | What should be built next? | [Backlog](backlog.md) |
-| How do I run it? | [Running instructions](../run-app-instructions.md) |
+| How do I run it? | [Running instructions](../run-app-instructions.md) (includes local Supabase/Auth setup) |
 | Which technologies? | [Stack](overview/tech-stack.md) |
 | How is it structured and secured? | [Architecture](overview/architecture.md) |
 | How should the platform look? | [Platform direction](overview/site-ui.md), [reference board](ux/site-ui-design.png) |

@@ -15,6 +15,25 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: Aria
 .wedding-photo img { object-position: center 57%; }
 a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-radius: 2px; }
 ::selection { background: #d8e0d5; }
+.platform { --teal: #0f4c5c; --navy: #0b2a3d; --muted: #52616a; --line: #d8deda; background: #f8f6f0; color: var(--navy); }
+.brand { font-family: Georgia, serif; font-size: 1.35rem; letter-spacing: -0.04em; }
+.brand span { color: var(--teal); }
+.eyebrow { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); font-weight: 600; }
+.field-label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.6rem; }
+.field-input { width: 100%; min-height: 48px; padding: 0.8rem 0.9rem; border: 1px solid #98a5a7; background: #fffefa; border-radius: 6px; font: inherit; color: var(--navy); }
+.field-input:focus-visible, .platform button:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+.field-input[aria-invalid="true"] { border-color: #a13c2c; }
+.field-help, .field-error { margin-top: 0.5rem; font-size: 0.8125rem; line-height: 1.5; }
+.field-help { color: var(--muted); }
+.field-error { color: #8b3023; }
+.primary-button { display: inline-flex; justify-content: center; align-items: center; min-height: 48px; padding: 0.8rem 1.35rem; border-radius: 6px; background: var(--teal); color: white; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+.primary-button:hover { background: var(--navy); }
+.primary-button:disabled { opacity: 0.65; cursor: wait; }
+.text-link { color: var(--teal); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.form-notice, .form-error { padding: 1rem; border-radius: 6px; font-size: 0.875rem; line-height: 1.6; }
+.form-notice { background: #e7eee7; color: #254e39; }
+.form-error { background: #f7e8e3; color: #8b3023; }
+.draft-badge { padding: 0.35rem 0.7rem; border-radius: 99px; background: #eaf2f6; color: var(--teal); font-size: 0.75rem; }
 @media (min-width: 768px) {
   .wedding-shell { border-inline: 1px solid #e5e1da; }
   .wedding-photo { margin-top: -42px; }

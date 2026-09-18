@@ -1,12 +1,13 @@
 # Run SaveTheDates locally
 
-Run commands from the repository root. This is one Next.js application; F001 needs no database, provider accounts, secrets, or `.env` file. Do not set `NODE_ENV` manually. Demo data is available only in development.
+Run commands from the repository root. This is one Next.js application with local Supabase Auth and PostgreSQL for the account/workspace slice. Do not set `NODE_ENV` manually. Demo data is available only in development.
 
 ## Prerequisites
 
 - Direct running and checks: Node.js **24.11.0** and npm **11.6.1** (the Node installer includes npm). `.nvmrc`, `packageManager`, and `package-lock.json` record the toolchain and dependencies. Compatible Node 24/npm 11 releases are accepted by the package engines.
 - Container running: Docker Engine/Desktop with Linux containers and Docker Compose v2. The Dockerfile uses Node 24.11.0 with npm 11.6.1; host Node is optional for running the container.
 - Windows PowerShell: use `npm.cmd` and `npx.cmd` wherever the commands below say `npm` and `npx` if script execution policy blocks their `.ps1` wrappers. No policy change is needed.
+- Supabase local development: Docker Desktop plus the project-scoped CLI (`npm run db:start`). The CLI starts PostgreSQL, Auth, API, Studio, and the local Mailpit mailbox; no hosted Supabase account is required.
 - Ports: 3000 for local development, 3100 for the automated browser server, 3001 for the production smoke example.
 
 ## Docker development
@@ -24,7 +25,22 @@ With host Node installed, `node scripts/smoke-development.mjs` checks the demo, 
 docker compose down
 ```
 
-This stops and removes the project's application container/network; there is no database or persistent customer data in this slice.
+This stops and removes the project's application container/network. Supabase data is managed separately and persists across application-container restarts.
+
+## Local Supabase/Auth
+
+```sh
+npm run db:start
+npm run local:env
+```
+
+The command writes only the local publishable key to ignored `.env.local` and `.env.docker` files; it never writes a service-role key. Open http://localhost:54323 for Studio and http://localhost:54324 for the local Mailpit mailbox. Confirmation and password-recovery messages are captured locally and are not sent externally.
+
+```sh
+npm run db:stop
+```
+
+`npm run test:integration` creates temporary users and checks owner access, cross-owner denial, anonymous denial, uniqueness, and database validation. `npm run test:persistence` creates a temporary draft, stops and starts Supabase, signs in again, and verifies the draft remains before removing the temporary user. To deliberately erase all local data, use `npx supabase db reset --local`; this is destructive and reapplies migrations. Never run it against a hosted project.
 
 ## Direct Node.js development
 
@@ -54,13 +70,18 @@ Unknown slugs return 404. All pages are currently noindex; there is no sitemap. 
 ```sh
 npm ci
 npm run check
+npm run db:start
+npm run local:env -- --force
+npm run test:integration
+npm run test:persistence
+npm run test:integration
 npx playwright install chromium
 npm run test:e2e
 ```
 
 `check` runs lint, route generation/TypeScript, Vitest, and the production build, in that order. The browser suite starts/stops its own development server on port 3100; leave that port free. Run the build and browser suite sequentially so generated Next.js files are not rebuilt during browser checks. On Linux CI, use `npx playwright install --with-deps chromium` for browser system dependencies. Tests use Chromium at desktop and mobile viewport sizes; they do not establish Safari compatibility.
 
-Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Browser screenshots and failure traces are under ignored `test-results/`; `npx playwright show-report` opens the HTML report. CI is defined in `.github/workflows/ci.yml`, including development and production container smoke checks.
+Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Browser screenshots and failure traces are under ignored `test-results/`; `npx playwright show-report` opens the HTML report. CI also checks database isolation, application-container connectivity, and browser checks through the development container. Locally, run those browser checks with `E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e` after Compose is up.
 
 ## Production container smoke check
 

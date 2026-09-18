@@ -1,6 +1,6 @@
 ﻿# Product backlog
 
-Ordered by recommended implementation sequence. F001 is complete. **Next: prepare F002.**
+Ordered by recommended implementation sequence. F001 is complete. **Current: F002.**
 
 ## Status and handoff rules
 
@@ -49,11 +49,20 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 
 ## F002 - Couple account and private wedding workspace
 
-**Status:** Planned
+**Status:** Done
 **Purpose:** Allow a couple to securely create and retain their wedding content.
 **Description:** Supabase authentication and one private wedding draft per account, with a simple guided editing workspace. UX defines account entry/recovery, draft editing, and validation/error states before Ready.
 **Depends on:** F001
 **References:** `docs/overview/architecture.md`, `docs/overview/site-ui.md`, `docs/overview/tech-stack.md`.
+**Prepared scope and UX:** Email/password signup with confirmation, sign-in, sign-out, generic recovery request and password replacement. Passwords are 12–128 characters; email is limited to 254 characters. Account screens use the Modern Luxe teal/off-white palette, serif heading, labelled full-width fields, visible focus, pending buttons, and inline/status errors. `/dashboard` is a single editing form with a “Private draft” status; first save creates the account's only wedding. Required: each name (1–80 characters), real calendar date (1900–2199), location (1–160); optional plain-text message (up to 500). Trim text, validate on the server and in the database; no past/future restriction. Failed saves retain all entered wedding content, successful saves announce confirmation, and later sign-ins reload the saved content. Explain that the draft is not shared and photo/publication comes later, without inactive buttons. No guest route reads draft data. Supabase owns credentials and email tokens; the local mailbox captures confirmation/recovery email without external delivery. Access checks use a verified server user and database RLS. Prepared from Product Manager and UX roles; F001 dependency is Done, so engineering may proceed.
+**Handoff (18 September 2026):**
+
+- Implemented Supabase email/password signup with confirmation, sign-in, sign-out, generic password recovery, password replacement, and verified cookie sessions. Added `/dashboard` private draft workspace with server-side Zod validation, retained failed form values, pending/status/error states, and one owner draft containing names, date, location, and optional message.
+- Added local Supabase CLI config, confirmation/recovery templates, private `weddings` migration with one-row-per-owner uniqueness, database checks, updated-at trigger, and RLS policies. Added local environment generation that writes only publishable keys; service-role credentials stay test-script-only and are never written to application env files. Added Compose host connectivity and local Mailpit instructions.
+- Passed after `npm ci`: `npm.cmd run check` (lint, typecheck, 12 Vitest tests, production build), `npm.cmd run test:integration` (4 RLS/validation tests), `npm.cmd run test:persistence` (temporary draft survives Supabase stop/start), and `npm.cmd run test:e2e` (16/16 direct-host browser checks at desktop/mobile). The browser suite through the rebuilt development application container also passed the account journey and preview checks (16/16 after fixing the container origin and rebuilding dependencies). `docker compose exec app` confirmed app-container access to `/account/sign-up`; `git diff --check` passed.
+- Visually inspected signup/workspace screenshots at mobile and desktop sizes: clear Modern Luxe hierarchy, private-draft status, readable two-column desktop form, stacked mobile fields, visible focus/error/status treatment, and no horizontal overflow.
+- Independent reviewer `review_f002` found no Blocking security findings. Its Important documentation/connectivity findings were resolved: running instructions now cover Supabase startup/shutdown, Mailpit, generated env files, destructive reset, persistence verification, and container/browser connectivity; CI runs integration, persistence, app-container, and container-browser checks. Database message validation now rejects untrimmed/overlong values as well as server validation.
+- Blockers: None. Next: Product Manager prepares F003 photo, preview, slug, and publication acceptance; no F003 implementation started.
 **Done when:**
 
 - An owner can sign up, authenticate, sign out, recover access, and return to their persisted wedding draft; guest visitors need no account.

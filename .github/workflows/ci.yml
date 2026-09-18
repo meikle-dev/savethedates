@@ -15,6 +15,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - run: npm run db:start
+      - run: npm run local:env -- --force
+      - run: npm run test:integration
+      - run: npm run test:persistence
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: docker compose up --build -d --wait
@@ -22,6 +26,9 @@ jobs:
         run: |
           curl --retry 20 --retry-connrefused --retry-delay 2 --fail http://127.0.0.1:3000/demo > /tmp/demo.html
           node scripts/smoke-development.mjs
+          docker compose exec -T app node -e "fetch('http://127.0.0.1:3000/account/sign-up').then(r => { if (r.status !== 200) process.exit(1); console.log('Application-container connectivity passed') })"
+      - name: Browser checks through development container
+        run: E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
       - run: docker compose down
         if: always()
       - run: docker build --target production -t save-the-dates:ci .
@@ -31,6 +38,8 @@ jobs:
           curl --retry 20 --retry-connrefused --retry-delay 2 --fail http://127.0.0.1:3000 > /dev/null
           npm run smoke
       - run: docker rm -f wedding-smoke
+        if: always()
+      - run: npm run db:stop
         if: always()
       - uses: actions/upload-artifact@v4
         if: failure()

@@ -46,6 +46,9 @@ test("failed photography falls back without losing the announcement", async ({ p
 test("preview entry is keyboard accessible", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Create your private wedding draft" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: /Open the Save the Date preview/ })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/demo$/);
