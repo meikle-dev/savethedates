@@ -7,12 +7,14 @@ import { draftSchema } from "@/features/workspace/validation";
 import { PublicationForm } from "@/features/workspace/publication-form";
 
 import { ThemePicker } from "@/features/workspace/theme-picker";
+import { DetailsForm } from "@/features/workspace/details-form";
+import { detailsSchema } from "@/features/weddings/details";
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ signout?: string }> }) {
   const client = await createClient();
   const { data: { user } } = await client.auth.getUser();
   if (!user) redirect("/account/sign-in");
-  const { data, error } = await client.from("weddings").select("first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, theme").eq("owner_id", user.id).maybeSingle();
+  const { data, error } = await client.from("weddings").select("first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs").eq("owner_id", user.id).maybeSingle();
   if (error) throw new Error("Unable to load wedding workspace.");
   const draft = data ? draftSchema.parse(data) : { first_name: "", second_name: "", wedding_date: "", location: "", message: "" };
   const params = await searchParams;
@@ -32,6 +34,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         <DraftForm initial={draft} published={!!data?.published} />
       </section>
       {data && <section aria-labelledby="theme-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="theme-title" className="text-xl font-medium">Your wedding style</h2><p className="mt-2 text-sm leading-relaxed">Try a theme privately before applying it to your site.</p><ThemePicker key={data.theme} selected={data.theme} /></section>}
+      {data && <section aria-labelledby="details-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="details-title" className="text-xl font-medium">Wedding Details</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">Share only the practical information your guests need. Empty sections won’t appear.</p><DetailsForm initial={detailsSchema.parse(data)} published={data.published} /></section>}
       {data ? <PublicationForm slug={data.slug} published={data.published} photo={!!data.photo_path} locked={!!data.first_published_at} /> : <aside className="mt-12 border-t border-[var(--line)] pt-6">
         <h2 className="text-sm font-semibold">What comes next?</h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--muted)]">Save your details to add a photo, preview your site and choose a URL to share.</p>

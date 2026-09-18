@@ -59,7 +59,7 @@ it("isolates storage and exposes only the current published photo with no signed
   const ownSlug = ownRow.data!.slug ?? `${slug}-other`;
   expect((await owners[0].from("weddings").update({ photo_path: path, slug: ownSlug, published: true }).eq("id", weddings[0])).error).toBeNull();
   const published = await local.anonymous().rpc("published_wedding", { requested_slug: ownSlug });
-  expect(Object.keys(published.data![0]).sort()).toEqual(["first_name", "second_name", "wedding_date", "location", "message", "photo_path", "theme"].sort());
+  expect(Object.keys(published.data![0]).sort()).toEqual(["first_name", "second_name", "wedding_date", "location", "message", "photo_path", "theme", "details_enabled"].sort());
   expect((await anon.download(path)).error).toBeNull();
   expect((await anon.list(weddings[0])).data).toEqual([]);
   for (const reader of [anon, other, bucket]) expect((await reader.createSignedUrl(path, 3600)).error).not.toBeNull();

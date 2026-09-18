@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F004 are complete. **Next: F005.**
+Ordered by recommended implementation sequence. F001-F005 are complete. **Next: F006.**
 
 ## Status and handoff rules
 
@@ -121,16 +121,25 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 
 ## F005 - Wedding Details
 
-**Status:** Planned
+**Status:** Done
 **Purpose:** Give guests useful event information without repeated questions to the couple.
 **Description:** Optional structured sections for ceremony/reception, timings, travel, accommodation, dress code, and FAQs; no generic drag-and-drop page builder. UX defines editing and guest layouts before Ready.
 **Depends on:** F004
 **References:** `docs/overview/product-overview.md`, `docs/ux/template-ui-summary.md`.
+**Prepared scope and UX:** Add a focused Details editor below the existing workspace controls. Details are private by default and have one explicit “Show Details page” switch; enabling requires at least one non-empty section. Ceremony and reception each accept an optional time, venue, address, and HTTPS/HTTP directions link. Travel, accommodation, and dress code use optional plain-text guidance, with one optional relevant link for travel and accommodation. Owners may add up to five ordered question-and-answer FAQ pairs; incomplete pairs are rejected rather than silently published. Trim all values; limit short fields to 160 characters, guidance/answers to 1,000, questions to 200, and URLs to 2,048. The editor retains submitted values on failure and announces save results. Guest Details uses the applied theme tokens and a simple section stack, omits empty fields/sections, and provides Landing/Details navigation only when Details is enabled. Authenticated preview can open the saved Details page even while unpublished; published access requires both publication and Details enabled. Disabling hides the route and navigation without deleting saved content. No maps, rich text, HTML, arbitrary sections, or RSVP controls are introduced. Required decisions and layouts are resolved, so engineering may proceed.
 **Done when:**
 
 - Owners can save and update relevant sections; empty sections are omitted. Text and external URLs are validated safely.
 - Published sites expose enabled Details at `/[weddingSlug]/details`, with consistent navigation in all three themes; disabled or unpublished Details are not publicly accessible.
 - Preview, publication, noindex, and ownership rules match the landing page. Browser coverage verifies owner edits reaching guests and empty/disabled states; review and responsive inspection are recorded.
+
+**Handoff (18 September 2026):**
+
+- Implemented a bounded owner Details editor, private saved-content preview, enabled/disabled guest route, and landing/Details navigation shared across all three themes. Ceremony, reception, travel, accommodation, dress code, and up to five FAQs omit empty sections. Server and PostgreSQL constraints enforce trimmed limits, complete FAQ pairs, hostful HTTP(S) links, content before enablement, owner isolation, and narrow published projections. Architecture and theme UX guidance are current.
+- Passed: all three F005 migrations applied locally without resetting existing data; `npm.cmd run check` (lint, typecheck, 18 unit tests, production build); `npm.cmd run test:integration` (8/8, including anonymous/cross-owner denial and malformed direct writes); `npm.cmd run test:e2e` (22/22 desktop/mobile); `git diff --check`. An earlier full browser run exposed an ambiguous pre-existing checkbox selector, which was fixed, and one transient development-server action-forwarding failure; the theme test then passed 2/2 and the complete rerun passed 22/22.
+- Production passed: `docker build --target production -t save-the-dates:local .`; production container on `127.0.0.1:3001`; `npm.cmd run smoke -- http://127.0.0.1:3001`; production `tests/details.spec.ts` (2/2 desktop/mobile). The temporary production container was stopped and removed; existing development services remain available.
+- Inspected workspace and all three guest Details themes at mobile and desktop widths: clear hierarchy, readable single/two-column layouts, visible navigation, touch-sized links, and no horizontal overflow. Independent reviewer `review_f005` found no Blocking issues; its Important database-validation mismatch and Minor checkbox error-association findings were resolved with follow-up migrations, adversarial integration cases, and ARIA wiring, then confirmed resolved on re-review. Hosted CI, Safari/Firefox, external deployment, and persistence restart were not run for this slice.
+- Blockers: None. Next: Product Manager prepares F006 RSVP identification, correction, field, closing, and abuse-control decisions. No F006 implementation started.
 
 ## F006 - Guest RSVP and owner response list
 

@@ -1,13 +1,15 @@
 import { formatWeddingDate, type Wedding } from "./wedding";
 import { WeddingPhoto } from "./wedding-photo";
+import { WeddingNavigation } from "./wedding-navigation";
 
-export function SaveTheDate({ wedding }: { wedding: Wedding }) {
+export function SaveTheDate({ wedding, homeHref = "/", detailsHref }: { wedding: Wedding; homeHref?: string; detailsHref?: string }) {
   return (
     <div data-theme={wedding.theme ?? "minimal"} className="wedding-shell mx-auto min-h-svh max-w-[1100px]">
       <header className="px-6 pt-9 text-center md:pt-12">
         <p className="couple-names mx-auto max-w-3xl text-xs leading-loose font-medium uppercase md:text-sm">
           <span>{wedding.names[0]}</span><span className="mx-3 inline-block">&amp;</span><span>{wedding.names[1]}</span>
         </p>
+        <WeddingNavigation homeHref={homeHref} detailsHref={detailsHref} current="home" />
       </header>
       <main id="main" className="text-center">
         <div className="wedding-announcement relative z-10 px-6 pt-10 md:pt-14">

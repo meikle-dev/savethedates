@@ -42,7 +42,7 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await expect(page.getByRole("main").getByRole("alert")).toContainText("couldn’t read that photo");
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
     await page.getByLabel("Your wedding URL").fill("dashboard");
-    await page.getByRole("checkbox").check();
+    await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
     await expect(page.getByRole("main").getByRole("alert").last()).toContainText("reserved");
     await page.getByLabel("Your wedding URL").fill(` ${slug.toUpperCase()} `);
@@ -82,7 +82,7 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await page.getByRole("button", { name: "Remove photo" }).click();
     await expect(page.getByRole("status").filter({ hasText: "photo has been removed" })).toBeVisible();
     expect((await page.request.get("/dashboard/photo")).status()).toBe(404);
-    await page.getByRole("checkbox").check();
+    await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
     await expect(page.getByText("Published", { exact: true })).toBeVisible();
     expect((await guest.request.get(`/${slug}`)).status()).toBe(200);

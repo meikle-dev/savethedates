@@ -69,8 +69,52 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .theme-option:has(:checked) { border-color: #0f4c5c; background: #e7eeeb; box-shadow: inset 0 0 0 1px #0f4c5c; }
 .theme-option input { margin-top: 0.25rem; accent-color: #0f4c5c; width: 1rem; height: 1rem; flex-shrink: 0; }
 .theme-option:has(:focus-visible) { outline: 2px solid #0f4c5c; outline-offset: 3px; }
+.details-toggle { display: flex; align-items: flex-start; gap: 0.85rem; padding: 1rem; border: 1px solid #98a5a7; border-radius: 6px; background: #fffefa; cursor: pointer; }
+.details-toggle:has(:focus-visible) { outline: 2px solid var(--teal); outline-offset: 3px; }
+.details-toggle input { width: 1.2rem; height: 1.2rem; margin-top: 0.15rem; flex-shrink: 0; accent-color: var(--teal); }
+.details-editor-group { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+.details-editor-group legend { padding-right: 0.75rem; font-size: 1rem; font-weight: 600; }
+.details-faq-editor { padding: 1.1rem; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,0.45); }
+.wedding-navigation { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 1.4rem; font-size: 0.75rem; letter-spacing: 0.13em; text-transform: uppercase; }
+.wedding-navigation a { min-height: 44px; display: inline-flex; align-items: center; color: currentColor; text-underline-offset: 0.35rem; }
+.wedding-navigation a[aria-current="page"] { color: var(--theme-accent); text-decoration: underline; }
+.details-header { display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 1px solid color-mix(in srgb, var(--theme-text) 15%, transparent); }
+.details-header .couple-names { max-width: 44rem; }
+.details-header .wedding-navigation { margin-top: 0.8rem; }
+.details-intro { max-width: 42rem; margin-inline: auto; text-align: center; }
+.details-kicker { color: var(--theme-accent); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+.details-intro h1 { margin-top: 0.75rem; font-size: clamp(3rem, 10vw, 6rem); line-height: 0.98; letter-spacing: -0.045em; }
+.details-intro > p:last-child { margin-top: 1.25rem; line-height: 1.7; }
+.details-grid { display: grid; gap: 1rem; max-width: 52rem; margin: 3rem auto 0; }
+.details-card { padding: 1.5rem; border: 1px solid color-mix(in srgb, var(--theme-text) 15%, transparent); border-radius: var(--theme-radius); background: color-mix(in srgb, var(--theme-surface) 86%, white); text-align: center; }
+.details-card h2 { font-family: var(--theme-heading); font-size: 1.75rem; line-height: 1.15; }
+.details-card > * + * { margin-top: 0.75rem; }
+.details-emphasis { color: var(--theme-accent); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.details-link { display: inline-flex; min-height: 44px; align-items: center; color: var(--theme-accent); font-weight: 700; text-decoration: underline; text-underline-offset: 0.3rem; }
+.details-faqs { text-align: left; }
+.details-faqs h2 { text-align: center; }
+.details-faqs dl > div { padding-block: 1.1rem; border-top: 1px solid color-mix(in srgb, var(--theme-text) 13%, transparent); }
+.details-faqs dl > div:first-child { margin-top: 1rem; }
+.details-faqs dt { font-weight: 700; }
+.details-faqs dd { margin-top: 0.45rem; line-height: 1.65; }
+.details-empty { max-width: 38rem; margin: 3rem auto 0; padding: 1.25rem; border: 1px dashed var(--theme-accent); text-align: center; line-height: 1.6; }
+.details-footer { border-top: 1px solid color-mix(in srgb, var(--theme-text) 15%, transparent); }
+.details-shell[data-theme="romantic"] .details-card { background: #fffafa; box-shadow: 0 12px 35px rgba(98,68,62,0.07); }
+.details-shell[data-theme="romantic"] .details-intro h1 { font-style: italic; }
+.details-shell[data-theme="bold"] .details-header { align-items: flex-start; text-align: left; background: #0f4c5c; color: #fafaf9; }
+.details-shell[data-theme="bold"] .wedding-navigation { justify-content: flex-start; }
+.details-shell[data-theme="bold"] .wedding-navigation a[aria-current="page"] { color: #fff; }
+.details-shell[data-theme="bold"] .details-intro { margin-left: 0; text-align: left; }
+.details-shell[data-theme="bold"] .details-grid { max-width: none; }
+.details-shell[data-theme="bold"] .details-card { text-align: left; border: 0; border-left: 6px solid var(--theme-accent); background: #f4f7f6; }
+.details-shell[data-theme="bold"] .details-faqs h2 { text-align: left; }
+.details-shell[data-theme="bold"] .details-footer { background: #0f4c5c; color: #fafaf9; }
 @media (min-width: 768px) {
   .wedding-shell:not([data-theme="minimal"]) .wedding-announcement { padding-inline: 5rem; }
   .wedding-shell[data-theme="romantic"] .wedding-photo { min-height: 850px; }
   .wedding-shell[data-theme="bold"] .wedding-announcement { padding-top: 8rem; }
+  .details-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+  .details-card { padding: 2rem; }
+  .details-faqs { grid-column: 1 / -1; }
+  .details-shell[data-theme="bold"] .details-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

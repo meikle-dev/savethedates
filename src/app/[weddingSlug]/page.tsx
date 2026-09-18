@@ -10,5 +10,5 @@ export default async function WeddingPage({ params }: { params: Promise<{ weddin
   const row = await publishedWedding(weddingSlug);
   const wedding = row ? toWedding(row, `/${weddingSlug}/photo`) : getDevelopmentWedding(weddingSlug);
   if (!wedding) notFound();
-  return <SaveTheDate wedding={wedding} />;
+  return <SaveTheDate wedding={wedding} homeHref={`/${weddingSlug}`} detailsHref={row?.details_enabled ? `/${weddingSlug}/details` : undefined} />;
 }
