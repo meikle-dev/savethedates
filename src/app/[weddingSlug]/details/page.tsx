@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
-import { publishedWeddingDetails } from "@/features/weddings/published";
+import { publishedWedding, publishedWeddingDetails } from "@/features/weddings/published";
 import { WeddingDetailsPageView } from "@/features/weddings/wedding-details";
 
 export const dynamic = "force-dynamic";
 
 export default async function DetailsPage({ params }: { params: Promise<{ weddingSlug: string }> }) {
   const { weddingSlug } = await params;
-  const details = await publishedWeddingDetails(weddingSlug);
+  const [details, wedding] = await Promise.all([publishedWeddingDetails(weddingSlug), publishedWedding(weddingSlug)]);
   if (!details) notFound();
-  return <WeddingDetailsPageView details={details} homeHref={`/${weddingSlug}`} detailsHref={`/${weddingSlug}/details`} />;
+  return <WeddingDetailsPageView details={details} homeHref={`/${weddingSlug}`} detailsHref={`/${weddingSlug}/details`} rsvpHref={wedding?.rsvp_enabled ? `/${weddingSlug}/rsvp` : undefined} />;
 }

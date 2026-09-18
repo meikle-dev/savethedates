@@ -27,12 +27,12 @@ function Guidance({ title, text, url, linkLabel }: { title: string; text: string
   </section>;
 }
 
-export function WeddingDetailsPageView({ details, homeHref, detailsHref, previewEmpty = false }: { details: WeddingDetailsPage; homeHref: string; detailsHref: string; previewEmpty?: boolean }) {
+export function WeddingDetailsPageView({ details, homeHref, detailsHref, rsvpHref, previewEmpty = false }: { details: WeddingDetailsPage; homeHref: string; detailsHref: string; rsvpHref?: string; previewEmpty?: boolean }) {
   const hasContent = hasVenue(details, "ceremony") || hasVenue(details, "reception") || details.travel || details.travel_url || details.accommodation || details.accommodation_url || details.dress_code || details.faqs.length;
   return <div data-theme={details.theme} className="wedding-shell details-shell mx-auto min-h-svh max-w-[1100px]">
     <header className="details-header px-6 pt-8 md:px-12 md:pt-11">
       <p className="couple-names text-xs leading-loose font-medium uppercase md:text-sm">{details.first_name} <span aria-hidden="true">&amp;</span> {details.second_name}</p>
-      <WeddingNavigation homeHref={homeHref} detailsHref={detailsHref} current="details" />
+      <WeddingNavigation homeHref={homeHref} detailsHref={detailsHref} rsvpHref={rsvpHref} current="details" />
     </header>
     <main id="main" className="px-6 py-14 md:px-12 md:py-20">
       <div className="details-intro">

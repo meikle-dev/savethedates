@@ -27,6 +27,7 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await page.getByRole("button", { name: "Save private draft" }).click();
     await expect(page.getByRole("status")).toContainText("private draft has been saved");
     weddingId = (await local.admin.from("weddings").select("id").eq("owner_id", ownerId).single()).data!.id;
+    expect((await local.grantEntitlement(weddingId!, ownerId)).error).toBeNull();
     await page.getByRole("link", { name: "Preview saved site" }).click();
     await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
     expect((await guest.request.get("/dashboard/photo")).status()).toBe(404);
@@ -35,7 +36,7 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await page.getByRole("link", { name: "Back to workspace" }).click();
     await page.getByLabel("Choose a photo").setInputFiles({ name: "photo.jpg", mimeType: "image/jpeg", buffer: photo });
     await page.getByRole("button", { name: "Upload photo" }).click();
-    await expect(page.getByRole("status")).toContainText("photo has been saved");
+    await expect(page.getByRole("status").filter({ hasText: "photo has been saved" })).toBeVisible();
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
     await page.getByLabel("Choose a photo").setInputFiles({ name: "fake.jpg", mimeType: "image/jpeg", buffer: Buffer.from("not a photo") });
     await page.getByRole("button", { name: "Replace photo" }).click();
@@ -66,12 +67,12 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await guestPage.screenshot({ path: test.info().outputPath("published-guest.png"), fullPage: true });
     await page.locator('[name="location"]').fill("Bristol, England");
     await page.getByRole("button", { name: "Save live changes" }).click();
-    await expect(page.getByRole("status")).toContainText("live wedding site has been updated");
+    await expect(page.getByRole("status").filter({ hasText: "live wedding site has been updated" })).toBeVisible();
     await guestPage.reload();
     await expect(guestPage.getByText("Bristol, England", { exact: true })).toBeVisible();
     await page.getByLabel("Choose a photo").setInputFiles({ name: "replacement.jpg", mimeType: "image/jpeg", buffer: photo });
     await page.getByRole("button", { name: "Replace photo" }).click();
-    await expect(page.getByRole("status").last()).toContainText("photo has been saved");
+    await expect(page.getByRole("status").filter({ hasText: "photo has been saved" })).toBeVisible();
     await page.getByRole("button", { name: "Unpublish site" }).click();
     await expect(page.getByText("Private draft", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Your wedding URL")).toHaveAttribute("readonly", "");

@@ -21,6 +21,7 @@ beforeAll(async () => {
   const inserted = await owner.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id").single();
   expect(inserted.error).toBeNull();
   weddingId = inserted.data!.id;
+  expect((await local.grantEntitlement(weddingId, ownerId)).error).toBeNull();
 });
 
 afterAll(async () => {

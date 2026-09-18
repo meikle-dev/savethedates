@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useActionState, useState } from "react";
 import { changePhoto, publishWedding, unpublishWedding } from "./publication-actions";
 import type { FormState } from "@/features/account/validation";
+import { PurchasePanel, type Entitlement } from "@/features/payments/purchase-panel";
 
 function Notice({ state }: { state: FormState }) {
   return state.message ? <p className={`mt-4 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p> : null;
 }
-export function PublicationForm({ slug, published, photo, locked }: { slug: string | null; published: boolean; photo: boolean; locked: boolean }) {
+export function PublicationForm({ slug, published, photo, locked, entitlement, checkout }: { slug: string | null; published: boolean; photo: boolean; locked: boolean; entitlement: Entitlement; checkout?: string }) {
   const [url, setUrl] = useState(slug ?? "");
   const [visibility, setVisibility] = useState(false);
   const [photoState, photoAction, photoPending] = useActionState<FormState, FormData>(changePhoto, {});
@@ -35,6 +36,7 @@ export function PublicationForm({ slug, published, photo, locked }: { slug: stri
       <h2 id="share-title" className="text-xl font-medium">Share your site</h2>
       <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">Preview your saved details before sharing. Save any changes above first.</p>
       <Link href="/dashboard/preview" prefetch={false} className="text-link mt-4 inline-flex min-h-11 items-center">Preview saved site</Link>
+      <PurchasePanel entitlement={entitlement} checkout={checkout} />
       {published ? <>
         <p className="mt-4 break-all">Your wedding URL: <a className="text-link" href={`/${slug}`}>/{slug}</a></p>
         <p className="field-help mt-3">Saved details and photo changes are immediately visible to guests.</p>
@@ -43,7 +45,7 @@ export function PublicationForm({ slug, published, photo, locked }: { slug: stri
           <button className="primary-button" disabled={unpublishPending}>{unpublishPending ? "Unpublishing…" : "Unpublish site"}</button>
           {!unpublishState.success && <Notice state={unpublishState} />}
         </form>
-      </> : <form action={publishAction} className="mt-6">
+      </> : entitlement.active ? <form action={publishAction} className="mt-6">
         <label htmlFor="slug" className="field-label">Your wedding URL</label>
         <input id="slug" name="slug" className="field-input" value={locked ? slug ?? "" : url} onChange={(event) => setUrl(event.target.value)} readOnly={locked} minLength={3} maxLength={63} autoCapitalize="none" autoCorrect="off" spellCheck={false} aria-describedby="slug-help" required />
         <p id="slug-help" className="field-help">{locked ? "Your URL is fixed from your first publication." : "3–63 letters or numbers, with single hyphens. For example: alex-and-morgan. Your URL is fixed after first publication."}</p>
@@ -51,7 +53,7 @@ export function PublicationForm({ slug, published, photo, locked }: { slug: stri
         <button className="primary-button mt-6" disabled={publishPending}>{publishPending ? "Publishing…" : "Publish site"}</button>
         {!publishState.success && <Notice state={publishState} />}
         <Notice state={unpublishState} />
-      </form>}
+      </form> : <p className="mt-5 text-sm leading-relaxed text-[var(--muted)]">Purchase this wedding site to choose its permanent URL and publish it. Your draft and private preview remain available without payment.</p>}
     </section>
   </>;
 }

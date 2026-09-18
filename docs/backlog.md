@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F005 are complete. **Next: F006.**
+Ordered by recommended implementation sequence. F001-F006 are complete and the usable-core MVP milestone is verified. **Active: F007**.
 
 ## Status and handoff rules
 
@@ -143,11 +143,12 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 
 ## F006 - Guest RSVP and owner response list
 
-**Status:** Planned
+**Status:** Done
 **Purpose:** Collect attendance without guest accounts and make responses useful to the couple.
 **Description:** A minimal RSVP flow plus private response management. Before Ready, Product Manager and UX must decide open-link versus invitation-token identification, repeat/correction behaviour, fields, closing behaviour, and abuse controls; document the chosen data boundary. Do not silently treat a typed name as verified identity.
 **Depends on:** F005
 **References:** `docs/overview/product-overview.md`, `docs/overview/architecture.md`, `docs/ux/template-ui-summary.md`.
+**Prepared scope and UX:** Use owner-created invitations with a cryptographically random, unguessable token in the guest RSVP URL; a typed guest name is display data, not identity. The owner can add up to 100 invitations, each with a required invite label/name (1–80 characters), copy its private link, and revoke an unused or unwanted invitation. Each invitation represents one response and does not model plus-ones. RSVP has one explicit enable switch and an optional closing date; the route accepts responses through 23:59 UTC on that date, stated beside the control, with server time as authority. Closing manually or by date keeps existing responses visible to the owner and gives guests a clear closed state. Guests submit attending/not attending plus a required responding name (1–80 characters); returning through the same token shows the saved response and permits correction while open. No email, dietary, meal, address, phone, or free-text notes are collected. Tokens are stored only as SHA-256 hashes, never returned by public database reads, and guest access is through a narrow server endpoint with no anonymous list/read/update policy. Apply per-invitation throttling to failed and successful submissions, generic invalid/revoked responses, same-origin form checks, server validation, and database constraints; do not claim this prevents link sharing. The owner workspace shows counts, invitation state, and response rows without exposing tokens after link creation. All themes add RSVP navigation only when enabled and render one short mobile-first form with explicit confirmation, correction, disabled, and closed states. This scope and design are resolved; engineering may proceed.
 **Done when:**
 
 - Owners can enable/close RSVP; invited guests can identify themselves under the chosen model and submit attending/not-attending without creating accounts.
@@ -156,13 +157,22 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 - All themes provide accessible RSVP and navigation. Automated coverage includes submission, retry/correction semantics, owner viewing, anonymous/cross-owner denial, and closed RSVP; independent security review passes.
 - Meal choices, plus-ones, custom questions, and guest-list import are excluded unless separately prioritised. Optional sensitive fields are not collected by default.
 
+**Handoff (18 September 2026):**
+
+- Implemented owner RSVP enable/close settings, optional UTC closing date, up to 100 single-response invitations, one-time private link display, revocation, attendance totals, and a private response list. Guests use a 256-bit bearer token, can submit or correct attending/not-attending plus their response name, and see explicit unavailable/closed states across all three themes. Tokens are stored only as SHA-256 hashes; owner tables retain RLS and narrow grants, guest access uses scoped security-definer functions, and a serialized timestamp ledger enforces ten attempts per rolling ten minutes per invitation.
+- Passed after all review fixes: all migrations applied without resetting existing data; `npx.cmd supabase db lint --local` (no schema errors); `npm.cmd run check` (lint, typecheck, 21 unit tests, production build); `npm.cmd run test:integration` (11/11, including anonymous/cross-owner denial, correction, closure, revocation, rolling throttling and null-input attempt consumption); `npm.cmd run test:e2e` (24/24 desktop/mobile); `git diff --check`.
+- Production passed: `docker build --target production -t save-the-dates:local .`; production container on `127.0.0.1:3001`; `npm.cmd run smoke -- http://127.0.0.1:3001`; production `tests/rsvp.spec.ts` (2/2 desktop/mobile). The temporary production container was stopped and removed; existing development services remain available.
+- Inspected owner workspace and guest RSVP screenshots at mobile and desktop widths for Minimal, Romantic, and Bold: clear hierarchy, readable controls, distinct theme treatment, touch-sized choices, and no horizontal overflow. Independent reviewer `review_f006` found no Blocking issues; its Important rolling-throttle/null-input and revoked-attendance findings and Minor accessibility/revocation-feedback findings were resolved and confirmed on re-review. Hosted CI, Safari/Firefox, external deployment, and persistence restart were not run for this slice.
+- Blockers: None. The F001-F006 owner-to-guest core and required reviews are complete, so the MVP milestone is confirmed. Next: Product Manager prepares F007 after the owner supplies its consequential pricing, entitlement, lifetime, purchase-timing, and refund/revocation decisions. No F007 implementation started.
+
 ## F007 - One-off purchase and publication entitlement
 
-**Status:** Planned
+**Status:** In Progress
 **Purpose:** Sell the wedding site with a simple, reliable purchase flow.
 **Description:** Stripe hosted checkout and server-controlled entitlement. Develop with test mode first. Free publishing from earlier slices is for development/testing; paid launch must enforce the agreed rule.
 **Depends on:** F006
 **Decisions before Ready:** Owner-approved price/currency, what the purchase includes, site lifetime, purchase timing, refunds and entitlement revocation. The design board's $29 is a placeholder.
+**Approved scope:** One payment of £29 GBP buys one wedding site with all three themes, one photo, Details, and RSVP. Owners may draft and preview without paying, but must purchase before first publication. Entitlement runs until 12 months after the wedding date. A refund or chargeback immediately revokes entitlement and unpublishes the site; the private draft and owner data remain available for a later repurchase. Republishing is allowed while an entitlement is active. Stripe Checkout runs in test mode during development; verified webhook state, never the browser return URL, grants or revokes entitlement.
 **References:** `docs/overview/tech-stack.md`, `docs/overview/architecture.md`.
 **Done when:**
 

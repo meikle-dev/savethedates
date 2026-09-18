@@ -17,11 +17,23 @@ export function localSupabase() {
   const status = JSON.parse(output);
   if (new URL(status.API_URL).hostname !== "127.0.0.1") throw new Error("Tests require the local Supabase stack.");
   const options = { auth: { persistSession: false, autoRefreshToken: false } };
+  const admin = createClient(status.API_URL, status.SERVICE_ROLE_KEY, options);
   return {
-    admin: createClient(status.API_URL, status.SERVICE_ROLE_KEY, options),
+    admin,
     anonymous: () => createClient(status.API_URL, status.PUBLISHABLE_KEY ?? status.ANON_KEY, options),
     apiUrl: status.API_URL as string,
     publicKey: (status.PUBLISHABLE_KEY ?? status.ANON_KEY) as string,
     mailUrl: (status.MAILPIT_URL ?? status.INBUCKET_URL) as string,
+    async grantEntitlement(weddingId: string, ownerId: string) {
+      return admin.rpc("process_stripe_payment_event", {
+        requested_event_id: `evt_test_${crypto.randomUUID()}`,
+        requested_event_created_at: new Date().toISOString(),
+        requested_event_type: "paid",
+        requested_payment_intent_id: `pi_test_${crypto.randomUUID()}`,
+        requested_wedding_id: weddingId,
+        requested_owner_id: ownerId,
+        requested_checkout_session_id: `cs_test_${crypto.randomUUID()}`,
+      });
+    },
   };
 }

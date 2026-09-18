@@ -12,7 +12,7 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
   const client = await createClient();
   const { data: { user } } = await client.auth.getUser();
   if (!user) redirect("/account/sign-in");
-  const { data, error } = await client.from("weddings").select("first_name, second_name, wedding_date, location, message, photo_path, theme, published, details_enabled").eq("owner_id", user.id).maybeSingle();
+  const { data, error } = await client.from("weddings").select("first_name, second_name, wedding_date, location, message, photo_path, theme, published, details_enabled, rsvp_enabled").eq("owner_id", user.id).maybeSingle();
   if (error) throw new Error("Unable to load preview.");
   if (!data) redirect("/dashboard");
   const params = await searchParams;

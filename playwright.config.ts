@@ -18,7 +18,11 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["iPhone 13"], defaultBrowserType: "chromium" } },
   ],
   webServer: process.env.E2E_BASE_URL ? undefined : {
-    env: { APP_ORIGIN: "http://127.0.0.1:3100" },
+    env: {
+      APP_ORIGIN: "http://127.0.0.1:3100",
+      STRIPE_SECRET_KEY: "sk_test_local_webhook_verification_only",
+      STRIPE_WEBHOOK_SECRET: "whsec_local_webhook_test_secret",
+    },
     command: "npm run dev -- --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,

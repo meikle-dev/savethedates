@@ -14,7 +14,10 @@ test("owner edits and previews Details while guests see only enabled published c
   const guest = await browser.newContext({ baseURL, viewport: page.viewportSize() });
   const guestPage = await guest.newPage();
   try {
-    expect((await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug, published: true })).error).toBeNull();
+    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id").single();
+    expect(wedding.error).toBeNull();
+    expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
+    expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
     await guestPage.goto(`/${slug}`);
     await expect(guestPage.getByRole("link", { name: "Details" })).toHaveCount(0);
     const hiddenResponse = await guestPage.goto(`/${slug}/details`);

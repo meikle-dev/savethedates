@@ -25,6 +25,8 @@ export async function publishWedding(_: FormState, form: FormData): Promise<Form
     const slug = slugSchema.safeParse(wedding.first_published_at ? wedding.slug : form.get("slug"));
     if (!slug.success) return { message: "Choose a URL with 3–63 letters or numbers, separated by single hyphens. Application URLs are reserved." };
     if (form.get("visibility") !== "on") return { message: "Please confirm that your site will be public to anyone with the URL." };
+    const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
+    if (!entitlement?.active) return { message: "Purchase this wedding site before publishing." };
     const { error } = await client.from("weddings").update({ slug: slug.data, published: true }).eq("id", wedding.id);
     if (error) return { message: error.code === "23505" ? "That URL is already taken. Please choose another." : "We couldn’t publish. Reload to check your saved URL, then retry." };
     refresh(slug.data);

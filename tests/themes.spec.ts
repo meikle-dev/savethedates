@@ -13,9 +13,12 @@ test("theme preview is private and applying preserves the live wedding", async (
   const slug = `themes-${crypto.randomUUID()}`;
   const guest = await browser.newContext({ baseURL, viewport: page.viewportSize(), reducedMotion: "reduce" });
   const guestPage = await guest.newPage();
-  const content = { owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath, England", message: "We would love you to be part of our special day.", slug, published: true };
+  const content = { owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath, England", message: "We would love you to be part of our special day.", slug };
   try {
-    expect((await local.admin.from("weddings").insert(content)).error).toBeNull();
+    const wedding = await local.admin.from("weddings").insert(content).select("id").single();
+    expect(wedding.error).toBeNull();
+    expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
+    expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
     await page.goto("/account/sign-in");
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);

@@ -8,6 +8,7 @@ Run commands from the repository root. This is one Next.js application with loca
 - Container running: Docker Engine/Desktop with Linux containers and Docker Compose v2. The Dockerfile uses Node 24.11.0 with npm 11.6.1; host Node is optional for running the container.
 - Windows PowerShell: use `npm.cmd` and `npx.cmd` wherever the commands below say `npm` and `npx` if script execution policy blocks their `.ps1` wrappers. No policy change is needed.
 - Supabase local development: Docker Desktop plus the project-scoped CLI (`npm run db:start`). The CLI starts PostgreSQL, Auth, API, Studio, and the local Mailpit mailbox; no hosted Supabase account is required.
+- Stripe Checkout development: a Stripe account in test mode and the Stripe CLI are required only for a real hosted-checkout walkthrough. Automated tests use locally signed webhook fixtures and do not charge or contact Stripe.
 - Ports: 3000 for local development, 3100 for the automated browser server, 3001 for the production smoke example.
 
 ## Docker development
@@ -34,7 +35,7 @@ npm run db:start
 npm run local:env
 ```
 
-The environment command writes only the local publishable key to ignored `.env.local` and `.env.docker` files; it never writes a service-role key. Open http://localhost:54323 for Studio and http://localhost:54324 for the local Mailpit mailbox. Confirmation and password-recovery messages are captured locally and are not sent externally.
+The environment command writes the local publishable and service-role keys to ignored `.env.local` and `.env.docker` files. The service-role key is used only by the signature-verified payment webhook and must remain server-side. It also writes clearly labelled Stripe placeholders used by automated webhook tests; those placeholders cannot start Checkout. Never commit either environment file. Open http://localhost:54323 for Studio and http://localhost:54324 for the local Mailpit mailbox. Confirmation and password-recovery messages are captured locally and are not sent externally.
 
 For a quick local walkthrough without email confirmation, run `npm run local:demo-account`. This creates or resets the fictional `local-demo@example.test` account with password `SaveTheDatesLocal123!` and a sample private wedding. On the development sign-in page, click **Use local demo account**. The shortcut is only rendered in development mode, only accepts local Supabase hosts, and is absent from production builds. Do not use these credentials in a hosted environment.
 
@@ -46,13 +47,24 @@ npm run db:start
 npx supabase migration up --local
 ```
 
-Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, preview saved content, and publish with a unique URL. Preview theme does not save changes; Apply theme persists the previewed choice and updates a published site immediately. Existing weddings default to Modern Minimal after applying the theme migration. Published edits take effect when saved. Unpublishing hides the page and photo on new requests; copies already downloaded cannot be recalled. Publication is currently for development/testing; purchase entitlement is a later feature.
+Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, and preview saved content. Preview theme does not save changes; Apply theme persists the previewed choice. A verified £29 test-mode purchase is required before choosing the permanent URL and publishing. Published edits take effect when saved. The RSVP section can enable or close responses, create one private invitation link per response, and show attendance totals; copy each new link when it is created because its bearer token is not displayed again. Unpublishing hides the page, photo, and RSVP on new requests; copies already downloaded cannot be recalled.
+
+## Stripe test-mode checkout
+
+Replace the generated Stripe placeholders in `.env.local` (and `.env.docker` when using Compose) with a Stripe test secret key and the webhook signing secret printed by the Stripe CLI. Keep both values server-only. Start the application, then forward test events in a separate terminal:
+
+```sh
+stripe login
+stripe listen --forward-to http://127.0.0.1:3000/api/stripe/webhook
+```
+
+Restart the application after changing environment values. In the dashboard, use **Buy and continue to Stripe** and a Stripe test payment method. Successful browser return is informational: publication becomes available only after the signed `checkout.session.completed` or `checkout.session.async_payment_succeeded` webhook is stored. Forward `refund.created` and `charge.dispute.created` events to verify immediate entitlement revocation and unpublication. Never use live keys locally. Stripe login, hosted Checkout, and live-mode activation are external actions and are not performed by repository tests.
 
 ```sh
 npm run db:stop
 ```
 
-`npm run test:integration` creates temporary users and checks owner access, cross-owner denial, anonymous denial, uniqueness, and database validation. `npm run test:persistence` creates a temporary draft, stops and starts Supabase, signs in again, and verifies the draft remains before removing the temporary user. To deliberately erase all local data, use `npx supabase db reset --local`; this is destructive and reapplies migrations. Never run it against a hosted project.
+`npm run test:integration` creates temporary users and checks owner access, cross-owner denial, anonymous denial, payment ordering/idempotency/revocation, publication gating, uniqueness, and database validation. `npm run test:persistence` creates a temporary draft, stops and starts Supabase, signs in again, and verifies the draft remains before removing the temporary user. To deliberately erase all local data, use `npx supabase db reset --local`; this is destructive and reapplies migrations. Never run it against a hosted project.
 
 Publication integration checks also cover reserved/concurrent URLs, immutable published URLs, private photos, replacement/unpublish revocation, and denied signed links. Browser checks cover photo validation, private preview, publication, live edits, removal and republishing at both viewport sizes. `npx playwright test tests/themes.spec.ts` checks private theme preview, cancellation, persistence, live application, preserved content/URL, keyboard selection, and photo/fallback/long-content layouts for all themes.
 
@@ -76,8 +88,11 @@ Development routes:
 | `/demo-no-photo` | No photo or optional message |
 | `/demo-long-names` | Long names and no photo |
 | `/preview-photo` | Development-only photo response |
+| `/[weddingSlug]` | Published wedding landing page |
+| `/[weddingSlug]/details` | Enabled published Details page |
+| `/[weddingSlug]/rsvp` | Enabled RSVP entry; a private `invite` token is required to respond |
 
-Unknown and unpublished slugs return 404. All pages are currently noindex; there is no sitemap. All fixtures are fictional. Production returns 404 for every demo slug and the fixture photo route. Accounts, private preview and publication work with configured Supabase; Details and RSVP are future features.
+Unknown and unpublished slugs return 404. All pages are currently noindex; there is no sitemap. All fixtures are fictional. Production returns 404 for every demo slug and the fixture photo route. Accounts, private preview, publication, Details, and RSVP work with configured Supabase.
 
 ## Checks
 
