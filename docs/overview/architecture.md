@@ -1,198 +1,65 @@
-# SaveTheDates Project Architecture
+﻿# SaveTheDates architecture
 
-Use a **single-repo, single-application architecture** built around Next.js App Router.
+## Application
 
-## Core repository structure
+One repository and one Next.js App Router application. Use the stack in [tech-stack.md](tech-stack.md). No separate backend, microservices, or deployments per wedding. Use Server Actions and Route Handlers with server-side domain logic where needed; validate external input with Zod. Commit database migrations.
 
-```text
-savethedates/
-├── AGENTS.md
-├── README.md
-├── package.json
-├── next.config.ts
-├── tsconfig.json
-├── .env.example
-│
-├── docs/
-│   ├── index.md
-│   ├── product/
-│   │   ├── vision.md
-│   │   ├── requirements.md
-│   │   ├── personas.md
-│   │   ├── user-journeys.md
-│   │   └── roadmap.md
-│   │
-│   ├── architecture/
-│   │   ├── overview.md
-│   │   ├── data-model.md
-│   │   ├── authentication.md
-│   │   ├── multi-tenancy.md
-│   │   ├── seo.md
-│   │   └── payments.md
-│   │
-│   ├── decisions/
-│   │   └── ADR-001-tech-stack.md
-│   │
-│   └── operations/
-│       ├── deployment.md
-│       └── environments.md
-│
-├── specs/
-│   └── 001-example-feature/
-│       ├── spec.md
-│       ├── plan.md
-│       └── tasks.md
-│
-├── src/
-│   ├── app/
-│   │   ├── (marketing)/
-│   │   ├── dashboard/
-│   │   ├── api/
-│   │   └── [weddingSlug]/
-│   │
-│   ├── components/
-│   ├── features/
-│   ├── lib/
-│   ├── types/
-│   └── styles/
-│
-├── supabase/
-│   ├── migrations/
-│   ├── seed.sql
-│   └── config.toml
-│
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-│
-└── public/
-```
-
-## AGENTS.md
-
-Keep `AGENTS.md` short.
-
-It should tell Codex:
-
-* what SaveTheDates is
-* where canonical documentation lives
-* architectural rules
-* coding and testing conventions
-* definition of done
-* when documentation must be updated
-
-Do not duplicate full requirements inside it.
-
-## docs/
-
-`docs/` is the **long-lived source of truth** for the system.
-
-Use it for:
-
-* product requirements
-* architecture
-* data model
-* security
-* tenancy
-* SEO
-* payments
-* deployment
-* ADRs
-
-Think:
-
-**`docs/` = what the system is and why it works that way.**
-
-## GitHub Spec Kit + specs/
-
-Use **GitHub Spec Kit** for feature-level delivery.
-
-Each meaningful feature should get its own directory:
+Create directories when required, not as empty scaffolding:
 
 ```text
-specs/003-rsvp/
-├── spec.md
-├── plan.md
-└── tasks.md
+AGENTS.md                  Working rules and feature selection
+.agents/                   On-demand role instructions
+docs/index.md              Documentation map
+docs/backlog.md            Ordered features, acceptance, and handoff
+docs/overview/             Product, stack, architecture, platform design
+docs/ux/                   Theme guidance and reference images
+src/app/                   Routes: marketing, dashboard, [weddingSlug]
+src/features/              Domain behaviour when it needs its own modules
+src/components/            Shared UI
+src/lib/                   Infrastructure integrations
+supabase/migrations/       Versioned schema and access policies
+tests/                     Integration and end-to-end tests as needed
+public/                    Public assets only
 ```
 
-Spec Kit should drive the workflow:
+Small feature-local tests may live beside their code. Keep business logic out of presentation components where practical; do not create abstractions before there is a use for them.
 
-```text
-feature idea
-→ specification
-→ clarification
-→ technical plan
-→ tasks
-→ Codex implementation
-→ validation
-→ docs updated if architecture/product behaviour changed
-```
+## Delivery and documentation
 
-Think:
+`AGENTS.md` defines the workflow; `docs/backlog.md` is the sole delivery plan. Keep acceptance criteria and handoffs there rather than duplicating them in separate planning bundles.
 
-**`specs/` = what we are building or changing next.**
+Add focused design/security/operations documents only as their features need them. Link these from the backlog and documentation index. The proposed directory tree is not a list of documents to generate. Persist decisions and unfinished work so another session can continue without chat history.
 
-Spec Kit does not replace `docs/`; it sits alongside it.
+## Data boundaries
 
-## src/
+- One owner per wedding initially; one wedding per account for the MVP. Shared editing is deferred.
+- Persist owner identity and enforce ownership server-side and with Supabase RLS; enforce storage isolation as well. Cover both allowed access and cross-owner denial in integration tests.
+- Public reads expose only explicitly published wedding content. Drafts, owner account fields, guest lists, and RSVP responses are never part of public payloads.
+- `noindex` discourages search indexing; it does not make published content confidential. Password-protected sites are outside the initial scope.
+- Guest RSVP writes need a deliberately designed server boundary, validation, and abuse controls. No anonymous reading or arbitrary updating of responses. Specify the chosen model before implementing RSVP.
+- Service credentials stay server-side; bypassing RLS requires explicit scoped authorisation checks. Never store secrets in Git, logs, or documentation.
+- Establish schema and policies with the persistence feature; do not invent a complete future schema during the first UI slice.
 
-Organise application code mainly by **feature/domain**.
+## Routes and publication
 
-Prefer:
+Guest routes are `/[weddingSlug]`, `/[weddingSlug]/details`, and `/[weddingSlug]/rsvp`. Marketing uses explicit static routes; owner management uses `/dashboard`.
 
-```text
-features/
-├── weddings/
-├── guests/
-├── rsvp/
-├── billing/
-└── auth/
-```
+Validate and normalise slugs, enforce uniqueness in the database, and reserve application routes before allowing customer choices. Start with immutable slugs after publication to avoid breaking shared links. Publishing must invalidate stale public data; unpublished pages and assets must not remain exposed through a previous public cache. Decide storage delivery accordingly before accepting real uploads.
 
-Shared UI goes in `components/`.
+All wedding routes are `noindex` and excluded from the marketing sitemap. Owner routes and previews are authenticated and `noindex`. Unknown and unpublished slugs return a non-revealing not-found response. Themes share content and behaviour and change only presentation.
 
-External integrations and infrastructure helpers go in `lib/`.
+## Integrations and release
 
-## Architecture rules
+Docker support is required from the first application slice: provide an application Dockerfile and a simple Docker Compose entry point for local development. Next.js contains both the frontend and server-side application code in one application container. Keep a direct Node.js development option as a convenience.
 
-* One Next.js application
-* No separate backend initially
-* Next.js Server Actions / Route Handlers
-* Supabase PostgreSQL
-* Supabase Auth
-* Supabase Storage
-* Stripe
-* Resend
-* Vercel
-* Multi-tenant data model from day one
-* Marketing pages optimised for SEO
-* Wedding sites rendered via `/[weddingSlug]`
-* Wedding sites `noindex` by default
-* Strong TypeScript
-* Zod validation at boundaries
-* Database migrations committed to Git
-* Business logic kept out of React components where practical
+When persistence is introduced, use the Supabase CLI to run the local Supabase services in their supported Docker containers. Do not put the database inside the application container or maintain a duplicate custom Supabase stack. Document and verify connectivity from both the browser and application container, local ports, environment variables, migrations, and persistent data. Local database development must not require a hosted Supabase account.
 
-## Mental model
+Keep `run-app-instructions.md` at the repository root as the canonical running guide. It is intentionally empty until F001 implements and verifies the commands; extend it with local Supabase in F002. README links to it rather than duplicating setup instructions.
 
-```text
-AGENTS.md
-    ↓
-How Codex should work
+Build and smoke-test a production application image as well as the development container. Prefer managed Supabase for production to keep operations simple; local Supabase is a development environment, not the production deployment. Select a container-capable production host during release preparation. Vercel remains an optional source-based deployment, not the required Docker image hosting path. Do not add Kubernetes or production database self-hosting without a concrete requirement.
 
-docs/
-    ↓
-Permanent product + architecture knowledge
+Add Supabase, Stripe, and Resend only when the selected feature requires them. Local fixtures for the first UI slice are explicitly development-only; they are not a substitute for production persistence or authorisation.
 
-specs/
-    ↓
-GitHub Spec Kit feature workflow
+Use Stripe server-verified webhook events as payment authority, with idempotency and retry handling. Pricing, entitlement duration, and purchase rules must be resolved before billing is Ready. Supabase Auth owns account authentication; Resend may provide its email delivery rather than introducing a second authentication flow.
 
-src/
-    ↓
-Implementation
-```
-
-The repository should remain the canonical knowledge base so Codex never needs previous chat history to understand the system.
+Production readiness requires deployment/environment instructions, migrations, backup/restore and rollback procedures, error visibility, and a deliberate customer-data retention/deletion policy. Define these in the launch feature rather than claiming the code alone makes the service ready for customers.

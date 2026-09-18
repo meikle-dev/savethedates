@@ -150,4 +150,4 @@ The initial objective is not to provide dozens of templates.
 
 The objective is to provide **three genuinely excellent and clearly differentiated choices**.
 
-look at C:\projects\wedding-save-the-date\docs\images\save-the-date-options-design.png for examples of the three initial designs 
+See the [three-theme reference board](save-the-date-options-design.png) for the initial designs. It guides composition and palette; sample names, dates, photographs, and copy are placeholders. Implement real responsive UI rather than embedding the board as a page. Details and RSVP layouts need focused design guidance when those features are prepared.

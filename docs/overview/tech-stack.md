@@ -187,22 +187,17 @@ It integrates cleanly with modern TypeScript/Next.js applications and keeps tran
 
 # Hosting and deployment
 
-### Vercel
+### Docker and production hosting
 
-Vercel will host and deploy the Next.js application.
+Docker support is required for portable local running and deployment. Package the single Next.js application, including frontend and server-side functionality, in one application image. Provide a simple Docker Compose development entry point and a production image; direct Node.js development is an optional convenience.
 
-It was chosen because it provides first-class support for Next.js, including:
+Use the Supabase CLI's Docker-based local stack for database, authentication, and storage development when those features are introduced. Keep these services separate from the application container. Prefer managed Supabase in production rather than taking on database hosting operations.
 
-* CDN delivery
-* serverless execution
-* preview deployments
-* image optimisation
-* environment configuration
-* automatic GitHub deployments
+Choose a container-capable application host during release preparation. Vercel is an optional source-based hosting alternative; it is not the required Docker image deployment path. Avoid provider-specific dependencies and unnecessary orchestration.
 
-This keeps deployment and infrastructure management extremely lightweight.
+The canonical setup and running guide is the root `run-app-instructions.md`, initially empty and populated with verified commands during implementation. See [architecture.md](architecture.md) for the delivery requirements.
 
-The architecture should not depend unnecessarily on proprietary Vercel features so migration remains possible if the platform grows significantly.
+References: [Next.js self-hosting](https://nextjs.org/docs/app/guides/self-hosting), [Supabase local development](https://supabase.com/docs/guides/local-development).
 
 ---
 
@@ -334,7 +329,7 @@ Marketing and content pages should favour:
 * structured data
 * excellent Core Web Vitals
 
-Customer wedding sites should be **`noindex` by default** for privacy.
+Customer wedding sites should be **`noindex` by default** to discourage search indexing. This is not access control: published sites are accessible to anyone with the URL. Drafts, owner data, and RSVP responses require server-enforced access restrictions.
 
 The SEO objective is to rank the SaveTheDates platform and its useful content, not individual customers' private wedding information.
 

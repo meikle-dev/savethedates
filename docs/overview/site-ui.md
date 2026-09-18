@@ -6,6 +6,8 @@ The main SaveTheDates application should have a **modern, premium, simple and hi
 
 The chosen visual direction is the **Modern Luxe** concept.
 
+See the [platform reference board](../ux/site-ui-design.png). Its prices and testimonial are placeholders, not approved commercial claims. Text palette values below take precedence over minor differences in the board. The dashboard requires feature-specific interaction design; the board is a marketing visual reference.
+
 The product should feel closer to a premium modern lifestyle brand than a traditional wedding-planning application.
 
 The interface should remain deliberately simple.

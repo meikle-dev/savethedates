@@ -1,234 +1,50 @@
+﻿# SaveTheDates agent instructions
 
-# SaveTheDates Agent Instructions
+Build a simple wedding website service: Save the Date, Wedding Details, and RSVP. `docs/` is the durable source of truth; use `docs/index.md` for relevant paths. Keep solutions clean, mobile-first, and deliberately small.
 
-## Purpose
+## Default work request
 
-SaveTheDates allows couples to create a simple wedding website for their guests.
+For "work on this project" or "build the next feature", execute this workflow, not just a plan:
 
-The core guest experience is:
+1. Check the working tree; preserve existing user changes. Read `docs/backlog.md`.
+2. Resume an unfinished `In Progress` feature if it can proceed. Otherwise choose the first `Ready` feature whose dependencies are `Done`.
+3. If neither exists, use the Product Manager role to prepare the earliest unblocked `Planned` feature, then continue to implementation in the same session. If the backlog is missing, create it from the product overview first.
+4. Read only the selected role and feature's references. Resolve routine choices autonomously. Ask only for missing information that materially affects scope, cost, data exposure, or an external action and cannot be inferred. Record genuine blockers on the feature; other independent work may proceed without silently dropping blocked work.
+5. Mark the feature `In Progress`. Implement, verify, and obtain review when required below. Finish that feature before starting another; a general request covers one feature unless the user requests a larger scope.
+6. Update the feature's status and handoff: what exists, checks and results, unresolved blockers, and the exact next step. Report the outcome and next feature briefly. Never mark incomplete or unverified work `Done`.
 
-* Save the Date landing page
-* Wedding Details page
-* RSVP
+An explicit audit, planning, or review request does not authorise starting feature implementation. The current user request takes priority over this default workflow.
 
-The repository documentation under `docs/` is the source of truth.
+## Roles and delegation
 
----
+Role files are instructions to read when needed, not automatically running agents:
 
-# Agent Roles
+- `.agents/product-manager.md`: scope, acceptance criteria, ordering, and backlog ownership.
+- `.agents/software-engineer.md`: default implementation role.
+- `.agents/ux-ui-designer.md`: new flows or unresolved visual decisions; skip when already documented.
+- `.agents/reviewer.md`: independent review for significant features, auth, tenant isolation, payments, important database/architecture changes, and release readiness.
+- `.agents/seo-growth.md`: indexed marketing, content, search, and launch only.
 
-Specialist agent instructions live under `.agents/`.
+Use one main agent for sequential product, UX, and engineering work. Spawn a separate reviewer for the review cases above when supported; give it the feature ID, relevant paths, changed files, and validation results rather than the entire conversation. Parallel agents are optional only for concrete independent work with clear file ownership. Do not create a full team for every feature. If independent review is unavailable, record that fact and leave required review outstanding for a later session; do not describe self-review as independent.
 
-Available roles:
+## Context and documentation budget
 
-* Product Manager: `.agents/product-manager.md`
-* UX/UI Designer: `.agents/ux-ui-designer.md`
-* Software Engineer: `.agents/software-engineer.md`
-* Reviewer: `.agents/reviewer.md`
-* SEO & Growth: `.agents/seo-growth.md`
+- Read this file, the backlog selection, the active role, and directly relevant docs/code. Do not reread the whole repository every session.
+- Search before loading large files; inspect PNG references only for visual work. Reuse already-read context.
+- The backlog is the single delivery plan. Do not generate separate spec/plan/task documents by default. Add a focused document only when complexity warrants it; link rather than duplicate.
+- Keep completed entries concise. Store decisions in the relevant canonical document and current progress on the feature, not in chat-only memory or growing session diaries.
+- Use targeted tests during development and the required final checks once after the last change. Repeat only when changes or failures justify it.
 
-Use only the roles necessary for the current task.
+## Engineering guardrails
 
-Do not involve every agent automatically.
+- Follow `docs/overview/tech-stack.md` and `docs/overview/architecture.md`: one Next.js application, no separate backend or speculative infrastructure.
+- Maintain server-enforced ownership and tenant isolation, including database and storage policies. Never expose secrets or trust client-side authorisation.
+- Published wedding pages are accessible to anyone with the URL; `noindex` is not access control. Drafts, guest responses, and owner data must remain private.
+- Keep the three themes functionally equivalent. Public marketing is SEO-first; wedding sites are `noindex` and excluded from sitemaps.
+- Never overwrite unrelated work, commit credentials, invent test results, or publish placeholder marketing claims. Local development does not require repeated approval. External actions follow existing user authorisation; obtain missing access or genuinely required decisions only when needed.
 
----
+## Definition of done
 
-# Default Workflow
+Acceptance criteria work; relevant automated checks pass; UI changes are inspected at mobile and desktop widths; security/architecture/design rules hold; required independent findings are resolved (or non-blocking deferrals justified); relevant docs and backlog are current. Record exact verification commands and results, including anything not run.
 
-The normal workflow is:
-
-```text
-Product Manager
-    ↓
-defines and prioritises features
-    ↓
-UX/UI Designer
-    ↓
-only when UX/design decisions are required
-    ↓
-Software Engineer
-    ↓
-implements the feature
-    ↓
-Reviewer
-    ↓
-only for significant or high-risk work
-```
-
-SEO & Growth is separate from the normal development workflow and should only be used when working on public marketing, search visibility, content, or launch readiness.
-
----
-
-# Product Backlog
-
-The canonical product backlog lives at:
-
-`docs/backlog.md`
-
-The Product Manager owns this file.
-
-Each feature should contain:
-
-* ID
-* title
-* short description
-* value/purpose
-* dependencies
-* status
-
-Use these statuses:
-
-* `Planned`
-* `Ready`
-* `In Progress`
-* `Done`
-* `Deferred`
-
-Features should be ordered in the recommended implementation sequence.
-
-The Product Manager should define product-level features, not low-level programming tasks.
-
----
-
-# Role Routing
-
-## Use Product Manager when
-
-* initially creating the backlog
-* defining a new feature
-* changing product behaviour
-* clarifying scope
-* prioritising features
-* deciding what belongs in the MVP
-
-## Use UX/UI Designer when
-
-* a new screen or flow needs designing
-* an existing flow changes significantly
-* a wedding theme is being created or changed
-* usability is unclear
-
-Do not involve UX when the required design is already documented.
-
-## Use Software Engineer when
-
-* implementing a Ready feature
-* fixing bugs
-* refactoring
-* writing tests
-* changing the database
-* integrating external services
-
-The Software Engineer is the default implementation agent.
-
-## Use Reviewer when
-
-* a significant feature has been completed
-* authentication or authorisation changed
-* tenant isolation changed
-* payments changed
-* important database behaviour changed
-* architecture changed
-* preparing for release
-
-Minor fixes do not require an independent review.
-
-## Use SEO & Growth when
-
-* working on indexed marketing pages
-* performing keyword research
-* creating public content
-* changing metadata or structured data
-* planning site information architecture
-* preparing for launch
-* reviewing organic search performance
-
-Do not involve SEO in ordinary product development.
-
----
-
-# Context Efficiency
-
-Always minimise context usage.
-
-Read:
-
-1. `AGENTS.md`
-2. the selected role file
-3. the relevant backlog entry
-4. only the directly relevant documentation
-5. only the relevant source code
-
-Do not read every file under `docs/` for every task.
-
-Do not load every agent definition.
-
-Do not involve unrelated specialists.
-
----
-
-# Documentation
-
-Long-lived product and technical decisions belong under:
-
-`docs/`
-
-The backlog lives at:
-
-`docs/backlog.md`
-
-Update documentation only when the behaviour or decision it describes actually changes.
-
-Do not create documentation for trivial implementation details.
-
----
-
-# Engineering Principles
-
-* Prefer simple solutions.
-* Build only what is currently required.
-* Keep the product deliberately focused.
-* Use the documented technology stack.
-* Keep the application mobile-first.
-* Maintain strict customer data isolation.
-* Public marketing pages are SEO-first.
-* Customer wedding websites are `noindex` by default.
-* Avoid speculative abstractions.
-* Avoid microservices.
-* Avoid a separate backend unless explicitly approved.
-* Tests should be proportional to risk.
-
----
-
-# Definition of Done
-
-A feature is complete when:
-
-1. The documented behaviour works.
-2. Its requirements are satisfied.
-3. Appropriate automated tests pass.
-4. Existing product, UX and architecture rules are respected.
-5. Relevant documentation is updated if necessary.
-6. The backlog status is changed to `Done`.
-
----
-
-# Primary Principle
-
-Operate like a small experienced product team.
-
-Use the Product Manager to decide what should be built.
-
-Use UX only when design work is actually required.
-
-Use the Software Engineer to build it.
-
-Use the Reviewer when independent technical review provides meaningful value.
-
-Use SEO only when search or marketing work is relevant.
-
-
-
-
-You are free to suggest improvements. You are not limited to the contents of the docs. 
-Always follow the principle of clean, seperation of concerns, KISS, clean effective code. No hacks. No workarounds. Always clean and simple. 
+There is currently no application or test runner. The first feature must establish Docker support, reproducible setup, scripts, and CI checks, populating the initially empty root `run-app-instructions.md` with verified commands and linking it from README. Subsequent sessions use those commands. Do not claim documentation checks prove application behaviour.

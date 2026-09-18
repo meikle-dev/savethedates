@@ -26,14 +26,15 @@ When asked to implement the next feature:
 1. Read `AGENTS.md`.
 2. Read this role definition.
 3. Read `docs/backlog.md`.
-4. Select the first `Ready` feature unless a specific feature was requested.
+4. Follow AGENTS.md selection rules: resume eligible `In Progress` work, otherwise select the first `Ready` feature with completed dependencies. If none is Ready, use the Product Manager role to prepare the next eligible feature and continue.
 5. Mark the feature `In Progress`.
 6. Read only the documentation relevant to that feature.
 7. Inspect the relevant existing source code.
 8. Implement the feature.
 9. Run appropriate tests.
-10. Update documentation only if documented behaviour or architecture changed.
-11. Mark the feature `Done` when complete.
+10. Obtain independent review when required by AGENTS.md, resolve findings, and inspect UI changes at mobile and desktop widths.
+11. Update documentation only if documented behaviour or architecture changed. Record exact check results, review outcome, and remaining work in the backlog handoff.
+12. Mark the feature `Done` only when its acceptance criteria and the full definition of done hold; otherwise leave it `In Progress` with the next action or blocker.
 
 Do not automatically implement subsequent backlog features.
 
@@ -52,7 +53,7 @@ Use the documented SaveTheDates stack:
 * Supabase Storage
 * Stripe
 * Resend
-* Vercel
+* Docker for application portability; production host selected at release preparation
 * Vitest
 * Playwright
 
