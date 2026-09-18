@@ -44,7 +44,7 @@ npm run db:start
 npx supabase migration up --local
 ```
 
-Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, preview saved content, and publish with a unique URL. Published edits take effect when saved. Unpublishing hides the page and photo on new requests; copies already downloaded cannot be recalled. Publication is currently for development/testing; purchase entitlement is a later feature.
+Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, preview saved content, and publish with a unique URL. Preview theme does not save changes; Apply theme persists the previewed choice and updates a published site immediately. Existing weddings default to Modern Minimal after applying the theme migration. Published edits take effect when saved. Unpublishing hides the page and photo on new requests; copies already downloaded cannot be recalled. Publication is currently for development/testing; purchase entitlement is a later feature.
 
 ```sh
 npm run db:stop
@@ -52,7 +52,7 @@ npm run db:stop
 
 `npm run test:integration` creates temporary users and checks owner access, cross-owner denial, anonymous denial, uniqueness, and database validation. `npm run test:persistence` creates a temporary draft, stops and starts Supabase, signs in again, and verifies the draft remains before removing the temporary user. To deliberately erase all local data, use `npx supabase db reset --local`; this is destructive and reapplies migrations. Never run it against a hosted project.
 
-Publication integration checks also cover reserved/concurrent URLs, immutable published URLs, private photos, replacement/unpublish revocation, and denied signed links. Browser checks cover photo validation, private preview, publication, live edits, removal and republishing at both viewport sizes.
+Publication integration checks also cover reserved/concurrent URLs, immutable published URLs, private photos, replacement/unpublish revocation, and denied signed links. Browser checks cover photo validation, private preview, publication, live edits, removal and republishing at both viewport sizes. `npx playwright test tests/themes.spec.ts` checks private theme preview, cancellation, persistence, live application, preserved content/URL, keyboard selection, and photo/fallback/long-content layouts for all themes.
 
 ## Direct Node.js development
 

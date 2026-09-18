@@ -1,4 +1,7 @@
+import type { WeddingTheme } from "./themes";
+
 export type Wedding = {
+  theme?: WeddingTheme;
   names: readonly [string, string];
   date: string;
   location: string;

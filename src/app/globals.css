@@ -38,3 +38,39 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
   .wedding-shell { border-inline: 1px solid #e5e1da; }
   .wedding-photo { margin-top: -42px; }
 }
+
+/* Shared guest tokens are inherited by future Details and RSVP surfaces. */
+.wedding-shell { --theme-accent: #2f4f3e; --theme-surface: #f8f5f0; --theme-text: #222; --theme-radius: 4px; --theme-heading: Georgia, "Times New Roman", serif; background: var(--theme-surface); color: var(--theme-text); overflow-wrap: anywhere; }
+.wedding-shell .editorial { font-family: var(--theme-heading); }
+.wedding-shell[data-theme="romantic"] { --theme-accent: #824c4c; --theme-surface: #fdf7f4; --theme-text: #62443e; --theme-radius: 24px; --sage: var(--theme-accent); }
+.wedding-shell[data-theme="bold"] { --theme-accent: #0f4c5c; --theme-surface: #d8e3e1; --theme-text: #0b2a3d; --theme-radius: 6px; --sage: var(--theme-accent); }
+.wedding-shell:not([data-theme="minimal"]) main { display: grid; isolation: isolate; }
+.wedding-shell:not([data-theme="minimal"]) .wedding-photo { grid-area: 1 / 1; height: auto; min-height: 720px; margin: 0; z-index: -1; }
+.wedding-shell:not([data-theme="minimal"]) .wedding-announcement { grid-area: 1 / 1; padding: 4rem 1.5rem; }
+.wedding-shell[data-theme="romantic"] header { padding-bottom: 1.75rem; }
+.wedding-shell[data-theme="romantic"] .couple-names { font-family: "Segoe Script", "Apple Chancery", Georgia, serif; font-size: clamp(1.35rem, 4vw, 2rem); text-transform: none; letter-spacing: 0; font-style: italic; }
+.wedding-shell[data-theme="romantic"] .wedding-announcement { align-self: end; padding-top: 20rem; color: #fff9f4; }
+.wedding-shell[data-theme="romantic"] h1 { font-size: clamp(3.5rem, 9vw, 6rem); letter-spacing: -0.045em; }
+.wedding-shell[data-theme="romantic"] h1 span { display: inline; }
+.wedding-shell[data-theme="romantic"] h1 span::before { content: " "; }
+.wedding-shell[data-theme="romantic"] .photo-fallback { color: #ead6c9; background: #795951; }
+.wedding-shell[data-theme="romantic"] .photo-fade { background: linear-gradient(to bottom, transparent, rgba(43, 25, 21, 0.82) 45%); }
+.wedding-shell[data-theme="romantic"] .wedding-announcement > div { background: #ead6c9; }
+.wedding-shell[data-theme="romantic"] footer { border-top: 8px solid #eedad5; }
+.wedding-shell[data-theme="bold"] header { text-align: left; padding-bottom: 2rem; }
+.wedding-shell[data-theme="bold"] .couple-names { max-width: none; }
+.wedding-shell[data-theme="bold"] .wedding-announcement { text-align: left; padding-top: 6rem; padding-bottom: 10rem; }
+.wedding-shell[data-theme="bold"] .wedding-announcement p, .wedding-shell[data-theme="bold"] .wedding-announcement > div { margin-left: 0; }
+.wedding-shell[data-theme="bold"] .photo-fallback { background: #8ca3a0; color: #0f4c5c; }
+.wedding-shell[data-theme="bold"] .photo-fade { background: linear-gradient(to bottom, rgba(250,250,249,0.9) 0%, rgba(250,250,249,0.94) 72%, rgba(250,250,249,0.2)); }
+.wedding-shell[data-theme="bold"] footer { background: #0f4c5c; color: #fafaf9; }
+.wedding-shell[data-theme="bold"] footer .text-\[var\(--sage\)\] { color: #fafaf9; }
+.theme-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; border: 1px solid #98a5a7; border-radius: 6px; cursor: pointer; }
+.theme-option:has(:checked) { border-color: #0f4c5c; background: #e7eeeb; box-shadow: inset 0 0 0 1px #0f4c5c; }
+.theme-option input { margin-top: 0.25rem; accent-color: #0f4c5c; width: 1rem; height: 1rem; flex-shrink: 0; }
+.theme-option:has(:focus-visible) { outline: 2px solid #0f4c5c; outline-offset: 3px; }
+@media (min-width: 768px) {
+  .wedding-shell:not([data-theme="minimal"]) .wedding-announcement { padding-inline: 5rem; }
+  .wedding-shell[data-theme="romantic"] .wedding-photo { min-height: 850px; }
+  .wedding-shell[data-theme="bold"] .wedding-announcement { padding-top: 8rem; }
+}

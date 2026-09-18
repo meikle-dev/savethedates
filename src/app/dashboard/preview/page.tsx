@@ -4,12 +4,29 @@ import { createClient } from "@/lib/supabase/server";
 import { SaveTheDate } from "@/features/weddings/save-the-date";
 import { toWedding } from "@/features/weddings/published";
 
-export default async function Preview() {
+import { themes, isWeddingTheme } from "@/features/weddings/themes";
+import { ThemePicker } from "@/features/workspace/theme-picker";
+import { ThemeApplyForm } from "@/features/workspace/theme-apply-form";
+
+export default async function Preview({ searchParams }: { searchParams: Promise<{ theme?: string }> }) {
   const client = await createClient();
   const { data: { user } } = await client.auth.getUser();
   if (!user) redirect("/account/sign-in");
-  const { data, error } = await client.from("weddings").select("first_name, second_name, wedding_date, location, message, photo_path").eq("owner_id", user.id).maybeSingle();
+  const { data, error } = await client.from("weddings").select("first_name, second_name, wedding_date, location, message, photo_path, theme, published").eq("owner_id", user.id).maybeSingle();
   if (error) throw new Error("Unable to load preview.");
   if (!data) redirect("/dashboard");
-  return <><nav aria-label="Preview" className="platform flex flex-wrap items-center justify-between gap-3 px-6 py-4 text-sm"><span>Private preview · saved content</span><Link href="/dashboard" className="text-link min-h-11 content-center">Back to workspace</Link></nav><SaveTheDate wedding={toWedding(data, "/dashboard/photo")} /></>;
+  const params = await searchParams;
+  const candidate = isWeddingTheme(params.theme) ? params.theme : data.theme;
+  const name = themes.find((theme) => theme.id === candidate)!.name;
+  return <>
+    <div className="platform px-6 py-5">
+      <div className="mx-auto max-w-5xl">
+        <nav aria-label="Preview" className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Private preview Â· saved content</span><Link href="/dashboard" className="text-link min-h-11 content-center">Back to workspace</Link></nav>
+        <p className="mt-3 font-semibold">Previewing {name}{candidate === data.theme ? " Â· current theme" : " Â· not applied"}</p>
+        <ThemePicker key={`picker-${candidate}`} selected={candidate} />
+        <ThemeApplyForm key={`apply-${candidate}`} theme={candidate} published={data.published} />
+      </div>
+    </div>
+    <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} />
+  </>;
 }

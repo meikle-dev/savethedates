@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F003 are complete. **Next: F004.**
+Ordered by recommended implementation sequence. F001-F004 are complete. **Next: F005.**
 
 ## Status and handoff rules
 
@@ -98,10 +98,11 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 
 ## F004 - Three selectable wedding themes
 
-**Status:** Planned
+**Status:** Done
 **Purpose:** Give couples the three distinct visual choices in the supplied designs.
 **Description:** Extend Modern Minimal with Warm & Romantic and Modern & Bold; provide selection and preview in the workspace.
 **Depends on:** F003
+**Prepared scope and UX:** Keep Modern Minimal as the default for existing weddings. Add Warm & Romantic (cream, rose, warm photography overlay and serif/script accents) and Modern & Bold (deep teal, full-height photography and left-aligned editorial type). A labelled radio group in the workspace opens a private, full-page preview of saved content using the candidate theme; only Apply theme persists the choice. Explain that applying updates a published site immediately. Back to workspace cancels the candidate. Preserve content, photo, publication and URL. Validate the three theme IDs in the server action and database; expose only the saved theme through the existing published projection. Shared semantic rendering and CSS theme tokens support future Details/RSVP. No motion is needed. Dependencies and design are resolved; prepared as Ready, then taken into engineering.
 **References:** `docs/ux/template-ui-summary.md`, `docs/ux/save-the-date-options-design.png`, `docs/overview/site-ui.md`.
 **Done when:**
 
@@ -109,6 +110,14 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 - Switching themes preserves all content and the wedding URL; common data and behaviour are shared.
 - Selection persists and previews before applying; keyboard access, contrast, long names, image loading/failure, and reduced-motion preferences are checked.
 - Subsequent Details and RSVP features can use the same theme tokens/layout conventions without separate business logic per theme. Visual checks and independent feature review are recorded.
+
+**Handoff (18 September 2026):**
+
+- Implemented three shared-data themes in `src/features/weddings/` and `src/app/globals.css`, workspace radio selection, authenticated candidate preview, and explicit Apply theme with server validation and ownership checks. Migration `20260918000300_themes.sql` defaults existing weddings to Modern Minimal, constrains IDs, and adds only the applied theme to the published projection. Architecture, theme guidance and running instructions are current.
+- Passed: `npx.cmd supabase migration up --local` (existing data preserved); `npm.cmd run check` (lint, typecheck, 15 unit tests, production build); `npm.cmd run test:integration` (7/7); `npx.cmd playwright test tests/themes.spec.ts` (2/2); `npm.cmd run test:e2e` (20/20). The full browser suite includes the duplicate-key fix; final punctuation cleanup passed `npm.cmd run lint` and the Docker build/typecheck below. `git diff --check` passed.
+- Production passed: `docker build --target production -t save-the-dates:local .`; `docker run -d --name save-the-dates-f004-smoke --add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ORIGIN=http://127.0.0.1:3001 -p 127.0.0.1:3001:3000 save-the-dates:local`; `npm.cmd run smoke -- http://127.0.0.1:3001`; `$env:E2E_BASE_URL='http://127.0.0.1:3001'; $env:E2E_PRODUCTION='1'; npx.cmd playwright test tests/themes.spec.ts` (2/2). Temporary users and production container removed; existing development services remain available.
+- Visually inspected mobile (390px) and desktop (1440px) screenshots of the picker/focus state and all three themes, including photo, fallback and long-content/image-failure variants. Readable contrasting text, distinct reference directions and no horizontal overflow; reduced-motion browser context exercised without animation. In-app browser connection failed, so repository Playwright supplied inspection screenshots under ignored `test-results/`. Independent reviewer `review_f004` found no Blocking/Important findings; its minor punctuation finding was resolved. Hosted CI, Safari/Firefox, external deployment and persistence restart were not run for this slice.
+- Blockers: None. Next: Product Manager prepares F005 Wedding Details editing and guest layouts; no F005 implementation started.
 
 ## F005 - Wedding Details
 

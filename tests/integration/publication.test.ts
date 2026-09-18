@@ -59,7 +59,7 @@ it("isolates storage and exposes only the current published photo with no signed
   const ownSlug = ownRow.data!.slug ?? `${slug}-other`;
   expect((await owners[0].from("weddings").update({ photo_path: path, slug: ownSlug, published: true }).eq("id", weddings[0])).error).toBeNull();
   const published = await local.anonymous().rpc("published_wedding", { requested_slug: ownSlug });
-  expect(Object.keys(published.data![0]).sort()).toEqual(["first_name", "second_name", "wedding_date", "location", "message", "photo_path"].sort());
+  expect(Object.keys(published.data![0]).sort()).toEqual(["first_name", "second_name", "wedding_date", "location", "message", "photo_path", "theme"].sort());
   expect((await anon.download(path)).error).toBeNull();
   expect((await anon.list(weddings[0])).data).toEqual([]);
   for (const reader of [anon, other, bucket]) expect((await reader.createSignedUrl(path, 3600)).error).not.toBeNull();
@@ -76,4 +76,23 @@ it("isolates storage and exposes only the current published photo with no signed
   expect((await bucket.download(path)).error).toBeNull();
   expect((await bucket.remove([path])).error).toBeNull();
   expect((await bucket.download(path)).error).not.toBeNull();
+});
+
+it("validates themes and keeps changes isolated without altering wedding content", async () => {
+  const owner = owners[0];
+  const id = weddings[0];
+  const before = await owner.from("weddings").select("*").eq("id", id).single();
+  expect(before.data!.theme).toBe("minimal");
+  for (const theme of ["unknown", "BOLD", "", null]) {
+    expect((await owner.from("weddings").update({ theme }).eq("id", id)).error).not.toBeNull();
+  }
+  for (const caller of [owners[1], local.anonymous()]) {
+    const denied = await caller.from("weddings").update({ theme: "bold" }).eq("id", id).select("id");
+    expect(denied.data ?? []).toEqual([]);
+  }
+  for (const theme of ["romantic", "bold", "minimal"]) {
+    const updated = await owner.from("weddings").update({ theme }).eq("id", id).select("*").single();
+    expect(updated.error).toBeNull();
+    expect(updated.data).toEqual({ ...before.data, theme, updated_at: updated.data!.updated_at });
+  }
 });

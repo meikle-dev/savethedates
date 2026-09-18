@@ -151,3 +151,9 @@ The initial objective is not to provide dozens of templates.
 The objective is to provide **three genuinely excellent and clearly differentiated choices**.
 
 See the [three-theme reference board](save-the-date-options-design.png) for the initial designs. It guides composition and palette; sample names, dates, photographs, and copy are placeholders. Implement real responsive UI rather than embedding the board as a page. Details and RSVP layouts need focused design guidance when those features are prepared.
+
+## Theme selection and implementation (F004)
+
+The workspace uses a labelled native radio group with descriptions and a Preview theme button. The authenticated preview uses saved wedding content and a candidate theme; it clearly labels the candidate as current or not applied. Apply theme persists the candidate, with pending/error/success feedback and an explicit notice that published sites update immediately. Returning to the workspace discards the candidate. Content, photography and URLs do not change. Invalid preview candidates fall back to the saved theme.
+
+Modern Minimal retains the paper/sage centred announcement with a lower photo. Warm & Romantic uses cream, rose/brown, a script-accented couple heading and a photo-led announcement with a dark warm overlay for readable light text. Modern & Bold uses deep teal, left-aligned editorial type and a full-height image with a light overlay under dark text. Each has a botanical no-photo/image-failure fallback. Layouts grow for long content, and no animation is used. `.wedding-shell` defines `--theme-accent`, `--theme-surface`, `--theme-text`, `--theme-radius` and `--theme-heading`; future Details/RSVP share these tokens and common behaviour. Script fonts are system fallbacks; no external font download is required.
