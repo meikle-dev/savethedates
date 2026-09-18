@@ -48,3 +48,13 @@ Use one main agent for sequential product, UX, and engineering work. Spawn a sep
 Acceptance criteria work; relevant automated checks pass; UI changes are inspected at mobile and desktop widths; security/architecture/design rules hold; required independent findings are resolved (or non-blocking deferrals justified); relevant docs and backlog are current. Record exact verification commands and results, including anything not run.
 
 There is currently no application or test runner. The first feature must establish Docker support, reproducible setup, scripts, and CI checks, populating the initially empty root `run-app-instructions.md` with verified commands and linking it from README. Subsequent sessions use those commands. Do not claim documentation checks prove application behaviour.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

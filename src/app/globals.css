@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f8f5f0;
+  --ink: #222222;
+  --sage: #2f4f3e;
+}
+
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+.editorial { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
+.couple-names { letter-spacing: 0.25em; overflow-wrap: anywhere; }
+.wedding-photo { height: clamp(240px, 40vw, 370px); margin-top: -32px; }
+.photo-fallback { color: #637461; background: #e5e8de; }
+.photo-fade { background: linear-gradient(to bottom, var(--paper) 12%, transparent 48%); }
+.wedding-photo img { object-position: center 57%; }
+a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-radius: 2px; }
+::selection { background: #d8e0d5; }
+@media (min-width: 768px) {
+  .wedding-shell { border-inline: 1px solid #e5e1da; }
+  .wedding-photo { margin-top: -42px; }
+}

@@ -1,0 +1,10 @@
+import { notFound } from "next/navigation";
+import { getDevelopmentWedding } from "@/features/weddings/preview";
+import { SaveTheDate } from "@/features/weddings/save-the-date";
+
+export default async function WeddingPage({ params }: { params: Promise<{ weddingSlug: string }> }) {
+  const { weddingSlug } = await params;
+  const wedding = getDevelopmentWedding(weddingSlug);
+  if (!wedding) notFound();
+  return <SaveTheDate wedding={wedding} />;
+}

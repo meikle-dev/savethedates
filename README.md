@@ -2,7 +2,7 @@
 
 A simple wedding website service: Save the Date, Wedding Details, and RSVP, with three visual themes.
 
-This repository currently contains documentation and design references only. No application, dependencies, or runnable tests have been created.
+The first application slice is a responsive Modern Minimal Save the Date preview, built with Next.js, TypeScript, and Tailwind. It uses fictional development fixtures; accounts, publication, Details, and RSVP are tracked as later features.
 
 ## Working with Codex
 
@@ -20,9 +20,9 @@ F001-F006 form the usable MVP. The Product Manager verifies that milestone again
 
 ## Running the stack
 
-[run-app-instructions.md](run-app-instructions.md) is intentionally empty for now. F001 will populate it with tested setup and running instructions, and F002 will add local Supabase instructions.
+[run-app-instructions.md](run-app-instructions.md) contains prerequisites, Docker and direct Node.js commands, local URLs, automated checks, and production smoke instructions. Start there to run the preview.
 
-The intended setup is one Dockerised Next.js application containing both the frontend and server-side code, plus local Supabase services managed by the Supabase CLI in Docker. Direct Node.js development will also be supported. Production uses a deployable application image and managed Supabase; there is no separate custom backend to run. See the [architecture](docs/overview/architecture.md) for the requirements. No containers or application code have been built yet.
+The application runs as one Docker container or directly with Node.js. F002 will add local Supabase services managed by the Supabase CLI in Docker. The production image contains the same single application, with development fixtures disabled. See the [architecture](docs/overview/architecture.md) for the longer-term requirements.
 
 ## Decisions needed later
 

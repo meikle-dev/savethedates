@@ -54,7 +54,7 @@ Docker support is required from the first application slice: provide an applicat
 
 When persistence is introduced, use the Supabase CLI to run the local Supabase services in their supported Docker containers. Do not put the database inside the application container or maintain a duplicate custom Supabase stack. Document and verify connectivity from both the browser and application container, local ports, environment variables, migrations, and persistent data. Local database development must not require a hosted Supabase account.
 
-Keep `run-app-instructions.md` at the repository root as the canonical running guide. It is intentionally empty until F001 implements and verifies the commands; extend it with local Supabase in F002. README links to it rather than duplicating setup instructions.
+Keep `run-app-instructions.md` at the repository root as the canonical running guide. F001 provides verified application commands; extend it with local Supabase in F002. README links to it rather than duplicating setup instructions.
 
 Build and smoke-test a production application image as well as the development container. Prefer managed Supabase for production to keep operations simple; local Supabase is a development environment, not the production deployment. Select a container-capable production host during release preparation. Vercel remains an optional source-based deployment, not the required Docker image hosting path. Do not add Kubernetes or production database self-hosting without a concrete requirement.
 

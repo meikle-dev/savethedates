@@ -1,0 +1,41 @@
+name: Application checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: docker compose up --build -d --wait
+      - name: Development container smoke
+        run: |
+          curl --retry 20 --retry-connrefused --retry-delay 2 --fail http://127.0.0.1:3000/demo > /tmp/demo.html
+          node scripts/smoke-development.mjs
+      - run: docker compose down
+        if: always()
+      - run: docker build --target production -t save-the-dates:ci .
+      - name: Production container smoke
+        run: |
+          docker run -d --name wedding-smoke -p 127.0.0.1:3000:3000 save-the-dates:ci
+          curl --retry 20 --retry-connrefused --retry-delay 2 --fail http://127.0.0.1:3000 > /dev/null
+          npm run smoke
+      - run: docker rm -f wedding-smoke
+        if: always()
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-results
+          path: |
+            playwright-report/
+            test-results/
