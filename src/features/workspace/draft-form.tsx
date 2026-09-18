@@ -12,7 +12,7 @@ const fields = [
   { name: "location", label: "Wedding location", max: 160, autoComplete: "off" },
 ] as const;
 
-export function DraftForm({ initial }: { initial: Draft }) {
+export function DraftForm({ initial, published = false }: { initial: Draft; published?: boolean }) {
   const [values, setValues] = useState(initial);
   const [state, action, pending] = useActionState<FormState, FormData>(saveDraft, {});
   const [dirty, setDirty] = useState(false);
@@ -35,7 +35,7 @@ export function DraftForm({ initial }: { initial: Draft }) {
     </div>
     {state.message && !(state.success && dirty) && <p className={`mt-6 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
     <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-      <button className="primary-button sm:min-w-44" disabled={pending}>{pending ? "Saving…" : "Save private draft"}</button>
+      <button className="primary-button sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live changes" : "Save private draft"}</button>
       {dirty && <p className="text-sm text-[var(--muted)]">You have unsaved changes.</p>}
     </div>
   </form>;

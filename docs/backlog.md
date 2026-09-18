@@ -1,6 +1,6 @@
-﻿# Product backlog
+# Product backlog
 
-Ordered by recommended implementation sequence. F001 is complete. **Current: F002.**
+Ordered by recommended implementation sequence. F001-F003 are complete. **Next: F004.**
 
 ## Status and handoff rules
 
@@ -73,11 +73,12 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 
 ## F003 - Photo, preview, and publish a shareable site
 
-**Status:** Planned
+**Status:** Done
 **Purpose:** Let couples share a real, personalised Save the Date URL.
 **Description:** Add a photo, select a unique URL, preview privately, publish, update, and unpublish. Explain public-link visibility before publication.
 **Depends on:** F002
 **References:** `docs/overview/architecture.md`, `docs/overview/product-overview.md`, `docs/overview/site-ui.md`.
+**Prepared scope and UX:** Extend the existing workspace with Photo and Share your site sections after the saved details. Save required details first; preview always shows saved content with a return link. Optional JPEG/PNG/WebP photo up to 5 MiB and 25 megapixels, decoded and re-encoded as a metadata-free WebP up to 2000px. Replacement failures retain the previous photo; removal is available. URL: lowercase ASCII letters/digits separated by single hyphens, 3–63 characters; trim and lowercase input, reserve application/demo routes, enforce uniqueness in PostgreSQL. Choose the URL on publication; it remains fixed even after unpublishing. Before publishing require acknowledgement that anyone with the URL can view/copy content. Save edits and photo changes immediately on published sites, clearly labelled. Unpublish hides pages and photos on new requests but cannot retract downloaded copies. Use the existing teal/off-white workspace styling, stacked mobile controls, labelled inputs, pending/error/status feedback, and an explicit Published/Private draft badge. Free publication remains development/testing scope until F007. Public responses contain only guest content; serve pages/photos dynamically without caching or signed asset links. Independent security review required.
 **Done when:**
 
 - Owner-managed photo upload/replacement validates type and size; failures are recoverable and files are isolated by wedding. Storage access respects draft/unpublished status.
@@ -86,6 +87,14 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 - Updates and unpublishing invalidate public caches; public assets follow the publication policy. Unpublishing cannot retract copies visitors already downloaded, and the UI makes no such promise.
 - Draft/unknown slugs return a non-revealing 404; no owner or guest-response data leaks through public reads. All wedding pages remain noindex and outside sitemaps.
 - Integration and browser tests cover owner edit/publish, anonymous visit, cross-owner denial, and unpublish. Independent review passes.
+
+**Handoff (18 September 2026):**
+
+- Implemented workspace photo upload/replacement/removal, private saved-content preview, unique immutable URLs, visibility acknowledgement, publication, live updates, unpublish and republish. Guest pages reuse Modern Minimal rendering. Migration `20260918000200_publication.sql` keeps owner rows private, exposes only published guest fields, and enforces storage ownership and download-only publication access. Images are decoded/re-encoded with Sharp; routes avoid public caches and signed links. Architecture and running instructions document the boundaries and local Storage upgrade.
+- Passed: `npx.cmd supabase migration up --local` (existing data preserved); `npm.cmd run check` (lint, typecheck, 15 unit tests, production build); `npm.cmd run test:integration` (6/6); `npx.cmd playwright test tests/publication.spec.ts` (2/2 direct-host). `docker compose up --build -d --wait` and `$env:E2E_BASE_URL='http://127.0.0.1:3000'; npm.cmd run test:e2e` passed all 18 desktop/mobile checks. Linux `npm ci` passed after restoring an existing optional lockfile entry pruned by Windows npm.
+- Production passed: `docker build --target production -t save-the-dates:local .`; `docker run -d --name save-the-dates-f003-smoke --add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ORIGIN=http://127.0.0.1:3001 -p 127.0.0.1:3001:3000 save-the-dates:local`; `npm.cmd run smoke -- http://127.0.0.1:3001`; `$env:E2E_BASE_URL='http://127.0.0.1:3001'; $env:E2E_PRODUCTION='1'; npx.cmd playwright test tests/publication.spec.ts` (2/2, including production no-store headers and post-unpublish 404s). `node scripts/smoke-development.mjs` and `git diff --check` passed. Temporary test users/photos were removed. Development Compose/Supabase remain running; temporary production container stopped/removed.
+- Inspected mobile (390×664) and desktop (1440×1000) private/published workspace and public-page screenshots: readable controls, validation, visibility copy, URL wrapping, focus and layout; no horizontal overflow. In-app browser connection failed; repository Playwright supplied browser verification. Independent reviewer `review_f003` passes with no outstanding findings; separate remove-photo form and live publication announcement resolved both minor findings. CI now includes production publication checks; hosted CI, Safari/Firefox and external deployment were not run. Persistence restart verification was not repeated for this slice.
+- Blockers: None. Next: Product Manager prepares F004 three-theme selection and preview. No F004 implementation started.
 
 ## F004 - Three selectable wedding themes
 

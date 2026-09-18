@@ -1,6 +1,6 @@
 # Run SaveTheDates locally
 
-Run commands from the repository root. This is one Next.js application with local Supabase Auth and PostgreSQL for the account/workspace slice. Do not set `NODE_ENV` manually. Demo data is available only in development.
+Run commands from the repository root. This is one Next.js application with local Supabase Auth, PostgreSQL and Storage for accounts and wedding publication. Do not set `NODE_ENV` manually. Demo data is available only in development.
 
 ## Prerequisites
 
@@ -34,13 +34,25 @@ npm run db:start
 npm run local:env
 ```
 
-The command writes only the local publishable key to ignored `.env.local` and `.env.docker` files; it never writes a service-role key. Open http://localhost:54323 for Studio and http://localhost:54324 for the local Mailpit mailbox. Confirmation and password-recovery messages are captured locally and are not sent externally.
+The environment command writes only the local publishable key to ignored `.env.local` and `.env.docker` files; it never writes a service-role key. Open http://localhost:54323 for Studio and http://localhost:54324 for the local Mailpit mailbox. Confirmation and password-recovery messages are captured locally and are not sent externally.
+
+When upgrading an existing local stack, stop/start Supabase to enable Storage, then apply new migrations without deleting saved data:
+
+```sh
+npm run db:stop
+npm run db:start
+npx supabase migration up --local
+```
+
+Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, preview saved content, and publish with a unique URL. Published edits take effect when saved. Unpublishing hides the page and photo on new requests; copies already downloaded cannot be recalled. Publication is currently for development/testing; purchase entitlement is a later feature.
 
 ```sh
 npm run db:stop
 ```
 
 `npm run test:integration` creates temporary users and checks owner access, cross-owner denial, anonymous denial, uniqueness, and database validation. `npm run test:persistence` creates a temporary draft, stops and starts Supabase, signs in again, and verifies the draft remains before removing the temporary user. To deliberately erase all local data, use `npx supabase db reset --local`; this is destructive and reapplies migrations. Never run it against a hosted project.
+
+Publication integration checks also cover reserved/concurrent URLs, immutable published URLs, private photos, replacement/unpublish revocation, and denied signed links. Browser checks cover photo validation, private preview, publication, live edits, removal and republishing at both viewport sizes.
 
 ## Direct Node.js development
 
@@ -63,7 +75,7 @@ Development routes:
 | `/demo-long-names` | Long names and no photo |
 | `/preview-photo` | Development-only photo response |
 
-Unknown slugs return 404. All pages are currently noindex; there is no sitemap. All fixtures are fictional. Production returns 404 for every demo slug and the photo route. Details, RSVP, account creation, and publication are future features.
+Unknown and unpublished slugs return 404. All pages are currently noindex; there is no sitemap. All fixtures are fictional. Production returns 404 for every demo slug and the fixture photo route. Accounts, private preview and publication work with configured Supabase; Details and RSVP are future features.
 
 ## Checks
 
@@ -74,7 +86,6 @@ npm run db:start
 npm run local:env -- --force
 npm run test:integration
 npm run test:persistence
-npm run test:integration
 npx playwright install chromium
 npm run test:e2e
 ```
@@ -94,6 +105,8 @@ docker rm save-the-dates-smoke
 ```
 
 Run the smoke command after the container reports ready (`docker logs save-the-dates-smoke`). It verifies the home page and 404 responses for the demo variants, photo, and an unknown wedding. This image uses Next.js standalone output and runs as the non-root `node` user. No production deployment or external services are configured yet.
+
+To test publication in the production image against local Supabase, add `--add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ORIGIN=http://127.0.0.1:3001` to the `docker run` command. Then run `E2E_BASE_URL=http://127.0.0.1:3001 E2E_PRODUCTION=1 npx playwright test tests/publication.spec.ts`. In PowerShell set `$env:E2E_BASE_URL='http://127.0.0.1:3001'` and `$env:E2E_PRODUCTION='1'` before `npx.cmd playwright test tests/publication.spec.ts`; remove those environment variables afterwards. These checks use temporary fictional data and require local Supabase to be running.
 
 For a direct production smoke check, run `npm run build`, then `npm start -- --port 3001` in a terminal; run the same smoke command in a second terminal. Stop with Ctrl+C. Both start the standalone server; direct `npm start` first copies the public and built static assets into the standalone directory using a cross-platform Node script.
 

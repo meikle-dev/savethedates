@@ -48,6 +48,12 @@ Validate and normalise slugs, enforce uniqueness in the database, and reserve ap
 
 All wedding routes are `noindex` and excluded from the marketing sitemap. Owner routes and previews are authenticated and `noindex`. Unknown and unpublished slugs return a non-revealing not-found response. Themes share content and behaviour and change only presentation.
 
+F003 uses a narrow `published_wedding(slug)` database function for anonymous guest content; the underlying wedding table remains owner-only. PostgreSQL enforces reserved/unique slugs and permanently locks the URL after first publication, including after unpublishing. Saved edits on a published wedding are immediately live; preview renders saved content through the same component. Publication is free for development/testing until F007 adds entitlement.
+
+Photos live in the private `wedding-photos` Supabase bucket under wedding UUID/random UUID paths. The server validates a maximum 5 MiB JPEG/PNG/WebP and 25 megapixels, re-encodes a still WebP at up to 2000px, and strips metadata. Uploads are immutable; replacement uses a compare-and-swap before deleting the old object. Failed cleanup can leave private orphaned files, which must be included in F009 retention/deletion work. RLS allows owners to insert/read/delete their own files and guests to download only the currently published photo. Download-only policies deny signing and anonymous listing (see [Supabase storage operation helpers](https://supabase.com/docs/guides/storage/schema/helper-functions)). No service key is used by the application.
+
+Public pages and photo handlers are dynamic; photo responses use `private, no-store` and no signed links or image-optimiser cache. Unpublishing revokes access on new requests, including direct Storage downloads. Previously downloaded copies and already open pages cannot be recalled. Private preview and photo handlers derive the owner from the verified session, never from a supplied owner/wedding ID.
+
 ## Integrations and release
 
 Docker support is required from the first application slice: provide an application Dockerfile and a simple Docker Compose entry point for local development. Next.js contains both the frontend and server-side application code in one application container. Keep a direct Node.js development option as a convenience.

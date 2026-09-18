@@ -1,0 +1,98 @@
+import { expect, test } from "@playwright/test";
+import sharp from "sharp";
+import { localSupabase } from "./helpers/local-supabase";
+
+const local = localSupabase();
+test("owner previews, uploads, publishes, updates and unpublishes a wedding", async ({ page, browser, baseURL }) => {
+  test.setTimeout(90_000);
+  const email = `publication-${crypto.randomUUID()}@example.test`;
+  const password = crypto.randomUUID();
+  const { data, error } = await local.admin.auth.admin.createUser({ email, password, email_confirm: true });
+  if (error || !data.user) throw new Error("Unable to create local test owner");
+  const ownerId = data.user.id;
+  const slug = `alex-${crypto.randomUUID()}`;
+  const guest = await browser.newContext({ baseURL, viewport: page.viewportSize() });
+  const guestPage = await guest.newPage();
+  const photo = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#738c79" } }).jpeg().toBuffer();
+  let weddingId: string | undefined;
+  try {
+    await page.goto("/account/sign-in");
+    await page.getByLabel("Email address").fill(email);
+    await page.getByLabel("Password", { exact: true }).fill(password);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await page.getByLabel("Your name", { exact: false }).fill("Alex");
+    await page.locator('[name="second_name"]').fill("Morgan");
+    await page.locator('[name="wedding_date"]').fill("2027-09-18");
+    await page.locator('[name="location"]').fill("Bath, England");
+    await page.getByRole("button", { name: "Save private draft" }).click();
+    await expect(page.getByRole("status")).toContainText("private draft has been saved");
+    weddingId = (await local.admin.from("weddings").select("id").eq("owner_id", ownerId).single()).data!.id;
+    await page.getByRole("link", { name: "Preview saved site" }).click();
+    await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
+    expect((await guest.request.get("/dashboard/photo")).status()).toBe(404);
+    await guestPage.goto("/dashboard/preview");
+    await expect(guestPage).toHaveURL(/account\/sign-in/);
+    await page.getByRole("link", { name: "Back to workspace" }).click();
+    await page.getByLabel("Choose a photo").setInputFiles({ name: "photo.jpg", mimeType: "image/jpeg", buffer: photo });
+    await page.getByRole("button", { name: "Upload photo" }).click();
+    await expect(page.getByRole("status")).toContainText("photo has been saved");
+    expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
+    await page.getByLabel("Choose a photo").setInputFiles({ name: "fake.jpg", mimeType: "image/jpeg", buffer: Buffer.from("not a photo") });
+    await page.getByRole("button", { name: "Replace photo" }).click();
+    await expect(page.getByRole("main").getByRole("alert")).toContainText("couldn’t read that photo");
+    expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
+    await page.getByLabel("Your wedding URL").fill("dashboard");
+    await page.getByRole("checkbox").check();
+    await page.getByRole("button", { name: "Publish site", exact: true }).click();
+    await expect(page.getByRole("main").getByRole("alert").last()).toContainText("reserved");
+    await page.getByLabel("Your wedding URL").fill(` ${slug.toUpperCase()} `);
+    await page.screenshot({ path: test.info().outputPath("private-workspace.png"), fullPage: true });
+    expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
+    await page.getByRole("button", { name: "Publish site", exact: true }).click();
+    await expect(page.getByText("Published", { exact: true })).toBeVisible();
+    await page.screenshot({ path: test.info().outputPath("published-workspace.png"), fullPage: true });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const response = await guestPage.goto(`/${slug}`);
+    expect(response!.status()).toBe(200);
+    // Development Next.js uses mandatory revalidation; production dynamic pages use no-store.
+    expect(response!.headers()["cache-control"]).toMatch(/no-store|no-cache, must-revalidate/);
+    if (process.env.E2E_PRODUCTION) expect(response!.headers()["cache-control"]).toContain("no-store");
+    await expect(guestPage.getByText("Bath, England", { exact: true })).toBeVisible();
+    await expect(guestPage.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    const asset = await guest.request.get(`/${slug}/photo`);
+    expect(asset.status()).toBe(200);
+    expect(asset.headers()["cache-control"]).toContain("no-store");
+    expect(asset.headers()["content-type"]).toBe("image/webp");
+    await guestPage.screenshot({ path: test.info().outputPath("published-guest.png"), fullPage: true });
+    await page.locator('[name="location"]').fill("Bristol, England");
+    await page.getByRole("button", { name: "Save live changes" }).click();
+    await expect(page.getByRole("status")).toContainText("live wedding site has been updated");
+    await guestPage.reload();
+    await expect(guestPage.getByText("Bristol, England", { exact: true })).toBeVisible();
+    await page.getByLabel("Choose a photo").setInputFiles({ name: "replacement.jpg", mimeType: "image/jpeg", buffer: photo });
+    await page.getByRole("button", { name: "Replace photo" }).click();
+    await expect(page.getByRole("status").last()).toContainText("photo has been saved");
+    await page.getByRole("button", { name: "Unpublish site" }).click();
+    await expect(page.getByText("Private draft", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Your wedding URL")).toHaveAttribute("readonly", "");
+    expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
+    expect((await guest.request.get(`/${slug}/photo`)).status()).toBe(404);
+    expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
+    await page.getByLabel("Choose a photo").setInputFiles({ name: "oversized.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(7 * 1024 * 1024) });
+    await page.getByRole("button", { name: "Remove photo" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "photo has been removed" })).toBeVisible();
+    expect((await page.request.get("/dashboard/photo")).status()).toBe(404);
+    await page.getByRole("checkbox").check();
+    await page.getByRole("button", { name: "Publish site", exact: true }).click();
+    await expect(page.getByText("Published", { exact: true })).toBeVisible();
+    expect((await guest.request.get(`/${slug}`)).status()).toBe(200);
+    expect((await guest.request.get(`/${slug}/photo`)).status()).toBe(404);
+  } finally {
+    await guest.close();
+    if (weddingId) {
+      const files = await local.admin.storage.from("wedding-photos").list(weddingId);
+      if (files.data?.length) await local.admin.storage.from("wedding-photos").remove(files.data.map((file) => `${weddingId}/${file.name}`));
+    }
+    await local.admin.auth.admin.deleteUser(ownerId);
+  }
+});
