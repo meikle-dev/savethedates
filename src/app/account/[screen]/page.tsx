@@ -11,7 +11,7 @@ const screens = {
   password: { title: "A fresh start.", intro: "Choose a new password for your account." },
 };
 
-export default async function AccountPage({ params, searchParams }: { params: Promise<{ screen: string }>; searchParams: Promise<{ error?: string }> }) {
+export default async function AccountPage({ params, searchParams }: { params: Promise<{ screen: string }>; searchParams: Promise<{ error?: string; demo?: string }> }) {
   const { screen } = await params;
   if (!Object.hasOwn(screens, screen)) notFound();
   const mode = screen as keyof typeof screens;
@@ -20,13 +20,14 @@ export default async function AccountPage({ params, searchParams }: { params: Pr
     const { data: { user } } = await client.auth.getUser();
     if (!user) redirect("/account/recovery?error=expired");
   }
-  const { error } = await searchParams;
+  const { error, demo } = await searchParams;
   return <AccountShell>
     <p className="eyebrow">Your wedding, together</p>
     <h1 className="editorial mt-4 text-4xl leading-tight md:text-5xl">{screens[mode].title}</h1>
     <p className="mt-5 leading-relaxed text-[var(--muted)]">{screens[mode].intro}</p>
     {error && <p role="alert" className="form-error mt-6">This link is invalid or has expired. Request a new reset link, or sign up again for a new confirmation email.</p>}
-    <AuthForm mode={mode} />
+    {demo === "unavailable" && <p role="alert" className="form-error mt-6">The local demo account is unavailable. Run <code>npm run local:demo-account</code>, then try again.</p>}
+    <AuthForm mode={mode} development={process.env.NODE_ENV !== "production"} />
     <nav aria-label="Account options" className="mt-8 flex flex-col gap-5 text-center text-sm">
       {mode !== "sign-in" && <Link className="text-link" href="/account/sign-in">Already have an account? Sign in</Link>}
       {mode === "sign-in" && <><Link className="text-link" href="/account/recovery">Forgot your password?</Link><Link className="text-link" href="/account/sign-up">New here? Create an account</Link></>}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { requestRecovery, signIn, signUp, updatePassword } from "./actions";
+import { requestRecovery, signIn, signInDemo, signUp, updatePassword } from "./actions";
 import type { FormState } from "./validation";
 
 const modes = {
@@ -12,10 +12,11 @@ const modes = {
   password: { action: updatePassword, label: "Save new password" },
 };
 
-export function AuthForm({ mode }: { mode: keyof typeof modes }) {
+export function AuthForm({ mode, development = false }: { mode: keyof typeof modes; development?: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(modes[mode].action, {});
   const [email, setEmail] = useState("");
   return (
+    <>
     <form action={action} className="mt-8 space-y-6">
       {mode !== "password" && <div>
         <label htmlFor="email" className="field-label">Email address</label>
@@ -31,5 +32,13 @@ export function AuthForm({ mode }: { mode: keyof typeof modes }) {
       <button className="primary-button w-full" disabled={pending}>{pending ? "Please wait…" : modes[mode].label}</button>
       {mode === "password" && state.success && <Link className="text-link block text-center" href="/dashboard">Return to your workspace</Link>}
     </form>
+    {mode === "sign-in" && development && <>
+      <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted)]" aria-hidden="true"><span className="h-px flex-1 bg-[var(--line)]" />or<span className="h-px flex-1 bg-[var(--line)]" /></div>
+      <form action={signInDemo} className="mt-6 space-y-3 rounded-md border border-dashed border-[var(--line)] p-4">
+        <p className="text-sm leading-relaxed text-[var(--muted)]">Local development shortcut. It uses a seeded, fictional account and never appears in production.</p>
+        <button className="primary-button w-full">Use local demo account</button>
+      </form>
+    </>}
+    </>
   );
 }

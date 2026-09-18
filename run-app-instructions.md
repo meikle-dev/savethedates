@@ -36,6 +36,8 @@ npm run local:env
 
 The environment command writes only the local publishable key to ignored `.env.local` and `.env.docker` files; it never writes a service-role key. Open http://localhost:54323 for Studio and http://localhost:54324 for the local Mailpit mailbox. Confirmation and password-recovery messages are captured locally and are not sent externally.
 
+For a quick local walkthrough without email confirmation, run `npm run local:demo-account`. This creates or resets the fictional `local-demo@example.test` account with password `SaveTheDatesLocal123!` and a sample private wedding. On the development sign-in page, click **Use local demo account**. The shortcut is only rendered in development mode, only accepts local Supabase hosts, and is absent from production builds. Do not use these credentials in a hosted environment.
+
 When upgrading an existing local stack, stop/start Supabase to enable Storage, then apply new migrations without deleting saved data:
 
 ```sh

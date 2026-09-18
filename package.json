@@ -21,6 +21,7 @@
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "local:env": "node scripts/local-env.mjs",
+    "local:demo-account": "node scripts/local-demo-account.mjs",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:persistence": "node scripts/verify-persistence.mjs"
   },

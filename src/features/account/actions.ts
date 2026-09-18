@@ -6,6 +6,19 @@ import { createClient } from "@/lib/supabase/server";
 import { appOrigin } from "@/lib/supabase/config";
 import { emailSchema, passwordSchema, type FormState } from "./validation";
 
+const localDemoAccount = {
+  email: "local-demo@example.test",
+  password: "SaveTheDatesLocal123!",
+} as const;
+
+function localDevelopmentOnly() {
+  if (process.env.NODE_ENV === "production") return false;
+  try {
+    const hostname = new URL(process.env.SUPABASE_URL ?? "").hostname;
+    return ["127.0.0.1", "localhost", "host.docker.internal"].includes(hostname);
+  } catch { return false; }
+}
+
 export async function signIn(_: FormState, form: FormData): Promise<FormState> {
   const input = z.object({ email: emailSchema, password: z.string().min(1).max(128) }).safeParse(Object.fromEntries(form));
   if (!input.success) return { errors: input.error.flatten().fieldErrors };
@@ -14,6 +27,17 @@ export async function signIn(_: FormState, form: FormData): Promise<FormState> {
     const { error } = await client.auth.signInWithPassword(input.data);
     if (error) return { message: "We couldn’t sign you in. Check your email and password, and confirm your email before signing in." };
   } catch { return { message: "Sign-in is temporarily unavailable. Please try again." }; }
+  redirect("/dashboard");
+}
+
+export async function signInDemo(form: FormData): Promise<void> {
+  void form;
+  if (!localDevelopmentOnly()) redirect("/account/sign-in?demo=unavailable");
+  try {
+    const client = await createClient();
+    const { error } = await client.auth.signInWithPassword(localDemoAccount);
+    if (error) redirect("/account/sign-in?demo=unavailable");
+  } catch { redirect("/account/sign-in?demo=unavailable"); }
   redirect("/dashboard");
 }
 
