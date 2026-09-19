@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../features/marketing/marketing.css";
 
 :root {
   --paper: #f8f5f0;

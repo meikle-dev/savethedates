@@ -43,13 +43,12 @@ test("failed photography falls back without losing the announcement", async ({ p
   await expect(page.locator("time")).toHaveText("14 June 2027");
 });
 
-test("preview entry is keyboard accessible", async ({ page }) => {
+test("homepage content is keyboard accessible", async ({ page }) => {
   await page.goto("/");
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Create your private wedding draft" })).toBeFocused();
-  await page.keyboard.press("Tab");
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: /Open the Save the Date preview/ })).toBeFocused();
+  await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page).toHaveURL(/#main$/);
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: /Start your site/ }).first()).toBeFocused();
 });

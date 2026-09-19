@@ -18,7 +18,9 @@ docker compose up --build -d
 docker compose logs -f app
 ```
 
-Open http://localhost:3000/demo. The first request compiles the page. Stop following logs with Ctrl+C; the container remains running. `src/`, `fixtures/`, and `public/` are mounted for local edits; rebuild after changing dependencies or root configuration. Container dependencies and Next.js output are separate from the host checkout.
+Open http://localhost:3000 for the marketing homepage and linked public theme examples. The development-only first-theme fixture remains at http://localhost:3000/demo. The first request compiles the page. Stop following logs with Ctrl+C; the container remains running. `src/`, `fixtures/`, and `public/` are mounted for local edits; rebuild after changing dependencies or root configuration. Container dependencies and Next.js output are separate from the host checkout.
+
+If Docker Desktop continues serving an old page after a source change, run `docker compose restart app` to refresh the development compiler. This preserves database and uploaded data.
 
 With host Node installed, `node scripts/smoke-development.mjs` checks the demo, image response, and unknown-slug 404 in the running development container.
 
@@ -112,6 +114,10 @@ npm run test:e2e
 Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Browser screenshots and failure traces are under ignored `test-results/`; `npx playwright show-report` opens the HTML report. CI also checks database isolation, application-container connectivity, and browser checks through the development container. Locally, run those browser checks with `E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e` after Compose is up.
 
 ## Production container smoke check
+
+Marketing uses runtime `APP_ORIGIN` for its canonical URL, sitemap and social-sharing URLs. Set it to the exact browser-facing origin (no path), for example `-e APP_ORIGIN=http://127.0.0.1:3001` for the local production container below; the fallback is `http://localhost:3000`. Production HTTPS/domain configuration and launch indexation checks belong to F009. Only `/` is listed in `/sitemap.xml`; fictional `/examples/minimal`, `/examples/romantic`, `/examples/bold` and their Details pages remain noindex. They work in production without database access. `/demo` and `/preview-photo` remain development-only.
+
+`npx playwright test tests/marketing.spec.ts` checks the homepage, account-entry links, three fictional examples, metadata, sitemap, social image and 320px layout. Against a production container use `E2E_BASE_URL=http://127.0.0.1:3001 E2E_PRODUCTION=1 npx playwright test tests/marketing.spec.ts` (PowerShell environment syntax as below). Its local unthrottled rendering measurements are diagnostics, not real-user Core Web Vitals or a Safari compatibility claim.
 
 ```sh
 docker build --target production -t save-the-dates:local .

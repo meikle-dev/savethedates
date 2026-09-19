@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F006 are complete and the usable-core MVP milestone is verified. **Active: F007**.
+Ordered by recommended implementation sequence. F001-F008 are complete and the usable-core MVP milestone is verified. **Next: F009**.
 
 ## Status and handoff rules
 
@@ -189,10 +189,11 @@ On 19 September 2026, the owner confirmed the real Stripe test-mode flow is work
 
 ## F008 - Public marketing and theme examples
 
-**Status:** Planned
+**Status:** Done
 **Purpose:** Explain the product and convert visitors into customers.
 **Description:** Modern Luxe homepage, three theme examples, concise explanation/pricing, and working account-entry calls to action. Use UX and SEO roles only for this public surface.
 **Depends on:** F007
+**Prepared scope and UX:** A single Modern Luxe homepage with deep-teal editorial hero and illustrative phone preview, three theme cards, three setup steps, one-off GBP 29 pricing, concise factual FAQs, and working signup/sign-in links. Public `/examples/[theme]` landing and Details examples reuse guest rendering with explicitly fictional, source-controlled data and a persistent example/return banner; no customer reads or guest submissions. Reuse the licensed landscape photograph as an optimised public asset. Homepage alone opts into indexation; examples and owner/wedding routes remain noindex. Runtime `APP_ORIGIN` supplies canonical, sitemap, and social URLs without assuming a production domain. An original code-rendered social card supports sharing. No testimonials, invented ratings, extra SEO pages, or release activation. Prepared through Product, UX and SEO roles; F007 is Done, so engineering proceeds.
 **References:** `docs/overview/site-ui.md`, `docs/ux/site-ui-design.png`, `docs/ux/template-ui-summary.md`.
 **Done when:**
 
@@ -200,6 +201,14 @@ On 19 September 2026, the owner confirmed the real Stripe test-mode flow is work
 - Pricing and capabilities reflect implemented behaviour; no invented testimonials, ratings, or placeholder purchase promises are published.
 - Marketing metadata, canonical URLs, sitemap, semantic structure, and social sharing are verified; wedding/owner routes stay outside indexable surfaces.
 - Accessibility, responsive appearance, representative page performance, working CTAs, and independent review are recorded. Extra SEO landing pages/guides wait for demonstrated need.
+
+**Handoff (19 September 2026):**
+
+- Implemented the Modern Luxe homepage with phone illustrations, three theme cards, setup steps, factual GBP 29 pricing and FAQs, working account entry, and fictional landing/Details examples using the shared guest renderers. Added homepage-only indexation, runtime-origin canonical/social metadata, a homepage-only sitemap, robots policy, and a code-rendered social image. Public photography attribution and running/architecture docs are current; CI includes production marketing checks.
+- Passed: final `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:e2e` (34/34 before the final scoped return-link/breakpoint fixes); `docker build --target production -t save-the-dates:f008 .`; `npm.cmd run smoke -- http://127.0.0.1:3001`; `$env:E2E_BASE_URL='http://127.0.0.1:3001'; $env:E2E_PRODUCTION='1'; npx.cmd playwright test tests/marketing.spec.ts` (8/8 after fixes); `node scripts/smoke-development.mjs`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; npx.cmd playwright test tests/marketing.spec.ts --output=test-results/container-marketing` (8/8 after fixes); `git diff --check`.
+- Production checks exposed a duplicated return-link hash and 701px overflow; a native anchor and 760px stacking breakpoint resolved both, with automated coverage at 320/701/760/761/768/1024px plus desktop/mobile profiles. The existing development container initially served stale compiled content; `docker compose restart app` resolved it and all eight marketing checks passed. Temporary production container stopped/removed; development app and Supabase remain running.
+- Visually inspected the homepage, pricing, FAQ focus state, social card and all three landing/Details examples at mobile and desktop sizes; readable controls, distinct themes, and no horizontal overflow. Browser skill setup failed in this environment, so repository Playwright supplied screenshots. Local unthrottled production measurements at 320px: LCP 160ms desktop profile / 252ms mobile profile, CLS 0, resource transfer approximately 169KB / 230KB; these are local diagnostics, not field Core Web Vitals. Independent reviewer `review_f008` reviewed source, final fixes and screenshots with no outstanding Blocking or Important findings.
+- Blockers: None. Database integration/persistence, hosted CI, Safari/Firefox and external deployment were not rerun for this marketing-only feature. Next: Product Manager prepares F009 deployment, recovery, support and release requirements; no F009 implementation or live activation started.
 
 ## F009 - Launch and operate the service
 
