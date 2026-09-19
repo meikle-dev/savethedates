@@ -167,7 +167,7 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 
 ## F007 - One-off purchase and publication entitlement
 
-**Status:** In Progress
+**Status:** Done
 **Purpose:** Sell the wedding site with a simple, reliable purchase flow.
 **Description:** Stripe hosted checkout and server-controlled entitlement. Develop with test mode first. Free publishing from earlier slices is for development/testing; paid launch must enforce the agreed rule.
 **Depends on:** F006
@@ -185,7 +185,7 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 
 Verified locally after the final changes: `npx.cmd supabase migration up --local`; `npx.cmd supabase db lint --local` (clean); `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `npm.cmd run test:e2e` (26/26 desktop/mobile); `git diff --check`; rebuilt Compose development container plus development smoke and payment/publication browser checks (4/4); production image `save-the-dates:f007` plus smoke and payment/publication browser checks (4/4). The temporary production container was removed; the development container remains available.
 
-**Blocker / exact next step:** A real Stripe test-mode hosted Checkout was not run because no Stripe test secret, webhook signing secret, or authenticated Stripe CLI is available. Keep F007 In Progress. Supply test-mode credentials, run the documented CLI forwarder, complete one GBP 29 test-card Checkout, then forward and verify refund and dispute events. Record those results before changing F007 to Done or preparing F008.
+On 19 September 2026, the owner confirmed the real Stripe test-mode flow is working as expected, resolving the remaining external Checkout/webhook verification blocker. Blockers: None. Next: Product Manager prepares F008 public marketing and theme examples; no F008 implementation started.
 
 ## F008 - Public marketing and theme examples
 
