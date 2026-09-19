@@ -24,7 +24,7 @@ jobs:
       - run: docker compose up --build -d --wait
       - name: Development container smoke
         run: |
-          curl --retry 20 --retry-connrefused --retry-delay 2 --fail http://127.0.0.1:3000/demo > /tmp/demo.html
+          curl --retry 30 --retry-all-errors --retry-delay 2 --fail --silent --show-error http://127.0.0.1:3000/demo > /tmp/demo.html
           node scripts/smoke-development.mjs
           docker compose exec -T app node -e "fetch('http://127.0.0.1:3000/account/sign-up').then(r => { if (r.status !== 200) process.exit(1); console.log('Application-container connectivity passed') })"
       - name: Browser checks through development container
@@ -35,7 +35,7 @@ jobs:
       - name: Production container smoke
         run: |
           docker run -d --name wedding-smoke --add-host host.docker.internal:host-gateway --env-file .env.docker -p 127.0.0.1:3000:3000 save-the-dates:ci
-          curl --retry 20 --retry-connrefused --retry-delay 2 --fail http://127.0.0.1:3000 > /dev/null
+          curl --retry 30 --retry-all-errors --retry-delay 2 --fail --silent --show-error http://127.0.0.1:3000 > /dev/null
           npm run smoke
           E2E_BASE_URL=http://127.0.0.1:3000 E2E_PRODUCTION=1 npx playwright test tests/publication.spec.ts tests/marketing.spec.ts
       - run: docker rm -f wedding-smoke
