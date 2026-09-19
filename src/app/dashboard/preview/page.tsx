@@ -15,6 +15,7 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
   const { data, error } = await client.from("weddings").select("first_name, second_name, wedding_date, location, message, photo_path, theme, published, details_enabled, rsvp_enabled").eq("owner_id", user.id).maybeSingle();
   if (error) throw new Error("Unable to load preview.");
   if (!data) redirect("/dashboard");
+  const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
   const params = await searchParams;
   const candidate = isWeddingTheme(params.theme) ? params.theme : data.theme;
   const name = themes.find((theme) => theme.id === candidate)!.name;
@@ -24,7 +25,7 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
         <nav aria-label="Preview" className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Private preview Â· saved content</span><Link href="/dashboard" className="text-link min-h-11 content-center">Back to workspace</Link></nav>
         <p className="mt-3 font-semibold">Previewing {name}{candidate === data.theme ? " Â· current theme" : " Â· not applied"}</p>
         <ThemePicker key={`picker-${candidate}`} selected={candidate} />
-        <ThemeApplyForm key={`apply-${candidate}`} theme={candidate} published={data.published} />
+        <ThemeApplyForm key={`apply-${candidate}`} theme={candidate} published={data.published && !!entitlement?.active} />
       </div>
     </div>
     <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} homeHref={`/dashboard/preview?theme=${candidate}`} detailsHref={data.details_enabled ? `/dashboard/preview/details?theme=${candidate}` : undefined} />

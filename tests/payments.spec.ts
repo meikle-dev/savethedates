@@ -41,7 +41,30 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await expect(page.getByRole("button", { name: "Buy and continue to Stripe" })).toBeVisible();
     await expect(page.getByLabel("Your wedding URL")).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("payment-required.png"), fullPage: true });
+    await page.goto("/dashboard?checkout=cancelled");
+    await expect(page.getByText("Checkout was cancelled", { exact: false })).toBeVisible();
+    expect((await local.admin.from("weddings").select("id").eq("id", wedding.data.id).single()).data?.id).toBe(wedding.data.id);
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data.id)).error?.code).toBe("23514");
+
+    const checkoutOwner = local.anonymous();
+    expect((await checkoutOwner.auth.signInWithPassword({ email, password })).error).toBeNull();
+    const pendingAttempt = await checkoutOwner.rpc("begin_checkout_attempt");
+    expect(pendingAttempt.error).toBeNull();
+    const attempt = pendingAttempt.data![0];
+    const expiringSessionId = `cs_test_${crypto.randomUUID()}`;
+    expect((await checkoutOwner.rpc("attach_checkout_session", {
+      requested_attempt_id: attempt.attempt_id,
+      requested_session_id: expiringSessionId,
+      requested_checkout_url: "https://checkout.stripe.com/c/pay/expired",
+    })).data).toBe(true);
+    const expired = signedEvent("checkout.session.expired", {
+      id: expiringSessionId,
+      object: "checkout.session",
+      metadata: { attempt_id: attempt.attempt_id },
+    });
+    expect((await page.request.post("/api/stripe/webhook", { data: expired.payload, headers: { "content-type": "application/json", "stripe-signature": expired.signature } })).status()).toBe(200);
+    const replacementAttempt = await checkoutOwner.rpc("begin_checkout_attempt");
+    expect(replacementAttempt.data![0].attempt_id).not.toBe(attempt.attempt_id);
 
     const paymentIntent = `pi_test_${crypto.randomUUID()}`;
     const paid = signedEvent("checkout.session.completed", {
@@ -51,9 +74,11 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
       currency: "gbp",
       payment_intent: paymentIntent,
       payment_status: "paid",
-      metadata: { wedding_id: wedding.data.id, owner_id: ownerId },
+      metadata: { wedding_id: wedding.data.id, owner_id: ownerId, entitlement_expires_at: "2028-09-18T00:00:00.000Z" },
     });
     expect((await page.request.post("/api/stripe/webhook", { data: paid.payload, headers: { "content-type": "application/json", "stripe-signature": "invalid" } })).status()).toBe(400);
+    const wrongTotal = signedEvent("checkout.session.completed", { ...JSON.parse(paid.payload).data.object, amount_total: 3000 });
+    expect((await page.request.post("/api/stripe/webhook", { data: wrongTotal.payload, headers: { "content-type": "application/json", "stripe-signature": wrongTotal.signature } })).status()).toBe(400);
     const paidResponse = await page.request.post("/api/stripe/webhook", { data: paid.payload, headers: { "content-type": "application/json", "stripe-signature": paid.signature } });
     expect(paidResponse.status()).toBe(200);
     await page.reload();
@@ -63,6 +88,21 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
     await expect(page.getByText("Published", { exact: true })).toBeVisible();
     expect((await guest.request.get(`/${slug}`)).status()).toBe(200);
+
+    expect((await local.admin.from("stripe_payments").update({ expires_at: "2026-01-01T00:00:00Z" }).eq("payment_intent_id", paymentIntent)).error).toBeNull();
+    await page.reload();
+    await expect(page.getByText("Private draft", { exact: true })).toBeVisible();
+    await expect(page.getByText("The previous site period ended", { exact: false })).toBeVisible();
+    await page.locator('[name="location"]').fill("Bristol");
+    await page.getByRole("button", { name: "Save private draft" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "private draft has been saved" })).toBeVisible();
+    await page.getByRole("link", { name: "Preview saved site" }).click();
+    await expect(page.getByText("Applying this theme saves it to your private draft", { exact: false })).toBeVisible();
+    await page.getByRole("button", { name: "Apply theme" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Theme saved to your private draft" })).toBeVisible();
+    await page.getByRole("link", { name: "Back to workspace" }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
 
     const refund = signedEvent("refund.created", { id: `re_test_${crypto.randomUUID()}`, object: "refund", payment_intent: paymentIntent });
     const refundResponse = await page.request.post("/api/stripe/webhook", { data: refund.payload, headers: { "content-type": "application/json", "stripe-signature": refund.signature } });

@@ -25,11 +25,16 @@ export function localSupabase() {
     publicKey: (status.PUBLISHABLE_KEY ?? status.ANON_KEY) as string,
     mailUrl: (status.MAILPIT_URL ?? status.INBUCKET_URL) as string,
     async grantEntitlement(weddingId: string, ownerId: string) {
+      const wedding = await admin.from("weddings").select("wedding_date").eq("id", weddingId).single();
+      if (wedding.error || !wedding.data) throw new Error("Cannot determine test entitlement expiry.");
+      const expiry = new Date(`${wedding.data.wedding_date}T00:00:00Z`);
+      expiry.setUTCFullYear(expiry.getUTCFullYear() + 1);
       return admin.rpc("process_stripe_payment_event", {
         requested_event_id: `evt_test_${crypto.randomUUID()}`,
         requested_event_created_at: new Date().toISOString(),
         requested_event_type: "paid",
         requested_payment_intent_id: `pi_test_${crypto.randomUUID()}`,
+        requested_entitlement_expires_at: expiry.toISOString(),
         requested_wedding_id: weddingId,
         requested_owner_id: ownerId,
         requested_checkout_session_id: `cs_test_${crypto.randomUUID()}`,

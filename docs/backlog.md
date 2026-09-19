@@ -181,6 +181,12 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 - Agreed refund/revocation behaviour is implemented and tested. Secrets remain server-side and payment/tenant boundaries receive independent review.
 - Test-mode checkout, webhook processing, and publication gating are verified end to end; live activation remains part of release preparation.
 
+**Handoff:** The GBP 29 Stripe-hosted Checkout flow, database-backed single-attempt/idempotency controls, fixed entitlement-expiry snapshot, signature-verified payment/refund/dispute/Checkout-expiration webhooks, server-enforced publication and public-read gates, repurchase behaviour, and private-draft preservation are implemented. Payment records and mutation functions are service-role-only; authenticated checkout functions are owner-scoped. Independent reviewer `review_f007` found no remaining Blocking, Important, or Minor code findings after concurrency, delayed-webhook, latest-revocation, natural-expiry, and privilege fixes.
+
+Verified locally after the final changes: `npx.cmd supabase migration up --local`; `npx.cmd supabase db lint --local` (clean); `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `npm.cmd run test:e2e` (26/26 desktop/mobile); `git diff --check`; rebuilt Compose development container plus development smoke and payment/publication browser checks (4/4); production image `save-the-dates:f007` plus smoke and payment/publication browser checks (4/4). The temporary production container was removed; the development container remains available.
+
+**Blocker / exact next step:** A real Stripe test-mode hosted Checkout was not run because no Stripe test secret, webhook signing secret, or authenticated Stripe CLI is available. Keep F007 In Progress. Supply test-mode credentials, run the documented CLI forwarder, complete one GBP 29 test-card Checkout, then forward and verify refund and dispute events. Record those results before changing F007 to Done or preparing F008.
+
 ## F008 - Public marketing and theme examples
 
 **Status:** Planned

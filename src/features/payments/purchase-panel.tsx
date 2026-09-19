@@ -20,7 +20,9 @@ export function PurchasePanel({ entitlement, checkout }: { entitlement: Entitlem
     {entitlement.active ? <p className="form-notice mt-4" role="status">Payment confirmed. You can publish and republish{expiry ? ` until ${expiry}` : ""}.</p> : <>
       {checkout === "success" && <p className="form-notice mt-4" role="status">Checkout completed. We’ll enable publishing as soon as Stripe confirms the payment.</p>}
       {checkout === "cancelled" && <p className="form-notice mt-4" role="status">Checkout was cancelled. Your private draft is unchanged.</p>}
-      {entitlement.revoked_reason && <p className="form-error mt-4" role="alert">This purchase was {entitlement.revoked_reason === "refunded" ? "refunded" : "disputed"}, so the site is private. Your draft is still saved and you can purchase again.</p>}
+      {entitlement.revoked_reason
+        ? <p className="form-error mt-4" role="alert">This purchase was {entitlement.revoked_reason === "refunded" ? "refunded" : "disputed"}, so the site is private. Your draft is still saved and you can purchase again.</p>
+        : expiry && <p className="form-error mt-4" role="alert">The previous site period ended on {expiry}, so the site is private. Your draft is still saved; update the wedding date if needed before purchasing again.</p>}
       <form action={action} className="mt-5">
         <button className="primary-button" disabled={pending}>{pending ? "Opening secure checkout…" : "Buy and continue to Stripe"}</button>
         {state.message && <p className="form-error mt-4" role="alert">{state.message}</p>}

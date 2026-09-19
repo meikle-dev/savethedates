@@ -58,7 +58,7 @@ stripe login
 stripe listen --forward-to http://127.0.0.1:3000/api/stripe/webhook
 ```
 
-Restart the application after changing environment values. In the dashboard, use **Buy and continue to Stripe** and a Stripe test payment method. Successful browser return is informational: publication becomes available only after the signed `checkout.session.completed` or `checkout.session.async_payment_succeeded` webhook is stored. Forward `refund.created` and `charge.dispute.created` events to verify immediate entitlement revocation and unpublication. Never use live keys locally. Stripe login, hosted Checkout, and live-mode activation are external actions and are not performed by repository tests.
+Restart the application after changing environment values. In the dashboard, use **Buy and continue to Stripe** and a Stripe test card. One pending Checkout is reused across tabs and retries for 31 minutes, and its site-expiry date is fixed when that attempt begins. A pending attempt is released only after Stripe sends its signed `checkout.session.expired` event. Successful browser return is informational: publication becomes available only after the signed `checkout.session.completed` or `checkout.session.async_payment_succeeded` webhook is stored. Forward `refund.created` and `charge.dispute.created` events to verify immediate entitlement revocation and unpublication. Never use live keys locally. Stripe login, hosted Checkout, and live-mode activation are external actions and are not performed by repository tests.
 
 ```sh
 npm run db:stop

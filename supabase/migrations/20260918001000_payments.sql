@@ -41,7 +41,7 @@ language sql stable security definer set search_path = '' as $$
       and p.expires_at > now()
   );
 $$;
-revoke all on function public.has_active_entitlement(uuid) from public;
+revoke all on function public.has_active_entitlement(uuid) from public, anon, authenticated;
 
 create function public.owner_entitlement()
 returns table (active boolean, expires_at timestamptz, revoked_reason text)
@@ -49,12 +49,15 @@ language sql stable security definer set search_path = '' as $$
   select
     coalesce(bool_or(p.revoked_at is null and p.expires_at > now()), false),
     max(p.expires_at) filter (where p.revoked_at is null),
-    (array_agg(p.revoked_reason order by p.revoked_at desc nulls last) filter (where p.revoked_reason is not null))[1]
+    case when count(*) filter (where p.payment_intent_id is not null and p.revoked_at is null) > 0
+      then null
+      else (array_agg(p.revoked_reason order by p.revoked_at desc nulls last) filter (where p.revoked_reason is not null))[1]
+    end
   from public.weddings w
   left join public.stripe_payments p on p.wedding_id = w.id
   where w.owner_id = (select auth.uid());
 $$;
-revoke all on function public.owner_entitlement() from public;
+revoke all on function public.owner_entitlement() from public, anon, authenticated;
 grant execute on function public.owner_entitlement() to authenticated;
 
 create function public.process_stripe_payment_event(
@@ -85,6 +88,10 @@ begin
   ) then
     raise exception 'Stripe metadata does not identify an owned wedding' using errcode = '22023';
   end if;
+
+  -- Stripe can deliver success and revocation events concurrently. Serialize all
+  -- ledger writes and reconciliation for one PaymentIntent within the transaction.
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(requested_payment_intent_id, 0));
 
   insert into public.stripe_payment_events (
     stripe_event_id, event_created_at, event_type, wedding_id, owner_id,
@@ -145,7 +152,7 @@ begin
   return new;
 end;
 $$;
-revoke all on function public.require_publication_entitlement() from public;
+revoke all on function public.require_publication_entitlement() from public, anon, authenticated;
 create trigger require_publication_entitlement
   before insert or update of published on public.weddings
   for each row execute function public.require_publication_entitlement();
