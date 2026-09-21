@@ -212,13 +212,18 @@ On 19 September 2026, the owner confirmed the real Stripe test-mode flow is work
 
 ## F011 - Expressive wedding theme redesign
 
-**Status:** In Progress
+**Status:** Done
 **Purpose:** Replace the flat guest layouts with three polished, distinctive wedding experiences, requested by the owner on 20 September 2026.
 **Depends on:** F008
 **References:** `docs/ux/savedatemoderndesign.png`, `docs/ux/template-ui-summary.md`.
 **Scope:** Redesign Save the Date, Details, and shared RSVP presentation. Modern Minimal follows the reference's immersive photography, large editorial typography, warm paper and botanical accents. Romantic uses an arched photograph, rose/burgundy palette and invitation styling; Bold uses deep teal, citrus accents and an asymmetric editorial composition. Preserve content, publication rules, theme IDs and all existing guest/owner functionality. Refresh fictional-example photography and marketing thumbnails to represent the new themes. No new customer fields or database changes.
 **Done when:** All three themes feel distinct at desktop/mobile widths; text remains legible with arbitrary photos, missing/failed images and maximum-length content; keyboard navigation and guest actions remain usable; relevant checks, screenshots and independent review pass. New asset origins/licences are recorded.
-**Handoff:** Implementing shared guest components and theme styles. Verification and independent review pending.
+**Handoff (21 September 2026):**
+
+- Rebuilt Save the Date, Details and RSVP guest surfaces around shared editorial components and locally bundled Cormorant Garamond. Modern Minimal now uses an immersive photographic cover with a central readability veil; Romantic uses a burgundy invitation and arched photography; Bold uses deep teal, citrus accents and an asymmetric editorial layout. Missing/failed-photo botanical artwork, marketing thumbnails, fictional example photography and source/licence records are included without changing wedding data or behaviour.
+- Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build), focused `npx.cmd playwright test tests/theme-design.spec.ts tests/themes.spec.ts tests/rsvp.spec.ts` (10/10), full `npm.cmd run test:e2e` (40/40 desktop/mobile), and `git diff --check`. Browser coverage includes all three landing/Details/RSVP themes, keyboard use, maximum-length content, 320-1440px breakpoints, missing/failed images, and extreme black/white photos.
+- Visually inspected generated desktop/mobile screenshots for all themes, Details, RSVP and fallback/long-content states: distinct hierarchy, readable arbitrary-photo treatment, usable guest actions and no horizontal overflow. The in-app browser runtime lacked required sandbox metadata, so repository Playwright supplied the rendered inspection artifacts.
+- Independent reviewer `Lovelace` found no Blocking issues. Its Important generated-image rights-record finding and Minor generated `next-env.d.ts` churn finding were resolved. Blockers: None. Next: Product Manager prepares F009 launch/release requirements; no deployment or live activation started.
 
 ## F009 - Launch and operate the service
 
