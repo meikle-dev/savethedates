@@ -7,6 +7,8 @@ Read only what the current task needs. [Backlog](backlog.md) holds current state
 | What is the product? | [Product overview](overview/product-overview.md) |
 | What should be built next? | [Backlog](backlog.md) |
 | How do I run it? | [Running instructions](../run-app-instructions.md) (includes local Supabase/Auth setup) |
+| How do I release and operate it? | [Release and operations](operations.md) (preparation; hosted release pending) |
+| What must be provided before launch? | [Production release inputs](release-inputs.md) |
 | Which technologies? | [Stack](overview/tech-stack.md) |
 | How is it structured and secured? | [Architecture](overview/architecture.md) |
 | How should the platform look? | [Platform direction](overview/site-ui.md), [reference board](ux/site-ui-design.png) |

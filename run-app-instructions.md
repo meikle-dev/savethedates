@@ -85,7 +85,7 @@ Development routes:
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Clearly labelled local preview entry |
+| `/` | Public marketing homepage and fictional theme examples |
 | `/demo` | Modern Minimal announcement with a local photograph |
 | `/demo-no-photo` | No photo or optional message |
 | `/demo-long-names` | Long names and no photo |
@@ -94,7 +94,7 @@ Development routes:
 | `/[weddingSlug]/details` | Enabled published Details page |
 | `/[weddingSlug]/rsvp` | Enabled RSVP entry; a private `invite` token is required to respond |
 
-Unknown and unpublished slugs return 404. All pages are currently noindex; there is no sitemap. All fixtures are fictional. Production returns 404 for every demo slug and the fixture photo route. Accounts, private preview, publication, Details, and RSVP work with configured Supabase.
+Unknown and unpublished slugs return 404. Only the marketing homepage permits indexing and appears in `/sitemap.xml`; wedding, account and example pages remain noindex. All fixtures are fictional. Production returns 404 for every demo slug and the fixture photo route. Accounts, private preview, publication, Details, and RSVP work with configured Supabase.
 
 ## Checks
 
@@ -114,6 +114,29 @@ npm run test:e2e
 Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Browser screenshots and failure traces are under ignored `test-results/`; `npx playwright show-report` opens the HTML report. CI also checks database isolation, application-container connectivity, and browser checks through the development container. Locally, run those browser checks with `E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e` after Compose is up.
 
 ## Production container smoke check
+
+Hosted configuration, promotion, rollback and recovery requirements are in [Release and operations](docs/operations.md). Production deployment is still pending F009.
+
+`npm run test:release` selects the account/recovery, publication, themes, Details, RSVP, payments and marketing browser checks. For production-container verification, supply `E2E_BASE_URL` and `E2E_PRODUCTION=1` as below. Run only against a local container connected to local Supabase with test Stripe placeholders; these tests create/delete fictional data and do not support hosted staging/production. Use port 3000 for the complete account journey because local Auth already allows its callback; temporarily stop the development app with `docker compose stop app`, and restart it with `docker compose start app` after removing the verification container. `APP_ORIGIN` must match `E2E_BASE_URL`.
+
+Complete local production check (PowerShell, with local Supabase running and `.env.docker` already generated):
+
+```powershell
+docker build --target production -t save-the-dates:f009 .
+docker compose stop app
+docker run -d --name wedding-f009-verify --add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ORIGIN=http://127.0.0.1:3000 -e STRIPE_SECRET_KEY=sk_test_local_webhook_verification_only -e STRIPE_WEBHOOK_SECRET=whsec_local_webhook_test_secret -p 127.0.0.1:3000:3000 save-the-dates:f009
+# Wait for the server to report ready.
+docker logs wedding-f009-verify
+npm.cmd run smoke -- http://127.0.0.1:3000
+$env:E2E_BASE_URL='http://127.0.0.1:3000'
+$env:E2E_PRODUCTION='1'
+npm.cmd run test:release
+# Clean up even if a check fails. Restart app only if it was running before.
+Remove-Item Env:E2E_BASE_URL, Env:E2E_PRODUCTION -ErrorAction SilentlyContinue
+docker stop wedding-f009-verify
+docker rm wedding-f009-verify
+docker compose start app
+```
 
 Marketing uses runtime `APP_ORIGIN` for its canonical URL, sitemap and social-sharing URLs. Set it to the exact browser-facing origin (no path), for example `-e APP_ORIGIN=http://127.0.0.1:3001` for the local production container below; the fallback is `http://localhost:3000`. Production HTTPS/domain configuration and launch indexation checks belong to F009. Only `/` is listed in `/sitemap.xml`; fictional `/examples/minimal`, `/examples/romantic`, `/examples/bold` and their Details pages remain noindex. They work in production without database access. `/demo` and `/preview-photo` remain development-only.
 
