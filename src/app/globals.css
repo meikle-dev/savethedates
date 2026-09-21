@@ -1,19 +1,10 @@
 @import "tailwindcss";
 @import "../features/marketing/marketing.css";
+@import "../features/weddings/wedding.css";
 
-:root {
-  --paper: #f8f5f0;
-  --ink: #222222;
-  --sage: #2f4f3e;
-}
-
+:root { --paper: #f8f5f0; --ink: #222222; --sage: #2f4f3e; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
 .editorial { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
-.couple-names { letter-spacing: 0.25em; overflow-wrap: anywhere; }
-.wedding-photo { height: clamp(240px, 40vw, 370px); margin-top: -32px; }
-.photo-fallback { color: #637461; background: #e5e8de; }
-.photo-fade { background: linear-gradient(to bottom, var(--paper) 12%, transparent 48%); }
-.wedding-photo img { object-position: center 57%; }
 a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-radius: 2px; }
 ::selection { background: #d8e0d5; }
 .platform { --teal: #0f4c5c; --navy: #0b2a3d; --muted: #52616a; --line: #d8deda; background: #f8f6f0; color: var(--navy); }
@@ -35,37 +26,6 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .form-notice { background: #e7eee7; color: #254e39; }
 .form-error { background: #f7e8e3; color: #8b3023; }
 .draft-badge { padding: 0.35rem 0.7rem; border-radius: 99px; background: #eaf2f6; color: var(--teal); font-size: 0.75rem; }
-@media (min-width: 768px) {
-  .wedding-shell { border-inline: 1px solid #e5e1da; }
-  .wedding-photo { margin-top: -42px; }
-}
-
-/* Shared guest tokens are inherited by future Details and RSVP surfaces. */
-.wedding-shell { --theme-accent: #2f4f3e; --theme-surface: #f8f5f0; --theme-text: #222; --theme-radius: 4px; --theme-heading: Georgia, "Times New Roman", serif; background: var(--theme-surface); color: var(--theme-text); overflow-wrap: anywhere; }
-.wedding-shell .editorial { font-family: var(--theme-heading); }
-.wedding-shell[data-theme="romantic"] { --theme-accent: #824c4c; --theme-surface: #fdf7f4; --theme-text: #62443e; --theme-radius: 24px; --sage: var(--theme-accent); }
-.wedding-shell[data-theme="bold"] { --theme-accent: #0f4c5c; --theme-surface: #d8e3e1; --theme-text: #0b2a3d; --theme-radius: 6px; --sage: var(--theme-accent); }
-.wedding-shell:not([data-theme="minimal"]) main { display: grid; isolation: isolate; }
-.wedding-shell:not([data-theme="minimal"]) .wedding-photo { grid-area: 1 / 1; height: auto; min-height: 720px; margin: 0; z-index: -1; }
-.wedding-shell:not([data-theme="minimal"]) .wedding-announcement { grid-area: 1 / 1; padding: 4rem 1.5rem; }
-.wedding-shell[data-theme="romantic"] header { padding-bottom: 1.75rem; }
-.wedding-shell[data-theme="romantic"] .couple-names { font-family: "Segoe Script", "Apple Chancery", Georgia, serif; font-size: clamp(1.35rem, 4vw, 2rem); text-transform: none; letter-spacing: 0; font-style: italic; }
-.wedding-shell[data-theme="romantic"] .wedding-announcement { align-self: end; padding-top: 20rem; color: #fff9f4; }
-.wedding-shell[data-theme="romantic"] h1 { font-size: clamp(3.5rem, 9vw, 6rem); letter-spacing: -0.045em; }
-.wedding-shell[data-theme="romantic"] h1 span { display: inline; }
-.wedding-shell[data-theme="romantic"] h1 span::before { content: " "; }
-.wedding-shell[data-theme="romantic"] .photo-fallback { color: #ead6c9; background: #795951; }
-.wedding-shell[data-theme="romantic"] .photo-fade { background: linear-gradient(to bottom, transparent, rgba(43, 25, 21, 0.82) 45%); }
-.wedding-shell[data-theme="romantic"] .wedding-announcement > div { background: #ead6c9; }
-.wedding-shell[data-theme="romantic"] footer { border-top: 8px solid #eedad5; }
-.wedding-shell[data-theme="bold"] header { text-align: left; padding-bottom: 2rem; }
-.wedding-shell[data-theme="bold"] .couple-names { max-width: none; }
-.wedding-shell[data-theme="bold"] .wedding-announcement { text-align: left; padding-top: 6rem; padding-bottom: 10rem; }
-.wedding-shell[data-theme="bold"] .wedding-announcement p, .wedding-shell[data-theme="bold"] .wedding-announcement > div { margin-left: 0; }
-.wedding-shell[data-theme="bold"] .photo-fallback { background: #8ca3a0; color: #0f4c5c; }
-.wedding-shell[data-theme="bold"] .photo-fade { background: linear-gradient(to bottom, rgba(250,250,249,0.9) 0%, rgba(250,250,249,0.94) 72%, rgba(250,250,249,0.2)); }
-.wedding-shell[data-theme="bold"] footer { background: #0f4c5c; color: #fafaf9; }
-.wedding-shell[data-theme="bold"] footer .text-\[var\(--sage\)\] { color: #fafaf9; }
 .theme-option { display: flex; align-items: flex-start; gap: 0.75rem; padding: 1rem; border: 1px solid #98a5a7; border-radius: 6px; cursor: pointer; }
 .theme-option:has(:checked) { border-color: #0f4c5c; background: #e7eeeb; box-shadow: inset 0 0 0 1px #0f4c5c; }
 .theme-option input { margin-top: 0.25rem; accent-color: #0f4c5c; width: 1rem; height: 1rem; flex-shrink: 0; }
@@ -76,40 +36,6 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .details-editor-group { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
 .details-editor-group legend { padding-right: 0.75rem; font-size: 1rem; font-weight: 600; }
 .details-faq-editor { padding: 1.1rem; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,0.45); }
-.wedding-navigation { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 1.4rem; font-size: 0.75rem; letter-spacing: 0.13em; text-transform: uppercase; }
-.wedding-navigation a { min-height: 44px; display: inline-flex; align-items: center; color: currentColor; text-underline-offset: 0.35rem; }
-.wedding-navigation a[aria-current="page"] { color: var(--theme-accent); text-decoration: underline; }
-.details-header { display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 1px solid color-mix(in srgb, var(--theme-text) 15%, transparent); }
-.details-header .couple-names { max-width: 44rem; }
-.details-header .wedding-navigation { margin-top: 0.8rem; }
-.details-intro { max-width: 42rem; margin-inline: auto; text-align: center; }
-.details-kicker { color: var(--theme-accent); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
-.details-intro h1 { margin-top: 0.75rem; font-size: clamp(3rem, 10vw, 6rem); line-height: 0.98; letter-spacing: -0.045em; }
-.details-intro > p:last-child { margin-top: 1.25rem; line-height: 1.7; }
-.details-grid { display: grid; gap: 1rem; max-width: 52rem; margin: 3rem auto 0; }
-.details-card { padding: 1.5rem; border: 1px solid color-mix(in srgb, var(--theme-text) 15%, transparent); border-radius: var(--theme-radius); background: color-mix(in srgb, var(--theme-surface) 86%, white); text-align: center; }
-.details-card h2 { font-family: var(--theme-heading); font-size: 1.75rem; line-height: 1.15; }
-.details-card > * + * { margin-top: 0.75rem; }
-.details-emphasis { color: var(--theme-accent); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
-.details-link { display: inline-flex; min-height: 44px; align-items: center; color: var(--theme-accent); font-weight: 700; text-decoration: underline; text-underline-offset: 0.3rem; }
-.details-faqs { text-align: left; }
-.details-faqs h2 { text-align: center; }
-.details-faqs dl > div { padding-block: 1.1rem; border-top: 1px solid color-mix(in srgb, var(--theme-text) 13%, transparent); }
-.details-faqs dl > div:first-child { margin-top: 1rem; }
-.details-faqs dt { font-weight: 700; }
-.details-faqs dd { margin-top: 0.45rem; line-height: 1.65; }
-.details-empty { max-width: 38rem; margin: 3rem auto 0; padding: 1.25rem; border: 1px dashed var(--theme-accent); text-align: center; line-height: 1.6; }
-.details-footer { border-top: 1px solid color-mix(in srgb, var(--theme-text) 15%, transparent); }
-.details-shell[data-theme="romantic"] .details-card { background: #fffafa; box-shadow: 0 12px 35px rgba(98,68,62,0.07); }
-.details-shell[data-theme="romantic"] .details-intro h1 { font-style: italic; }
-.details-shell[data-theme="bold"] .details-header { align-items: flex-start; text-align: left; background: #0f4c5c; color: #fafaf9; }
-.details-shell[data-theme="bold"] .wedding-navigation { justify-content: flex-start; }
-.details-shell[data-theme="bold"] .wedding-navigation a[aria-current="page"] { color: #fff; }
-.details-shell[data-theme="bold"] .details-intro { margin-left: 0; text-align: left; }
-.details-shell[data-theme="bold"] .details-grid { max-width: none; }
-.details-shell[data-theme="bold"] .details-card { text-align: left; border: 0; border-left: 6px solid var(--theme-accent); background: #f4f7f6; }
-.details-shell[data-theme="bold"] .details-faqs h2 { text-align: left; }
-.details-shell[data-theme="bold"] .details-footer { background: #0f4c5c; color: #fafaf9; }
 .rsvp-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,0.5); }
 .rsvp-summary div { min-width: 0; padding: 1rem 0.65rem; text-align: center; }
 .rsvp-summary div + div { border-left: 1px solid var(--line); }
@@ -119,24 +45,6 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .rsvp-status { display: inline-flex; padding: 0.25rem 0.55rem; border-radius: 99px; background: #edf0ef; color: var(--muted); font-size: 0.7rem; }
 .rsvp-status.is-attending { background: #e4efe7; color: #28583a; }
 .rsvp-status.is-declined { background: #f3e9e5; color: #7a3d33; }
-.rsvp-card { max-width: 38rem; margin: 3rem auto 0; padding: 1.5rem; border: 1px solid color-mix(in srgb, var(--theme-text) 15%, transparent); border-radius: var(--theme-radius); background: color-mix(in srgb, var(--theme-surface) 86%, white); }
-.rsvp-card .field-input { color: #0b2a3d; }
-.rsvp-choice { display: flex; min-height: 52px; align-items: center; gap: 0.75rem; padding: 0.85rem; border: 1px solid color-mix(in srgb, var(--theme-text) 30%, transparent); border-radius: var(--theme-radius); cursor: pointer; }
-.rsvp-choice:has(:checked) { border-color: var(--theme-accent); box-shadow: inset 0 0 0 1px var(--theme-accent); }
-.rsvp-choice:has(:focus-visible) { outline: 2px solid var(--theme-accent); outline-offset: 3px; }
-.rsvp-choice input { width: 1.1rem; height: 1.1rem; flex-shrink: 0; accent-color: var(--theme-accent); }
-.rsvp-submit { display: inline-flex; min-height: 48px; width: 100%; align-items: center; justify-content: center; padding: 0.8rem 1.35rem; border-radius: var(--theme-radius); background: var(--theme-accent); color: white; font-weight: 700; cursor: pointer; }
-.rsvp-submit:disabled { opacity: 0.65; cursor: wait; }
-.rsvp-shell[data-theme="romantic"] .rsvp-card { background: #fffafa; box-shadow: 0 12px 35px rgba(98,68,62,0.07); }
-.rsvp-shell[data-theme="bold"] .rsvp-card { max-width: none; margin-left: 0; border: 0; border-left: 6px solid var(--theme-accent); background: #f4f7f6; }
 @media (min-width: 768px) {
-  .wedding-shell:not([data-theme="minimal"]) .wedding-announcement { padding-inline: 5rem; }
-  .wedding-shell[data-theme="romantic"] .wedding-photo { min-height: 850px; }
-  .wedding-shell[data-theme="bold"] .wedding-announcement { padding-top: 8rem; }
-  .details-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
-  .details-card { padding: 2rem; }
-  .details-faqs { grid-column: 1 / -1; }
-  .details-shell[data-theme="bold"] .details-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rsvp-invitation { flex-direction: row; align-items: center; justify-content: space-between; gap: 1.5rem; }
-  .rsvp-card { padding: 2rem; }
 }

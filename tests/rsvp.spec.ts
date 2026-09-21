@@ -60,6 +60,21 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
       await guestPage.reload();
       await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
       expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      const submit = guestPage.getByRole("button", { name: "Update RSVP" });
+      await submit.focus();
+      const focusContrast = await submit.evaluate((button) => {
+        const luminance = (color: string) => {
+          const [r, g, b] = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(value => {
+            const channel = value / 255;
+            return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+          });
+          return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        };
+        const outline = luminance(getComputedStyle(button).outlineColor);
+        const surface = luminance(getComputedStyle(button.closest(".rsvp-card")!).backgroundColor);
+        return (Math.max(outline, surface) + 0.05) / (Math.min(outline, surface) + 0.05);
+      });
+      expect(focusContrast, `${theme} keyboard focus has at least 3:1 contrast`).toBeGreaterThanOrEqual(3);
       await guestPage.screenshot({ path: test.info().outputPath(`rsvp-${theme}.png`), fullPage: true });
     }
 

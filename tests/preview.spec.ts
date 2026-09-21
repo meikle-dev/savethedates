@@ -4,7 +4,7 @@ test("demo shows the announcement without unavailable controls", async ({ page }
   const response = await page.goto("/demo");
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
-  await expect(page.locator("header")).toHaveText("Chloe&Ross");
+  await expect(page.locator(".couple-names")).toHaveText("Chloe&Ross");
   await expect(page.locator("time")).toHaveText("14 June 2027");
   await expect(page.getByText("Lake Como, Italy")).toBeVisible();
   await expect(page.getByText("We’re getting married", { exact: false })).toBeVisible();

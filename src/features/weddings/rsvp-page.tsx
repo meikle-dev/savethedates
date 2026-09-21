@@ -3,7 +3,8 @@
 import { useActionState } from "react";
 import type { GuestRsvp, RsvpState } from "./rsvp";
 import { submitRsvp } from "@/features/workspace/rsvp-actions";
-import { WeddingNavigation } from "./wedding-navigation";
+import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
+import { OliveBranch } from "./wedding-art";
 
 export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_name: string; second_name: string; theme: GuestRsvp["theme"]; details_enabled: boolean; rsvp_enabled: boolean }; guest: GuestRsvp | null; slug: string; token: string | null }) {
   const [state, action, pending] = useActionState<RsvpState, FormData>(submitRsvp, {});
@@ -12,12 +13,11 @@ export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_nam
   const unavailable = !token || !guest;
   const open = !!guest?.is_open;
   const rsvpHref = wedding.rsvp_enabled ? `/${slug}/rsvp${token ? `?invite=${token}` : ""}` : undefined;
-  return <div data-theme={wedding.theme} className="wedding-shell details-shell rsvp-shell mx-auto min-h-svh max-w-[1100px]">
-    <header className="details-header px-6 pt-8 md:px-12 md:pt-11">
-      <p className="couple-names text-xs leading-loose font-medium uppercase md:text-sm">{wedding.first_name} <span aria-hidden="true">&amp;</span> {wedding.second_name}</p>
-      <WeddingNavigation homeHref={`/${slug}`} detailsHref={wedding.details_enabled ? `/${slug}/details` : undefined} rsvpHref={rsvpHref} current="rsvp" />
-    </header>
-    <main id="main" className="px-6 py-14 md:px-12 md:py-20">
+  const names = [wedding.first_name, wedding.second_name] as const;
+  return <WeddingFrame theme={wedding.theme} className="details-shell rsvp-shell">
+    <WeddingHeader names={names} homeHref={`/${slug}`} detailsHref={wedding.details_enabled ? `/${slug}/details` : undefined} rsvpHref={rsvpHref} current="rsvp" />
+    <main id="main" className="rsvp-main">
+      <OliveBranch />
       <div className="details-intro">
         <p className="details-kicker">Will you join us?</p>
         <h1 className="editorial">RSVP</h1>
@@ -51,5 +51,6 @@ export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_nam
         </form>}
       </section>
     </main>
-  </div>;
+    <WeddingFooter names={names} />
+  </WeddingFrame>;
 }

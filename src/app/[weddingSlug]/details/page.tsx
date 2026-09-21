@@ -8,5 +8,5 @@ export default async function DetailsPage({ params }: { params: Promise<{ weddin
   const { weddingSlug } = await params;
   const [details, wedding] = await Promise.all([publishedWeddingDetails(weddingSlug), publishedWedding(weddingSlug)]);
   if (!details) notFound();
-  return <WeddingDetailsPageView details={details} homeHref={`/${weddingSlug}`} detailsHref={`/${weddingSlug}/details`} rsvpHref={wedding?.rsvp_enabled ? `/${weddingSlug}/rsvp` : undefined} />;
+  return <WeddingDetailsPageView details={details} image={wedding?.photo_path ? { src: `/${weddingSlug}/photo`, alt: "" } : undefined} homeHref={`/${weddingSlug}`} detailsHref={`/${weddingSlug}/details`} rsvpHref={wedding?.rsvp_enabled ? `/${weddingSlug}/rsvp` : undefined} />;
 }

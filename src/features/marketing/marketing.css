@@ -27,19 +27,26 @@
 .hero-orbit { position: absolute; width: 450px; height: 450px; border: 1px solid #d4ded432; border-radius: 50%; top: 20px; left: 0; background: radial-gradient(ellipse, #2b615952, transparent 70%); }
 .phone-preview { position: relative; width: 220px; height: 414px; overflow: hidden; border: 6px solid #172526; border-radius: 32px; background: #f8f6f0; color: #1b3431; box-shadow: 0 0 0 2px #99a49e, 8px 20px 35px #0003; }
 .phone-preview img { object-fit: cover; object-position: 50% 80%; }
+.phone-photo { position: absolute; inset: 0; overflow: hidden; }
 .phone-speaker { position: absolute; z-index: 3; top: 8px; left: 50%; transform: translateX(-50%); width: 65px; height: 15px; border-radius: 20px; background: #172526; }
-.phone-shade { position: absolute; inset: 0; background: linear-gradient(#f8f6f0 5%, #f8f6f0 38%, #f8f6f000 74%); }
+.phone-shade { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 38%, #f8f6f0ed 15%, #f8f6f0ba 35%, transparent 70%); }
 .phone-copy { position: relative; padding: 52px 16px 0; text-align: center; }
 .phone-copy span { display: block; font-size: 7px; letter-spacing: 1.6px; }
 .phone-copy p { margin: 20px 0; font: 42px/.96 Georgia, serif; letter-spacing: -1.8px; }
 .phone-copy small { display: block; font-size: 6px; letter-spacing: 1.1px; margin-top: 9px; }
 .phone-bottom { position: absolute; bottom: 15px; width: 100%; text-align: center; color: white; text-shadow: 0 1px 5px #000; font: italic 15px Georgia, serif; }
-.phone-romantic { background: #6f4841; color: #fff8f0; }
-.phone-romantic .phone-shade { background: linear-gradient(#35201815 15%, #352018d9 80%); }
-.phone-romantic .phone-copy { padding-top: 186px; }
-.phone-romantic .phone-copy p { font-style: italic; }
-.phone-bold .phone-shade { background: linear-gradient(#e3eeebed 20%, #e3eeebaa 62%, transparent); }
-.phone-bold .phone-copy { text-align: left; padding-top: 75px; }
+.phone-romantic { background: #fff4eb; color: #582b39; }
+.phone-romantic .phone-photo { inset: 28px 12px 49%; border-radius: 90px 90px 0 0; }
+.phone-romantic .phone-shade { display: none; }
+.phone-romantic .phone-copy { position: absolute; top: 55%; width: 100%; padding: 0 12px; }
+.phone-romantic .phone-copy p { margin: 10px 0; }
+.phone-romantic .phone-bottom { display: none; }
+.phone-bold { background: #133f3e; color: #e5edac; }
+.phone-bold .phone-photo { inset: 58% 12px 12px; }
+.phone-bold .phone-shade { display: none; }
+.phone-bold .phone-copy { text-align: left; padding-top: 45px; }
+.phone-bold .phone-copy p { margin: 12px 0; }
+.phone-bold .phone-bottom { display: none; }
 .hero-phone-back { position: absolute; left: 35px; top: 30px; transform: rotate(-12deg); }
 .hero-phone-front { position: absolute; left: 190px; top: 0; transform: rotate(6deg); }
 .hero-phone-front .phone-preview { width: 244px; height: 458px; }
@@ -53,7 +60,7 @@
 .theme-visual .phone-preview { transform: rotate(-5deg); width: 180px; height: 340px; border-width: 5px; border-radius: 27px; }
 .theme-visual .phone-copy { padding-top: 45px; }
 .theme-visual .phone-copy p { font-size: 36px; }
-.theme-visual .phone-romantic .phone-copy { padding-top: 125px; }
+.theme-visual .phone-romantic .phone-copy { padding-top: 0; }
 .theme-romantic .theme-visual { background: #edddd7; }
 .theme-romantic .phone-preview { transform: rotate(4deg); }
 .theme-bold .theme-visual { background: #c9d9d9; }

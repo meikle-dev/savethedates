@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import sharp from "sharp";
 import { localSupabase } from "./helpers/local-supabase";
 
 const local = localSupabase();
@@ -73,6 +74,23 @@ test("theme preview is private and applying preserves the live wedding", async (
       expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await guestPage.screenshot({ path: test.info().outputPath(`${id}-long-failed-photo.png`), fullPage: true });
     }
+    // The overlay must protect the whole message even when valid newlines make it very tall.
+    await guestPage.unroute(`**/${slug}/photo`);
+    const darkPhoto = await sharp({ create: { width: 400, height: 400, channels: 3, background: "#000" } }).png().toBuffer();
+    await guestPage.route(`**/${slug}/photo`, route => route.fulfill({ contentType: "image/png", body: darkPhoto }));
+    expect((await local.admin.from("weddings").update({ theme: "minimal", message: "With love\n".repeat(50).trim() }).eq("owner_id", ownerId)).error).toBeNull();
+    await guestPage.reload();
+    await expect(guestPage.locator(".wedding-photo img")).toHaveJSProperty("naturalWidth", 400);
+    const longMessageScreenshot = await guestPage.screenshot({ path: test.info().outputPath("minimal-multiline-dark-photo.png"), fullPage: true });
+    // Sample the background just below the last message line, away from glyphs.
+    const samplePoint = await guestPage.locator(".wedding-message").evaluate(element => {
+      const bounds = element.getBoundingClientRect();
+      return { x: bounds.left + scrollX + bounds.width / 2, y: bounds.bottom + scrollY + 3, pageWidth: document.documentElement.clientWidth };
+    });
+    const scale = (await sharp(longMessageScreenshot).metadata()).width! / samplePoint.pageWidth;
+    const rgb = await sharp(longMessageScreenshot).extract({ left: Math.floor(samplePoint.x * scale), top: Math.floor(samplePoint.y * scale), width: 1, height: 1 }).removeAlpha().raw().toBuffer();
+    expect(Math.min(...rgb.subarray(0, 3)), "Ivory contrast backing continues past the final line").toBeGreaterThan(200);
+    expect((await local.admin.from("weddings").update({ theme: "bold" }).eq("owner_id", ownerId)).error).toBeNull();
     await page.goto("/dashboard/preview?theme=unknown");
     await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", "bold");
     await guestPage.goto("/dashboard/preview?theme=romantic");

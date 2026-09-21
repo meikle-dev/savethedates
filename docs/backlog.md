@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 are complete and the usable-core MVP milestone is verified. **Next: F009**.
+Ordered by recommended implementation sequence. F001-F008 are complete and the usable-core MVP milestone is verified. **Current: F011**, the owner-requested theme redesign; F009 release preparation follows.
 
 ## Status and handoff rules
 
@@ -209,6 +209,16 @@ On 19 September 2026, the owner confirmed the real Stripe test-mode flow is work
 - Production checks exposed a duplicated return-link hash and 701px overflow; a native anchor and 760px stacking breakpoint resolved both, with automated coverage at 320/701/760/761/768/1024px plus desktop/mobile profiles. The existing development container initially served stale compiled content; `docker compose restart app` resolved it and all eight marketing checks passed. Temporary production container stopped/removed; development app and Supabase remain running.
 - Visually inspected the homepage, pricing, FAQ focus state, social card and all three landing/Details examples at mobile and desktop sizes; readable controls, distinct themes, and no horizontal overflow. Browser skill setup failed in this environment, so repository Playwright supplied screenshots. Local unthrottled production measurements at 320px: LCP 160ms desktop profile / 252ms mobile profile, CLS 0, resource transfer approximately 169KB / 230KB; these are local diagnostics, not field Core Web Vitals. Independent reviewer `review_f008` reviewed source, final fixes and screenshots with no outstanding Blocking or Important findings.
 - Blockers: None. Database integration/persistence, hosted CI, Safari/Firefox and external deployment were not rerun for this marketing-only feature. Next: Product Manager prepares F009 deployment, recovery, support and release requirements; no F009 implementation or live activation started.
+
+## F011 - Expressive wedding theme redesign
+
+**Status:** In Progress
+**Purpose:** Replace the flat guest layouts with three polished, distinctive wedding experiences, requested by the owner on 20 September 2026.
+**Depends on:** F008
+**References:** `docs/ux/savedatemoderndesign.png`, `docs/ux/template-ui-summary.md`.
+**Scope:** Redesign Save the Date, Details, and shared RSVP presentation. Modern Minimal follows the reference's immersive photography, large editorial typography, warm paper and botanical accents. Romantic uses an arched photograph, rose/burgundy palette and invitation styling; Bold uses deep teal, citrus accents and an asymmetric editorial composition. Preserve content, publication rules, theme IDs and all existing guest/owner functionality. Refresh fictional-example photography and marketing thumbnails to represent the new themes. No new customer fields or database changes.
+**Done when:** All three themes feel distinct at desktop/mobile widths; text remains legible with arbitrary photos, missing/failed images and maximum-length content; keyboard navigation and guest actions remain usable; relevant checks, screenshots and independent review pass. New asset origins/licences are recorded.
+**Handoff:** Implementing shared guest components and theme styles. Verification and independent review pending.
 
 ## F009 - Launch and operate the service
 
