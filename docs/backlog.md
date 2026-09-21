@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011 are complete and the usable-core MVP milestone is verified. **Current: F009**, launch and operations preparation.
+Ordered by recommended implementation sequence. F001-F008, F011 and F012 are complete and the usable-core MVP milestone is verified. **Current: F009**, launch and operations preparation.
 
 ## Status and handoff rules
 
@@ -224,6 +224,20 @@ On 19 September 2026, the owner confirmed the real Stripe test-mode flow is work
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build), focused `npx.cmd playwright test tests/theme-design.spec.ts tests/themes.spec.ts tests/rsvp.spec.ts` (10/10), full `npm.cmd run test:e2e` (40/40 desktop/mobile), and `git diff --check`. Browser coverage includes all three landing/Details/RSVP themes, keyboard use, maximum-length content, 320-1440px breakpoints, missing/failed images, and extreme black/white photos.
 - Visually inspected generated desktop/mobile screenshots for all themes, Details, RSVP and fallback/long-content states: distinct hierarchy, readable arbitrary-photo treatment, usable guest actions and no horizontal overflow. The in-app browser runtime lacked required sandbox metadata, so repository Playwright supplied the rendered inspection artifacts.
 - Independent reviewer `Lovelace` found no Blocking issues. Its Important generated-image rights-record finding and Minor generated `next-env.d.ts` churn finding were resolved. Blockers: None. Next: Product Manager prepares F009 launch/release requirements; no deployment or live activation started.
+
+## F012 - Mobile-first Wedding Details refinement
+
+**Status:** Done
+**Purpose:** Improve the guest Details page across all three themes, following the owner's mobile reference without copying it.
+**Depends on:** F011
+**References:** `docs/ux/designs/mobile-friendly-details-design.png`, `docs/ux/template-ui-summary.md`.
+**Scope and acceptance:** Replace the cramped card layout with a wide photographic opening, compact editorial introduction, and readable icon-led sections separated by fine rules. Prioritise mobile scanning, 44px link targets, legible text, and restrained decoration. Keep all supplied information visible and omit empty sections; maintain photo fallback, navigation, theme parity, preview/publication and noindex behaviour. Preserve each theme's visual identity and inspect mobile/desktop plus narrow and long-content cases. No new fields or assets are needed. Required checks and independent review must pass before Done.
+**Handoff (21 September 2026):**
+
+- Updated `src/features/weddings/wedding-details.tsx` and `wedding.css`: wide photo, compact heading, icon-led rows, larger text, theme-specific surfaces and accessible directions labels. Removed decorative card captions. Shared RSVP appearance is preserved; theme guidance is current. The owner's untracked reference images are preserved.
+- Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npx.cmd playwright test tests/theme-design.spec.ts tests/details.spec.ts tests/rsvp.spec.ts tests/marketing.spec.ts` (18/18 mobile/desktop); `git diff --check`. Browser coverage includes 320–1440px widths, photo failures, empty/disabled Details, owner-to-guest updates, noindex and RSVP submission/correction/closure.
+- Inspected all themes at mobile and desktop sizes using Playwright screenshots in ignored `test-results/`. Additional `node --input-type=module` Playwright presentation stress checks passed at 320px with long names, 1,000-character paragraphs and unbroken FAQ text. In-app browser connection failed before startup; repository Playwright supplied visual verification. Docker development app refreshed with `docker compose restart app`. Safari/Firefox, hosted CI and deployment were not run.
+- Independent reviewer `review_f012` found no Blocking, Important or Minor issues after reviewing the diff, responsive screenshots, fallback and shared RSVP presentation. Blockers: None for F012. Next: resolve F009's existing release inputs; no release work started by this request.
 
 ## F009 - Launch and operate the service
 
