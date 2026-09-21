@@ -1,5 +1,6 @@
 ﻿import { expect, test } from "@playwright/test";
 import { localSupabase } from "./helpers/local-supabase";
+import type { BrowserContext } from "@playwright/test";
 
 const local = localSupabase();
 
@@ -19,6 +20,47 @@ async function emailLink(email: string, type: "signup" | "recovery") {
     return false;
   }, { timeout: 20_000, message: `Expected local ${type} email` }).toBe(true);
   return link;
+}
+
+type BrowserCookies = Awaited<ReturnType<BrowserContext["cookies"]>>;
+
+function authCookieValue(cookies: BrowserCookies) {
+  const whole = cookies.find(({ name }) => name === "wedding-auth");
+  if (whole) return whole.value;
+  return cookies
+    .filter(({ name }) => /^wedding-auth\.\d+$/.test(name))
+    .sort((left, right) => Number(left.name.split(".").at(-1)) - Number(right.name.split(".").at(-1)))
+    .map(({ value }) => value)
+    .join("");
+}
+
+function decodeAuthCookie(value: string) {
+  expect(value).toMatch(/^base64-/);
+  return JSON.parse(Buffer.from(value.slice("base64-".length), "base64url").toString("utf8")) as { expires_at: number };
+}
+
+async function expireAccessToken(context: BrowserContext) {
+  const cookies = await context.cookies();
+  const authCookies = cookies.filter(({ name }) => name === "wedding-auth" || /^wedding-auth\.\d+$/.test(name));
+  expect(authCookies.length).toBeGreaterThan(0);
+  const session = decodeAuthCookie(authCookieValue(cookies));
+  session.expires_at = 1;
+  const expiredValue = `base64-${Buffer.from(JSON.stringify(session)).toString("base64url")}`;
+  const chunks = expiredValue.length <= 3180 ? [expiredValue] : expiredValue.match(/.{1,3180}/g)!;
+  const template = authCookies[0];
+
+  await context.clearCookies({ name: /^wedding-auth(?:\.\d+)?$/ });
+  await context.addCookies(chunks.map((value, index) => ({
+    name: chunks.length === 1 ? "wedding-auth" : `wedding-auth.${index}`,
+    value,
+    domain: template.domain,
+    path: template.path,
+    expires: template.expires,
+    httpOnly: template.httpOnly,
+    secure: template.secure,
+    sameSite: template.sameSite,
+  })));
+  return expiredValue;
 }
 
 test("owner signs up, confirms email, saves a private draft, and recovers access", async ({ page, context }) => {
@@ -58,6 +100,24 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.screenshot({ path: test.info().outputPath("workspace.png"), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: /Your workspace/ })).toHaveAttribute("href", "/dashboard");
+    await expect(page.getByRole("link", { name: /Return to your workspace/ }).first()).toHaveAttribute("href", "/dashboard");
+    await expect(page.getByRole("link", { name: /Sign in/ })).toHaveCount(0);
+    await page.screenshot({ path: test.info().outputPath("signed-in-homepage.png"), fullPage: true });
+
+    const expiredCookie = await expireAccessToken(context);
+    await page.reload();
+    await expect(page.getByRole("link", { name: /Return to your workspace/ }).first()).toBeVisible();
+    const refreshedCookie = authCookieValue(await context.cookies());
+    expect(refreshedCookie).not.toBe(expiredCookie);
+    expect(decodeAuthCookie(refreshedCookie).expires_at).toBeGreaterThan(Date.now() / 1000);
+    await page.reload();
+    await expect(page.getByRole("link", { name: /Return to your workspace/ }).first()).toBeVisible();
+    await page.getByRole("link", { name: /Return to your workspace/ }).first().click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.locator('input[name="location"]')).toHaveValue("Edinburgh, Scotland");
+
     // Server validation preserves the other fields instead of resetting the form.
     await page.locator('input[name="location"]').fill(" ");
     await page.getByRole("button", { name: "Save private draft" }).click();
@@ -76,6 +136,9 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.getByRole("button", { name: "Save private draft" }).click();
     await expect(page.getByRole("main").getByRole("alert")).toContainText("session has ended");
     await expect(page.locator('input[name="location"]')).toHaveValue("Unsaved venue");
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: /Sign in/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Your workspace/ })).toHaveCount(0);
 
     await page.goto("/account/recovery");
     await page.getByLabel("Email address").fill(email);
@@ -110,6 +173,9 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
 
 test("anonymous and forged sessions cannot open the workspace or password editor", async ({ page, context }) => {
   await context.addCookies([{ name: "wedding-auth", value: "forged-session", domain: "127.0.0.1", path: "/" }]);
+  await page.goto("/");
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: /Sign in/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Your workspace/ })).toHaveCount(0);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/account\/sign-in$/);
   await expect(page.getByRole("heading", { name: "Welcome back." })).toBeVisible();

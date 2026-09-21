@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F013 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F014**, from the 21 September owner review below. F014-F022 remain ordered review follow-up work.
+Ordered by recommended implementation sequence. F001-F008 and F011-F014 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F015**, from the 21 September owner review below. F015-F022 remain ordered review follow-up work.
 
 ## Status and handoff rules
 
@@ -284,12 +284,13 @@ Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `
 
 ## F014 - Keep owner access clear when returning home
 
-**Status:** Planned
+**Status:** Done
 **Priority / lead:** P1 / Software Engineer with UX for homepage account navigation
 **Purpose:** Owners can leave the workspace and return without an unnecessary login.
 **Depends on:** F002, F008 (Done)
 **References:** `src/app/page.tsx`, `src/features/marketing/home.tsx`, `src/proxy.ts`, `src/lib/supabase/server.ts`, `src/features/account/actions.ts`, `tests/account.spec.ts`, `tests/marketing.spec.ts`, `docs/overview/architecture.md`.
 **Evidence and scope:** The homepage currently renders unconditional signup/sign-in links and does not inspect authentication. This establishes misleading presentation, not proven cookie loss. First distinguish the two using dashboard -> home -> dashboard and a reload. Keep the marketing homepage available; verified signed-in owners receive a clear return-to-workspace action.
+**Prepared scope and UX:** Keep `/` as the indexable marketing page and render its account actions from a server-verified Supabase user check. Signed-out or unverifiable requests keep Sign in and Start your site; a verified owner sees Your workspace in navigation and Return to your workspace on primary calls to action. Pass only the verified signed-in boolean to the marketing component, never identity or wedding data. Include `/` in session refresh middleware, keep the response private/no-store, and fall back to signed-out presentation if auth is unavailable. No cookie-format, account, dashboard or marketing-content redesign is required. Dependencies and routine UX/security decisions are resolved; prepared as Ready and taken into engineering in this session.
 **Done when:**
 
 - A valid signed-in owner sees an appropriate account/workspace action on `/` and can return to their own workspace after navigation/reload without signing in again. Valid refresh behaviour works; actual sign-out and expired/unrefreshable sessions require login.
@@ -297,7 +298,9 @@ Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `
 - No owner data or personalised auth state leaks through shared caching; server authorisation remains mandatory and one owner's data cannot appear to another browser.
 - Account and marketing browser checks cover signed-in, signed-out, refresh and expired-session cases. Independent auth review passes; update the architecture's current statement that the homepage makes no auth calls if implementation changes it.
 
-**Next preparation:** Choose the smallest auth-aware navigation approach while preserving public marketing rendering; reproduce actual session behaviour before changing cookie configuration. No owner decision needed.
+**Handoff (21 September 2026):** The homepage now verifies the Supabase user on the server and shows Your workspace / Return to your workspace actions only for a valid session; signed-out, forged, expired and unavailable auth states retain the guest actions. `/` participates in session refresh, remains dynamically rendered and returns `private, no-store` in production. Only a boolean reaches the marketing component; no identity or wedding data is loaded. Architecture guidance now records this boundary.
+
+Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npx.cmd playwright test tests/account.spec.ts tests/marketing.spec.ts` (12/12 desktop/mobile); final refresh-token regression run `npx.cmd playwright test tests/account.spec.ts` (4/4 desktop/mobile); `git diff --check`. The browser regression expires only the access-token timestamp, verifies cookie rotation to a future expiry on `/`, reloads and returns to the persisted dashboard; it also covers signed-out and forged/unrefreshable sessions. A production start returned HTTP 200 with `Cache-Control: private, no-store, max-age=0`. Inspected the signed-in homepage at 1440×1000 and iPhone 13 widths: workspace actions are clear, readable and do not overflow. Independent reviewer `review_f014` found one Important missing refresh-token case; the new regression resolved it, and re-review found no remaining Blocking, Important or Minor findings. Blockers: None. Next: Product Manager prepares F015; no F015 implementation started.
 
 ## F015 - Preserve private RSVP access across the wedding journey
 

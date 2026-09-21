@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 test("marketing leads to signup and accurately explains price, visibility and RSVP", async ({ page }) => {
-  await page.goto("/");
+  const response = await page.goto("/");
+  expect(response?.headers()["cache-control"]).toMatch(/no-store|no-cache/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your wedding website,beautifully done.");
+  await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: /Sign in/ })).toHaveAttribute("href", "/account/sign-in");
+  await expect(page.getByRole("link", { name: /Your workspace/ })).toHaveCount(0);
   await expect(page.locator(".price")).toContainText("£29");
   await expect(page.getByText("Up to 100 private RSVP invitations", { exact: true })).toBeVisible();
   await page.getByText("Who can see our website?", { exact: true }).focus();
