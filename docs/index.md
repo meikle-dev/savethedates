@@ -5,7 +5,7 @@ Read only what the current task needs. [Backlog](backlog.md) holds current state
 | Question | Source |
 | --- | --- |
 | What is the product? | [Product overview](overview/product-overview.md) |
-| What should be built next? | [Backlog](backlog.md) |
+| What should be built next? | [Backlog](backlog.md), including F013-F022 from the [21 September review](notes/21-09-2026.md) |
 | How do I run it? | [Running instructions](../run-app-instructions.md) (includes local Supabase/Auth setup) |
 | How do I release and operate it? | [Release and operations](operations.md) (preparation; hosted release pending) |
 | What must be provided before launch? | [Production release inputs](release-inputs.md) |

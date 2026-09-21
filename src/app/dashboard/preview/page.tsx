@@ -22,8 +22,8 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
   return <>
     <div className="platform px-6 py-5">
       <div className="mx-auto max-w-5xl">
-        <nav aria-label="Preview" className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Private preview Â· saved content</span><Link href="/dashboard" className="text-link min-h-11 content-center">Back to workspace</Link></nav>
-        <p className="mt-3 font-semibold">Previewing {name}{candidate === data.theme ? " Â· current theme" : " Â· not applied"}</p>
+        <nav aria-label="Preview" className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Private preview · saved content</span><Link href="/dashboard" className="text-link min-h-11 content-center">Back to workspace</Link></nav>
+        <p className="mt-3 font-semibold">Previewing {name}{candidate === data.theme ? " · current theme" : " · not applied"}</p>
         <ThemePicker key={`picker-${candidate}`} selected={candidate} />
         <ThemeApplyForm key={`apply-${candidate}`} theme={candidate} published={data.published && !!entitlement?.active} />
       </div>

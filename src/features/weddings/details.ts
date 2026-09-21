@@ -48,6 +48,13 @@ export const detailsSchema = z.object({
 export type WeddingDetails = z.infer<typeof detailsSchema>;
 export type WeddingFaq = z.infer<typeof faqSchema>;
 
+export type DetailsFormState = {
+  message?: string;
+  errors?: Record<string, string[] | undefined>;
+  success?: boolean;
+  values?: WeddingDetails;
+};
+
 export type WeddingDetailsPage = WeddingDetails & {
   first_name: string;
   second_name: string;
@@ -72,26 +79,48 @@ export const emptyDetails: WeddingDetails = {
   faqs: [],
 };
 
-export function parseDetailsForm(form: FormData) {
-  let faqs: unknown = [];
-  try { faqs = JSON.parse(String(form.get("faqs") ?? "[]")); } catch { faqs = null; }
-  return detailsSchema.safeParse({
+export function detailsFormValues(form: FormData): WeddingDetails {
+  let faqs: WeddingFaq[] = [];
+  try {
+    const submitted = JSON.parse(String(form.get("faqs") ?? "[]"));
+    if (Array.isArray(submitted)) {
+      faqs = submitted.slice(0, 5).map((faq) => ({
+        question: typeof faq?.question === "string" ? faq.question : "",
+        answer: typeof faq?.answer === "string" ? faq.answer : "",
+      }));
+    }
+  } catch {
+    // Invalid direct submissions are rejected by detailsSchema below.
+  }
+  const text = (name: string) => String(form.get(name) ?? "");
+  return {
     details_enabled: form.get("details_enabled") === "on",
-    ceremony_time: form.get("ceremony_time"),
-    ceremony_venue: form.get("ceremony_venue"),
-    ceremony_address: form.get("ceremony_address"),
-    ceremony_url: form.get("ceremony_url"),
-    reception_time: form.get("reception_time"),
-    reception_venue: form.get("reception_venue"),
-    reception_address: form.get("reception_address"),
-    reception_url: form.get("reception_url"),
-    travel: form.get("travel"),
-    travel_url: form.get("travel_url"),
-    accommodation: form.get("accommodation"),
-    accommodation_url: form.get("accommodation_url"),
-    dress_code: form.get("dress_code"),
+    ceremony_time: text("ceremony_time"),
+    ceremony_venue: text("ceremony_venue"),
+    ceremony_address: text("ceremony_address"),
+    ceremony_url: text("ceremony_url"),
+    reception_time: text("reception_time"),
+    reception_venue: text("reception_venue"),
+    reception_address: text("reception_address"),
+    reception_url: text("reception_url"),
+    travel: text("travel"),
+    travel_url: text("travel_url"),
+    accommodation: text("accommodation"),
+    accommodation_url: text("accommodation_url"),
+    dress_code: text("dress_code"),
     faqs,
-  });
+  };
+}
+
+export function parseDetailsForm(form: FormData) {
+  const values = detailsFormValues(form);
+  let faqs: unknown;
+  try {
+    faqs = JSON.parse(String(form.get("faqs") ?? "[]"));
+  } catch {
+    faqs = null;
+  }
+  return detailsSchema.safeParse({ ...values, faqs });
 }
 
 export function hasVenue(details: WeddingDetails, kind: "ceremony" | "reception") {

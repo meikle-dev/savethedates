@@ -43,12 +43,21 @@ test("owner edits and previews Details while guests see only enabled published c
     await section.getByLabel("Question 1").fill("Can children attend?");
     await section.getByRole("button", { name: "Save live Details" }).click();
     await expect(section.getByText(/Please check the highlighted fields/)).toBeVisible();
+    await expect(section.getByLabel("Show Details page")).toBeChecked();
+    await expect(section.getByText("You have unsaved Details changes.")).toBeVisible();
     await expect(section.getByLabel("Travel and transport")).toHaveValue("A shuttle leaves the station at 12:45pm.");
     await section.locator('input[name="ceremony_url"]').fill("https://example.test/ceremony");
     await section.getByLabel("Answer 1").fill("Please check your invitation.");
     await section.getByRole("button", { name: "Save live Details" }).click();
     await expect(section.getByRole("status")).toContainText("shown on your live site");
+    await expect(section.getByLabel("Show Details page")).toBeChecked();
+    await expect(section.getByText("You have unsaved Details changes.")).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("details-workspace.png"), fullPage: true });
+
+    await page.goto("/dashboard/preview");
+    await expect(page.getByText("Private preview · saved content", { exact: true })).toBeVisible();
+    await expect(page.getByText("Previewing Modern Minimal · current theme", { exact: true })).toBeVisible();
+    await page.getByRole("link", { name: "Back to workspace" }).click();
 
     await guestPage.goto(`/${slug}`);
     await guestPage.getByRole("link", { name: "Details" }).click();
@@ -68,9 +77,13 @@ test("owner edits and previews Details while guests see only enabled published c
 
     await page.reload();
     const updatedSection = page.getByRole("region", { name: "Wedding Details" });
+    await expect(updatedSection.getByLabel("Show Details page")).toBeChecked();
     await updatedSection.getByLabel("Show Details page").uncheck();
     await updatedSection.getByRole("button", { name: "Save live Details" }).click();
     await expect(updatedSection.getByRole("status")).toContainText("hidden from guests");
+    await expect(updatedSection.getByLabel("Show Details page")).not.toBeChecked();
+    await page.reload();
+    await expect(page.getByRole("region", { name: "Wedding Details" }).getByLabel("Show Details page")).not.toBeChecked();
     await guestPage.goto(`/${slug}`);
     await expect(guestPage.getByRole("link", { name: "Details" })).toHaveCount(0);
     expect((await guestPage.goto(`/${slug}/details`))?.status()).toBe(404);

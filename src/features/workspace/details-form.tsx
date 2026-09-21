@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
-import type { FormState } from "@/features/account/validation";
-import type { WeddingDetails } from "@/features/weddings/details";
+import { startTransition, useActionState, useState, type FormEvent } from "react";
+import type { DetailsFormState, WeddingDetails } from "@/features/weddings/details";
 import { saveDetails } from "./details-actions";
 
 type StringField = Exclude<keyof WeddingDetails, "details_enabled" | "faqs">;
@@ -33,9 +32,15 @@ function Guidance({ name, label, value, error, onChange }: {
 }
 
 export function DetailsForm({ initial, published }: { initial: WeddingDetails; published: boolean }) {
-  const [values, setValues] = useState(initial);
+  const [state, action, pending] = useActionState<DetailsFormState, FormData>(saveDetails, {});
+  const [values, setValues] = useState(state.values ?? initial);
   const [dirty, setDirty] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(saveDetails, {});
+  const [appliedState, setAppliedState] = useState(state);
+  if (appliedState !== state) {
+    setAppliedState(state);
+    if (state.values) setValues(state.values);
+    setDirty(!!state.values && !state.success);
+  }
   function change(name: StringField, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
     setDirty(true);
@@ -48,7 +53,12 @@ export function DetailsForm({ initial, published }: { initial: WeddingDetails; p
     setValues((current) => ({ ...current, faqs: current.faqs.filter((_, position) => position !== index) }));
     setDirty(true);
   }
-  return <form action={(form) => { setDirty(false); action(form); }} className="mt-7" noValidate>
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    startTransition(() => action(form));
+  }
+  return <form onSubmit={submit} className="mt-7" noValidate>
     <input type="hidden" name="faqs" value={JSON.stringify(values.faqs)} />
     <label className="details-toggle">
       <input name="details_enabled" type="checkbox" checked={values.details_enabled} aria-invalid={!!state.errors?.details_enabled} aria-describedby={state.errors?.details_enabled ? "details-enabled-help details-enabled-error" : "details-enabled-help"} onChange={(event) => { setValues((current) => ({ ...current, details_enabled: event.target.checked })); setDirty(true); }} />

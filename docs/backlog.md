@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008, F011 and F012 are complete and the usable-core MVP milestone is verified. **Current: F009**, launch and operations preparation.
+Ordered by recommended implementation sequence. F001-F008 and F011-F013 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F014**, from the 21 September owner review below. F014-F022 remain ordered review follow-up work.
 
 ## Status and handoff rules
 
@@ -239,12 +239,206 @@ On 19 September 2026, the owner confirmed the real Stripe test-mode flow is work
 - Inspected all themes at mobile and desktop sizes using Playwright screenshots in ignored `test-results/`. Additional `node --input-type=module` Playwright presentation stress checks passed at 320px with long names, 1,000-character paragraphs and unbroken FAQ text. In-app browser connection failed before startup; repository Playwright supplied visual verification. Docker development app refreshed with `docker compose restart app`. Safari/Firefox, hosted CI and deployment were not run.
 - Independent reviewer `review_f012` found no Blocking, Important or Minor issues after reviewing the diff, responsive screenshots, fallback and shared RSVP presentation. Blockers: None for F012. Next: resolve F009's existing release inputs; no release work started by this request.
 
+## 21 September review follow-up
+
+Source: [owner review notes](notes/21-09-2026.md). This is the delivery plan for that review, not a second MVP or a rewrite. Existing Done entries retain their historical verification; reported regressions are tracked below. Source inspection informed triage, but the reported failures have **not** been reproduced in a browser during this planning session.
+
+**Sequence and release gate:** Fix reliability first (F013-F015), improve photography (F016-F017), then deliver artwork, RSVP design and marketing polish (F018-F020). F021 is a bounded venue-entry discovery; F022 is an owner business decision. F013-F020 must be Done before F009's final release review, unless the owner explicitly accepts a documented deferral. F021-F022 must have a recorded decision before release; they do not automatically authorise an external integration or changed purchase terms. F009's existing release/access blockers remain in force. Its host-independent preparation may continue where independent, but completing it cannot bypass this review gate.
+
+**Delegation:** Each ID is one assignable ticket. The listed lead owns the handoff; UX and engineering work sequentially when needed. Only F013 is refined to Ready now. Prepare each subsequent Planned ticket when it becomes the next eligible item, resolving its stated design/security questions before implementation. Do not start the whole batch. Required independent reviews follow AGENTS.md. F017 and F018 both affect guest rendering; F018 and F019 share artwork/CSS; F014 and F020 share marketing entry points. Avoid concurrent edits to those shared areas without explicit file ownership.
+
+| Owner observation | Ticket | Priority |
+| --- | --- | --- |
+| Details checkbox clears on save; corrupt preview separator | F013 | P1 reliability |
+| Returning home appears to sign the owner out | F014 | P1 reliability |
+| Wrong-looking invitation URL, intimidating token, lost RSVP on navigation, proposed secret routes | F015 | P1 guest access |
+| Confusing Upload/Choose controls; no photo visible in editor | F016 | P1 usability |
+| Crop/move photo in chosen theme on both landing and Details | F017 | P2 photo editing |
+| Replace flowers/leaves with proper SVG assets | F018 | P2 visual quality |
+| RSVP redesign and reusable, text-free background imagery | F019 | P2 visual quality |
+| Friendlier homepage CTA and better icon/button treatment | F020 | P2 conversion polish |
+| Map picker or address finder for venues | F021 | P3 discovery |
+| Consider six rather than twelve months after wedding | F022 | Business decision |
+
+All implementation tickets inherit the definition of done: appropriate checks from `run-app-instructions.md`, exact results in their handoff, mobile/desktop inspection for UI changes, and independent review where specified. Paths below are starting points, not instructions to rewrite whole modules.
+
+## F013 - Reliable Details saving and readable preview status
+
+**Status:** Done
+**Priority / lead:** P1 / Software Engineer
+**Purpose:** Let owners trust the saved Details visibility and preview status.
+**Depends on:** F005, F012 (Done)
+**References:** `src/features/workspace/details-form.tsx`, `src/features/workspace/details-actions.ts`, `src/features/weddings/details.ts`, `src/app/dashboard/preview/page.tsx`, `tests/details.spec.ts`, `tests/preview.spec.ts`.
+**Scope:** Reproduce the reported checkbox reset through the real form/action flow and correct its cause. Correct the malformed separator in the Save the Date preview status; inspect the adjacent Details preview copy for the same defect. No general editor redesign.
+**Done when:**
+
+- With valid Details content, checking Show Details page and saving keeps it checked immediately, after reload, and after returning to the workspace. A published entitled site's navigation and Details route agree with the persisted setting.
+- Unchecking and saving keeps it disabled after reload, hides public navigation/access and retains the saved private content. Draft preview still works.
+- Invalid content, server failure and session expiry preserve entered values and visibility intent with an accurate error; no success message claims unsaved content is live. Repeated saves do not change the intended setting.
+- The preview displays `Private preview · saved content` without corrupted characters at mobile and desktop widths.
+- Add a regression check exercising the failing save sequence, plus enabled/disabled persistence and failure behaviour. Identify whether the original failure is client state, persistence or both rather than guessing from the report.
+
+**Handoff (21 September 2026):** Reproduced the regression through the real owner form: a validation response caused React's form-action reset to clear the checked control even though the returned submission contained `details_enabled: true`. The Details form now dispatches the action from its submit handler without that native reset, and the action returns a bounded submitted-value snapshot on validation, session, database and connection outcomes. Invalid saves retain the visibility choice and entered content as unsaved; successful saves clear the unsaved state and persist enabled/disabled visibility across reloads. Corrected the corrupted separators in both Save the Date preview status lines.
+
+Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npx.cmd playwright test tests/details.spec.ts` (2/2 desktop/mobile, covering failed-save preservation, successful save, reload, disable, public navigation/route behaviour and preview status copy); focused `npx.cmd vitest run src/features/weddings/details.test.ts` (3/3); `git diff --check`. Inspected the generated Details workspace screenshots at 1440×1000 and iPhone 13 widths: the checked setting, success notice, fields and save/preview controls remain readable with no apparent overflow. The in-app browser could not initialise because its runtime lacked required sandbox metadata, so repository Playwright supplied the functional and visual browser verification. Independent review was not required for this narrow regression fix. Blockers: None. Next: Product Manager prepares F014; no F014 implementation started.
+
+## F014 - Keep owner access clear when returning home
+
+**Status:** Planned
+**Priority / lead:** P1 / Software Engineer with UX for homepage account navigation
+**Purpose:** Owners can leave the workspace and return without an unnecessary login.
+**Depends on:** F002, F008 (Done)
+**References:** `src/app/page.tsx`, `src/features/marketing/home.tsx`, `src/proxy.ts`, `src/lib/supabase/server.ts`, `src/features/account/actions.ts`, `tests/account.spec.ts`, `tests/marketing.spec.ts`, `docs/overview/architecture.md`.
+**Evidence and scope:** The homepage currently renders unconditional signup/sign-in links and does not inspect authentication. This establishes misleading presentation, not proven cookie loss. First distinguish the two using dashboard -> home -> dashboard and a reload. Keep the marketing homepage available; verified signed-in owners receive a clear return-to-workspace action.
+**Done when:**
+
+- A valid signed-in owner sees an appropriate account/workspace action on `/` and can return to their own workspace after navigation/reload without signing in again. Valid refresh behaviour works; actual sign-out and expired/unrefreshable sessions require login.
+- Signed-out visitors retain working signup/sign-in actions and indexable marketing content. Loading or unavailable account state never falsely claims a verified session.
+- No owner data or personalised auth state leaks through shared caching; server authorisation remains mandatory and one owner's data cannot appear to another browser.
+- Account and marketing browser checks cover signed-in, signed-out, refresh and expired-session cases. Independent auth review passes; update the architecture's current statement that the homepage makes no auth calls if implementation changes it.
+
+**Next preparation:** Choose the smallest auth-aware navigation approach while preserving public marketing rendering; reproduce actual session behaviour before changing cookie configuration. No owner decision needed.
+
+## F015 - Preserve private RSVP access across the wedding journey
+
+**Status:** Planned
+**Priority / lead:** P1 / Software Engineer with UX; independent security review required
+**Purpose:** An invited guest can browse all three pages and return to their own RSVP reliably.
+**Depends on:** F006 (Done)
+**References:** `src/features/workspace/rsvp-manager.tsx`, `src/features/workspace/rsvp-actions.ts`, `src/features/weddings/rsvp.ts`, `src/features/weddings/wedding-navigation.tsx`, `src/app/[weddingSlug]/`, `tests/rsvp.spec.ts`, `tests/integration/rsvp.test.ts`, `docs/overview/architecture.md`.
+**Product direction:** Keep the couple's stable wedding slug and a distinct per-invitation credential. The invitation label identifies the invited guest/household, not the couple's site. Clarify both labels and the copied-link presentation so the difference is obvious. Do not silently rename published sites from invitation labels. Investigate a wrong wedding slug if one differs from that owner's saved slug.
+
+Retain existing unguessable tokens and existing shared links. A six-digit code has only one million combinations; the current per-invitation submission throttle does not by itself protect credential discovery. A single wedding-wide secret would also collapse separate invitation identities. Do not adopt `/654766/couple/...` as the access model. Make sharing friendly through clear link text and copy feedback, without weakening the credential. Guests without an invitation can still read published landing/Details pages, consistent with existing product privacy.
+**Done when:**
+
+- Opening an existing private RSVP link, visiting Save the Date and Details, then returning to RSVP retains that invitation through navigation, reload and browser back/forward. Submission and correction still target only that invitation.
+- Two invitations for one wedding, two different weddings, and multiple tabs cannot silently overwrite or reuse the wrong invitation context. Explicitly opening a second invitation selects that invitation. A copied private link works in a fresh browser.
+- Missing, malformed, revoked and wrong-wedding credentials fail safely; closed RSVP, unpublished weddings and expired entitlements retain their existing restrictions. Public links never grant access to a response.
+- Invitation-label copy distinguishes recipient name from wedding URL; copied links use the owner's saved wedding slug. Existing links stay valid without reissuing invitations.
+- Context propagation does not leak credentials to outbound directions links, referrers, analytics or logs. New credential-bearing routes/responses are noindex and not shared-cacheable; tokens remain hashed at rest and tenant boundaries remain enforced.
+- Integration/browser regression checks cover navigation, invitation separation, old links and revocation. Independent review validates the chosen context design and abuse controls before Done.
+
+**Next preparation:** Document a small context-propagation design in the architecture (including per-tab behaviour, credential lifetime and leakage controls) before Ready. Choose between explicit internal-link propagation and a securely scoped session only after checking these acceptance cases; do not introduce a route migration merely for aesthetics.
+
+## F016 - One photo chooser with an inline saved-photo preview
+
+**Status:** Planned
+**Priority / lead:** P1 / UX then Software Engineer
+**Purpose:** Choosing a photo feels like one understandable action and owners can see what is saved.
+**Depends on:** F003 (Done)
+**References:** `src/features/workspace/publication-form.tsx`, `src/features/workspace/publication-actions.ts`, `src/features/workspace/photo.ts`, `src/app/dashboard/photo/route.ts`, `tests/publication.spec.ts`.
+**Scope and proposed interaction:** One styled, keyboard-accessible Choose photo / Change photo control opens the native file picker. A valid selection starts upload with explicit progress and live-update wording. Cancelling selection does nothing. Remove the separate empty-file Upload submission. Show the current saved image in the workspace through its authenticated endpoint, with replace/remove and clear pending/error states. Framing controls belong to F017.
+**Done when:**
+
+- Clicking the primary photo control opens the picker rather than submitting an empty form. Cancelling causes no error or data change; reselecting the same file works.
+- A successful selection shows the saved photo inline; failure retains the previous photo and offers a clear retry. Replacement/removal agree with preview and public content after reload.
+- Client feedback and server checks preserve existing format, size, pixel, metadata-stripping and owner/storage restrictions. Rapid selection/retry cannot make an older upload replace a newer accepted choice.
+- Accessible mobile/desktop, keyboard, cancel, invalid-file, replace, failure and remove paths are verified. Review the upload/security boundary if changed.
+
+**Next preparation:** Resolve upload state/focus behaviour and preview sizing within the existing workspace. No new asset service or gallery.
+
+## F017 - Position and crop the photo in each page's theme frame
+
+**Status:** Planned
+**Priority / lead:** P2 / UX then Software Engineer; independent feature/database review required
+**Purpose:** Owners can see and control how their one photo appears on Save the Date and Details.
+**Depends on:** F016
+**References:** `src/features/weddings/wedding-photo.tsx`, `src/features/weddings/save-the-date.tsx`, `src/features/weddings/wedding-details.tsx`, `src/features/weddings/wedding.ts`, `src/features/weddings/published.ts`, `src/features/workspace/`, `supabase/migrations/`, `tests/theme-design.spec.ts`, `tests/publication.spec.ts`.
+**Scope:** Non-destructive positioning and zoom/crop using the existing photo. Provide separate Save the Date and Details frame previews for the selected theme, using the actual rendering geometry and representative mobile/desktop widths. Keep one source photo, not two uploads or an image-editing suite.
+**Done when:**
+
+- Owners can drag to position, adjust zoom, reset, cancel and explicitly save framing for each page independently. Keyboard alternatives and touch controls work; no drag-only operation.
+- Saved framing survives reload and agrees with authenticated previews and public pages in all three themes at mobile and desktop widths. Preview explains responsive cropping rather than implying all aspect ratios are identical.
+- Theme switching preserves intentionally saved framing for that theme; unseen themes and existing weddings have safe defaults. Replacing/removing a photo resets incompatible framing predictably and does not leave stale previews.
+- Cancel/failure keeps previously saved framing. Saves on published sites clearly disclose the live update. Arbitrary transforms are validated server-side; new data retains RLS and narrow public projections.
+- Portrait/landscape photos, crop limits, no-photo/failed-photo fallbacks, long content and cross-owner denial are covered. Migrations, responsive visual inspection and independent review pass.
+
+**Next preparation:** Define bounded position/zoom values, per-theme/per-page persistence, responsive preview behaviour and upload-to-framing transition. Reuse the shared photo renderer; no hard-coded offsets for individual photos.
+
+## F018 - Reusable botanical SVG artwork for the three themes
+
+**Status:** Planned
+**Priority / lead:** P2 / UX then Software Engineer; independent visual feature review
+**Purpose:** Replace placeholder-looking flowers/leaves with polished reusable decoration.
+**Depends on:** F011 (Done); scheduled after F017 to avoid guest-rendering conflicts
+**References:** `src/features/weddings/wedding-art.tsx`, `src/features/weddings/wedding-frame.tsx`, `src/features/weddings/wedding.css`, `docs/ux/template-ui-summary.md`, `docs/ux/designs/rsvp-redesign.png`, `fixtures/README.md`.
+**Scope:** Create original, genuine vector SVG botanical assets suited to each existing palette and replace the relevant existing decorative graphics across guest surfaces and examples. Store shared public decoration in `public/assets/wedding/`; record provenance and intended usage in that folder's README. Customer uploads stay in private storage. Raster artwork wrapped in an SVG is not an acceptable SVG deliverable.
+**Done when:**
+
+- Flowers/leaves and photo fallback artwork are cohesive, crisp and appropriately composed for Minimal, Romantic and Bold, with an inventory of replaced/reused assets.
+- Assets contain no customer/sample names, dates, initials or baked-in UI text. SVGs contain no scripts, external references or embedded tracking; purely decorative images are hidden from assistive technology.
+- Compositions remain readable with real/long content and do not obscure navigation or controls. Mobile decoration is intentionally reduced/repositioned. Guest pages and marketing examples stay representative of the same themes.
+- Asset origins/usage rights, dimensions and size optimisation are recorded; mobile/desktop and missing-image inspections plus relevant theme checks pass.
+
+**Next preparation:** Agree the small asset inventory/compositions from existing theme direction. F019 may reuse these SVGs and adds its own photographic/texture background where needed.
+
+## F019 - RSVP redesign using the supplied reference
+
+**Status:** Planned
+**Priority / lead:** P2 / UX then Software Engineer; independent feature review
+**Purpose:** Make the invitation response feel as polished as the rest of the wedding site.
+**Depends on:** F015, F018
+**References:** `docs/ux/designs/rsvp-redesign.png`, `docs/ux/template-ui-summary.md`, `src/features/weddings/rsvp-page.tsx`, `src/features/weddings/wedding.css`, `tests/rsvp.spec.ts`, `tests/theme-design.spec.ts`.
+**Direction from inspected reference:** Spacious editorial RSVP heading, invitation context, a calm bordered form panel, prominent attendance choices, strong submit action, warm paper/floral background and a restrained closing signature. Adapt this to each theme's palette; the reference is particularly Romantic, not a reason to make all themes burgundy. Mobile form usability takes priority over the desktop side decorations.
+**Done when:**
+
+- Generate reusable text-free background imagery inspired by the reference and save optimised assets under `public/assets/wedding/`, with provenance/usage records. No names, initials, invitation labels or other user-specific content are baked into generated imagery; render all personalised text and seals dynamically.
+- Name and attending/not-attending controls remain semantic, labelled and keyboard-accessible, with visible selected/focus states and comfortable touch targets. No new RSVP questions or collected personal data.
+- Success, correction, validation, pending, invalid/revoked, closed and unavailable states receive the same polished treatment; F015 navigation continuity remains covered.
+- All three themes pass mobile/desktop and narrow-width inspection with long names, long invitation labels, missing imagery and readable contrast. Assets do not cause layout shifts or unnecessary full-resolution mobile downloads.
+- Relevant RSVP/theme checks and independent review pass; update canonical theme guidance to describe the final implemented layout.
+
+**Next preparation:** Define mobile composition, state layouts and asset dimensions before image generation or implementation. Do not use the supplied screenshot as a page background containing UI.
+
+## F020 - Friendlier homepage entry and polished CTA controls
+
+**Status:** Planned
+**Priority / lead:** P2 / UX then Software Engineer
+**Purpose:** Starting feels approachable and the main actions look deliberate.
+**Depends on:** F014
+**References:** `src/features/marketing/home.tsx`, `src/features/marketing/marketing.css`, `docs/overview/site-ui.md`, `tests/marketing.spec.ts`.
+**Scope:** Replace "Start your site" consistently with proposed copy "Create your save the date", supported by the existing truthful free-draft/preview message. Improve the primary CTA's spacing, icon scale, alignment, contrast, focus and hover treatment within Modern Luxe. Signed-in owners use F014's workspace action.
+**Done when:** Hero and pricing actions have consistent welcoming copy, balanced visible icons and at least 44px touch targets; text wraps cleanly on narrow screens; all links lead to the correct real account/workspace flow. Price/lifetime wording remains aligned with the approved product terms. Mobile/desktop, keyboard and marketing checks pass without loss of homepage metadata/indexation.
+**Next preparation:** Set final CTA wording and control treatment in the existing platform guidance; no new marketing sections, claims or animation.
+
+## F021 - Decide the smallest useful venue address assistance
+
+**Status:** Planned
+**Priority / lead:** P3 / Product Manager with UX; engineering feasibility input
+**Purpose:** Make ceremony/reception locations easier to enter accurately without adding an unnecessary maps subsystem.
+**Depends on:** F013
+**References:** `src/features/workspace/details-form.tsx`, `src/features/weddings/details.ts`, `src/features/weddings/wedding-details.tsx`, `docs/overview/tech-stack.md`.
+**Scope:** A bounded discovery/decision ticket, not authority to buy or wire up Google Maps. Compare manual address plus directions-link assistance, address autocomplete, and a map picker against the actual ceremony/reception flow. Prefer the least complex option that solves the observed problem and preserves manual entry.
+**Done when:**
+
+- Record a recommendation and its mobile/keyboard journey, manual/failure fallback, address confirmation and handling of venues without a precise match.
+- For an external provider, verify current pricing/quotas, key restrictions, attribution/licensing, data sent to the provider and account/access requirements from primary documentation. Separate known facts from estimates; obtain a business decision only where cost/data exposure warrants it.
+- Either create one narrowly scoped implementation ticket with testable acceptance and explicit dependencies, or record why the existing manual flow remains sufficient and defer the integration. F021 completion means a decision, not a shipped picker.
+
+**Next preparation:** Review the current entry flow and compare options. Owner's mention of Google Maps is a suggestion, not provider selection. This optional enhancement does not block F013-F020.
+
+## F022 - Confirm the post-wedding publication lifetime
+
+**Status:** Planned
+**Priority / lead:** Business decision / Product Manager and owner
+**Purpose:** Resolve the six-month suggestion without accidentally changing purchased terms.
+**Depends on:** F007 (Done)
+**References:** `docs/release-inputs.md`, `docs/overview/architecture.md` (fixed expiry at checkout), `src/features/payments/`, `supabase/migrations/`, `tests/payments.spec.ts`, `tests/integration/payments.test.ts`.
+**Current position:** The approved and implemented term is twelve months after the wedding date captured at checkout. The note asks whether six months is preferable; it does not approve a change. Product recommendation: retain twelve months for launch unless an evidenced cost/support reason and explicit owner decision justify changing it. Publication expiry is separate from deleting private photos, drafts, responses and backups; halving publication time alone does not establish storage savings.
+**Done when:**
+
+- Record the owner's explicit six/twelve-month decision in release inputs with the customer wording and rationale. Until then, twelve months remains the implementation baseline; this decision does not hold up unrelated fixes.
+- If twelve months is retained, no billing change is needed. If six is selected, create a separate payment-change ticket covering effective date, existing purchases/open checkout attempts, preserved entitlement snapshots, all marketing/checkout/support copy, expiry boundary tests and independent payment review. Do not retroactively shorten existing entitlements as a routine copy edit.
+- Link any resulting implementation ticket into the F009 release gate. Data-retention/deletion policy remains an independent F009 input.
+
+**Blocker / next action:** Explicit owner lifetime decision is outstanding. Bring the recommendation to the owner when completing release decisions; no code change authorised by this ticket alone.
+
 ## F009 - Launch and operate the service
 
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008
+**Depends on:** F008; F013-F020 completion and F021-F022 decision dispositions before final release review (see review gate above)
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Hosting selection, external provisioning, live billing and policy-dependent export/deletion remain blocked on owner decisions; do not invent retention periods or publish policies. No additional product feature or hosting purchase is authorised by this preparation.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
 **Decisions/access before release:** Production accounts/domain, live billing configuration, support contact, owner-approved terms/privacy/retention/deletion policy and site lifetime communication. Record any external review still needed; do not invent assurances.
@@ -260,7 +454,7 @@ On 19 September 2026, the owner confirmed the real Stripe test-mode flow is work
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010.
+- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. Following the owner review, F013 is the next executable ticket while external release inputs remain blocked; complete the review gate above before final release review.
 
 ## F010 - Post-launch extensions
 

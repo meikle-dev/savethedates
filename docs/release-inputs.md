@@ -47,7 +47,7 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` callback. The ap
 
 - [ ] Stripe account/business owner: `
 - [ ] Production price confirmed: `GBP 29 one-off / other: `
-- [ ] Site lifetime confirmed: `
+- [ ] Site lifetime confirmed (F022): `12 months currently approved/implemented; confirm retain 12 or explicitly approve 6 for future purchases: `
 - [ ] Refund policy approved: `
 - [ ] Production Stripe account is separate from test account: `yes / no`
 - [ ] Webhook endpoint domain: `
@@ -92,6 +92,8 @@ These choices are required before implementing and testing export/deletion. The 
 - [ ] Planned release window: `
 - [ ] Rollback approver: `
 - [ ] Final production launch approval: `pending`
+
+The [21 September review follow-up](backlog.md#21-september-review-follow-up) is also a release gate: F013-F020 must be completed or explicitly deferred by the owner, and F021-F022 need recorded decision dispositions. Release inputs alone do not close those tickets.
 
 ## When these are ready
 

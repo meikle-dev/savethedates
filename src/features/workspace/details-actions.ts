@@ -1,26 +1,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { FormState } from "@/features/account/validation";
 import { createClient } from "@/lib/supabase/server";
-import { parseDetailsForm } from "@/features/weddings/details";
+import { detailsFormValues, parseDetailsForm, type DetailsFormState } from "@/features/weddings/details";
 
-export async function saveDetails(_: FormState, form: FormData): Promise<FormState> {
+export async function saveDetails(_: DetailsFormState, form: FormData): Promise<DetailsFormState> {
+  const values = detailsFormValues(form);
   const parsed = parseDetailsForm(form);
   if (!parsed.success) {
     return {
       message: "Please check the highlighted fields. Your Details changes haven’t been saved.",
       errors: parsed.error.flatten().fieldErrors,
+      values,
     };
   }
   try {
     const client = await createClient();
     const { data: { user }, error: authError } = await client.auth.getUser();
-    if (authError || !user) return { message: "Your session has ended. Sign in again in another tab, then retry. Your changes are still here." };
+    if (authError || !user) return { message: "Your session has ended. Sign in again in another tab, then retry. Your changes are still here.", values: parsed.data };
     const { data, error } = await client.from("weddings").update(parsed.data).eq("owner_id", user.id).select("slug, published").single();
     const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
     const isLive = !!data?.published && !!entitlement?.active;
-    if (error || !data) return { message: "We couldn’t save your Details page. Your changes are still here; please try again." };
+    if (error || !data) return { message: "We couldn’t save your Details page. Your changes are still here; please try again.", values: parsed.data };
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/preview");
     revalidatePath("/dashboard/preview/details");
@@ -31,8 +32,8 @@ export async function saveDetails(_: FormState, form: FormData): Promise<FormSta
     const message = parsed.data.details_enabled
       ? isLive ? "Your Details page is saved and shown on your live site." : "Your Details page is saved and ready for guests when you publish."
       : "Your Details page is saved and hidden from guests.";
-    return { success: true, message };
+    return { success: true, message, values: parsed.data };
   } catch {
-    return { message: "We couldn’t connect to save your Details page. Your changes are still here; please try again." };
+    return { message: "We couldn’t connect to save your Details page. Your changes are still here; please try again.", values: parsed.data };
   }
 }
