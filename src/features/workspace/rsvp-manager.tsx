@@ -16,15 +16,19 @@ function RevokeButton({ invitationId }: { invitationId: string }) {
 export function RsvpManager({ enabled, closesOn, slug, invitations }: { enabled: boolean; closesOn: string | null; slug: string | null; invitations: OwnerInvitation[] }) {
   const [settings, settingsAction, settingsPending] = useActionState<RsvpState, FormData>(saveRsvpSettings, {});
   const [created, createAction, createPending] = useActionState<RsvpState, FormData>(createInvitation, {});
-  const [copied, setCopied] = useState(false);
+  const [copyResult, setCopyResult] = useState<{ url: string; failed: boolean } | null>(null);
   const active = invitations.filter((invite) => !invite.revoked_at);
   const responses = active.filter((invite) => invite.attending !== null);
   const attending = responses.filter((invite) => invite.attending).length;
 
   async function copyLink() {
     if (!created.inviteUrl) return;
-    await navigator.clipboard.writeText(new URL(created.inviteUrl, window.location.origin).href);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(new URL(created.inviteUrl, window.location.origin).href);
+      setCopyResult({ url: created.inviteUrl, failed: false });
+    } catch {
+      setCopyResult({ url: created.inviteUrl, failed: true });
+    }
   }
 
   return <div className="mt-7 grid gap-8">
@@ -53,7 +57,7 @@ export function RsvpManager({ enabled, closesOn, slug, invitations }: { enabled:
       <p className="field-help">One link collects one response. Anyone given the link can use it, so share it privately.</p>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="grow">
-          <label htmlFor="invite_name" className="field-label">Invitation name</label>
+          <label htmlFor="invite_name" className="field-label">Guest or household name</label>
           <input id="invite_name" name="invite_name" className="field-input" maxLength={80} placeholder="e.g. Sam Taylor" aria-invalid={!!created.errors?.invite_name} aria-describedby={created.errors?.invite_name ? "invite-name-error" : undefined} />
           {created.errors?.invite_name && <p id="invite-name-error" className="field-error">{created.errors.invite_name[0]}</p>}
         </div>
@@ -62,9 +66,14 @@ export function RsvpManager({ enabled, closesOn, slug, invitations }: { enabled:
       {!slug && <p className="form-error mt-4">Publish your site and choose its permanent URL before creating invitation links.</p>}
       {created.message && <p className={`mt-4 ${created.success ? "form-notice" : "form-error"}`} role={created.success ? "status" : "alert"}>{created.message}</p>}
       {created.inviteUrl && <div className="mt-4 rounded-md border border-[var(--line)] bg-white/60 p-4">
+        <dl className="mb-3 grid gap-1 text-sm">
+          <div><dt className="inline font-semibold">For: </dt><dd className="inline break-words">{created.inviteName}</dd></div>
+          <div><dt className="inline font-semibold">Wedding URL: </dt><dd className="inline break-all font-mono text-xs">{created.weddingUrl}</dd></div>
+        </dl>
         <label htmlFor="new-invite-url" className="field-label">New private link</label>
         <input id="new-invite-url" className="field-input font-mono text-xs" value={created.inviteUrl} readOnly onFocus={(event) => event.currentTarget.select()} />
-        <button type="button" className="text-link mt-3 min-h-11" onClick={copyLink}>{copied ? "Copied" : "Copy full link"}</button>
+        <button type="button" className="text-link mt-3 min-h-11" onClick={copyLink}>{copyResult?.url === created.inviteUrl && !copyResult.failed ? "Copied" : "Copy full link"}</button>
+        {copyResult?.url === created.inviteUrl && copyResult.failed && <p className="field-error mt-2" role="alert">We couldn’t copy the link. Select the link above and copy it manually.</p>}
       </div>}
     </form>
 

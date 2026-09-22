@@ -57,7 +57,13 @@ export async function createInvitation(_: RsvpState, form: FormData): Promise<Rs
     const { error } = await client.from("rsvp_invitations").insert({ wedding_id: wedding.id, invite_name: name.data, token_hash: hashInvitationToken(token) });
     if (error) return { message: error.code === "23514" ? "You can create up to 100 invitations." : "We couldn’t create this invitation. Please retry." };
     refreshRsvp(wedding.slug);
-    return { success: true, message: "Invitation created. Copy this private link now; it won’t be shown again.", inviteUrl: `/${wedding.slug}/rsvp?invite=${token}` };
+    return {
+      success: true,
+      message: "Invitation created. Copy this private link now; it won’t be shown again.",
+      inviteUrl: `/${wedding.slug}/rsvp?invite=${token}`,
+      inviteName: name.data,
+      weddingUrl: `/${wedding.slug}`,
+    };
   } catch (error) {
     return { message: error instanceof Error ? error.message : "We couldn’t create this invitation." };
   }

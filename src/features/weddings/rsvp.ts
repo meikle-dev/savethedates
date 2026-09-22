@@ -1,10 +1,11 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { WeddingTheme } from "./themes";
+import { invitationTokenPattern } from "./invitation-context";
 
 export const inviteNameSchema = z.string().trim().min(1, "Enter a name for this invitation.").max(80, "Use no more than 80 characters.");
 export const rsvpNameSchema = z.string().trim().min(1, "Enter your name.").max(80, "Use no more than 80 characters.");
-export const invitationTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
+export const invitationTokenSchema = z.string().regex(invitationTokenPattern);
 export const closeDateSchema = z.union([
   z.literal("").transform(() => null),
   z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
@@ -43,6 +44,8 @@ export type RsvpState = {
   message?: string;
   errors?: Record<string, string[] | undefined>;
   inviteUrl?: string;
+  inviteName?: string;
+  weddingUrl?: string;
   respondingName?: string;
   attending?: boolean;
 };

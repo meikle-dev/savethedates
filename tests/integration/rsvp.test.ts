@@ -8,9 +8,13 @@ const other = local.anonymous();
 let ownerId = "";
 let otherId = "";
 let weddingId = "";
+let otherWeddingId = "";
 const slug = `rsvp-${crypto.randomUUID()}`;
+const otherSlug = `rsvp-other-${crypto.randomUUID()}`;
 const token = randomBytes(32).toString("base64url");
 const tokenHash = createHash("sha256").update(token).digest("hex");
+const secondToken = randomBytes(32).toString("base64url");
+const secondTokenHash = createHash("sha256").update(secondToken).digest("hex");
 
 beforeAll(async () => {
   for (const [client, assign] of [[owner, (id: string) => { ownerId = id; }], [other, (id: string) => { otherId = id; }]] as const) {
@@ -26,6 +30,11 @@ beforeAll(async () => {
   weddingId = inserted.data!.id;
   expect((await local.grantEntitlement(weddingId, ownerId)).error).toBeNull();
   expect((await owner.from("weddings").update({ published: true }).eq("id", weddingId)).error).toBeNull();
+  const otherWedding = await other.from("weddings").insert({ owner_id: otherId, first_name: "Jamie", second_name: "Riley", wedding_date: "2027-10-02", location: "York", slug: otherSlug, rsvp_enabled: true }).select("id").single();
+  expect(otherWedding.error).toBeNull();
+  otherWeddingId = otherWedding.data!.id;
+  expect((await local.grantEntitlement(otherWeddingId, otherId)).error).toBeNull();
+  expect((await other.from("weddings").update({ published: true }).eq("id", otherWeddingId)).error).toBeNull();
 });
 
 afterAll(async () => {
@@ -36,6 +45,7 @@ afterAll(async () => {
 it("keeps invitations private and scopes owner creation and revocation", async () => {
   const invitation = await owner.from("rsvp_invitations").insert({ wedding_id: weddingId, invite_name: "Sam Taylor", token_hash: tokenHash }).select("id").single();
   expect(invitation.error).toBeNull();
+  expect((await owner.from("rsvp_invitations").insert({ wedding_id: weddingId, invite_name: "Jordan Lee", token_hash: secondTokenHash })).error).toBeNull();
   expect((await local.anonymous().from("rsvp_invitations").select("id")).error).not.toBeNull();
   expect((await other.from("rsvp_invitations").select("id")).data).toEqual([]);
   expect((await other.from("rsvp_invitations").insert({ wedding_id: weddingId, invite_name: "Intruder", token_hash: createHash("sha256").update("x").digest("hex") })).error).not.toBeNull();
@@ -50,12 +60,17 @@ it("lets one bearer token submit and correct only its own response", async () =>
   expect(initial.data![0]).toMatchObject({ invite_name: "Sam Taylor", responding_name: null, attending: null, is_open: true });
   expect(initial.data![0]).not.toHaveProperty("token_hash");
   expect((await guest.rpc("guest_rsvp", { requested_slug: slug, requested_token_hash: "0".repeat(64) })).data).toEqual([]);
+  expect((await guest.rpc("guest_rsvp", { requested_slug: otherSlug, requested_token_hash: tokenHash })).data).toEqual([]);
+  expect((await guest.rpc("guest_rsvp", { requested_slug: slug, requested_token_hash: secondTokenHash })).data![0]).toMatchObject({ invite_name: "Jordan Lee", responding_name: null });
+  expect((await guest.rpc("submit_guest_rsvp", { requested_slug: otherSlug, requested_token_hash: tokenHash, requested_name: "Wrong wedding", requested_attending: true })).data).toBe("unavailable");
+  expect((await owner.from("rsvp_invitations").select("responding_name, attending").eq("token_hash", tokenHash).single()).data).toMatchObject({ responding_name: null, attending: null });
 
   expect((await guest.rpc("submit_guest_rsvp", { requested_slug: slug, requested_token_hash: tokenHash, requested_name: "Sam Taylor", requested_attending: true })).data).toBe("saved");
   expect((await guest.rpc("submit_guest_rsvp", { requested_slug: slug, requested_token_hash: tokenHash, requested_name: "Sam T.", requested_attending: false })).data).toBe("saved");
   const saved = await owner.from("rsvp_invitations").select("responding_name, attending, responded_at").eq("token_hash", tokenHash).single();
   expect(saved.data).toMatchObject({ responding_name: "Sam T.", attending: false });
   expect(saved.data!.responded_at).toBeTruthy();
+  expect((await owner.from("rsvp_invitations").select("responding_name, attending").eq("token_hash", secondTokenHash).single()).data).toMatchObject({ responding_name: null, attending: null });
 
   expect((await owner.from("weddings").update({ rsvp_enabled: false }).eq("id", weddingId)).error).toBeNull();
   expect((await guest.rpc("guest_rsvp", { requested_slug: slug, requested_token_hash: tokenHash })).data![0].is_open).toBe(false);

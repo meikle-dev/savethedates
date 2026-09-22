@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { weddingJourneyHrefs } from "./invitation-context";
 import type { GuestRsvp, RsvpState } from "./rsvp";
 import { submitRsvp } from "@/features/workspace/rsvp-actions";
 import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
@@ -12,10 +13,11 @@ export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_nam
   const attending = state.attending ?? guest?.attending;
   const unavailable = !token || !guest;
   const open = !!guest?.is_open;
-  const rsvpHref = wedding.rsvp_enabled ? `/${slug}/rsvp${token ? `?invite=${token}` : ""}` : undefined;
+  const hrefs = weddingJourneyHrefs(slug, token);
+  const rsvpHref = wedding.rsvp_enabled ? hrefs.rsvp : undefined;
   const names = [wedding.first_name, wedding.second_name] as const;
   return <WeddingFrame theme={wedding.theme} className="details-shell rsvp-shell">
-    <WeddingHeader names={names} homeHref={`/${slug}`} detailsHref={wedding.details_enabled ? `/${slug}/details` : undefined} rsvpHref={rsvpHref} current="rsvp" />
+    <WeddingHeader names={names} homeHref={hrefs.home} detailsHref={wedding.details_enabled ? hrefs.details : undefined} rsvpHref={rsvpHref} current="rsvp" />
     <main id="main" className="rsvp-main">
       <OliveBranch />
       <div className="details-intro">

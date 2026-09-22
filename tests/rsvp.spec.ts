@@ -1,7 +1,21 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Response } from "@playwright/test";
 import { localSupabase } from "./helpers/local-supabase";
 
 const local = localSupabase();
+
+function expectPrivateInviteResponse(response: Response | null) {
+  expect(response).not.toBeNull();
+  const headers = response!.headers();
+  if (process.env.E2E_PRODUCTION) {
+    expect(headers["cache-control"]).toContain("private");
+    expect(headers["cache-control"]).toContain("no-store");
+  } else {
+    // The Next.js development server replaces application cache directives.
+    expect(headers["cache-control"]).toMatch(/no-store|no-cache, must-revalidate/);
+  }
+  expect(headers["referrer-policy"]).toBe("no-referrer");
+  expect(headers["x-robots-tag"]).toContain("noindex");
+}
 
 test("owner creates an invitation and a guest submits, corrects, and sees closure", async ({ page, browser, baseURL }) => {
   test.setTimeout(90_000);
@@ -12,9 +26,19 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
   if (created.error || !created.data.user) throw new Error("Cannot create RSVP browser-test owner");
   const ownerId = created.data.user.id;
   const guest = await browser.newContext({ baseURL, viewport: page.viewportSize() });
-  const guestPage = await guest.newPage();
+  let guestPage = await guest.newPage();
   try {
-    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id").single();
+    const wedding = await local.admin.from("weddings").insert({
+      owner_id: ownerId,
+      first_name: "Alex",
+      second_name: "Morgan",
+      wedding_date: "2027-09-18",
+      location: "Bath",
+      slug,
+      details_enabled: true,
+      ceremony_venue: "Bath Abbey",
+      ceremony_url: "https://example.com/directions",
+    }).select("id").single();
     expect(wedding.error).toBeNull();
     expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
@@ -30,16 +54,82 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
     await section.getByLabel("Accept RSVPs").check();
     await section.getByRole("button", { name: "Save RSVP settings" }).click();
     await expect(section.getByRole("status")).toContainText("enabled");
-    await section.getByLabel("Invitation name").fill("Sam Taylor");
+    await section.getByLabel("Guest or household name").fill("Sam Taylor");
     await section.getByRole("button", { name: "Create link" }).click();
     await expect(section.getByText("Copy this private link now")).toBeVisible();
+    await expect(section.getByText("For: Sam Taylor")).toBeVisible();
+    await expect(section.getByText(`Wedding URL: /${slug}`)).toBeVisible();
     const inviteUrl = await section.getByLabel("New private link").inputValue();
     expect(inviteUrl).toMatch(new RegExp(`^/${slug}/rsvp\\?invite=`));
+    const inviteToken = new URL(inviteUrl, baseURL).searchParams.get("invite");
+    expect(inviteToken).toHaveLength(43);
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseURL!).origin });
+    await section.getByRole("button", { name: "Copy full link" }).click();
+    await expect(section.getByRole("button", { name: "Copied" })).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(new URL(inviteUrl, baseURL).href);
+    await section.getByLabel("Guest or household name").fill("Jordan Lee");
+    await section.getByRole("button", { name: "Create link" }).click();
+    await expect(section.getByText("For: Jordan Lee")).toBeVisible();
+    const secondInviteUrl = await section.getByLabel("New private link").inputValue();
+    const secondToken = new URL(secondInviteUrl, baseURL).searchParams.get("invite");
+    expect(secondToken).toHaveLength(43);
+    expect(secondToken).not.toBe(inviteToken);
     await page.screenshot({ path: test.info().outputPath("rsvp-workspace.png"), fullPage: true });
 
-    await guestPage.goto(inviteUrl);
+    await guestPage.close();
+    guestPage = await guest.newPage();
+    const inviteResponse = await guestPage.goto(inviteUrl);
+    expectPrivateInviteResponse(inviteResponse);
     await expect(guestPage.getByRole("heading", { name: "RSVP" })).toBeVisible();
     await expect(guestPage.getByText("This invitation is for Sam Taylor.")).toBeVisible();
+    await expect(guestPage.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(guestPage.locator('meta[name="referrer"]')).toHaveAttribute("content", "no-referrer");
+
+    const headerPage = await guest.newPage();
+    expectPrivateInviteResponse(await headerPage.goto(`/${slug}?invite=${inviteToken}`));
+    expectPrivateInviteResponse(await headerPage.goto(`/${slug}/details?invite=${inviteToken}`));
+    await headerPage.close();
+
+    await guestPage.getByRole("link", { name: "Save the date" }).click();
+    await expect(guestPage).toHaveURL(new URL(`/${slug}?invite=${inviteToken}`, baseURL).href);
+    expectPrivateInviteResponse(await guestPage.reload());
+    await guestPage.getByRole("link", { name: "Details" }).click();
+    await expect(guestPage).toHaveURL(new URL(`/${slug}/details?invite=${inviteToken}`, baseURL).href);
+    await guestPage.goBack();
+    await expect(guestPage).toHaveURL(new URL(`/${slug}?invite=${inviteToken}`, baseURL).href);
+    await guestPage.goForward();
+    await expect(guestPage).toHaveURL(new URL(`/${slug}/details?invite=${inviteToken}`, baseURL).href);
+    let outboundReferer: string | undefined;
+    await guestPage.route("https://example.com/**", async (route) => {
+      outboundReferer = route.request().headers()["referer"];
+      await route.fulfill({ status: 200, contentType: "text/html", body: "Directions" });
+    });
+    await guestPage.getByRole("link", { name: "Directions to the ceremony" }).click();
+    expect(outboundReferer).toBeUndefined();
+    await guestPage.goBack();
+    await expect(guestPage).toHaveURL(new URL(`/${slug}/details?invite=${inviteToken}`, baseURL).href);
+    await guestPage.getByRole("link", { name: "RSVP" }).click();
+    await expect(guestPage).toHaveURL(new URL(inviteUrl, baseURL).href);
+    await expect(guestPage.getByText("This invitation is for Sam Taylor.")).toBeVisible();
+
+    const secondTab = await guest.newPage();
+    await secondTab.goto(secondInviteUrl);
+    await expect(secondTab.getByText("This invitation is for Jordan Lee.")).toBeVisible();
+    await guestPage.reload();
+    await expect(guestPage.getByText("This invitation is for Sam Taylor.")).toBeVisible();
+    await guestPage.goto(secondInviteUrl);
+    await expect(guestPage.getByText("This invitation is for Jordan Lee.")).toBeVisible();
+    await secondTab.close();
+    await guestPage.goto(inviteUrl);
+
+    const publicPage = await guest.newPage();
+    await publicPage.goto(`/${slug}/rsvp`);
+    await expect(publicPage.getByText("This RSVP link is unavailable")).toBeVisible();
+    await expect(publicPage.getByText("This invitation is for Sam Taylor.")).toHaveCount(0);
+    await publicPage.goto(`/${slug}/rsvp?invite=${inviteToken}&invite=${inviteToken}`);
+    await expect(publicPage.getByText("This RSVP link is unavailable")).toBeVisible();
+    await publicPage.close();
+
     await guestPage.getByLabel("Your name").fill("Sam Taylor");
     await guestPage.getByLabel("Joyfully accepts").check();
     await guestPage.getByRole("button", { name: "Send RSVP" }).click();
@@ -86,6 +176,14 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
     await expect(guestPage.getByText("Saved response: Sam T. · Not attending")).toBeVisible();
     await guestPage.goto(`/${slug}`);
     await expect(guestPage.getByRole("link", { name: "RSVP" })).toHaveCount(0);
+
+    await guestPage.goto(inviteUrl);
+    await expect(guestPage.getByRole("heading", { name: "RSVP is closed" })).toBeVisible();
+    const samInvitation = updatedSection.getByRole("listitem").filter({ hasText: "Sam Taylor" });
+    await samInvitation.getByRole("button", { name: "Revoke link" }).click();
+    await expect(samInvitation.getByText("Revoked")).toBeVisible();
+    await guestPage.reload();
+    await expect(guestPage.getByText("This RSVP link is unavailable")).toBeVisible();
   } finally {
     await guest.close();
     await local.admin.auth.admin.deleteUser(ownerId);
