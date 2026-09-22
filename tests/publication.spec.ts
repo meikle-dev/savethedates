@@ -14,6 +14,7 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
   const guest = await browser.newContext({ baseURL, viewport: page.viewportSize() });
   const guestPage = await guest.newPage();
   const photo = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#738c79" } }).jpeg().toBuffer();
+  const replacementPhoto = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#a86464" } }).jpeg().toBuffer();
   let weddingId: string | undefined;
   try {
     await page.goto("/account/sign-in");
@@ -34,13 +35,22 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await guestPage.goto("/dashboard/preview");
     await expect(guestPage).toHaveURL(/account\/sign-in/);
     await page.getByRole("link", { name: "Back to workspace" }).click();
-    await page.getByLabel("Choose a photo").setInputFiles({ name: "photo.jpg", mimeType: "image/jpeg", buffer: photo });
-    await page.getByRole("button", { name: "Upload photo" }).click();
+    const cancelledChooser = page.waitForEvent("filechooser");
+    await page.getByRole("button", { name: "Choose photo" }).press("Enter");
+    await (await cancelledChooser).setFiles([]);
+    await expect(page.getByAltText("Your saved wedding photo")).toHaveCount(0);
+    await page.getByLabel("Photo file").setInputFiles({ name: "photo.jpg", mimeType: "image/jpeg", buffer: photo });
     await expect(page.getByRole("status").filter({ hasText: "photo has been saved" })).toBeVisible();
+    await expect(page.getByAltText("Your saved wedding photo")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Change photo" })).toBeFocused();
+    const firstPhotoSrc = await page.getByAltText("Your saved wedding photo").getAttribute("src");
+    await page.getByLabel("Photo file").setInputFiles({ name: "photo.jpg", mimeType: "image/jpeg", buffer: photo });
+    await expect(page.getByAltText("Your saved wedding photo")).not.toHaveAttribute("src", firstPhotoSrc!);
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
-    await page.getByLabel("Choose a photo").setInputFiles({ name: "fake.jpg", mimeType: "image/jpeg", buffer: Buffer.from("not a photo") });
-    await page.getByRole("button", { name: "Replace photo" }).click();
+    await page.getByLabel("Photo file").setInputFiles({ name: "fake.jpg", mimeType: "image/jpeg", buffer: Buffer.from("not a photo") });
     await expect(page.getByRole("main").getByRole("alert")).toContainText("couldn’t read that photo");
+    await expect(page.getByAltText("Your saved wedding photo")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Change photo" })).toBeFocused();
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
     await page.getByLabel("Your wedding URL").fill("dashboard");
     await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
@@ -70,16 +80,29 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await expect(page.getByRole("status").filter({ hasText: "live wedding site has been updated" })).toBeVisible();
     await guestPage.reload();
     await expect(guestPage.getByText("Bristol, England", { exact: true })).toBeVisible();
-    await page.getByLabel("Choose a photo").setInputFiles({ name: "replacement.jpg", mimeType: "image/jpeg", buffer: photo });
-    await page.getByRole("button", { name: "Replace photo" }).click();
+    await page.getByLabel("Photo file").setInputFiles({ name: "replacement.jpg", mimeType: "image/jpeg", buffer: replacementPhoto });
     await expect(page.getByRole("status").filter({ hasText: "photo has been saved" })).toBeVisible();
+    await page.reload();
+    await expect(page.getByAltText("Your saved wedding photo")).toBeVisible();
+    const ownerReplacement = await page.request.get("/dashboard/photo");
+    const guestReplacement = await guest.request.get(`/${slug}/photo`);
+    expect(ownerReplacement.status()).toBe(200);
+    expect(guestReplacement.status()).toBe(200);
+    const [ownerStats, guestStats] = await Promise.all([
+      sharp(await ownerReplacement.body()).stats(),
+      sharp(await guestReplacement.body()).stats(),
+    ]);
+    expect(ownerStats.channels[0].mean).toBeGreaterThan(ownerStats.channels[1].mean);
+    expect(guestStats.channels[0].mean).toBeGreaterThan(guestStats.channels[1].mean);
     await page.getByRole("button", { name: "Unpublish site" }).click();
     await expect(page.getByText("Private draft", { exact: true })).toBeVisible();
     await expect(page.getByLabel("Your wedding URL")).toHaveAttribute("readonly", "");
     expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
     expect((await guest.request.get(`/${slug}/photo`)).status()).toBe(404);
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
-    await page.getByLabel("Choose a photo").setInputFiles({ name: "oversized.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(7 * 1024 * 1024) });
+    await page.getByLabel("Photo file").setInputFiles({ name: "oversized.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(7 * 1024 * 1024) });
+    await expect(page.getByRole("alert").filter({ hasText: "up to 5 MiB" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Change photo" })).toBeFocused();
     await page.getByRole("button", { name: "Remove photo" }).click();
     await expect(page.getByRole("status").filter({ hasText: "photo has been removed" })).toBeVisible();
     expect((await page.request.get("/dashboard/photo")).status()).toBe(404);

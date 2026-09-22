@@ -6,6 +6,11 @@ import type { FormState } from "@/features/account/validation";
 import { slugSchema } from "./publication-validation";
 import { preparePhoto } from "./photo";
 
+export type PhotoFormState = FormState & {
+  photoPresent?: boolean;
+  photoRevision?: string;
+};
+
 async function workspace() {
   const client = await createClient();
   const { data: { user } } = await client.auth.getUser();
@@ -42,7 +47,7 @@ export async function unpublishWedding(): Promise<FormState> {
     return { success: true, message: "Your site is now private. Previously downloaded copies cannot be recalled." };
   } catch { return { message: "We couldn’t unpublish. Check your connection and sign-in, then retry." }; }
 }
-export async function changePhoto(_: FormState, form: FormData): Promise<FormState> {
+export async function changePhoto(_: PhotoFormState, form: FormData): Promise<PhotoFormState> {
   try {
     const { client, wedding } = await workspace();
     let path: string | null = null;
@@ -66,6 +71,11 @@ export async function changePhoto(_: FormState, form: FormData): Promise<FormSta
     }
     if (wedding.photo_path) await client.storage.from("wedding-photos").remove([wedding.photo_path]);
     refresh(wedding.slug);
-    return { success: true, message: path ? "Your photo has been saved." : "Your photo has been removed." };
+    return {
+      success: true,
+      message: path ? "Your photo has been saved." : "Your photo has been removed.",
+      photoPresent: !!path,
+      photoRevision: path ? crypto.randomUUID() : undefined,
+    };
   } catch { return { message: "We couldn’t save your photo. Check your connection and sign-in, then retry." }; }
 }

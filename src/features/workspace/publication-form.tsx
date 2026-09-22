@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useActionState, useState } from "react";
-import { changePhoto, publishWedding, unpublishWedding } from "./publication-actions";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { changePhoto, publishWedding, unpublishWedding, type PhotoFormState } from "./publication-actions";
 import type { FormState } from "@/features/account/validation";
 import { PurchasePanel, type Entitlement } from "@/features/payments/purchase-panel";
 
@@ -12,25 +13,63 @@ function Notice({ state }: { state: FormState }) {
 export function PublicationForm({ slug, published, photo, locked, entitlement, checkout }: { slug: string | null; published: boolean; photo: boolean; locked: boolean; entitlement: Entitlement; checkout?: string }) {
   const [url, setUrl] = useState(slug ?? "");
   const [visibility, setVisibility] = useState(false);
-  const [photoState, photoAction, photoPending] = useActionState<FormState, FormData>(changePhoto, {});
+  const [photoState, photoAction, photoPending] = useActionState<PhotoFormState, FormData>(changePhoto, {});
   const [publishState, publishAction, publishPending] = useActionState<FormState, FormData>(publishWedding, {});
   const [unpublishState, unpublishAction, unpublishPending] = useActionState<FormState, FormData>(unpublishWedding, {});
   const [fileError, setFileError] = useState("");
+  const photoInput = useRef<HTMLInputElement>(null);
+  const photoButton = useRef<HTMLButtonElement>(null);
+  const wasPhotoPending = useRef(false);
+  const photoPresent = photoState.success && photoState.photoPresent !== undefined ? photoState.photoPresent : photo;
+  const photoRevision = photoState.photoRevision ?? "saved";
+
+  useEffect(() => {
+    if (photoPending) {
+      wasPhotoPending.current = true;
+      return;
+    }
+    if (!wasPhotoPending.current) return;
+    wasPhotoPending.current = false;
+    if (photoInput.current) photoInput.current.value = "";
+    photoButton.current?.focus();
+  }, [photoPending, photoState]);
+
+  function choosePhoto() {
+    photoInput.current?.click();
+  }
+
+  function photoSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("Choose a photo up to 5 MiB.");
+      event.currentTarget.value = "";
+      photoButton.current?.focus();
+      return;
+    }
+    setFileError("");
+    event.currentTarget.form?.requestSubmit();
+  }
+
   return <>
     <section aria-labelledby="photo-title" className="mt-12 border-t border-[var(--line)] pt-8">
       <h2 id="photo-title" className="text-xl font-medium">Your photo</h2>
-      <p className="field-help mt-2">Optional. Your site looks lovely without one, too. {photo ? "A photo is saved. View it in your preview." : "No photo added yet."}</p>
-      <form action={photoAction} className="mt-6">
-        <label htmlFor="photo" className="field-label">Choose a photo</label>
-        <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" className="field-input" aria-describedby="photo-help" onChange={(event) => setFileError((event.target.files?.[0]?.size ?? 0) > 5 * 1024 * 1024 ? "Choose a photo up to 5 MiB." : "")} />
+      <p className="field-help mt-2">Optional. Your site looks lovely without one, too. {photoPresent ? "Your saved photo is shown below." : "No photo added yet."}</p>
+      {photoPresent && <div className="mt-5 max-w-sm overflow-hidden rounded-md border border-[var(--line)] bg-white/60 p-2">
+        <Image key={photoRevision} src={`/dashboard/photo?revision=${encodeURIComponent(photoRevision)}`} alt="Your saved wedding photo" width={800} height={600} unoptimized className="aspect-4/3 h-auto w-full rounded-sm object-contain" />
+      </div>}
+      <form action={photoAction} className="mt-6" aria-busy={photoPending}>
+        <input ref={photoInput} id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" tabIndex={-1} aria-label="Photo file" aria-describedby="photo-help" onChange={photoSelected} />
         <p id="photo-help" className="field-help">JPEG, PNG or WebP, up to 5 MiB and 25 megapixels. Still photos only.</p>
         {fileError && <p role="alert" className="form-error mt-4">{fileError}</p>}
         <div className="mt-5 flex flex-wrap items-center gap-4">
-          <button name="intent" value="upload" className="primary-button" disabled={photoPending || !!fileError}>{photoPending ? "Saving…" : photo ? "Replace photo" : "Upload photo"}</button>
+          <button ref={photoButton} type="button" className="primary-button" onClick={choosePhoto} disabled={photoPending}>{photoPending ? "Uploading photo…" : photoPresent ? "Change photo" : "Choose photo"}</button>
         </div>
-        <Notice state={photoState} />
+        {photoPending && <p className="form-notice mt-4" role="status">Uploading and processing your photo…</p>}
+        {!photoPending && !fileError && <Notice state={photoState} />}
       </form>
-      {photo && <form action={photoAction} className="mt-3"><button name="intent" value="remove" className="text-link min-h-11" disabled={photoPending}>Remove photo</button></form>}
+      {photoPresent && <form action={photoAction} className="mt-3"><button name="intent" value="remove" className="text-link min-h-11" disabled={photoPending} onClick={() => setFileError("")}>Remove photo</button></form>}
+      {published && <p className="field-help mt-3">A successful photo change updates your live site immediately.</p>}
     </section>
     <section aria-labelledby="share-title" className="mt-12 border-t border-[var(--line)] pt-8">
       <h2 id="share-title" className="text-xl font-medium">Share your site</h2>

@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F015 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F016**, from the 21 September owner review below. F016-F022 remain ordered review follow-up work.
+Ordered by recommended implementation sequence. F001-F008 and F011-F016 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F017**, from the 21 September owner review below. F017-F022 remain ordered review follow-up work.
 
 ## Status and handoff rules
 
@@ -331,7 +331,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 
 ## F016 - One photo chooser with an inline saved-photo preview
 
-**Status:** Planned
+**Status:** Done
 **Priority / lead:** P1 / UX then Software Engineer
 **Purpose:** Choosing a photo feels like one understandable action and owners can see what is saved.
 **Depends on:** F003 (Done)
@@ -344,7 +344,15 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - Client feedback and server checks preserve existing format, size, pixel, metadata-stripping and owner/storage restrictions. Rapid selection/retry cannot make an older upload replace a newer accepted choice.
 - Accessible mobile/desktop, keyboard, cancel, invalid-file, replace, failure and remove paths are verified. Review the upload/security boundary if changed.
 
-**Next preparation:** Resolve upload state/focus behaviour and preview sizing within the existing workspace. No new asset service or gallery.
+**Prepared interaction:** Use a real Choose photo / Change photo button to open a visually hidden native file input. A selection submits immediately; cancellation does nothing. While the server decodes and saves the image, disable photo controls and announce indeterminate progress. Return focus to the chooser on completion so retry and same-file replacement work. Show the authenticated saved image in a compact, uncropped workspace preview; failed replacement keeps that preview. Published copy explains that a successful change updates the live site. Existing server validation, storage ownership and compare-and-swap protection remain the security boundary. No new asset service, gallery or framing controls.
+
+**Handoff (22 September 2026):**
+
+- Replaced the separate file field and Upload submission with one keyboard-accessible Choose photo / Change photo button. File selection now starts the existing server action immediately, announces upload/processing progress, disables conflicting photo controls, resets for same-file retry, and returns focus to the chooser. Cancellation is a no-op.
+- Added a compact saved-photo preview backed by the authenticated `/dashboard/photo` endpoint. Successful replacement refreshes the image; failed client/server validation retains it; removal hides it. Published workspaces explain that successful changes are live. Existing decoding, metadata stripping, limits, ownership/storage policies and compare-and-swap logic are unchanged.
+- Passed `npm.cmd run check` (lint, typecheck, 23 Vitest tests, production build); `npm.cmd run test:integration` (16/16); `$env:E2E_BASE_URL='http://127.0.0.1:3000'; npx.cmd playwright test tests/publication.spec.ts` (2/2 desktop/mobile after the final assertions); and `git diff --check`. The browser test covers keyboard opening and cancel, automatic upload, progress/focus, same-file replacement, retained preview on invalid image, client size rejection, distinct replacement after reload through owner and public endpoints, unpublish and removal.
+- Inspected full-page desktop and mobile Chromium captures: the preview remains proportionate, controls and retained-photo error are readable, and there is no horizontal overflow. The in-app browser connection was unavailable, so repository Playwright supplied browser verification. The upload/security boundary did not change, so the conditional independent security review was not required.
+- Blockers: None. Next: Product Manager prepares F017 photo positioning and crop persistence; no F017 implementation started.
 
 ## F017 - Position and crop the photo in each page's theme frame
 
@@ -463,7 +471,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. Following the owner review and completion of F013-F015, F016 is the next executable ticket while external release inputs remain blocked; complete the review gate above before final release review.
+- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. Following the owner review and completion of F013-F016, F017 is the next executable ticket while external release inputs remain blocked; complete the review gate above before final release review.
 
 ## F010 - Post-launch extensions
 
