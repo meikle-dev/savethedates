@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import type { Wedding } from "./wedding";
 import type { PhotoFrame } from "./photo-framing";
-import { OliveBranch } from "./wedding-art";
+import { BotanicalArt } from "./wedding-art";
 
 export function WeddingPhoto({ image, frame }: { image?: Wedding["image"]; frame?: PhotoFrame }) {
   const [failed, setFailed] = useState(false);
@@ -13,8 +13,8 @@ export function WeddingPhoto({ image, frame }: { image?: Wedding["image"]; frame
   return (
     <div className="wedding-photo" data-testid="wedding-photo" data-has-photo={!!image && !failed}>
       <div className="photo-fallback absolute inset-0 flex items-center justify-center" aria-hidden="true">
-        <OliveBranch />
-        <OliveBranch />
+        <BotanicalArt />
+        <BotanicalArt />
       </div>
       {image && !failed && (
         <Image

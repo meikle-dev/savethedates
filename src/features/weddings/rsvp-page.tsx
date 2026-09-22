@@ -5,7 +5,7 @@ import { weddingJourneyHrefs } from "./invitation-context";
 import type { GuestRsvp, RsvpState } from "./rsvp";
 import { submitRsvp } from "@/features/workspace/rsvp-actions";
 import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
-import { OliveBranch } from "./wedding-art";
+import { BotanicalArt } from "./wedding-art";
 
 export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_name: string; second_name: string; theme: GuestRsvp["theme"]; details_enabled: boolean; rsvp_enabled: boolean }; guest: GuestRsvp | null; slug: string; token: string | null }) {
   const [state, action, pending] = useActionState<RsvpState, FormData>(submitRsvp, {});
@@ -19,7 +19,7 @@ export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_nam
   return <WeddingFrame theme={wedding.theme} className="details-shell rsvp-shell">
     <WeddingHeader names={names} homeHref={hrefs.home} detailsHref={wedding.details_enabled ? hrefs.details : undefined} rsvpHref={rsvpHref} current="rsvp" />
     <main id="main" className="rsvp-main">
-      <OliveBranch />
+      <BotanicalArt />
       <div className="details-intro">
         <p className="details-kicker">Will you join us?</p>
         <h1 className="editorial">RSVP</h1>

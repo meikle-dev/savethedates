@@ -1,17 +1,6 @@
-/** Original decorative line artwork. Hidden from assistive technology. */
-export function OliveBranch({ className = "" }: { className?: string }) {
-  return <svg className={`olive-branch ${className}`} viewBox="0 0 160 240" fill="none" aria-hidden="true">
-    <path d="M27 224C58 176 75 131 102 75L131 21" stroke="currentColor" strokeWidth="1.4" />
-    {[
-      "M43 197C6 182 12 159 18 142C42 155 50 175 43 197Z",
-      "M52 176C76 150 98 155 111 152C99 178 77 188 52 176Z",
-      "M67 143C34 130 32 106 39 87C60 103 71 122 67 143Z",
-      "M78 119C102 93 124 95 143 90C133 114 109 129 78 119Z",
-      "M94 86C67 70 70 48 76 34C96 51 102 70 94 86Z",
-      "M111 60C129 38 143 42 153 36C150 53 134 64 111 60Z",
-      "M124 35C110 17 117 6 125 1C132 11 134 24 124 35Z",
-    ].map((d) => <path key={d} d={d} fill="currentColor" fillOpacity=".17" stroke="currentColor" strokeWidth=".8" />)}
-  </svg>;
+/** Public decorative SVG selected by the enclosing theme; never guest content. */
+export function BotanicalArt({ className = "" }: { className?: string }) {
+  return <span className={`botanical-art ${className}`} aria-hidden="true" />;
 }
 
 export type WeddingIconKind = "ceremony" | "reception" | "travel" | "accommodation" | "dress" | "questions";

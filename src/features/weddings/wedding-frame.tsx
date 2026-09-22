@@ -2,7 +2,7 @@ import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import type { WeddingTheme } from "./themes";
 import { WeddingNavigation } from "./wedding-navigation";
-import { OliveBranch } from "./wedding-art";
+import { BotanicalArt } from "./wedding-art";
 
 const weddingFont = localFont({
   src: [
@@ -26,7 +26,7 @@ export function WeddingHeader({ names, ...navigation }: { names: readonly [strin
 
 export function WeddingFooter({ names }: { names: readonly [string, string] }) {
   return <footer className="wedding-footer">
-    <OliveBranch />
+    <BotanicalArt />
     <div className="wedding-signature"><p>With love,</p><p>{names.join(" & ")}</p></div>
     <div className="wedding-seal" aria-hidden="true"><span>{Array.from(names[0])[0]}<i>&amp;</i>{Array.from(names[1])[0]}</span><small>Always & forever</small></div>
   </footer>;

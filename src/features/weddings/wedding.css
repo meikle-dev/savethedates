@@ -1,5 +1,6 @@
 /* Guest-only presentation: shared content, three distinct compositions. */
 .wedding-shell {
+  --botanical-art: url("/assets/wedding/minimal-olive.svg");
   --theme-accent: #526044; --theme-surface: #f5f1e8; --theme-text: #272b22;
   --theme-muted: #626555; --theme-line: #d6d4c7; --theme-tint: #e5e6d8;
   --theme-radius: 2px; --theme-heading: var(--wedding-serif), Georgia, serif;
@@ -11,10 +12,12 @@
 .wedding-shell a:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
 .wedding-shell button:focus-visible { outline: 2px solid var(--theme-accent); outline-offset: 5px; }
 .wedding-shell[data-theme="romantic"] {
+  --botanical-art: url("/assets/wedding/romantic-rose.svg");
   --theme-accent: #7c3446; --theme-surface: #fff4eb; --theme-text: #582b39;
   --theme-muted: #79565b; --theme-line: #e3c9c5; --theme-tint: #f1d8cf; --theme-radius: 5px;
 }
 .wedding-shell[data-theme="bold"] {
+  --botanical-art: url("/assets/wedding/bold-laurel.svg");
   --theme-accent: #164b49; --theme-surface: #f1f3e9; --theme-text: #133c3b;
   --theme-muted: #48615a; --theme-line: #c6d2c7; --theme-tint: #dce8b3; --theme-radius: 0;
 }
@@ -31,9 +34,9 @@
 .wedding-hero > .wedding-photo { grid-area: 1 / 1; min-height: 800px; }
 .wedding-photo img { object-fit: cover; object-position: center; }
 .photo-fallback { background: var(--theme-tint); color: var(--theme-accent); }
-.photo-fallback > .olive-branch { position: absolute; width: 48%; height: 80%; left: -10%; bottom: -3%; transform: rotate(10deg); opacity: .65; }
-.photo-fallback > .olive-branch + .olive-branch { left: auto; right: -10%; top: -5%; transform: rotate(190deg); }
-.olive-branch { pointer-events: none; width: 70px; height: 100px; }
+.botanical-art { display: block; flex-shrink: 0; pointer-events: none; width: 70px; height: 105px; background: var(--botanical-art) center / contain no-repeat; }
+.photo-fallback > .botanical-art { position: absolute; width: 52%; max-width: 360px; height: 88%; left: -5%; bottom: -8%; transform: rotate(-12deg); opacity: .8; }
+.photo-fallback > .botanical-art + .botanical-art { left: auto; right: -5%; top: -8%; bottom: auto; transform: rotate(168deg); }
 .wedding-announcement { position: relative; grid-area: 1 / 1; z-index: 1; align-self: center; text-align: center; padding: 74px 28px 94px; }
 .wedding-kicker, .details-kicker { font-size: 10px; line-height: 1.8; letter-spacing: .25em; text-transform: uppercase; }
 .wedding-announcement h1 { font-size: clamp(90px, 11vw, 156px); line-height: .78; letter-spacing: -.065em; margin: 38px auto 0; max-width: 760px; }
@@ -49,7 +52,7 @@
 .announcement-shell[data-theme="minimal"] .wedding-announcement::before { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, transparent 5%, #f5f1e8e8 33%, #f5f1e8eb 67%, transparent 95%); mask-image: linear-gradient(transparent, #000 60px, #000 calc(100% - 60px), transparent); }
 .announcement-shell[data-theme="minimal"] .photo-fade { background: linear-gradient(0deg, #292f2326, transparent 38%); }
 .wedding-footer { position: relative; display: flex; justify-content: center; align-items: center; gap: 70px; padding: 45px 40px; background: var(--theme-surface); border-top: 1px solid var(--theme-line); }
-.wedding-footer > .olive-branch { color: var(--theme-accent); width: 92px; height: 135px; transform: rotate(-15deg); }
+.wedding-footer > .botanical-art { width: 100px; height: 150px; transform: rotate(-12deg); }
 .wedding-signature { max-width: 540px; text-align: center; font-family: var(--theme-heading); font-size: 31px; line-height: 1.2; font-style: italic; }
 .wedding-signature p:first-child { color: var(--theme-muted); font-size: 23px; margin-bottom: 9px; }
 .wedding-seal { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 130px; height: 130px; border: 1px solid var(--theme-line); outline: 1px solid var(--theme-line); outline-offset: -7px; border-radius: 50%; transform: rotate(-12deg); }
@@ -63,7 +66,7 @@
 .announcement-shell[data-theme="romantic"] h1 { font-size: clamp(80px, 8.6vw, 120px); margin-top: 30px; }
 .announcement-shell[data-theme="romantic"] .photo-fade { background: linear-gradient(0deg, #582b391f, transparent 45%); }
 .announcement-shell[data-theme="romantic"] .wedding-message { font-size: 25px; }
-.announcement-shell[data-theme="romantic"] .announcement-sprig { display: block; margin: 30px auto 0; height: 70px; width: 48px; transform: rotate(20deg); }
+.announcement-shell[data-theme="romantic"] .announcement-sprig { display: block; margin: 24px auto 0; height: 90px; width: 60px; transform: rotate(12deg); }
 .wedding-shell[data-theme="romantic"] .wedding-seal { background: #783749; color: #fff4eb; border-color: #ad727e; outline-color: #a56877; box-shadow: 0 5px 15px #582b3926; }
 /* Bold: a confident, asymmetric cover with colour that carries through the site. */
 .announcement-shell[data-theme="bold"] .wedding-hero { grid-template-columns: 1.05fr 1fr; background: #133f3e; }
@@ -87,7 +90,7 @@
 .details-heading > p:not(.details-kicker) { font-size: 15px; line-height: 1.65; margin-top: 12px; }
 .details-divider { display: flex; align-items: center; justify-content: center; gap: 16px; color: var(--theme-accent); margin: 15px auto 20px; }
 .details-divider::before, .details-divider::after { content: ""; width: 32px; height: 1px; background: var(--theme-line); }
-.details-divider > .olive-branch { width: 26px; height: 38px; transform: rotate(25deg); }
+.details-divider > .botanical-art { width: 36px; height: 54px; transform: rotate(15deg); }
 .details-grid { display: grid; grid-template-columns: minmax(0, 1fr); max-width: 940px; margin: 0 auto; }
 .details-card { display: grid; grid-template-columns: 46px minmax(0, 1fr); align-content: start; gap: 16px; min-width: 0; padding: 25px 0; border-top: 1px solid var(--theme-line); }
 .details-card-body { min-width: 0; }
@@ -132,10 +135,9 @@
 .details-intro h1 { margin-top: 20px; font-size: clamp(62px, 7.5vw, 104px); line-height: .83; letter-spacing: -.055em; }
 .details-intro h1 em { display: block; font-weight: 400; }
 .details-intro > p:last-child { margin-top: 23px; line-height: 1.65; font-family: var(--theme-heading); font-size: 23px; }
-.details-intro > .olive-branch { position: absolute; top: -40px; right: 10px; width: 60px; height: 110px; transform: rotate(30deg); color: var(--theme-accent); opacity: .5; }
 /* RSVP keeps the same controls and states, presented as a matching invitation. */
 .rsvp-main { position: relative; padding: 70px 24px 80px; background: radial-gradient(ellipse at top left, var(--theme-tint), transparent 65%); }
-.rsvp-main > .olive-branch { position: absolute; top: 60px; left: 5%; width: 160px; height: 250px; color: var(--theme-accent); opacity: .2; }
+.rsvp-main > .botanical-art { position: absolute; top: 32px; left: 12px; width: clamp(65px, 12vw, 145px); height: 220px; opacity: .45; }
 .rsvp-card { position: relative; max-width: 620px; margin: 35px auto 0; padding: 36px; border: 1px solid var(--theme-line); border-radius: var(--theme-radius); background: var(--theme-surface); box-shadow: 0 16px 55px #34321f0a; }
 .rsvp-card .field-input { color: var(--theme-text); }
 .rsvp-card .field-input:focus-visible { outline-color: var(--theme-accent); }
@@ -149,8 +151,9 @@
 .rsvp-shell[data-theme="bold"] .rsvp-main { background: #133f3e; }
 .rsvp-shell[data-theme="bold"] .details-intro { color: #f1f3e9; text-align: left; }
 .rsvp-shell[data-theme="bold"] .details-kicker { color: #e5edac; }
-.rsvp-shell[data-theme="bold"] .rsvp-main > .olive-branch { color: #e5edac; }
+.rsvp-shell[data-theme="bold"] .rsvp-main > .botanical-art { opacity: .65; }
 @media (max-width: 900px) {
+  .rsvp-main > .botanical-art { top: 6px; left: auto; right: 16px; width: 40px; height: 60px; opacity: .35; }
   .wedding-shell { margin: 0 auto; border-inline: 0; }
   .wedding-header { padding: 18px 24px; grid-template-columns: minmax(0, 1fr) auto; gap: 15px; }
   .header-flourish { display: none; }
@@ -175,7 +178,9 @@
   .wedding-message { font-size: 25px; max-width: 290px; }
   .announcement-shell[data-theme="minimal"] .wedding-announcement::before { background: linear-gradient(90deg, #f5f1e8ba, #f5f1e8ed 25%, #f5f1e8ed 75%, #f5f1e8ba); }
   .wedding-footer { padding: 32px 22px; gap: 24px; flex-wrap: wrap; }
-  .wedding-footer > .olive-branch { width: 52px; height: 85px; }
+  .wedding-footer > .botanical-art { width: 58px; height: 87px; }
+  .photo-fallback > .botanical-art { width: 45%; height: 72%; left: -8%; bottom: -8%; }
+  .photo-fallback > .botanical-art + .botanical-art { right: -8%; top: -8%; }
   .wedding-signature { flex: 1; min-width: 0; font-size: 29px; text-align: left; }
   .wedding-signature p:first-child { font-size: 21px; }
   .wedding-seal { display: none; }
@@ -191,6 +196,5 @@
   .rsvp-main { padding: 50px 20px; }
   .rsvp-main .details-intro h1 { font-size: 72px; }
   .rsvp-main .details-intro > p:last-child { font-size: 22px; }
-  .rsvp-main > .olive-branch { top: 10px; width: 65px; height: 100px; }
   .rsvp-card { padding: 24px; }
 }

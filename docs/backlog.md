@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F017 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F018**, from the 21 September owner review below. F018-F022 remain ordered review follow-up work.
+Ordered by recommended implementation sequence. F001-F008 and F011-F018 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F019**, from the 21 September owner review below. F019-F022 remain ordered review follow-up work.
 
 ## Status and handoff rules
 
@@ -381,7 +381,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 
 ## F018 - Reusable botanical SVG artwork for the three themes
 
-**Status:** Planned
+**Status:** Done
 **Priority / lead:** P2 / UX then Software Engineer; independent visual feature review
 **Purpose:** Replace placeholder-looking flowers/leaves with polished reusable decoration.
 **Depends on:** F011 (Done); scheduled after F017 to avoid guest-rendering conflicts
@@ -394,7 +394,15 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - Compositions remain readable with real/long content and do not obscure navigation or controls. Mobile decoration is intentionally reduced/repositioned. Guest pages and marketing examples stay representative of the same themes.
 - Asset origins/usage rights, dimensions and size optimisation are recorded; mobile/desktop and missing-image inspections plus relevant theme checks pass.
 
-**Next preparation:** Agree the small asset inventory/compositions from existing theme direction. F019 may reuse these SVGs and adds its own photographic/texture background where needed.
+**Design:** See `docs/ux/template-ui-summary.md` (F018) for the three compositions and responsive placement; `public/assets/wedding/README.md` records provenance, palettes, dimensions, size optimisation and the replacement/reuse inventory. F019 may reuse these assets.
+
+**Handoff (22 September 2026):**
+
+- Added original olive, rose and laurel-inspired SVGs (240×360; 7,877 bytes combined) in `public/assets/wedding/`. Replaced the inline olive sprig with shared theme-selected `BotanicalArt` across guest footers, Details, RSVP, Romantic announcements and paired photo fallbacks, including previews/full marketing examples. Mobile decoration is reduced and RSVP artwork moves to the upper-right at widths up to 900px. Asset loading/decoding and decorative accessibility are checked by the existing theme design suite.
+- Passed final `npm.cmd run check` (lint, typecheck, 25 unit tests, production build); `npx.cmd playwright test tests/theme-design.spec.ts tests/themes.spec.ts tests/rsvp.spec.ts tests/marketing.spec.ts` (18/18 desktop/mobile); after the RSVP placement adjustment, `npx.cmd playwright test tests/rsvp.spec.ts --output=test-results/f018-rsvp-final` (2/2); `git diff --check`. A PowerShell XML element/attribute allowlist and per-file size check passed for all three SVGs; sources contain only vector geometry/colours and no executable, linked or embedded image content.
+- Inspected desktop (1440px), iPhone 13 and 320px screenshots across all three themes: loaded/missing/failed photos, long names/messages, Details dividers and RSVP controls remain readable without overflow. Theme design checks also exercise widths 320, 390, 620, 621, 768, 900, 1024 and 1440. In-app browser setup failed because sandbox metadata was unavailable; repository Playwright supplied browser checks/screenshots under ignored `test-results/`.
+- Independent reviewer `review_f018` found one Minor mobile Bold RSVP decoration/text overlap; moving the accent resolved it. Final CSS and updated screenshots were re-reviewed with no remaining Blocking, Important or Minor findings. Hosted CI, Safari/Firefox, production-container browser checks and database integration/persistence suites were not run for this visual-only slice.
+- Blockers: None. Next: Product Manager and UX prepare F019 RSVP redesign from the supplied reference; no F019 implementation started. F009 external release blockers remain.
 
 ## F019 - RSVP redesign using the supplied reference
 
@@ -478,7 +486,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. Following the owner review and completion of F013-F017, F018 is the next executable ticket while external release inputs remain blocked; complete the review gate above before final release review.
+- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. Following the owner review and completion of F013-F018, F019 is the next executable ticket while external release inputs remain blocked; complete the review gate above before final release review.
 
 ## F010 - Post-launch extensions
 

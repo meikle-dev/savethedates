@@ -1,7 +1,7 @@
 import { formatWeddingDate, type Wedding } from "./wedding";
 import { WeddingPhoto } from "./wedding-photo";
 import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
-import { OliveBranch } from "./wedding-art";
+import { BotanicalArt } from "./wedding-art";
 import { resolvePhotoFrame } from "./photo-framing";
 
 export function SaveTheDate({ wedding, homeHref = "/", detailsHref, rsvpHref }: { wedding: Wedding; homeHref?: string; detailsHref?: string; rsvpHref?: string }) {
@@ -17,7 +17,7 @@ export function SaveTheDate({ wedding, homeHref = "/", detailsHref, rsvpHref }: 
         <p className="wedding-date"><time dateTime={wedding.date}>{formatWeddingDate(wedding.date)}</time></p>
         <p className="wedding-location">{wedding.location}</p>
         {wedding.message && <p className="wedding-message">{wedding.message}</p>}
-        <OliveBranch className="announcement-sprig" />
+        <BotanicalArt className="announcement-sprig" />
       </div>
     </main>
     <WeddingFooter names={wedding.names} />

@@ -8,6 +8,8 @@
 
 The original JPEG is served only by the development-only `/preview-photo` route. F008 also ships an optimised 1400px-wide WebP derivative at `public/media/lake-como.webp`, retained under the same licence. The supplied design boards are reference material, not shipped pages. The botanical artwork, guest information icons and code-rendered social card are original project artwork.
 
+F018 botanical SVG sources, palettes, provenance, size budget and usage inventory are recorded in [`public/assets/wedding/README.md`](../public/assets/wedding/README.md).
+
 ## F011 example imagery and typography
 
 `public/media/lake-como-editorial.webp` is an AI-generated scenic illustration created with the built-in image-generation tool on 20 September 2026, exported to 1400px WebP (approximately 315 KB). It is used only for explicitly fictional public examples and their marketing phone illustrations, never as a customer's uploaded photo or a claim about a real venue.

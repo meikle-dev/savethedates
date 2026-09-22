@@ -2,7 +2,7 @@ import type { WeddingDetailsPage } from "./details";
 import { hasVenue } from "./details";
 import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
 import { WeddingPhoto } from "./wedding-photo";
-import { OliveBranch, WeddingIcon, type WeddingIconKind } from "./wedding-art";
+import { BotanicalArt, WeddingIcon, type WeddingIconKind } from "./wedding-art";
 import type { Wedding } from "./wedding";
 import { resolvePhotoFrame, type PhotoFraming } from "./photo-framing";
 
@@ -48,7 +48,7 @@ export function WeddingDetailsPageView({ details, image, photoFraming, homeHref,
         <p className="details-kicker">Everything you need to know</p>
         <h1 className="editorial">Wedding <em>details</em></h1>
         <p>We can’t wait to celebrate with you.</p>
-        <div className="details-divider" aria-hidden="true"><OliveBranch /></div>
+        <div className="details-divider" aria-hidden="true"><BotanicalArt /></div>
       </div>
       {!hasContent && previewEmpty && <p className="details-empty">No details have been saved yet. Return to your workspace to add the information your guests will need.</p>}
       <div className="details-grid">

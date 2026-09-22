@@ -6,6 +6,20 @@ for (const theme of ["minimal", "romantic", "bold"]) {
     test.setTimeout(60_000);
     await page.goto(`/examples/${theme}`);
     await page.evaluate(() => document.fonts.ready);
+    // CSS decoration has no img error UI: decode its actual source to catch broken assets.
+    const decoration = page.locator(".wedding-footer > .botanical-art");
+    await expect(decoration).toHaveAttribute("aria-hidden", "true");
+    await expect(decoration).toHaveCSS("pointer-events", "none");
+    const artwork = await decoration.evaluate(async element => {
+      const source = getComputedStyle(element).backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1];
+      if (!source) throw new Error("Theme artwork is missing");
+      const image = new Image();
+      image.src = source;
+      await image.decode();
+      return { path: new URL(source).pathname, width: image.naturalWidth, height: image.naturalHeight };
+    });
+    const asset = { minimal: "minimal-olive", romantic: "romantic-rose", bold: "bold-laurel" }[theme];
+    expect(artwork).toEqual({ path: `/assets/wedding/${asset}.svg`, width: 240, height: 360 });
     await expect(page.locator(".wedding-photo img")).toHaveJSProperty("naturalWidth", 1400);
     await expect(page.locator(".wedding-photo img")).toHaveCSS("object-position", "46% 52%");
     await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
