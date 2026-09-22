@@ -36,6 +36,20 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .details-editor-group { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
 .details-editor-group legend { padding-right: 0.75rem; font-size: 1rem; font-weight: 600; }
 .details-faq-editor { padding: 1.1rem; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,0.45); }
+.photo-framing-previews { display: grid; grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr); align-items: end; gap: 1rem; }
+.photo-framing-viewport { width: 100%; min-height: 0; margin: 0; border: 1px solid var(--theme-line); box-shadow: none; overflow: hidden; cursor: grab; touch-action: none; user-select: none; }
+.photo-framing-viewport:active { cursor: grabbing; }
+.photo-framing-viewport .wedding-photo { width: 100%; height: 100%; }
+.photo-framing-viewport img { pointer-events: none; user-select: none; }
+.photo-framing-viewport[data-page="saveTheDate"][data-preview-size="mobile"] { aspect-ratio: 39 / 70; }
+.photo-framing-viewport[data-page="saveTheDate"][data-preview-size="desktop"] { aspect-ratio: 31 / 20; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="romantic"][data-preview-size="mobile"] { aspect-ratio: 35 / 36; border-radius: 999px 999px 0 0; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="romantic"][data-preview-size="desktop"] { aspect-ratio: 5 / 6; border-radius: 999px 999px 0 0; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="bold"][data-preview-size="mobile"] { aspect-ratio: 9 / 10; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="bold"][data-preview-size="desktop"] { aspect-ratio: 4 / 5; }
+.photo-framing-viewport[data-page="details"][data-preview-size="mobile"] { aspect-ratio: 39 / 21; }
+.photo-framing-viewport[data-page="details"][data-preview-size="desktop"] { aspect-ratio: 124 / 33; }
+.photo-framing-viewport[data-page="details"][data-theme="romantic"] { border-radius: 999px 999px 0 0; }
 .rsvp-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,0.5); }
 .rsvp-summary div { min-width: 0; padding: 1rem 0.65rem; text-align: center; }
 .rsvp-summary div + div { border-left: 1px solid var(--line); }
@@ -47,4 +61,8 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .rsvp-status.is-declined { background: #f3e9e5; color: #7a3d33; }
 @media (min-width: 768px) {
   .rsvp-invitation { flex-direction: row; align-items: center; justify-content: space-between; gap: 1.5rem; }
+}
+@media (max-width: 520px) {
+  .photo-framing-previews { grid-template-columns: minmax(0, 1fr); }
+  .photo-framing-previews figure:first-child { max-width: 230px; }
 }

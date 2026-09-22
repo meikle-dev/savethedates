@@ -7,12 +7,14 @@ for (const theme of ["minimal", "romantic", "bold"]) {
     await page.goto(`/examples/${theme}`);
     await page.evaluate(() => document.fonts.ready);
     await expect(page.locator(".wedding-photo img")).toHaveJSProperty("naturalWidth", 1400);
+    await expect(page.locator(".wedding-photo img")).toHaveCSS("object-position", "46% 52%");
     await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath(`${theme}-landing.png`), fullPage: true });
     await page.getByRole("navigation", { name: "Wedding site" }).getByRole("link", { name: "Details", exact: true }).focus();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("heading", { name: "Wedding details" })).toBeVisible();
     await expect(page.locator(".wedding-photo img")).toHaveJSProperty("naturalWidth", 1400);
+    await expect(page.locator(".wedding-photo img")).toHaveCSS("object-position", "54% 58%");
     await page.screenshot({ path: test.info().outputPath(`${theme}-details.png`), fullPage: true });
     for (const route of ["", "/details"]) {
       await page.goto(`/examples/${theme}${route}`);

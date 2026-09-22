@@ -5,5 +5,6 @@ import { exampleDetails, exampleWedding } from "@/features/marketing/example-dat
 export default async function ExampleDetailsPage({ params }: { params: Promise<{ theme: string }> }) {
   const { theme } = await params;
   if (!isWeddingTheme(theme)) notFound();
-  return <WeddingDetailsPageView details={exampleDetails(theme)} image={exampleWedding(theme).image} homeHref={`/examples/${theme}`} detailsHref={`/examples/${theme}/details`} />;
+  const wedding = exampleWedding(theme);
+  return <WeddingDetailsPageView details={exampleDetails(theme)} image={wedding.image} photoFraming={wedding.photoFraming} homeHref={`/examples/${theme}`} detailsHref={`/examples/${theme}/details`} />;
 }

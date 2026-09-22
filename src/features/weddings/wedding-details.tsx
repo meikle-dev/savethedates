@@ -4,6 +4,7 @@ import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
 import { WeddingPhoto } from "./wedding-photo";
 import { OliveBranch, WeddingIcon, type WeddingIconKind } from "./wedding-art";
 import type { Wedding } from "./wedding";
+import { resolvePhotoFrame, type PhotoFraming } from "./photo-framing";
 
 function Venue({ title, details, kind }: { title: string; details: WeddingDetailsPage; kind: "ceremony" | "reception" }) {
   if (!hasVenue(details, kind)) return null;
@@ -35,13 +36,13 @@ function Guidance({ title, text, url, linkLabel, icon }: { title: string; text: 
   </section>;
 }
 
-export function WeddingDetailsPageView({ details, image, homeHref, detailsHref, rsvpHref, previewEmpty = false }: { details: WeddingDetailsPage; image?: Wedding["image"]; homeHref: string; detailsHref: string; rsvpHref?: string; previewEmpty?: boolean }) {
+export function WeddingDetailsPageView({ details, image, photoFraming, homeHref, detailsHref, rsvpHref, previewEmpty = false }: { details: WeddingDetailsPage; image?: Wedding["image"]; photoFraming?: PhotoFraming; homeHref: string; detailsHref: string; rsvpHref?: string; previewEmpty?: boolean }) {
   const hasContent = hasVenue(details, "ceremony") || hasVenue(details, "reception") || details.travel || details.travel_url || details.accommodation || details.accommodation_url || details.dress_code || details.faqs.length;
   const names = [details.first_name, details.second_name] as const;
   return <WeddingFrame theme={details.theme} className="details-shell">
     <WeddingHeader names={names} homeHref={homeHref} detailsHref={detailsHref} rsvpHref={rsvpHref} current="details" />
     <main id="main" className="details-layout">
-      <div className="details-photo"><WeddingPhoto key={image?.src} image={image} /></div>
+      <div className="details-photo"><WeddingPhoto key={image?.src} image={image} frame={resolvePhotoFrame(photoFraming, details.theme, "details")} /></div>
       <div className="details-content">
       <div className="details-heading">
         <p className="details-kicker">Everything you need to know</p>

@@ -62,7 +62,7 @@ export async function changePhoto(_: PhotoFormState, form: FormData): Promise<Ph
       if (error) return { message: "We couldn’t upload your photo. Your previous photo is unchanged; please retry." };
     }
     // Compare-and-swap prevents concurrent replacements from deleting the winning photo.
-    let update = client.from("weddings").update({ photo_path: path }).eq("id", wedding.id);
+    let update = client.from("weddings").update({ photo_path: path, photo_framing: {} }).eq("id", wedding.id);
     update = wedding.photo_path ? update.eq("photo_path", wedding.photo_path) : update.is("photo_path", null);
     const { data, error } = await update.select("id");
     if (error || !data?.length) {

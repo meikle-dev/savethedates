@@ -60,7 +60,7 @@ it("isolates storage and exposes only the current published photo with no signed
   const ownSlug = ownRow.data!.slug ?? `${slug}-other`;
   expect((await owners[0].from("weddings").update({ photo_path: path, slug: ownSlug, published: true }).eq("id", weddings[0])).error).toBeNull();
   const published = await local.anonymous().rpc("published_wedding", { requested_slug: ownSlug });
-  expect(Object.keys(published.data![0]).sort()).toEqual(["first_name", "second_name", "wedding_date", "location", "message", "photo_path", "theme", "details_enabled", "rsvp_enabled"].sort());
+  expect(Object.keys(published.data![0]).sort()).toEqual(["first_name", "second_name", "wedding_date", "location", "message", "photo_path", "photo_framing", "theme", "details_enabled", "rsvp_enabled"].sort());
   expect((await anon.download(path)).error).toBeNull();
   expect((await anon.list(weddings[0])).data).toEqual([]);
   for (const reader of [anon, other, bucket]) expect((await reader.createSignedUrl(path, 3600)).error).not.toBeNull();
@@ -96,4 +96,53 @@ it("validates themes and keeps changes isolated without altering wedding content
     expect(updated.error).toBeNull();
     expect(updated.data).toEqual({ ...before.data, theme, updated_at: updated.data!.updated_at });
   }
+});
+
+it("validates, isolates and narrowly publishes per-theme photo framing, then resets it for a new photo", async () => {
+  const owner = owners[0];
+  const id = weddings[0];
+  const framing = {
+    minimal: { saveTheDate: { x: 22, y: 78, zoom: 1.25 }, details: { x: 66, y: 35, zoom: 1.5 } },
+    romantic: { saveTheDate: { x: 10, y: 90, zoom: 2 } },
+  };
+  expect((await owner.from("weddings").update({ photo_framing: framing }).eq("id", id)).error).toBeNull();
+  for (const invalid of [
+    { minimal: { saveTheDate: { x: -1, y: 50, zoom: 1 } } },
+    { minimal: { saveTheDate: { x: 50, y: 50, zoom: 3 } } },
+    { minimal: { saveTheDate: { x: 50, y: 50, zoom: 1, rotate: 5 } } },
+    { unknown: {} },
+  ]) expect((await owner.from("weddings").update({ photo_framing: invalid }).eq("id", id)).error).not.toBeNull();
+  const denied = await owners[1].from("weddings").update({ photo_framing: {} }).eq("id", id).select("id");
+  expect(denied.data ?? []).toEqual([]);
+
+  const row = await owner.from("weddings").select("slug").eq("id", id).single();
+  const publicSlug = row.data!.slug ?? `${slug}-framing`;
+  expect((await owner.from("weddings").update({ slug: publicSlug, published: true, theme: "minimal", details_enabled: true, ceremony_venue: "The Orangery" }).eq("id", id)).error).toBeNull();
+  const published = await local.anonymous().rpc("published_wedding", { requested_slug: publicSlug });
+  expect(published.data![0].photo_framing).toEqual({ minimal: framing.minimal });
+  const publishedDetails = await local.anonymous().rpc("published_wedding_details", { requested_slug: publicSlug });
+  expect(publishedDetails.data![0].photo_framing).toEqual({ minimal: framing.minimal });
+
+  expect((await owner.from("weddings").update({ theme: "romantic" }).eq("id", id)).error).toBeNull();
+  expect((await local.anonymous().rpc("published_wedding", { requested_slug: publicSlug })).data![0].photo_framing).toEqual({ romantic: framing.romantic });
+  expect((await owner.from("weddings").update({ theme: "minimal" }).eq("id", id)).error).toBeNull();
+  expect((await local.anonymous().rpc("published_wedding", { requested_slug: publicSlug })).data![0].photo_framing).toEqual({ minimal: framing.minimal });
+
+  const beforeSave = await owner.from("weddings").select("photo_path, photo_framing").eq("id", id).single();
+  const changed = { ...framing, bold: { details: { x: 40, y: 45, zoom: 1.1 } } };
+  const expectedPhoto = beforeSave.data!.photo_path;
+  const firstQuery = owner.from("weddings").update({ photo_framing: changed }).eq("id", id)
+    .eq("theme", "minimal").eq("photo_framing", JSON.stringify(beforeSave.data!.photo_framing));
+  const firstSave = await (expectedPhoto ? firstQuery.eq("photo_path", expectedPhoto) : firstQuery.is("photo_path", null)).select("id");
+  expect(firstSave.error).toBeNull();
+  expect(firstSave.data).toHaveLength(1);
+  const staleQuery = owner.from("weddings").update({ photo_framing: framing }).eq("id", id)
+    .eq("theme", "minimal").eq("photo_framing", JSON.stringify(beforeSave.data!.photo_framing));
+  const staleSave = await (expectedPhoto ? staleQuery.eq("photo_path", expectedPhoto) : staleQuery.is("photo_path", null)).select("id");
+  expect(staleSave.error).toBeNull();
+  expect(staleSave.data).toEqual([]);
+
+  const nextPath = `${id}/${crypto.randomUUID()}.webp`;
+  expect((await owner.from("weddings").update({ photo_path: nextPath, photo_framing: framing }).eq("id", id)).error).toBeNull();
+  expect((await owner.from("weddings").select("photo_framing").eq("id", id).single()).data!.photo_framing).toEqual({});
 });

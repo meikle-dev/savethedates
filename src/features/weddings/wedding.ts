@@ -1,4 +1,5 @@
 import type { WeddingTheme } from "./themes";
+import type { PhotoFraming } from "./photo-framing";
 
 export type Wedding = {
   theme?: WeddingTheme;
@@ -7,6 +8,7 @@ export type Wedding = {
   location: string;
   message?: string;
   image?: { src: string; alt: string };
+  photoFraming?: PhotoFraming;
 };
 
 export function formatWeddingDate(date: string): string {

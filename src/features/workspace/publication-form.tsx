@@ -6,11 +6,14 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { changePhoto, publishWedding, unpublishWedding, type PhotoFormState } from "./publication-actions";
 import type { FormState } from "@/features/account/validation";
 import { PurchasePanel, type Entitlement } from "@/features/payments/purchase-panel";
+import type { PhotoFraming } from "@/features/weddings/photo-framing";
+import type { WeddingTheme } from "@/features/weddings/themes";
+import { PhotoFramingEditor } from "./photo-framing-editor";
 
 function Notice({ state }: { state: FormState }) {
   return state.message ? <p className={`mt-4 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p> : null;
 }
-export function PublicationForm({ slug, published, photo, locked, entitlement, checkout }: { slug: string | null; published: boolean; photo: boolean; locked: boolean; entitlement: Entitlement; checkout?: string }) {
+export function PublicationForm({ slug, published, photo, photoFraming, theme, locked, entitlement, checkout }: { slug: string | null; published: boolean; photo: boolean; photoFraming: PhotoFraming; theme: WeddingTheme; locked: boolean; entitlement: Entitlement; checkout?: string }) {
   const [url, setUrl] = useState(slug ?? "");
   const [visibility, setVisibility] = useState(false);
   const [photoState, photoAction, photoPending] = useActionState<PhotoFormState, FormData>(changePhoto, {});
@@ -70,6 +73,7 @@ export function PublicationForm({ slug, published, photo, locked, entitlement, c
       </form>
       {photoPresent && <form action={photoAction} className="mt-3"><button name="intent" value="remove" className="text-link min-h-11" disabled={photoPending} onClick={() => setFileError("")}>Remove photo</button></form>}
       {published && <p className="field-help mt-3">A successful photo change updates your live site immediately.</p>}
+      {photoPresent && <PhotoFramingEditor key={`${theme}-${photoRevision}`} theme={theme} framing={photoState.success ? {} : photoFraming} published={published} />}
     </section>
     <section aria-labelledby="share-title" className="mt-12 border-t border-[var(--line)] pt-8">
       <h2 id="share-title" className="text-xl font-medium">Share your site</h2>
