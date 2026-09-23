@@ -25,7 +25,7 @@ async function ownerWorkspace() {
 }
 
 function refreshRsvp(slug?: string | null) {
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
   if (slug) {
     revalidatePath(`/${slug}`);
     revalidatePath(`/${slug}/details`);

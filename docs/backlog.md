@@ -1,8 +1,25 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F025 are complete. **Current: F009** remains In Progress with external release blockers; F026 is the active bounded RSVP change requested before its final release review.
+Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers.
 
 ## Status and handoff rules
+
+### F027 - Sectioned couple dashboard
+
+**Status:** Done (23 September 2026)
+**Priority / lead:** P1 / UX/UI Designer then Software Engineer; independent review required (owner data surfaces and routing)
+**Purpose:** Replace the single long workspace scroll with a calm, sectioned dashboard so couples can see their site's state at a glance and go straight to the task they need.
+**Depends on:** F001-F026 (Done)
+**Scope and decision:** Reference: `docs/ux/designs/dashboard-redesign.png` (composition only). Each section is its own URL under a shared workspace shell: Overview `/dashboard`, Basics, Design (theme and photo), Details, RSVP (settings and shared link), Guests (responses, corrections, legacy invitations) and Publish (preview, purchase, URL, publish/unpublish). Desktop uses a left sidebar; below 1024px a sticky, horizontally scrolling section bar. Overview shows only derived real data: site status, RSVP responses with attending/declined split, countdown, a setup checklist linking to each section, quick actions and latest responses. New accounts see the Basics form first, with no section navigation until a wedding exists. Every existing capability, message and security boundary is retained; no new stored data. Checkout returns to Publish.
+**Done when:** Every section loads directly and via navigation with server-side ownership checks; all prior workspace actions work and refresh the shell; overview figures are correct for draft, published and response states; no horizontal overflow at 320-1440px; keyboard focus and current-section semantics work; updated E2E suite, `npm run check` and independent review pass.
+**Handoff:** Added the `src/app/dashboard/(workspace)` layout, section pages and in-shell `error.tsx`. Shared code lives in `src/features/workspace/`: request-cached owner loader `workspace-data.ts`; unit-tested derived figures `workspace-summary.ts`; nav, icons, page heading, CSS, copy button, `photo-form.tsx` (split from the publication form) and `guest-responses.tsx` (split from the RSVP manager). Sign-out failure now shows inline (`sign-out-button.tsx`) instead of via `?signout=failed`. Workspace actions revalidate `/dashboard` as a layout. Checkout returns to `/dashboard/publish`. Each section sets its own page title. Overview RSVP status reads "opens when published" until the site is live. Decisions are recorded in `docs/overview/site-ui.md` (Sectioned workspace) and `architecture.md`. No schema or data changes.
+- `npm.cmd run check` passed: lint, typecheck, 29 unit tests including new `workspace-summary.test.ts`, and production build. `git diff --check` passed; `next-env.d.ts` build churn was restored.
+- New `tests/dashboard.spec.ts` covers anonymous and no-wedding redirects, overview figures and cross-tenant exclusion, the checklist, navigation, `aria-current`, titles, reload, and 320/1440px overflow. Seven existing specs were updated for section navigation. `test:release` now includes the dashboard spec.
+- With `E2E_BASE_URL=http://127.0.0.1:3000`, the full suite excluding payments passed 45/46. The Details failure was a click-then-reload race in the updated test; after fixing it, `tests/details.spec.ts` passed 2/2. `npx.cmd playwright test tests/payments.spec.ts` passed 2/2 on Playwright's port-3100 server; the dev container uses a Stripe CLI webhook secret that the spec's fixture signatures don't match.
+- The dev container missed new files twice (500/404 for all pages). `docker compose down` then `docker compose up -d --wait` fixed it; Supabase data was untouched.
+- Inspected Overview (new, draft, live) and every section in screenshots at 390 and 1440px, plus a 320px overflow scan.
+- Independent reviewer found no Blocking issues. Its three Important findings (section titles for screen-reader announcements, draft RSVP status, header refresh assertions) and four Minor ones were fixed and re-reviewed clean.
+- Not run: production-container browser run, hosted CI, Safari/Firefox, real screen reader, 768-1023px visual pass beyond overflow checks. Blockers: none. Next: resume F009 release inputs.
 
 ### F026 - One shared RSVP link per wedding
 

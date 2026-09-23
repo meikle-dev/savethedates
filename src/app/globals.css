@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "../features/marketing/marketing.css";
 @import "../features/weddings/wedding.css";
+@import "../features/workspace/workspace.css";
+@import "../features/workspace/preview.css";
 
 :root { --paper: #f8f5f0; --ink: #222222; --sage: #2f4f3e; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
@@ -50,7 +52,7 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .photo-framing-viewport[data-page="details"][data-preview-size="mobile"] { aspect-ratio: 39 / 21; }
 .photo-framing-viewport[data-page="details"][data-preview-size="desktop"] { aspect-ratio: 124 / 33; }
 .photo-framing-viewport[data-page="details"][data-theme="romantic"] { border-radius: 999px 999px 0 0; }
-.rsvp-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,0.5); }
+.rsvp-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 18px; background: #fffdf9; }
 .rsvp-summary div { min-width: 0; padding: 1rem 0.65rem; text-align: center; }
 .rsvp-summary div + div { border-left: 1px solid var(--line); }
 .rsvp-summary strong { display: block; color: var(--teal); font-family: Georgia, serif; font-size: 1.6rem; }

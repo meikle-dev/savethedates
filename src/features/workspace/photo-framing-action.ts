@@ -55,9 +55,7 @@ export async function savePhotoFraming(_: PhotoFramingFormState, form: FormData)
     if (!updateError && !updated?.length) return { message: "Your photo, theme, or framing changed in another request. Reload and try again." };
     if (updateError) return { message: "Could not save framing. Your saved crop is unchanged; please retry." };
 
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/preview");
-    revalidatePath("/dashboard/preview/details");
+    revalidatePath("/dashboard", "layout");
     if (wedding.slug) {
       revalidatePath(`/${wedding.slug}`);
       revalidatePath(`/${wedding.slug}/details`);

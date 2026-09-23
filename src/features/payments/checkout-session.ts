@@ -31,7 +31,7 @@ export function checkoutSessionParams(attempt: CheckoutAttempt, ownerId: string,
     }],
     metadata,
     payment_intent_data: { metadata },
-    success_url: `${origin}/dashboard?checkout=success`,
-    cancel_url: `${origin}/dashboard?checkout=cancelled`,
+    success_url: `${origin}/dashboard/publish?checkout=success`,
+    cancel_url: `${origin}/dashboard/publish?checkout=cancelled`,
   };
 }

@@ -12,6 +12,7 @@ Read only what the current task needs. [Backlog](backlog.md) holds current state
 | Which technologies? | [Stack](overview/tech-stack.md) |
 | How is it structured and secured? | [Architecture](overview/architecture.md) |
 | How should the platform look? | [Platform direction](overview/site-ui.md), [reference board](ux/site-ui-design.png) |
+| How is the couple dashboard organised? | [Platform direction: Sectioned workspace](overview/site-ui.md#sectioned-workspace-f027-23-september-2026), [dashboard reference](ux/designs/dashboard-redesign.png) |
 | What are the three guest themes? | [Theme direction](ux/template-ui-summary.md), [original reference board](ux/save-the-date-options-design.png), [F011 editorial reference](ux/savedatemoderndesign.png) |
 
 Text requirements and feature acceptance criteria govern behaviour. PNGs guide visual composition; names, dates, prices, testimonials, and decorative copy within them are examples, not approved live content. Platform palette values in the text take precedence over minor differences in the board. Preserve the visual direction while adapting for readable text, real content, and responsive layouts.

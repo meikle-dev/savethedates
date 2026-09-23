@@ -16,8 +16,7 @@ export async function saveDraft(_: FormState, form: FormData): Promise<FormState
     const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
     const isLive = !!data?.published && !!entitlement?.active;
     if (error) return { message: "We couldn’t save your draft. Your changes are still here; please try again." };
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/preview");
+    revalidatePath("/dashboard", "layout");
     if (data.slug) revalidatePath(`/${data.slug}`);
     return { success: true, message: isLive ? "Your live wedding site has been updated." : "Your private draft has been saved." };
   } catch { return { message: "We couldn’t connect to save your draft. Your changes are still here; please try again." }; }

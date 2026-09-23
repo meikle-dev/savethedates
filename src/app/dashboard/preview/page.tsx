@@ -1,12 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { SaveTheDate } from "@/features/weddings/save-the-date";
 import { toWedding } from "@/features/weddings/published";
 
-import { themes, isWeddingTheme } from "@/features/weddings/themes";
-import { ThemePicker } from "@/features/workspace/theme-picker";
-import { ThemeApplyForm } from "@/features/workspace/theme-apply-form";
+import { isWeddingTheme } from "@/features/weddings/themes";
+import { PreviewToolbar } from "@/features/workspace/preview-toolbar";
 
 export default async function Preview({ searchParams }: { searchParams: Promise<{ theme?: string }> }) {
   const client = await createClient();
@@ -18,16 +16,8 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
   const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
   const params = await searchParams;
   const candidate = isWeddingTheme(params.theme) ? params.theme : data.theme;
-  const name = themes.find((theme) => theme.id === candidate)!.name;
   return <>
-    <div className="platform px-6 py-5">
-      <div className="mx-auto max-w-5xl">
-        <nav aria-label="Preview" className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Private preview · saved content</span><Link href="/dashboard" className="text-link min-h-11 content-center">Back to workspace</Link></nav>
-        <p className="mt-3 font-semibold">Previewing {name}{candidate === data.theme ? " · current theme" : " · not applied"}</p>
-        <ThemePicker key={`picker-${candidate}`} selected={candidate} />
-        <ThemeApplyForm key={`apply-${candidate}`} theme={candidate} published={data.published && !!entitlement?.active} />
-      </div>
-    </div>
+    <PreviewToolbar label="Save the Date" path="/dashboard/preview" backHref="/dashboard" theme={candidate} savedTheme={data.theme} published={data.published && !!entitlement?.active} />
     <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} homeHref={`/dashboard/preview?theme=${candidate}`} detailsHref={data.details_enabled ? `/dashboard/preview/details?theme=${candidate}` : undefined} rsvpHref={`/dashboard/preview/rsvp?theme=${candidate}`} />
   </>;
 }

@@ -37,12 +37,13 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Publish", exact: true }).click();
     await expect(page.getByText("£29", { exact: false })).toBeVisible();
     await expect(page.getByText(/A new purchase keeps your site online until six months after the wedding date/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Buy and continue to Stripe" })).toBeVisible();
     await expect(page.getByLabel("Your wedding URL")).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("payment-required.png"), fullPage: true });
-    await page.goto("/dashboard?checkout=cancelled");
+    await page.goto("/dashboard/publish?checkout=cancelled");
     await expect(page.getByText("Checkout was cancelled", { exact: false })).toBeVisible();
     expect((await local.admin.from("weddings").select("id").eq("id", wedding.data.id).single()).data?.id).toBe(wedding.data.id);
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data.id)).error?.code).toBe("23514");
@@ -88,17 +89,22 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByLabel("Your wedding URL").fill(slug);
     await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Published", { exact: true })).toBeVisible();
+    await expect(page.getByText("Your site is live for anyone with its URL.")).toBeVisible();
     expect((await guest.request.get(`/${slug}`)).status()).toBe(200);
 
     expect((await local.admin.from("stripe_payments").update({ expires_at: "2026-01-01T00:00:00Z" }).eq("payment_intent_id", paymentIntent)).error).toBeNull();
     await page.reload();
-    await expect(page.getByText("Private draft", { exact: true })).toBeVisible();
+    await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
     await expect(page.getByText("The previous site period ended", { exact: false })).toBeVisible();
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Basics", exact: true }).click();
     await page.locator('[name="location"]').fill("Bristol");
     await page.getByRole("button", { name: "Save private draft" }).click();
     await expect(page.getByRole("status").filter({ hasText: "private draft has been saved" })).toBeVisible();
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Publish", exact: true }).click();
     await page.getByRole("link", { name: "Preview saved site" }).click();
+    // The saved theme needs no applying; preview another one to reach Apply theme.
+    await page.getByRole("radio", { checked: false }).first().check();
+    await expect(page).toHaveURL(/\/dashboard\/preview\?theme=/);
     await expect(page.getByText("Applying this theme saves it to your private draft", { exact: false })).toBeVisible();
     await page.getByRole("button", { name: "Apply theme" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Theme saved to your private draft" })).toBeVisible();
@@ -110,7 +116,9 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     const refundResponse = await page.request.post("/api/stripe/webhook", { data: refund.payload, headers: { "content-type": "application/json", "stripe-signature": refund.signature } });
     expect(refundResponse.status()).toBe(200);
     await page.reload();
-    await expect(page.getByText("Private draft", { exact: true })).toBeVisible();
+    await expect(page.getByRole("article", { name: "Site status" })).toContainText("Private draft");
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Publish", exact: true }).click();
+    await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
     await expect(page.getByText("This purchase was refunded", { exact: false })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("payment-refunded.png"), fullPage: true });
     expect((await guest.request.get(`/${slug}`)).status()).toBe(404);

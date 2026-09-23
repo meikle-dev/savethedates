@@ -20,8 +20,7 @@ async function workspace() {
   return { client, wedding: data };
 }
 function refresh(slug: string | null) {
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/preview");
+  revalidatePath("/dashboard", "layout");
   if (slug) revalidatePath(`/${slug}`);
 }
 export async function publishWedding(_: FormState, form: FormData): Promise<FormState> {

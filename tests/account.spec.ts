@@ -83,8 +83,8 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await expect(page.getByRole("main").getByRole("alert")).toContainText("confirm your email");
 
     await page.goto(await emailLink(email, "signup"));
-    await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(page.getByText("Private draft", { exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard\/basics$/);
+    await expect(page.getByText("Only you can access this draft. It isn’t shared with guests.")).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page.getByLabel("Your name", { exact: false })).toHaveValue("");
     await page.getByLabel("Your name", { exact: false }).fill("Alexandra");
@@ -94,6 +94,7 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.locator('textarea[name="message"]').fill("We can’t wait to celebrate with you.");
     await page.getByRole("button", { name: "Save private draft" }).click();
     await expect(page.getByRole("status")).toHaveText("Your private draft has been saved.");
+    await expect(page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Basics" })).toHaveAttribute("aria-current", "page");
     await page.reload();
     await expect(page.getByLabel("Your name", { exact: false })).toHaveValue("Alexandra");
     await expect(page.locator('input[name="location"]')).toHaveValue("Edinburgh, Scotland");
@@ -116,6 +117,8 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await expect(page.getByRole("link", { name: /Return to your workspace/ }).first()).toBeVisible();
     await page.getByRole("link", { name: /Return to your workspace/ }).first().click();
     await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Alexandra & Morgan" })).toBeVisible();
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Basics" }).click();
     await expect(page.locator('input[name="location"]')).toHaveValue("Edinburgh, Scotland");
 
     // Server validation preserves the other fields instead of resetting the form.
@@ -151,6 +154,7 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.getByRole("button", { name: "Save new password" }).click();
     await expect(page.getByRole("status")).toContainText("password has been changed");
     await page.getByRole("link", { name: "Return to your workspace" }).click();
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Basics" }).click();
     await expect(page.locator('input[name="location"]')).toHaveValue("Edinburgh, Scotland");
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page).toHaveURL(/\/account\/sign-in$/);
@@ -158,6 +162,7 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.getByLabel("Password", { exact: true }).fill(newPassword);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
+    await page.goto("/dashboard/basics");
     await expect(page.getByLabel("Your name", { exact: false })).toHaveValue("Alexandra");
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page).toHaveURL(/\/account\/sign-in$/);

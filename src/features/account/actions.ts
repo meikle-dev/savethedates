@@ -76,9 +76,9 @@ export async function updatePassword(_: FormState, form: FormData): Promise<Form
   } catch { return { message: "We couldn’t change your password. Please try again." }; }
 }
 
-export async function signOut() {
+export async function signOut(): Promise<FormState> {
   const client = await createClient();
   const { error } = await client.auth.signOut({ scope: "local" });
-  if (error) redirect("/dashboard?signout=failed");
+  if (error) return { message: "We couldn’t sign you out. Please try again." };
   redirect("/account/sign-in");
 }

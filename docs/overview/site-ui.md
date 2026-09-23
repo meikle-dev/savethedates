@@ -248,6 +248,16 @@ Avoid exposing technical concepts.
 
 Creating a wedding website should feel like completing a short guided process rather than configuring software.
 
+## Sectioned workspace (F027, 23 September 2026)
+
+Composition reference: [dashboard redesign](../ux/designs/dashboard-redesign.png). Its names, figures, photography, "Edit all" and decorative copy are examples only.
+
+The workspace is split into sections, each with its own URL so it can be bookmarked and the back button works: **Overview** (`/dashboard`), **Basics** (names, date, location, note), **Design** (theme and photo framing), **Details**, **RSVP** (shared link, rotation, open/close settings), **Guests** (totals, responses, corrections, earlier individual invitations) and **Publish** (preview, purchase, URL, publish/unpublish). Desktop (1024px and wider) shows a sticky left sidebar. Smaller screens show a sticky, sideways-scrolling bar of section pills that keeps the current section in view. The header always offers Preview and Sign out and shows names, date and status from 768px.
+
+Overview shows only figures derived from saved data. Site status shows Published or Private draft, with the URL and "online until" date when live. The countdown uses UTC calendar days. RSVPs show open/closed/off, total responses, and the attending/not-attending split. Latest responses shows up to five with a link to Guests. Quick actions are Preview, Open live site and Copy RSVP link; the last two appear only while the site is live. While a required step remains, a setup checklist leads the page and links to the right section: basics, optional photo, visible ceremony/reception details, RSVPs open, purchase, publish. It disappears once all required steps are done. There is no guest-count target, since the product does not store an invited list.
+
+A new account lands on Basics ("Start with your story.") with no section navigation. The first save creates the wedding, keeps the confirmation on screen, and reveals the other sections. Stripe Checkout returns to Publish.
+
 ## Venue entry decision (F021, 23 September 2026)
 
 Keep ceremony and reception as independent, optional manual venue/address/directions fields. F023 adds focused guidance and a way to check a pasted directions link. Defer address autocomplete and an embedded map picker until evidence shows that manual entry causes problems.

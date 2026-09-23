@@ -1,8 +1,12 @@
-import { expect, test, type Response } from "@playwright/test";
+import { expect, test, type Page, type Response } from "@playwright/test";
 import { createHash, randomBytes } from "node:crypto";
 import { localSupabase } from "./helpers/local-supabase";
 
 const local = localSupabase();
+
+function openSection(page: Page, name: string) {
+  return page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name, exact: true }).click();
+}
 
 function expectPrivate(response: Response | null) {
   expect(response).not.toBeNull();
@@ -32,7 +36,8 @@ test("one shared link collects separate named responses and can be replaced", as
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    const section = page.getByRole("region", { name: "RSVP" });
+    await openSection(page, "RSVP");
+    const section = page.getByRole("region", { name: "RSVP", exact: true });
     await expect(section.getByRole("heading", { name: "One link for all guests" })).toBeVisible();
     const shareUrl = await section.getByLabel("Your shared RSVP link").inputValue();
     expect(shareUrl).toMatch(new RegExp(`^/s/[A-Za-z0-9_-]{43}/${slug}/rsvp$`));
@@ -66,12 +71,15 @@ test("one shared link collects separate named responses and can be replaced", as
     await guestPage.getByRole("button", { name: "Send RSVP" }).click();
     await expect(guestPage.getByRole("status")).toContainText("Jordan Lee");
 
-    await page.reload();
-    const updated = page.getByRole("region", { name: "RSVP" });
-    await expect(updated.getByText("Sam Taylor")).toBeVisible();
-    await expect(updated.getByText("Jordan Lee")).toBeVisible();
-    await expect(updated.getByText("2", { exact: true }).first()).toBeVisible();
-    const responseList = updated.getByRole("region", { name: "Guest responses" });
+    await openSection(page, "Guests");
+    const guests = page.getByRole("region", { name: "Who’s coming" });
+    await expect(guests.getByText("Sam Taylor")).toBeVisible();
+    await expect(guests.getByText("Jordan Lee")).toBeVisible();
+    await expect(guests.getByLabel("RSVP summary").getByText("2", { exact: true })).toBeVisible();
+    await openSection(page, "Overview");
+    await expect(page.getByRole("region", { name: "Latest responses" }).getByText("Jordan Lee")).toBeVisible();
+    await openSection(page, "Guests");
+    const responseList = guests.getByRole("region", { name: "Guest responses" });
     const sam = responseList.getByRole("listitem").filter({ hasText: "Sam Taylor" });
     await sam.getByText("Correct or remove response").click();
     await sam.getByLabel("Responding name").fill("Sam T.");
@@ -94,6 +102,8 @@ test("one shared link collects separate named responses and can be replaced", as
       }
       await guestPage.screenshot({ path: test.info().outputPath(`shared-rsvp-${theme}.png`), fullPage: true });
     }
+    await openSection(page, "RSVP");
+    const updated = page.getByRole("region", { name: "RSVP", exact: true });
     await updated.getByLabel("Accept RSVPs").uncheck();
     await updated.getByRole("button", { name: "Save RSVP settings" }).click();
     await expect(updated.getByRole("status").filter({ hasText: "RSVP is closed" })).toBeVisible();
@@ -148,7 +158,8 @@ test("previously issued individual links still support correction and revocation
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    const legacy = page.getByRole("region", { name: "RSVP" }).getByRole("region", { name: "Earlier individual invitations" });
+    await openSection(page, "Guests");
+    const legacy = page.getByRole("region", { name: "Who’s coming" }).getByRole("region", { name: "Earlier individual invitations" });
     await expect(legacy.getByText("Not attending")).toBeVisible();
     await legacy.getByRole("button", { name: "Revoke link" }).click();
     await expect(legacy.getByText("Revoked")).toBeVisible();

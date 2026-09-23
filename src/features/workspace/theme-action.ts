@@ -16,9 +16,7 @@ export async function applyTheme(_: FormState, form: FormData): Promise<FormStat
     const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
     const isLive = !!data?.published && !!entitlement?.active;
     if (error || !data) return { message: "We couldn't apply your theme. Your saved theme is unchanged; please retry." };
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/preview");
-    revalidatePath("/dashboard/preview/rsvp");
+    revalidatePath("/dashboard", "layout");
     if (data.slug) revalidatePath(`/${data.slug}`);
     return { success: true, message: isLive ? "Theme applied to your live wedding site." : "Theme saved to your private draft." };
   } catch { return { message: "We couldn't apply your theme. Check your connection and sign-in, then retry." }; }

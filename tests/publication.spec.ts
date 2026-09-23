@@ -16,6 +16,11 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
   const photo = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#738c79" } }).jpeg().toBuffer();
   const replacementPhoto = await sharp({ create: { width: 600, height: 900, channels: 3, background: "#a86464" } }).jpeg().toBuffer();
   let weddingId: string | undefined;
+  const openSection = (name: string) => page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name, exact: true }).click();
+  // The header status is shown from 768px; it must follow publish and unpublish without a manual reload.
+  const expectHeaderStatus = async (status: string) => {
+    if (test.info().project.name === "desktop") await expect(page.getByRole("banner").getByText(status, { exact: true })).toBeVisible();
+  };
   try {
     await page.goto("/account/sign-in");
     await page.getByLabel("Email address").fill(email);
@@ -29,12 +34,14 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await expect(page.getByRole("status")).toContainText("private draft has been saved");
     weddingId = (await local.admin.from("weddings").select("id").eq("owner_id", ownerId).single()).data!.id;
     expect((await local.grantEntitlement(weddingId!, ownerId)).error).toBeNull();
+    await openSection("Publish");
     await page.getByRole("link", { name: "Preview saved site" }).click();
     await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
     expect((await guest.request.get("/dashboard/photo")).status()).toBe(404);
     await guestPage.goto("/dashboard/preview");
     await expect(guestPage).toHaveURL(/account\/sign-in/);
     await page.getByRole("link", { name: "Back to workspace" }).click();
+    await openSection("Design");
     const cancelledChooser = page.waitForEvent("filechooser");
     await page.getByRole("button", { name: "Choose photo" }).press("Enter");
     await (await cancelledChooser).setFiles([]);
@@ -105,20 +112,23 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await page.locator('input[name="zoom"]').fill("1.2");
     await page.getByRole("button", { name: "Save Details framing" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Photo framing saved" })).toBeVisible();
+    await page.getByRole("link", { name: /Change theme/ }).click();
     await page.getByRole("radio", { name: /Warm & Romantic/ }).check();
-    await page.getByRole("button", { name: "Preview theme" }).click();
     await page.getByRole("button", { name: "Apply theme", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("Theme saved to your private draft");
     await page.getByRole("link", { name: "Back to workspace" }).click();
+    await openSection("Design");
     await expect(page.getByText("Editing Warm & Romantic")).toBeVisible();
     await expect(page.locator('input[name="x"]')).toHaveValue("50");
+    await page.getByRole("link", { name: /Change theme/ }).click();
     await page.getByRole("radio", { name: /Modern Minimal/ }).check();
-    await page.getByRole("button", { name: "Preview theme" }).click();
     await page.getByRole("button", { name: "Apply theme", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("Theme saved to your private draft");
     await page.getByRole("link", { name: "Back to workspace" }).click();
+    await openSection("Design");
     await expect(page.getByText("Editing Modern Minimal")).toBeVisible();
     await expect(page.locator('input[name="x"]')).toHaveValue("20");
+    await openSection("Publish");
     await page.getByLabel("Your wedding URL").fill("dashboard");
     await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
@@ -127,7 +137,8 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await page.screenshot({ path: test.info().outputPath("private-workspace.png"), fullPage: true });
     expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Published", { exact: true })).toBeVisible();
+    await expect(page.getByText("Your site is live for anyone with its URL.")).toBeVisible();
+    await expectHeaderStatus("Published");
     await page.screenshot({ path: test.info().outputPath("published-workspace.png"), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const response = await guestPage.goto(`/${slug}`);
@@ -150,11 +161,13 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await expect(guestPage.locator(".wedding-photo img")).toHaveCSS("object-position", "80% 30%");
     await expect(guestPage.locator(".wedding-photo img")).toHaveCSS("transform", /matrix\(1\.2/);
     await guestPage.goto(`/${slug}`);
+    await openSection("Basics");
     await page.locator('[name="location"]').fill("Bristol, England");
     await page.getByRole("button", { name: "Save live changes" }).click();
     await expect(page.getByRole("status").filter({ hasText: "live wedding site has been updated" })).toBeVisible();
     await guestPage.reload();
     await expect(guestPage.getByText("Bristol, England", { exact: true })).toBeVisible();
+    await openSection("Design");
     await page.getByLabel("Photo file").setInputFiles({ name: "replacement.jpg", mimeType: "image/jpeg", buffer: replacementPhoto });
     await expect(page.getByRole("status").filter({ hasText: "photo has been saved" })).toBeVisible();
     await page.reload();
@@ -171,21 +184,26 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     ]);
     expect(ownerStats.channels[0].mean).toBeGreaterThan(ownerStats.channels[1].mean);
     expect(guestStats.channels[0].mean).toBeGreaterThan(guestStats.channels[1].mean);
+    await openSection("Publish");
     await page.getByRole("button", { name: "Unpublish site" }).click();
-    await expect(page.getByText("Private draft", { exact: true })).toBeVisible();
+    await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
+    await expectHeaderStatus("Private draft");
     await expect(page.getByLabel("Your wedding URL")).toHaveAttribute("readonly", "");
     expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
     expect((await guest.request.get(`/${slug}/photo`)).status()).toBe(404);
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
+    await openSection("Design");
     await page.getByLabel("Photo file").setInputFiles({ name: "oversized.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(7 * 1024 * 1024) });
     await expect(page.getByRole("alert").filter({ hasText: "up to 5 MiB" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Change photo" })).toBeFocused();
     await page.getByRole("button", { name: "Remove photo" }).click();
     await expect(page.getByRole("status").filter({ hasText: "photo has been removed" })).toBeVisible();
     expect((await page.request.get("/dashboard/photo")).status()).toBe(404);
+    await openSection("Publish");
     await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Published", { exact: true })).toBeVisible();
+    await expect(page.getByText("Your site is live for anyone with its URL.")).toBeVisible();
+    await expectHeaderStatus("Published");
     expect((await guest.request.get(`/${slug}`)).status()).toBe(200);
     expect((await guest.request.get(`/${slug}/photo`)).status()).toBe(404);
   } finally {

@@ -1,63 +1,112 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { signOut } from "@/features/account/actions";
-import { DraftForm } from "@/features/workspace/draft-form";
-import { draftSchema } from "@/features/workspace/validation";
-import { PublicationForm } from "@/features/workspace/publication-form";
-
-import { ThemePicker } from "@/features/workspace/theme-picker";
-import { DetailsForm } from "@/features/workspace/details-form";
 import { detailsSchema } from "@/features/weddings/details";
-import { RsvpManager } from "@/features/workspace/rsvp-manager";
-import type { OwnerInvitation, SharedResponse } from "@/features/weddings/rsvp";
-import type { Entitlement } from "@/features/payments/purchase-panel";
-import { parsePhotoFraming } from "@/features/weddings/photo-framing";
+import { formatWeddingDate } from "@/features/weddings/wedding";
+import { sharedRsvpHref } from "@/features/weddings/invitation-context";
+import { CopyLinkButton } from "@/features/workspace/copy-link-button";
+import { Icon } from "@/features/workspace/workspace-icons";
+import { loadResponses, loadWorkspace } from "@/features/workspace/workspace-data";
+import { collectResponses, daysUntil, responseTotals, rsvpAvailability, setupSteps, todayUtc, type RsvpAvailability } from "@/features/workspace/workspace-summary";
 
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ signout?: string; checkout?: string }> }) {
-  const client = await createClient();
-  const { data: { user } } = await client.auth.getUser();
-  if (!user) redirect("/account/sign-in");
-  const { data, error } = await client.from("weddings").select("id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on, rsvp_share_secret").eq("owner_id", user.id).maybeSingle();
-  if (error) throw new Error("Unable to load wedding workspace.");
-  const invitationResult = data
-    ? await client.from("rsvp_invitations").select("id, invite_name, responding_name, attending, responded_at, revoked_at").eq("wedding_id", data.id).order("created_at", { ascending: false })
-    : { data: [], error: null };
-  if (invitationResult.error) throw new Error("Unable to load RSVP responses.");
-  const sharedResult = data
-    ? await client.from("shared_rsvp_responses").select("id, responding_name, attending, responded_at").eq("wedding_id", data.id).order("responded_at", { ascending: false })
-    : { data: [], error: null };
-  if (sharedResult.error) throw new Error("Unable to load shared RSVP responses.");
-  const entitlementResult = data
-    ? await client.rpc("owner_entitlement").maybeSingle<Entitlement>()
-    : { data: null, error: null };
-  if (entitlementResult.error) throw new Error("Unable to load publication entitlement.");
-  const entitlement = entitlementResult.data ?? { active: false, expires_at: null, revoked_reason: null };
-  const publiclyAvailable = !!data?.published && entitlement.active;
-  const draft = data ? draftSchema.parse(data) : { first_name: "", second_name: "", wedding_date: "", location: "", message: "" };
-  const params = await searchParams;
-  return <div className="platform min-h-svh">
-    <header className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-7 md:px-10">
-      <Link href="/" className="brand">SaveTheDates<span aria-hidden="true">.</span></Link>
-      <form action={signOut}><button className="text-link min-h-11 px-2 text-sm">Sign out</button></form>
+export const metadata: Metadata = { title: "Overview · SaveTheDates" };
+
+const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+
+const rsvpLabels: Record<RsvpAvailability, string> = { open: "open", closed: "closed", off: "not accepting", "not-live": "opens when published" };
+const emptyResponses: Record<RsvpAvailability, string> = {
+  open: "No responses yet. Share your RSVP link with guests to start collecting replies.",
+  closed: "No responses yet, and RSVPs are closed.",
+  off: "No responses yet. Open RSVPs when you’re ready to collect replies.",
+  "not-live": "No responses yet. Guests can reply once your site is published.",
+};
+
+export default async function Overview() {
+  const { wedding, entitlement, live } = await loadWorkspace();
+  // New accounts begin by saving the basics, which unlocks the other sections.
+  if (!wedding) redirect("/dashboard/basics");
+
+  const { invitations, sharedResponses } = await loadResponses();
+  const today = todayUtc();
+  const days = daysUntil(wedding.wedding_date, today);
+  const responses = collectResponses(sharedResponses, invitations);
+  const totals = responseTotals(responses);
+  const availability = rsvpAvailability(wedding.rsvp_enabled, wedding.rsvp_closes_on, today, live);
+  const steps = setupSteps({ ...detailsSchema.parse(wedding), photo_path: wedding.photo_path, rsvp_enabled: wedding.rsvp_enabled }, entitlement.active, live);
+  const completed = steps.filter((step) => step.done).length;
+  const setupComplete = steps.every((step) => step.done || step.optional);
+  // The shared link only works for guests while the site is live.
+  const rsvpHref = live && wedding.slug ? sharedRsvpHref(wedding.slug, wedding.rsvp_share_secret) : null;
+  const expiry = live && entitlement.expires_at ? formatWeddingDate(entitlement.expires_at.slice(0, 10)) : null;
+
+  return <section aria-labelledby="overview-title">
+    <header className="ws-page-head">
+      <p className="eyebrow">Your wedding workspace</p>
+      <h1 id="overview-title">{wedding.first_name} &amp; {wedding.second_name}</h1>
+      <p>{live ? "Your wedding site is live. Changes you save appear to guests straight away." : "Your site is a private draft. Only you can see it until you publish."}</p>
     </header>
-    <main className="mx-auto max-w-4xl px-6 pt-8 pb-20 md:pt-14">
-      <div className="flex flex-wrap items-center gap-3"><p className="eyebrow">Your wedding workspace</p><span aria-live="polite" className="draft-badge">{publiclyAvailable ? "Published" : "Private draft"}</span></div>
-      <h1 className="editorial mt-5 text-4xl leading-tight md:text-6xl">Start with your story.</h1>
-      <p className="mt-5 max-w-xl leading-relaxed text-[var(--muted)]">A few details, a date to remember. Save your first chapter here and come back whenever you like.</p>
-      {params.signout && <p role="alert" className="form-error mt-5">We couldn’t sign you out. Please try again.</p>}
-      <section aria-labelledby="draft-title" className="mt-10 border-t border-[var(--line)] pt-8">
-        <h2 id="draft-title" className="text-xl font-medium">The two of you</h2>
-        <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{publiclyAvailable ? "Your site is public. Saving details or changing your photo updates it immediately." : "Only you can access this draft. It isn’t shared with guests."}</p>
-        <DraftForm initial={draft} published={publiclyAvailable} />
+
+    <div className="ws-stats">
+      <article className="ws-stat" data-tone={live ? "live" : undefined} aria-labelledby="stat-site">
+        <span className="ws-stat-icon"><Icon name={live ? "globe" : "lock"} /></span>
+        <h2 id="stat-site" className="ws-stat-label">Site status</h2>
+        <p className="ws-stat-value">{live ? "Published" : "Private draft"}</p>
+        <p className="ws-stat-note">{live && wedding.slug
+          ? <><a href={`/${wedding.slug}`}>/{wedding.slug}</a>{expiry && <> · online until {expiry}</>}</>
+          : <Link href="/dashboard/publish">{entitlement.active ? "Ready to publish" : "Purchase and publish"}</Link>}</p>
+      </article>
+      <article className="ws-stat" aria-labelledby="stat-countdown">
+        <span className="ws-stat-icon"><Icon name="details" /></span>
+        <h2 id="stat-countdown" className="ws-stat-label">Countdown</h2>
+        <p className="ws-stat-value">{days > 0 ? `${days.toLocaleString("en-GB")} ${days === 1 ? "day" : "days"}` : days === 0 ? "Today" : "Married"}</p>
+        <p className="ws-stat-note">{days > 0 ? "until" : days === 0 ? "Your wedding day," : "on"} {formatWeddingDate(wedding.wedding_date)}</p>
+      </article>
+      <article className="ws-stat" aria-labelledby="stat-rsvp">
+        <span className="ws-stat-icon"><Icon name="guests" /></span>
+        <h2 id="stat-rsvp" className="ws-stat-label">RSVPs · {rsvpLabels[availability]}</h2>
+        <p className="ws-stat-value">{totals.total} {totals.total === 1 ? "response" : "responses"}</p>
+        <div>
+          {totals.total > 0 && <div className="ws-meter" aria-hidden="true"><span className="is-attending" style={{ width: `${(totals.attending / totals.total) * 100}%` }} /><span className="is-declined" style={{ width: `${(totals.declined / totals.total) * 100}%` }} /></div>}
+          <p className="ws-stat-note mt-2">{totals.attending} attending · {totals.declined} not attending</p>
+        </div>
+      </article>
+    </div>
+
+    <div className="ws-overview-grid">
+      <div className="ws-stack">
+        {!setupComplete && <section aria-labelledby="setup-title" className="ws-panel">
+          <h2 id="setup-title">Setup checklist</h2>
+          <p className="ws-panel-intro">{completed} of {steps.length} complete</p>
+          <div className="ws-meter" aria-hidden="true"><span className="is-done" style={{ width: `${(completed / steps.length) * 100}%` }} /></div>
+          <ul className="ws-checklist">
+            {steps.map((step) => <li key={step.id}>
+              <Link href={step.href} className="ws-row-link">
+                <span className="ws-check" data-done={step.done}>{step.done && <Icon name="check" className="size-4" />}</span>
+                <span>{step.label}{step.optional && <small>Optional</small>}<span className="sr-only">{step.done ? " (done)" : " (to do)"}</span></span>
+                <Icon name="chevron" className="size-4" />
+              </Link>
+            </li>)}
+          </ul>
+        </section>}
+        <section aria-labelledby="latest-title" className="ws-panel">
+          <div className="ws-panel-head"><h2 id="latest-title">Latest responses</h2><Link href="/dashboard/guests" className="ws-text-link">All guests</Link></div>
+          {responses.length === 0
+            ? <p className="ws-empty">{emptyResponses[availability]}</p>
+            : <ul className="ws-responses">{responses.slice(0, 5).map((response) => <li key={response.id}>
+              <strong>{response.name}</strong>
+              <span className={`rsvp-status ${response.attending ? "is-attending" : "is-declined"}`}>{response.attending ? "Attending" : "Not attending"}</span>
+              {response.respondedAt && <time dateTime={response.respondedAt}>{dateFormat.format(new Date(response.respondedAt))}</time>}
+            </li>)}</ul>}
+        </section>
+      </div>
+      <section aria-labelledby="actions-title" className="ws-panel">
+        <h2 id="actions-title">Quick actions</h2>
+        <div className="ws-actions">
+          <Link href="/dashboard/preview" prefetch={false} className="ws-button"><Icon name="eye" className="size-4" />Preview your site</Link>
+          {live && wedding.slug && <a href={`/${wedding.slug}`} className="ws-button"><Icon name="external" className="size-4" />Open live site</a>}
+          {rsvpHref && <CopyLinkButton href={rsvpHref} label="Copy RSVP link" className="ws-button" failure="We couldn’t copy the link. Open the RSVP section to select and copy it manually."><Icon name="link" className="size-4" /></CopyLinkButton>}
+        </div>
       </section>
-      {data && <section aria-labelledby="theme-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="theme-title" className="text-xl font-medium">Your wedding style</h2><p className="mt-2 text-sm leading-relaxed">Try a theme privately before applying it to your site.</p><ThemePicker key={data.theme} selected={data.theme} /></section>}
-      {data && <section aria-labelledby="details-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="details-title" className="text-xl font-medium">Wedding Details</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">Share only the practical information your guests need. Empty sections won’t appear.</p><DetailsForm initial={detailsSchema.parse(data)} published={publiclyAvailable} /></section>}
-      {data && <section aria-labelledby="rsvp-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="rsvp-title" className="text-xl font-medium">RSVP</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">Share one private link with all guests, then see their named responses here.</p><RsvpManager enabled={data.rsvp_enabled} closesOn={data.rsvp_closes_on} slug={data.slug} shareSecret={data.rsvp_share_secret} invitations={(invitationResult.data ?? []) as OwnerInvitation[]} sharedResponses={(sharedResult.data ?? []) as SharedResponse[]} /></section>}
-      {data ? <PublicationForm slug={data.slug} published={publiclyAvailable} photo={!!data.photo_path} photoFraming={parsePhotoFraming(data.photo_framing)} theme={data.theme} locked={!!data.first_published_at} entitlement={entitlement} checkout={params.checkout} /> : <aside className="mt-12 border-t border-[var(--line)] pt-6">
-        <h2 className="text-sm font-semibold">What comes next?</h2>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--muted)]">Save your details to add a photo, preview your site and choose a URL to share.</p>
-      </aside>}
-    </main>
-  </div>;
+    </div>
+  </section>;
 }

@@ -24,20 +24,28 @@ test("theme preview is private and applying preserves the live wedding", async (
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Design", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Your wedding style" })).toBeVisible();
+    const currentTheme = page.getByRole("region", { name: "Theme" });
+    await expect(currentTheme).toContainText("Modern Minimal");
+    await page.screenshot({ path: test.info().outputPath("design-theme.png"), fullPage: true });
+    await currentTheme.getByRole("link", { name: /Change theme/ }).click();
+    await expect(page).toHaveURL(/\/dashboard\/preview$/);
+    // Choosing a theme previews it immediately, including by keyboard, without saving.
     await page.getByRole("radio", { name: /Modern Minimal/ }).focus();
     await page.keyboard.press("ArrowRight");
     await expect(page.getByRole("radio", { name: /Warm & Romantic/ })).toBeChecked();
-    await page.screenshot({ path: test.info().outputPath("theme-picker.png"), fullPage: true });
-    await page.getByRole("button", { name: "Preview theme" }).click();
+    await expect(page).toHaveURL(/\/dashboard\/preview\?theme=romantic$/);
     await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", "romantic");
+    await page.screenshot({ path: test.info().outputPath("theme-picker.png"), fullPage: true });
     await guestPage.goto(`/${slug}`);
     await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", "minimal");
     await page.getByRole("link", { name: "Back to workspace" }).click();
-    await expect(page.getByRole("radio", { name: /Modern Minimal/ })).toBeChecked();
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Design", exact: true }).click();
+    await expect(currentTheme).toContainText("Modern Minimal");
     for (const [id, name] of [["romantic", "Warm & Romantic"], ["bold", "Modern & Bold"], ["minimal", "Modern Minimal"]]) {
+      await currentTheme.getByRole("link", { name: /Change theme/ }).click();
       await page.getByRole("radio", { name: new RegExp(name) }).check();
-      await page.getByRole("button", { name: "Preview theme" }).click();
       await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", id);
       await page.getByRole("button", { name: "Apply theme", exact: true }).click();
       await expect(page.getByRole("status")).toContainText("Theme applied to your live wedding site");
@@ -48,8 +56,10 @@ test("theme preview is private and applying preserves the live wedding", async (
       await guestPage.screenshot({ path: test.info().outputPath(`${id}-no-photo.png`), fullPage: true });
       expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.getByRole("link", { name: "Back to workspace" }).click();
+      await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Design", exact: true }).click();
+      await expect(page).toHaveURL(/\/dashboard\/design$/);
       await page.reload();
-      await expect(page.getByRole("radio", { name: new RegExp(name) })).toBeChecked();
+      await expect(currentTheme).toContainText(name);
     }
     const saved = await local.admin.from("weddings").select(Object.keys(content).join(",")).eq("owner_id", ownerId).single();
     expect(saved.data).toEqual(content);

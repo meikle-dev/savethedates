@@ -22,9 +22,7 @@ export async function saveDetails(_: DetailsFormState, form: FormData): Promise<
     const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
     const isLive = !!data?.published && !!entitlement?.active;
     if (error || !data) return { message: "We couldn’t save your Details page. Your changes are still here; please try again.", values: parsed.data };
-    revalidatePath("/dashboard");
-    revalidatePath("/dashboard/preview");
-    revalidatePath("/dashboard/preview/details");
+    revalidatePath("/dashboard", "layout");
     if (data.slug) {
       revalidatePath(`/${data.slug}`);
       revalidatePath(`/${data.slug}/details`);

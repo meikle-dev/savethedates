@@ -27,6 +27,8 @@ test("owner edits and previews Details while guests see only enabled published c
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Details", exact: true }).click();
+    await expect(page).toHaveURL(/\/dashboard\/details$/);
     const section = page.getByRole("region", { name: "Wedding Details" });
     await expect(section).toBeVisible();
     await section.getByRole("link", { name: "Preview saved Details" }).click();
@@ -90,9 +92,13 @@ test("owner edits and previews Details while guests see only enabled published c
     }
 
     await page.goto("/dashboard/preview");
-    await expect(page.getByText("Private preview · saved content", { exact: true })).toBeVisible();
-    await expect(page.getByText("Previewing Modern Minimal · current theme", { exact: true })).toBeVisible();
+    await expect(page.getByText("Private Save the Date preview", { exact: true })).toBeVisible();
+    await expect(page.getByRole("radio", { name: /Modern Minimal/ })).toBeChecked();
+    await expect(page.getByText("Your current wedding theme.", { exact: false })).toBeVisible();
     await page.getByRole("link", { name: "Back to workspace" }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Details", exact: true }).click();
+    await expect(page).toHaveURL(/\/dashboard\/details$/);
 
     await guestPage.goto(`/${slug}`);
     await guestPage.getByRole("link", { name: "Details" }).click();
@@ -122,6 +128,7 @@ test("owner edits and previews Details while guests see only enabled published c
     await expect(page.getByText("The Old Hall, Bath BA1 1AA")).toBeVisible();
     await expect(page.getByRole("link", { name: "Directions to the ceremony" })).toHaveCount(0);
     await page.getByRole("link", { name: "Back to workspace" }).click();
+    await expect(page).toHaveURL(/\/dashboard\/details$/);
     await guestPage.reload();
     await expect(guestPage.getByText("The Old Hall, Bath BA1 1AA")).toBeVisible();
     await expect(guestPage.getByRole("link", { name: "Directions to the ceremony" })).toHaveCount(0);
