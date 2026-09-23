@@ -36,6 +36,22 @@ test("owners can preview saved RSVP content without granting guest access or sav
     await page.getByLabel("Your name").press("Enter");
     expect((await local.admin.from("rsvp_invitations").select("id").eq("wedding_id", weddingId)).data).toEqual([]);
 
+    const designs = page.getByRole("navigation", { name: "RSVP designs" });
+    await designs.getByRole("link", { name: "Modern & Bold" }).click();
+    await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", "bold");
+    await expect(page.getByText("Preview only — this theme has not been applied.", { exact: false })).toBeVisible();
+    expect((await local.admin.from("weddings").select("theme").eq("id", weddingId).single()).data?.theme).toBe("minimal");
+    await page.getByRole("button", { name: "Apply theme", exact: true }).click();
+    await expect(page.getByRole("status")).toContainText("Theme saved");
+    await expect(page.getByText("Your current wedding theme.", { exact: false })).toBeVisible();
+    await page.reload();
+    await expect(designs.getByRole("link", { name: "Modern & Bold" })).toHaveAttribute("aria-current", "page");
+    expect((await local.admin.from("weddings").select("theme").eq("id", weddingId).single()).data?.theme).toBe("bold");
+    await designs.getByRole("link", { name: "Modern Minimal" }).click();
+    await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", "minimal");
+    await page.getByRole("button", { name: "Apply theme", exact: true }).click();
+    await expect(page.getByRole("status")).toContainText("Theme saved");
+
     for (const theme of ["minimal", "romantic", "bold"]) {
       await page.goto(`/dashboard/preview?theme=${theme}`);
       await page.getByRole("link", { name: "RSVP", exact: true }).click();

@@ -22,7 +22,7 @@ All three files are transparent, portrait SVGs with `width="240"`, `height="360"
 | Save the Date and Details missing/failed photo | Two opposing illustrations at the photo edges, on the existing theme tint; reduced and repositioned on phones. Existing text contrast backing is retained. |
 | Romantic Save the Date announcement | One 60×90px floral accent after the message, in normal flow. |
 | Details divider | One 36×54px theme illustration between rules. |
-| RSVP | One small theme illustration centred between fine rules at the top of the invitation panel for every link state. |
+| RSVP | Minimal places an olive sprig above the heading; Romantic centres a rose between rules in the panel; Bold uses a laurel beside a rule in the panel. All link states share the same treatment. |
 | Owner previews and public `/examples/{theme}` pages | Use the same guest components and therefore the same artwork. |
 
 The informational Details icons remain the existing original line icons. The marketing phone illustrations contain photography/type rather than standalone botanical graphics. The scenic example photograph and private customer uploads are separate assets; neither is replaced by a botanical SVG.
@@ -37,4 +37,19 @@ Verification evidence and actual file sizes are recorded in the F018 backlog han
 
 `romantic-rsvp-floral.webp` is an original AI-generated, text-free decorative still life created for this project on 22 September 2026. It depicts blush roses, small white flowers, sage foliage and burgundy fabric along the left edge of blank ivory paper. The supplied RSVP reference informed the composition; its pixels and UI were not copied. The source PNG was generated with the built-in image generation tool, then resized with Sharp to 1440×960 WebP at quality 76 (56,706 bytes). No external stock licence or attribution is required for project use; no exclusivity claim is made. The source generation is retained in the local Codex generated-image directory, while the optimised WebP is the shipped asset.
 
-CSS requests this image only for Romantic RSVP at widths of at least 901px. The form panel is opaque; mobile and the other themes use their existing vector artwork and CSS colour. No customer names, invitation labels, initials, controls or text are embedded in the raster asset.
+CSS requests this image only for Romantic RSVP at widths of at least 901px. The form panel is opaque; mobile uses its existing vector artwork and CSS colour. F025 adds separate backdrops for the other themes. No customer names, invitation labels, initials, controls or text are embedded in the raster asset.
+
+## Additional RSVP backdrops (F025)
+
+Created on 23 September 2026 with the built-in imagegen tool. These are original AI-generated, text-free decorative photographs, with no external stock asset or attribution requirement; no exclusivity claim is made. Source PNGs remain in the local Codex generated-image directory. The project ships Sharp-resized 1440×960 WebP derivatives at quality 76:
+
+- `minimal-rsvp-olive.webp` (78,398 bytes): olive branches, linen and warm ivory paper for Modern Minimal.
+- `bold-rsvp-foliage.webp` (41,076 bytes): sculptural foliage and silk on deep teal for Modern & Bold.
+
+All three RSVP backdrops are requested only at widths of at least 901px. Smaller screens retain CSS colour and vector botanicals. Forms have opaque backgrounds and decorations carry no data. Bold uses a two-column desktop composition with its introduction on the left; Minimal retains a centred double-rule paper invitation. Failed raster loads retain readable colours and controls.
+
+### Final generation prompts
+
+**Minimal:** Use case: photorealistic-natural. Asset type: text-free background photograph for a refined Modern Minimal wedding RSVP web page. Landscape 3:2 composition. Overhead editorial still life on warm ivory handmade paper with subtle linen folds at the outer left edge; a graceful sparse olive branch with silvery sage leaves and a few dark olives curves down the far left edge and across the bottom-left corner. Soft natural afternoon window light, delicate botanical shadows, muted olive and warm cream palette, sophisticated fine-art wedding stationery photography, airy and restrained. Keep the central 65 percent and right area almost entirely empty pale ivory paper, especially top centre, to accommodate real HTML heading and form. Decoration concentrated in outer left 20 percent and bottom corners. No paper cards, no envelopes, no text, no letters, no calligraphy, no monograms, no logo, no watermark, no UI. Deliver a single finished photograph.
+
+**Bold:** Use case: photorealistic-natural. Asset type: text-free background photograph for Modern and Bold wedding RSVP web design. Landscape 3:2 premium editorial botanical still life, overhead view. Deep rich dark teal matte paper background approximately #133f3e, subtle tactile grain. Sculptural broad glossy laurel and magnolia leaves in dark teal and sage green, a few delicate chartreuse green buds, arranged dramatically along the far RIGHT edge and bottom-right corner. A soft fold of deep teal silk at bottom edge, directional studio lighting and rich but elegant shadows. Botanical arrangement occupies outer right 25 percent and bottom right only. Left and centre remain quiet solid deep teal with no bright highlights because real citrus-coloured HTML heading will appear on left and a real form over centre-right. Sophisticated contemporary wedding magazine aesthetic, refined, artistic and confident. No roses, no pink, no gold glitter, no cards, no envelopes, no words, letters, typography, logos, watermark or UI. Deliver one finished photograph.

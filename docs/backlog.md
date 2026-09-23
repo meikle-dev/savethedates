@@ -4,6 +4,19 @@ Ordered by recommended implementation sequence. F001-F008, F011-F023 and F022's 
 
 ## Status and handoff rules
 
+### F025 - Three distinct RSVP designs
+
+**Status:** Done (23 September 2026)
+**Purpose:** Complement Romantic RSVP with equally polished Minimal and Bold designs through the existing whole-site theme picker.
+**Depends on:** F019 and RSVP preview correction (Done).
+**Scope/design:** Preserve Romantic's floral invitation. Minimal uses olive branches, linen, warm paper and a double-rule invitation. Bold uses sculptural foliage, a deep-teal editorial introduction, citrus accents and an offset paper response panel. Create two text-free optimised backdrops; mobile retains lightweight vector botanicals. No separate RSVP theme setting or additional collected fields. Add direct owner previews of the three RSVP designs before applying the site theme.
+**Done when:** All three designs work in owner preview and guest invitations, including validation, saved/corrected responses, closed/unavailable states; keyboard focus, long content and 320px/mobile/desktop layouts remain readable; image failures are harmless and phones avoid desktop raster downloads. Relevant checks, visual inspection and independent review pass. Record provenance and theme guidance.
+**Handoff:** Implemented the Minimal olive/linen double-rule invitation and Bold teal/foliage split desktop composition in `rsvp-page.tsx` and `wedding.css`, preserving Romantic. Private RSVP preview now switches among three named designs and applies the existing whole-site theme action. New optimised 1440x960 WebPs: Minimal 78,398 bytes; Bold 41,076 bytes. Prompts/provenance in `public/assets/wedding/README.md`; final behaviour in `docs/ux/template-ui-summary.md`.
+
+- Passed `npm.cmd run check` (lint, typecheck, 25 unit tests, production build). With `$env:E2E_BASE_URL='http://127.0.0.1:3000'`, the two `tests/themes.spec.ts` desktop/mobile checks passed in `npx.cmd playwright test tests/rsvp.spec.ts tests/rsvp-preview.spec.ts tests/themes.spec.ts --output=test-results/rsvp-themes-final`; after correcting navigation/submission waits and exercising keyboard focus with Tab, `npx.cmd playwright test tests/rsvp.spec.ts tests/rsvp-preview.spec.ts --output=test-results/rsvp-themes-verified` passed 4/4. Final `npm.cmd run lint` and `git diff --check` passed. Coverage includes preview/apply/reload, private access, response submission/correction in each theme, long content at 320/390/1440px, focus contrast, missing backgrounds, mobile non-download, closure and revocation.
+- Inspected all three themes in desktop/mobile screenshots, including long names and invitation labels, fallback, validation/success and closed states. Initial Docker output was stale; the refresh-app workflow (`docker compose down`, `docker compose up -d --wait`, `docker compose ps`) recovered it and `/` returned 200. App remains running; Supabase was not reset. In-app browser connection failed on missing sandbox metadata; repository Playwright supplied browser verification.
+- Independent reviewer `review_f025` found no Blocking/Important issues; its Minor README organisation finding was fixed. No schema changes, deployment, hosted CI, Safari/Firefox, production-container browser or database integration/persistence rerun. Blockers: None. Next: resume the existing F024/F009 release handoff; no next feature started.
+
 ### RSVP preview correction — Done (23 September 2026)
 
 Fixed the workspace's missing RSVP preview: authenticated preview uses the owner's saved names and candidate theme, connects all three preview pages, and cannot submit responses. A published RSVP URL without an invitation parameter redirects only the verified wedding owner to private preview. Newly created invitations have **Open invitation** at the exact token-bearing guest URL; invalid credentials, other owners, and anonymous visits retain existing restrictions.

@@ -134,6 +134,7 @@
 /* RSVP presents each link state inside the same invitation panel. */
 .rsvp-main { position: relative; isolation: isolate; min-height: 690px; padding: 66px 24px 82px; background: radial-gradient(ellipse at 8% 12%, var(--theme-tint), transparent 60%), var(--theme-surface); }
 .rsvp-intro { max-width: 720px; margin: 0 auto; text-align: center; }
+.rsvp-intro-art { display: none; }
 .rsvp-ornament { display: flex; align-items: center; justify-content: center; gap: 20px; color: var(--theme-accent); font-size: 17px; line-height: 1; margin-bottom: 21px; }
 .rsvp-ornament::before, .rsvp-ornament::after { content: ""; width: 48px; height: 1px; background: var(--theme-line); }
 .rsvp-intro h1 { margin-top: 14px; font-size: clamp(70px, 9vw, 120px); line-height: .85; letter-spacing: -.06em; }
@@ -169,9 +170,34 @@
 .rsvp-shell[data-theme="bold"] .rsvp-intro { color: #f1f3e9; }
 .rsvp-shell[data-theme="bold"] .rsvp-ornament, .rsvp-shell[data-theme="bold"] .details-kicker { color: #e5edac; }
 .rsvp-shell[data-theme="bold"] .rsvp-ornament::before, .rsvp-shell[data-theme="bold"] .rsvp-ornament::after { background: #829b78; }
-.rsvp-shell[data-theme="bold"] .rsvp-card { background: #f1f3e9; }
+.rsvp-shell[data-theme="minimal"] .rsvp-main { background: #eeede3; }
+.rsvp-shell[data-theme="minimal"] .rsvp-ornament { display: none; }
+.rsvp-shell[data-theme="minimal"] .rsvp-intro-art { display: flex; justify-content: center; margin-bottom: 18px; }
+.rsvp-shell[data-theme="minimal"] .rsvp-intro-art .botanical-art { width: 48px; height: 72px; transform: rotate(22deg); }
+.rsvp-shell[data-theme="minimal"] .rsvp-intro h1 { letter-spacing: .08em; padding-left: .08em; font-size: clamp(64px, 8vw, 96px); }
+.rsvp-shell[data-theme="minimal"] .rsvp-card { background: #fffdf7; border: 1px solid #a5ac96; border-radius: 0; outline: 1px solid #a5ac96; outline-offset: 6px; box-shadow: 0 18px 50px #34321f17; }
+.rsvp-shell[data-theme="minimal"] .rsvp-card-art { display: none; }
+.rsvp-shell[data-theme="minimal"] .rsvp-choice { border-radius: 0; }
+.rsvp-shell[data-theme="bold"] .rsvp-intro h1 { color: #e5edac; }
+.rsvp-shell[data-theme="bold"] .rsvp-card { background: #f1f3e9; border-top: 5px solid #dce8b3; box-shadow: 10px 10px 0 #82a28a55, 0 20px 60px #071f2640; }
+.rsvp-shell[data-theme="bold"] .rsvp-card-art { justify-content: flex-start; }
+.rsvp-shell[data-theme="bold"] .rsvp-card-art::before { display: none; }
+.rsvp-shell[data-theme="bold"] .rsvp-card-art::after { flex: 1; }
+.rsvp-shell[data-theme="bold"] .rsvp-submit { background: #dce8b3; color: #133c3b; border: 1px solid #8b9d60; }
 @media (min-width: 901px) {
+  .rsvp-shell[data-theme="minimal"] .rsvp-main { background: #eeede3 url("/assets/wedding/minimal-rsvp-olive.webp") left center / cover no-repeat; }
+  .rsvp-shell[data-theme="minimal"] .rsvp-intro { max-width: 630px; }
+  .rsvp-shell[data-theme="minimal"] .rsvp-card { max-width: 620px; }
   .rsvp-shell[data-theme="romantic"] .rsvp-main { background: #fff4eb url("/assets/wedding/romantic-rsvp-floral.webp") left top / cover no-repeat; }
+  .rsvp-shell[data-theme="bold"] .rsvp-main { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: center; gap: 48px; padding: 90px 72px 100px; background: #133f3e url("/assets/wedding/bold-rsvp-foliage.webp") right center / cover no-repeat; }
+  .rsvp-shell[data-theme="bold"] .rsvp-intro { margin: 0; text-align: left; padding-block: 30px; }
+  .rsvp-shell[data-theme="bold"] .rsvp-ornament { justify-content: flex-start; }
+  .rsvp-shell[data-theme="bold"] .rsvp-ornament::before { display: none; }
+  .rsvp-shell[data-theme="bold"] .rsvp-ornament::after { width: 85px; }
+  .rsvp-shell[data-theme="bold"] .rsvp-intro h1 { font-size: clamp(100px, 11vw, 146px); margin-top: 25px; }
+  .rsvp-shell[data-theme="bold"] .rsvp-invitation-context { margin-top: 30px; font-size: 30px; max-width: 350px; margin-left: 0; }
+  .rsvp-shell[data-theme="bold"] .rsvp-card { width: 100%; margin: 0; padding: 34px 30px; }
+  .rsvp-shell[data-theme="bold"] .rsvp-choices { grid-template-columns: 1fr; }
 }
 @media (max-width: 900px) {
   .wedding-shell { margin: 0 auto; border-inline: 0; }

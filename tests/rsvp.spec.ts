@@ -168,12 +168,28 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
       await guestPage.reload();
       await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
       await expect(guestPage.getByText(`This invitation is for ${longInvite}.`)).toBeVisible();
+      await guestPage.getByLabel("Joyfully accepts").check();
+      await Promise.all([
+        guestPage.waitForResponse(response => response.request().method() === "POST" && new URL(response.url()).pathname === `/${slug}/rsvp`),
+        guestPage.getByRole("button", { name: "Update RSVP" }).click(),
+      ]);
+      await guestPage.reload();
+      await expect(guestPage.getByLabel("Joyfully accepts")).toBeChecked();
+      await guestPage.getByLabel("Regretfully declines").check();
+      await Promise.all([
+        guestPage.waitForResponse(response => response.request().method() === "POST" && new URL(response.url()).pathname === `/${slug}/rsvp`),
+        guestPage.getByRole("button", { name: "Update RSVP" }).click(),
+      ]);
+      await guestPage.reload();
+      await expect(guestPage.getByLabel("Regretfully declines")).toBeChecked();
       for (const width of [320, 390, 1440]) {
         await guestPage.setViewportSize({ width, height: 900 });
         expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${theme} RSVP fits ${width}px`).toBe(true);
       }
       const submit = guestPage.getByRole("button", { name: "Update RSVP" });
-      await submit.focus();
+      await guestPage.getByLabel("Regretfully declines").focus();
+      await guestPage.keyboard.press("Tab");
+      await expect(submit).toBeFocused();
       const focusContrast = await submit.evaluate((button) => {
         const luminance = (color: string) => {
           const [r, g, b] = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(value => {
@@ -189,20 +205,21 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
       expect(focusContrast, `${theme} keyboard focus has at least 3:1 contrast`).toBeGreaterThanOrEqual(3);
       await guestPage.setViewportSize({ width: test.info().project.name === "mobile" ? 390 : 1440, height: 900 });
       await guestPage.screenshot({ path: test.info().outputPath(`rsvp-${theme}.png`), fullPage: true });
-      if (theme === "romantic") {
+      {
+        const backdrop = { minimal: "minimal-rsvp-olive.webp", romantic: "romantic-rsvp-floral.webp", bold: "bold-rsvp-foliage.webp" }[theme]!;
         const fallbackPage = await guest.newPage();
         await fallbackPage.setViewportSize({ width: 1440, height: 900 });
-        await fallbackPage.route("**/romantic-rsvp-floral.webp", route => route.abort());
+        await fallbackPage.route(`**/${backdrop}`, route => route.abort());
         await fallbackPage.goto(inviteUrl);
         await expect(fallbackPage.getByRole("heading", { name: "RSVP" })).toBeVisible();
         await expect(fallbackPage.getByRole("button", { name: "Update RSVP" })).toBeVisible();
         expect(await fallbackPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        await fallbackPage.screenshot({ path: test.info().outputPath("rsvp-romantic-failed-backdrop.png"), fullPage: true });
+        await fallbackPage.screenshot({ path: test.info().outputPath(`rsvp-${theme}-failed-backdrop.png`), fullPage: true });
         await fallbackPage.close();
         const phone = await guest.newPage();
         const floralRequests: string[] = [];
         phone.on("request", request => {
-          if (request.url().includes("romantic-rsvp-floral.webp")) floralRequests.push(request.url());
+          if (request.url().includes(backdrop)) floralRequests.push(request.url());
         });
         await phone.setViewportSize({ width: 390, height: 844 });
         await phone.goto(inviteUrl);

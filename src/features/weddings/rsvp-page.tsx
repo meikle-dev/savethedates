@@ -21,6 +21,7 @@ export function RsvpPage({ wedding, guest, slug, token, previewHrefs }: { weddin
     <WeddingHeader names={names} homeHref={hrefs.home} detailsHref={wedding.details_enabled ? hrefs.details : undefined} rsvpHref={rsvpHref} current="rsvp" />
     <main id="main" className="rsvp-main">
       <div className="rsvp-intro">
+        <div className="rsvp-intro-art" aria-hidden="true"><BotanicalArt /></div>
         <span className="rsvp-ornament" aria-hidden="true">♥</span>
         <p className="details-kicker">Will you join us?</p>
         <h1 className="editorial">RSVP</h1>
