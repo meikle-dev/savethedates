@@ -7,14 +7,14 @@ import { submitRsvp } from "@/features/workspace/rsvp-actions";
 import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
 import { BotanicalArt } from "./wedding-art";
 
-export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_name: string; second_name: string; theme: GuestRsvp["theme"]; details_enabled: boolean; rsvp_enabled: boolean }; guest: GuestRsvp | null; slug: string; token: string | null }) {
+export function RsvpPage({ wedding, guest, slug, token, previewHrefs }: { wedding: { first_name: string; second_name: string; theme: GuestRsvp["theme"]; details_enabled: boolean; rsvp_enabled: boolean }; guest: GuestRsvp | null; slug: string; token: string | null; previewHrefs?: ReturnType<typeof weddingJourneyHrefs> }) {
   const [state, action, pending] = useActionState<RsvpState, FormData>(submitRsvp, {});
   const respondingName = state.respondingName ?? guest?.responding_name ?? "";
   const attending = state.attending ?? guest?.attending;
-  const unavailable = !token || !guest;
-  const open = !!guest?.is_open;
-  const hrefs = weddingJourneyHrefs(slug, token);
-  const rsvpHref = wedding.rsvp_enabled ? hrefs.rsvp : undefined;
+  const unavailable = !previewHrefs && (!token || !guest);
+  const open = !!previewHrefs || !!guest?.is_open;
+  const hrefs = previewHrefs ?? weddingJourneyHrefs(slug, token);
+  const rsvpHref = previewHrefs || wedding.rsvp_enabled ? hrefs.rsvp : undefined;
   const names = [wedding.first_name, wedding.second_name] as const;
   const cardState = unavailable ? "unavailable" : !open ? "closed" : "form";
   return <WeddingFrame theme={wedding.theme} className="details-shell rsvp-shell">
@@ -24,7 +24,7 @@ export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_nam
         <span className="rsvp-ornament" aria-hidden="true">♥</span>
         <p className="details-kicker">Will you join us?</p>
         <h1 className="editorial">RSVP</h1>
-        <p className="rsvp-invitation-context">{unavailable ? "Open the private invitation link sent by the couple to respond." : `This invitation is for ${guest.invite_name}.`}</p>
+        <p className="rsvp-invitation-context">{previewHrefs ? "Each guest will see their invitation name here." : unavailable ? "Open the private invitation link sent by the couple to respond." : `This invitation is for ${guest?.invite_name}.`}</p>
       </div>
       <section className="rsvp-card" data-state={cardState} aria-label="Invitation response">
         <div className="rsvp-card-art"><BotanicalArt /></div>
@@ -34,11 +34,10 @@ export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_nam
         </div> : !open ? <div className="rsvp-state">
           <h2 className="editorial text-2xl">RSVP is closed</h2>
           <p className="mt-3 leading-relaxed">Contact the couple if your plans have changed.</p>
-          {guest.responding_name && <p className="form-notice mt-5">Saved response: {guest.responding_name} · {guest.attending ? "Attending" : "Not attending"}</p>}
-        </div> : <form action={action} noValidate>
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="token" value={token} />
-          {guest.responding_name && <p className="form-notice mb-5">A response is already saved. Submit again to update it.</p>}
+          {guest?.responding_name && <p className="form-notice mt-5">Saved response: {guest.responding_name} · {guest.attending ? "Attending" : "Not attending"}</p>}
+        </div> : <form action={previewHrefs ? undefined : action} onSubmit={previewHrefs ? (event) => event.preventDefault() : undefined} noValidate>
+          {!previewHrefs && <><input type="hidden" name="slug" value={slug} /><input type="hidden" name="token" value={token ?? ""} /></>}
+          {guest?.responding_name && <p className="form-notice mb-5">A response is already saved. Submit again to update it.</p>}
           <div>
             <label className="field-label" htmlFor="responding_name">Your name</label>
             <input id="responding_name" name="responding_name" className="field-input" maxLength={80} defaultValue={respondingName} aria-invalid={!!state.errors?.responding_name} aria-describedby={state.errors?.responding_name ? "responding-name-error" : undefined} />
@@ -53,8 +52,8 @@ export function RsvpPage({ wedding, guest, slug, token }: { wedding: { first_nam
             {state.errors?.attending && <p id="attendance-error" className="field-error">{state.errors.attending[0]}</p>}
           </fieldset>
           {state.message && <p className={`mt-5 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
-          <button className="rsvp-submit" disabled={pending}>{pending ? "Saving…" : guest.responding_name ? "Update RSVP" : "Send RSVP"}<span aria-hidden="true">→</span></button>
-          <p className="rsvp-privacy">Keep this private link if you need to correct your response. It identifies this invitation, not your real-world identity.</p>
+          <button className="rsvp-submit" disabled={pending || !!previewHrefs}>{pending ? "Saving…" : guest?.responding_name ? "Update RSVP" : "Send RSVP"}<span aria-hidden="true">→</span></button>
+          <p className="rsvp-privacy">{previewHrefs ? "Preview only. No response will be saved. Open a private invitation link from your workspace to view a real guest invitation." : "Keep this private link if you need to correct your response. It identifies this invitation, not your real-world identity."}</p>
         </form>}
       </section>
     </main>

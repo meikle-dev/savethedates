@@ -28,6 +28,6 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
         <ThemeApplyForm key={`apply-${candidate}`} theme={candidate} published={data.published && !!entitlement?.active} />
       </div>
     </div>
-    <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} homeHref={`/dashboard/preview?theme=${candidate}`} detailsHref={data.details_enabled ? `/dashboard/preview/details?theme=${candidate}` : undefined} />
+    <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} homeHref={`/dashboard/preview?theme=${candidate}`} detailsHref={data.details_enabled ? `/dashboard/preview/details?theme=${candidate}` : undefined} rsvpHref={`/dashboard/preview/rsvp?theme=${candidate}`} />
   </>;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import type { OwnerInvitation, RsvpState } from "@/features/weddings/rsvp";
 import { createInvitation, revokeInvitation, saveRsvpSettings } from "./rsvp-actions";
 
@@ -32,6 +33,7 @@ export function RsvpManager({ enabled, closesOn, slug, invitations }: { enabled:
   }
 
   return <div className="mt-7 grid gap-8">
+    <div><Link href="/dashboard/preview/rsvp" prefetch={false} className="text-link inline-flex min-h-11 items-center">Preview RSVP page</Link><p className="field-help">Preview your saved names and wedding style. After creating an invitation below, use Open invitation to view the exact private link your guest will receive.</p></div>
     <form action={settingsAction} noValidate>
       <label className="details-toggle">
         <input name="rsvp_enabled" type="checkbox" defaultChecked={enabled} />
@@ -73,6 +75,7 @@ export function RsvpManager({ enabled, closesOn, slug, invitations }: { enabled:
         <label htmlFor="new-invite-url" className="field-label">New private link</label>
         <input id="new-invite-url" className="field-input font-mono text-xs" value={created.inviteUrl} readOnly onFocus={(event) => event.currentTarget.select()} />
         <button type="button" className="text-link mt-3 min-h-11" onClick={copyLink}>{copyResult?.url === created.inviteUrl && !copyResult.failed ? "Copied" : "Copy full link"}</button>
+        <a href={created.inviteUrl} target="_blank" rel="noopener noreferrer" className="text-link mt-3 ml-5 inline-flex min-h-11 items-center">Open invitation<span className="sr-only"> (opens in a new tab)</span></a>
         {copyResult?.url === created.inviteUrl && copyResult.failed && <p className="field-error mt-2" role="alert">We couldn’t copy the link. Select the link above and copy it manually.</p>}
       </div>}
     </form>

@@ -67,6 +67,13 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
     await section.getByRole("button", { name: "Copy full link" }).click();
     await expect(section.getByRole("button", { name: "Copied" })).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(new URL(inviteUrl, baseURL).href);
+    const invitationOpened = page.waitForEvent("popup");
+    await section.getByRole("link", { name: "Open invitation" }).click();
+    const ownerInvitation = await invitationOpened;
+    await expect(ownerInvitation).toHaveURL(new URL(inviteUrl, baseURL).href);
+    await expect(ownerInvitation.getByText("This invitation is for Sam Taylor.")).toBeVisible();
+    await expect(ownerInvitation.getByRole("button", { name: "Send RSVP" })).toBeEnabled();
+    await ownerInvitation.close();
     await section.getByLabel("Guest or household name").fill("Jordan Lee");
     await section.getByRole("button", { name: "Create link" }).click();
     await expect(section.getByText("For: Jordan Lee")).toBeVisible();

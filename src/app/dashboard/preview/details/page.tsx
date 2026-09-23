@@ -19,6 +19,6 @@ export default async function DetailsPreview({ searchParams }: { searchParams: P
   const details = { ...detailsSchema.parse(data), first_name: data.first_name, second_name: data.second_name, theme };
   return <>
     <div className="platform px-6 py-5"><nav aria-label="Preview" className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 text-sm"><span>Private Details preview · saved content{data.details_enabled ? "" : " · hidden from guests"}</span><Link href="/dashboard" className="text-link min-h-11 content-center">Back to workspace</Link></nav></div>
-    <WeddingDetailsPageView details={details} image={data.photo_path ? { src: "/dashboard/photo", alt: "" } : undefined} photoFraming={parsePhotoFraming(data.photo_framing)} homeHref={`/dashboard/preview${query}`} detailsHref={`/dashboard/preview/details${query}`} previewEmpty />
+    <WeddingDetailsPageView details={details} image={data.photo_path ? { src: "/dashboard/photo", alt: "" } : undefined} photoFraming={parsePhotoFraming(data.photo_framing)} homeHref={`/dashboard/preview${query}`} detailsHref={`/dashboard/preview/details${query}`} rsvpHref={`/dashboard/preview/rsvp${query}`} previewEmpty />
   </>;
 }
