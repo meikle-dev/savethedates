@@ -155,7 +155,8 @@
 .rsvp-choice input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--theme-accent); }
 .rsvp-submit { display: flex; min-height: 54px; width: 100%; align-items: center; justify-content: center; gap: 15px; margin-top: 25px; padding: 13px 22px; border-radius: var(--theme-radius); background: var(--theme-accent); color: #fff; font-family: var(--theme-heading); font-size: 22px; cursor: pointer; }
 .rsvp-submit:hover:not(:disabled) { filter: brightness(.9); }
-.rsvp-submit:disabled { opacity: .65; cursor: wait; }
+.rsvp-submit:disabled { opacity: .65; cursor: not-allowed; }
+.rsvp-submit[aria-busy="true"] { cursor: wait; }
 .rsvp-submit span { font-family: Georgia, serif; font-size: 25px; line-height: 1; }
 .rsvp-privacy { max-width: 460px; margin: 20px auto 0; padding-top: 18px; border-top: 1px solid var(--theme-line); color: var(--theme-muted); font-size: 12px; line-height: 1.55; text-align: center; }
 .rsvp-state { max-width: 510px; margin: 0 auto; text-align: center; }

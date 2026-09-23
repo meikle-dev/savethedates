@@ -53,7 +53,7 @@ export function RsvpPage({ wedding, guest, slug, token, sharedSecret, previewHre
             {state.errors?.attending && <p id="attendance-error" className="field-error">{state.errors.attending[0]}</p>}
           </fieldset>
           {state.message && <p className={`mt-5 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
-          <button className="rsvp-submit" disabled={pending || !!previewHrefs}>{pending ? "Saving…" : guest?.responding_name ? "Update RSVP" : "Send RSVP"}<span aria-hidden="true">→</span></button>
+          <button className="rsvp-submit" disabled={pending || !!previewHrefs} aria-busy={pending || undefined}>{pending ? "Saving…" : guest?.responding_name ? "Update RSVP" : "Send RSVP"}<span aria-hidden="true">→</span></button>
           <p className="rsvp-privacy">{previewHrefs ? "Preview only. No response will be saved. Open your shared RSVP link from the workspace to see the guest page." : sharedSecret ? "Your answer is private to the couple. Contact them to correct it; this shared link cannot show or edit saved answers." : "Keep this private link if you need to correct your response. It identifies this invitation, not your real-world identity."}</p>
         </form>}
       </section>

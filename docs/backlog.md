@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers. The 23 September review adds F028-F033; the next eligible ticket is F028.
+Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers. The 23 September review adds F028-F033; F028 is Done and the next eligible ticket is F029.
 
 ## Status and handoff rules
 
@@ -616,7 +616,7 @@ All implementation tickets follow the definition of done. That means the checks 
 
 ## F028 - No loading cursor on the disabled preview RSVP button
 
-**Status:** Ready
+**Status:** Done (23 September 2026)
 **Priority / lead:** P1 / Software Engineer
 **Purpose:** In preview, the Send RSVP button should look disabled, not look like it is loading.
 **Depends on:** F019, F025 (Done)
@@ -628,6 +628,10 @@ All implementation tickets follow the definition of done. That means the checks 
 - In owner preview, in all three themes, the button is disabled, cannot submit, and its computed cursor is `not-allowed` rather than `wait`/`progress`.
 - During a real shared-link submission the button stays disabled and reads "Saving…". The busy cursor is allowed only while pending.
 - A regression assertion in `tests/rsvp-preview.spec.ts` checks the preview button's computed cursor. `npm.cmd run check`, targeted `rsvp-preview`/`rsvp` specs and `git diff --check` pass. No independent review needed.
+
+**Handoff (23 September 2026):** `.rsvp-submit:disabled` now uses `cursor: not-allowed`; the submit button sets `aria-busy="true"` only while a real submission is pending, and only `[aria-busy="true"]` uses `cursor: wait`. "Saving…" label, disabled behaviour and all three themes are otherwise unchanged. `tests/rsvp-preview.spec.ts` asserts, per theme, that the hovered preview button is disabled, not busy, with computed cursor `not-allowed`.
+- Passed `npm.cmd run check` (lint, typecheck, 29 unit tests, production build); with `$env:E2E_BASE_URL='http://127.0.0.1:3000'`, `npx.cmd playwright test tests/rsvp-preview.spec.ts tests/rsvp.spec.ts --output=test-results/f028` passed 6/6 desktop/mobile (the cursor assertion fails against the old rule, confirming the container served the fix); `git diff --check` passed.
+- The pending busy cursor is not asserted in the browser (the pending window is too brief to observe reliably); it follows directly from `aria-busy={pending}`. Cursor-only change, so no separate screenshot inspection beyond the existing per-theme preview captures. Blockers: None. Next: F029 mobile workspace section navigation.
 
 ## F029 - Mobile-friendly workspace section navigation
 

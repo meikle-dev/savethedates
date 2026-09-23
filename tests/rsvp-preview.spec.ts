@@ -70,7 +70,11 @@ test("owners can preview saved RSVP content without granting guest access or sav
       await page.getByRole("link", { name: "RSVP", exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));
       await page.reload();
-      await expect(page.getByRole("button", { name: "Send RSVP" })).toBeDisabled();
+      const previewSubmit = page.getByRole("button", { name: "Send RSVP" });
+      await expect(previewSubmit).toBeDisabled();
+      await previewSubmit.hover({ force: true });
+      await expect(previewSubmit).toHaveCSS("cursor", "not-allowed");
+      await expect(previewSubmit).not.toHaveAttribute("aria-busy", "true");
       await page.getByRole("link", { name: "Save the date", exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/dashboard/preview\\?theme=${theme}$`));
     }
