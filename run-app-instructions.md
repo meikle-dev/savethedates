@@ -113,6 +113,10 @@ npm run test:e2e
 
 Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Browser screenshots and failure traces are under ignored `test-results/`; `npx playwright show-report` opens the HTML report. CI also checks database isolation, application-container connectivity, and browser checks through the development container. Locally, run those browser checks with `E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e` after Compose is up.
 
+## Homepage theme previews
+
+The phones on the marketing homepage are screenshots of the fictional `/examples/[theme]` pages, stored in `public/media/themes/`. After changing a theme's Save the Date design, restart the app from the current code (a rebuilt container, or `npm run dev`). Then run `npm run marketing:previews -- http://127.0.0.1:3000`, or pass another origin, and commit the regenerated images.
+
 ## Production container smoke check
 
 Hosted configuration, promotion, rollback and recovery requirements are in [Release and operations](docs/operations.md). Production deployment is still pending F009.
