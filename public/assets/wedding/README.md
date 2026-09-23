@@ -10,7 +10,9 @@ All three files are transparent, portrait SVGs with `width="240"`, `height="360"
 | --- | --- | --- | ---: |
 | `minimal-olive.svg` | Slender asymmetric olive branches, fine pale veins and three olives. Olive `#63704d`, sage `#a8b095`, pale veins `#e6e9d8`. | Modern Minimal | 2,497 |
 | `romantic-rose.svg` | Layered garden rose, three rosebuds and loose foliage. Blush `#f5dfd2` / `#e9bfb5`, rose `#b67e7f`, sage `#919e84`. | Warm & Romantic | 3,581 |
-| `bold-laurel.svg` | Broad, sculptural laurel-inspired leaves and contrasting veins. Teal `#30675e`, sage `#7f9d7f`, citrus veins `#dce8b3`. | Modern & Bold | 1,799 |
+| `bold-laurel.svg` | Sculptural magnolia/laurel foliage with shaded leaf folds, fine veins and branching citrus buds. Deep teal `#133f3e`, sage `#a5b59a`, chartreuse `#bdcc76`. | Modern & Bold | 4,120 |
+
+The Bold illustration was redrawn in SVG source on 23 September 2026 to complement the generated RSVP backdrop's glossy foliage and green buds. Local vector gradients provide the shading; no raster image is embedded. The existing shared asset path also keeps Bold footers, dividers and photo fallbacks consistent. Minimal and Romantic artwork is unchanged.
 
 ## Reuse and replacement inventory
 

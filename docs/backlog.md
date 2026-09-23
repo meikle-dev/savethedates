@@ -4,6 +4,12 @@ Ordered by recommended implementation sequence. F001-F008, F011-F023 and F022's 
 
 ## Status and handoff rules
 
+### Modern & Bold botanical correction — Done (23 September 2026)
+
+Redrew `public/assets/wedding/bold-laurel.svg` as original vector foliage with shaded deep-teal/sage leaves and citrus buds matching the Bold RSVP backdrop. Retained the shared asset path, 240×360 dimensions and decorative accessibility, so the RSVP footer and other Bold placements stay consistent. Asset provenance/palette updated in its README; no application logic changed.
+
+Verification: with `$env:E2E_BASE_URL='http://127.0.0.1:3000'`, `npx.cmd playwright test tests/theme-design.spec.ts tests/rsvp-preview.spec.ts --grep 'bold|owners can preview' --output=test-results/bold-botanical` passed 4/4. Inspected actual RSVP desktop/mobile screenshots; existing theme checks covered decoding, accessibility, 320–1440px layout and image fallback. `git diff --check` passed. In-app browser setup failed on missing sandbox metadata; repository Playwright supplied verification. Full build/unit suite not rerun for this SVG-only correction; independent review not required. No blockers; next remains the existing F024/F009 handoff.
+
 ### F025 - Three distinct RSVP designs
 
 **Status:** Done (23 September 2026)
