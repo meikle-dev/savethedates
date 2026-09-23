@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emptyDetails } from "../weddings/details";
-import { collectResponses, daysUntil, responseTotals, rsvpAvailability, setupSteps, todayUtc } from "./workspace-summary";
+import { collectResponses, daysUntil, rsvpAvailability, setupSteps, todayUtc } from "./workspace-summary";
 
 describe("workspace summary", () => {
   it("counts whole UTC days to the wedding", () => {
@@ -20,7 +20,6 @@ describe("workspace summary", () => {
       ],
     );
     expect(responses.map((response) => response.name)).toEqual(["Jordan Lee", "Sam"]);
-    expect(responseTotals(responses)).toEqual({ total: 2, attending: 1, declined: 1 });
   });
 
   it("reports RSVP availability including the closing date", () => {

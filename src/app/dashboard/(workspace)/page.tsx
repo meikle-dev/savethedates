@@ -7,8 +7,8 @@ import { sharedRsvpHref } from "@/features/weddings/invitation-context";
 import { AttendanceBadge } from "@/features/workspace/attendance-badge";
 import { CopyLinkButton } from "@/features/workspace/copy-link-button";
 import { Icon } from "@/features/workspace/workspace-icons";
-import { loadResponses, loadWorkspace } from "@/features/workspace/workspace-data";
-import { collectResponses, daysUntil, responseTotals, rsvpAvailability, setupSteps, todayUtc, type RsvpAvailability } from "@/features/workspace/workspace-summary";
+import { loadLatestResponses, loadResponseTotals, loadWorkspace } from "@/features/workspace/workspace-data";
+import { daysUntil, rsvpAvailability, setupSteps, todayUtc, type RsvpAvailability } from "@/features/workspace/workspace-summary";
 
 export const metadata: Metadata = { title: "Overview · SaveTheDates" };
 
@@ -27,11 +27,9 @@ export default async function Overview() {
   // New accounts begin by saving the basics, which unlocks the other sections.
   if (!wedding) redirect("/dashboard/basics");
 
-  const { invitations, sharedResponses } = await loadResponses();
+  const [totals, responses] = await Promise.all([loadResponseTotals(), loadLatestResponses(5)]);
   const today = todayUtc();
   const days = daysUntil(wedding.wedding_date, today);
-  const responses = collectResponses(sharedResponses, invitations);
-  const totals = responseTotals(responses);
   const availability = rsvpAvailability(wedding.rsvp_enabled, wedding.rsvp_closes_on, today, live);
   const steps = setupSteps({ ...detailsSchema.parse(wedding), photo_path: wedding.photo_path, rsvp_enabled: wedding.rsvp_enabled }, entitlement.active, live);
   const completed = steps.filter((step) => step.done).length;
@@ -90,10 +88,10 @@ export default async function Overview() {
           </ul>
         </section>}
         <section aria-labelledby="latest-title" className="ws-panel">
-          <div className="ws-panel-head"><h2 id="latest-title">Latest responses</h2><Link href="/dashboard/guests" className="button button-quiet button-flush">All guests<Icon name="arrowRight" /></Link></div>
+          <div className="ws-panel-head"><h2 id="latest-title">Latest responses</h2><Link href="/dashboard/guests" className="button button-quiet button-flush">View all guests<Icon name="arrowRight" /></Link></div>
           {responses.length === 0
             ? <p className="ws-empty">{emptyResponses[availability]}</p>
-            : <ul className="ws-responses">{responses.slice(0, 5).map((response) => <li key={response.id}>
+            : <ul className="ws-responses">{responses.map((response) => <li key={response.id}>
               <strong>{response.name}</strong>
               <AttendanceBadge attending={response.attending} />
               {response.respondedAt && <time dateTime={response.respondedAt}>{dateFormat.format(new Date(response.respondedAt))}</time>}

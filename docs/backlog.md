@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers. The 23 September review adds F028-F033; F028-F029 are Done and the next eligible ticket is F030.
+Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers. The 23 September review adds F028-F033; F028-F030 are Done and the next eligible ticket is F031.
 
 ## Status and handoff rules
 
@@ -661,7 +661,7 @@ This needs no hover, no bottom tab bar (seven items is too many) and no new sect
 
 ## F030 - Clear, paginated guest responses
 
-**Status:** Ready
+**Status:** Done (23 September 2026)
 **Priority / lead:** P1 / UX/UI Designer then Software Engineer; independent review required (owner data queries and URL parameters)
 **Purpose:** Couples can quickly see who has replied and find a specific guest, even with hundreds of responses.
 **Depends on:** F026, F027 (Done). Schedule after F029 because both change the workspace shell CSS.
@@ -687,6 +687,10 @@ No export, sorting controls, bulk actions or new stored data.
 - The table uses semantic headers on wide screens. Stacked phone rows are readable at 320px with long names and have no horizontal overflow. Controls are labelled and keyboard reachable, and pagination links have 44px targets.
 - Until F031 is complete, any legacy invitations stay in their existing separate section below the table, and totals continue to include answered legacy invitations.
 - Browser checks cover pagination, filter, search, URL state, corrections and cross-tenant isolation. `npm.cmd run check`, relevant integration/E2E specs and `git diff --check` pass. Visual inspection at 320, 390, 1024 and 1440px. Independent review passes with Blocking/Important findings resolved.
+
+**Handoff (23 September 2026):** Guests (`/dashboard/guests`) is now a full-width, paginated table (25 per page, `responded_at desc, id desc`) with filter links showing counts for the current search, a `next/form` name search, Previous/Next with "Showing X–Y of N", and separate empty states for no responses, no matches and page out of range. The filter, search and page live in `?filter=`/`?q=`/`?page=`. Invalid values fall back to All and page 1. Search is limited to 80 characters, `%`, `_` and `\` are escaped, and `*` (a PostgREST wildcard) is dropped (`src/features/workspace/guest-list.ts`). `workspace-data.ts` replaces the unbounded `loadResponses` with count-only queries (`loadResponseTotals`, which still adds answered legacy invitations), `loadLatestResponses(5)` for Overview, and `loadGuestPage`, which range-queries only the requested page and skips the query when the page is out of range. All queries use the verified owner's `wedding.id`. Correct/remove opens inline in a row beneath (client `GuestTable`/`GuestRow`, reusing `manageSharedResponse`), keeps the current URL, and announces success in a status region outside the row. Below 640px the rows stack. Legacy invitations stay in their own section below until F031. Overview shows totals plus the five latest responses and a "View all guests" link. `docs/overview/site-ui.md` updated.
+- Passed: `npm.cmd run check` (lint, typecheck, 34 unit tests including the new `guest-list.test.ts`, production build), `npm.cmd run test:integration` (23/23), and `git diff --check`. With `$env:E2E_BASE_URL='http://127.0.0.1:3000'` (dev container, restarted after changes), `npx.cmd playwright test tests/guests.spec.ts tests/rsvp.spec.ts tests/dashboard.spec.ts tests/rsvp-preview.spec.ts` passed 14/14 desktop and mobile after the final change. Earlier runs had flakes: `guests.spec.ts` passed 6/6 with `--repeat-each 3`; one first run after a restart lost a search navigation because the RSC stream stalled; one `dashboard.spec.ts` desktop sign-in did not redirect and passed on rerun; and runs after edits hit stale client code until `docker compose restart app`. The new `tests/guests.spec.ts` seeds 312 and 26 responses plus an empty wedding. It covers the counts, "Showing" text, pages that do not overlap on tied timestamps, the last page and out-of-range pages, bad `page`/`filter` values, filter and search combined with the URL state (reload and back), literal `%`/`_`/`\` and ignored `*`, isolation between owners in both directions, correction and removal on page 2 (URL, totals and the announcement), the Overview latest five, no overflow at 320/390/1024/1440, and pager targets of 44px or more. The managed `npm run test:e2e` and payment/production-container checks were not run (no payment or container change).
+- Screenshots were inspected at 320, 390, 1024 and 1440px (after fixing phone-row grid specificity and the name-column width at 1024px). Independent reviewer: pass with minor, no Blocking/Important. Fixed: removal announcement, one fixed toggle label with `aria-expanded`, and legacy-only empty-state wording. Deferred as acceptable: phone rows use `display: block`, which loses table semantics in WebKit (the spec requires semantic headers on wide screens only). Unavailable Previous/Next buttons are hidden from assistive tech. Counts and rows are separate reads, so the "Showing" text can be off by one if a response arrives between them. Blockers: None. Next: F031, retire earlier individual invitations.
 
 ## F031 - Retire earlier individual invitations
 

@@ -25,11 +25,6 @@ export function collectResponses(sharedResponses: SharedResponse[], invitations:
   return [...shared, ...legacy].sort((a, b) => (b.respondedAt ?? "").localeCompare(a.respondedAt ?? ""));
 }
 
-export function responseTotals(responses: RsvpResponse[]) {
-  const attending = responses.filter((response) => response.attending).length;
-  return { total: responses.length, attending, declined: responses.length - attending };
-}
-
 export type RsvpAvailability = "off" | "not-live" | "open" | "closed";
 
 // Guests can only reply while RSVPs are enabled, not past the closing date, and the site is live.

@@ -124,3 +124,60 @@
   .ws-theme { grid-template-columns: auto minmax(0, 1fr) auto; padding: 1.1rem 1.25rem; }
   .ws-theme-action { grid-column: auto; }
 }
+
+/* Guests: full-width response table with filter, search and pages; rows stack into list items below 640px. */
+.guest-controls { display: grid; gap: 1rem; margin-top: 1.25rem; }
+.guest-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.guest-filters a { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0.4rem 1rem; border: 1px solid var(--line); border-radius: 99px; background: white; color: var(--muted); font-size: 0.875rem; font-weight: 500; }
+.guest-filters a:hover { color: var(--navy); border-color: #c9d2cf; }
+.guest-filters a[aria-current="true"] { border-color: var(--navy); background: var(--navy); color: white; }
+.guest-filters a:focus-visible, .guest-pager a:focus-visible { outline: 2px solid var(--control-focus); outline-offset: 2px; }
+.guest-count { font-variant-numeric: tabular-nums; opacity: 0.8; }
+.guest-search { display: grid; gap: 0.4rem; justify-items: start; }
+.guest-search > div { display: flex; gap: 0.5rem; width: 100%; max-width: 28rem; }
+.guest-search .field-input { min-width: 0; flex: 1; margin-top: 0; }
+
+.guest-table { width: 100%; margin-top: 1.25rem; border-collapse: collapse; font-size: 0.9375rem; }
+.guest-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.guest-table, .guest-table tbody, .guest-table tr, .guest-table td, .guest-table th { display: block; }
+@media (max-width: 639px) {
+  .guest-table .guest-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.35rem 0.75rem; padding: 0.85rem 0; border-top: 1px solid var(--line); }
+  .guest-table .guest-row:first-child { border-top: 0; }
+}
+.guest-name { grid-column: 1 / -1; min-width: 0; font-weight: 600; text-align: left; overflow-wrap: anywhere; }
+.guest-date { color: var(--muted); font-size: 0.8125rem; }
+.guest-action { grid-column: 1 / -1; }
+.guest-panel[hidden] { display: none; }
+.guest-panel > td { padding: 0.25rem 0 1rem; }
+
+.guest-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.875rem; }
+.guest-pager > div { display: flex; gap: 0.5rem; }
+.guest-pager .button { min-height: 44px; }
+.guest-pager .is-disabled { opacity: 0.45; pointer-events: none; }
+
+.guest-empty { margin-top: 1.25rem; padding: 1.5rem 1.25rem; border: 1px dashed var(--line); border-radius: 14px; color: var(--muted); font-size: 0.875rem; line-height: 1.6; text-align: center; }
+.guest-empty-title { color: var(--navy); font-family: Georgia, serif; font-size: 1.2rem; }
+
+@media (min-width: 640px) {
+  .guest-table { display: table; }
+  .guest-table thead { position: static; display: table-header-group; width: auto; height: auto; overflow: visible; clip-path: none; }
+  .guest-table tbody { display: table-row-group; }
+  .guest-table tr { display: table-row; }
+  .guest-table th, .guest-table td { display: table-cell; padding: 0.7rem 0.75rem; border-top: 1px solid var(--line); vertical-align: middle; }
+  .guest-table thead th { border-top: 0; color: var(--muted); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-align: left; text-transform: uppercase; }
+  .guest-table th:first-child, .guest-table td:first-child { padding-left: 0; }
+  .guest-table th:last-child, .guest-table td:last-child { padding-right: 0; }
+  /* The name takes the remaining width; the other columns shrink to their content. */
+  .guest-table thead th:first-child { width: 100%; }
+  .guest-table td { white-space: nowrap; }
+  .guest-action { text-align: right; }
+  .guest-action .button-flush { margin-inline: 0 -0.75rem; }
+  .guest-panel > td { padding: 0.5rem 0 1.25rem; border-top: 0; }
+  .guest-panel > td { white-space: normal; }
+  .guest-panel form { max-width: 32rem; }
+}
+
+@media (min-width: 1200px) {
+  .guest-controls { grid-template-columns: minmax(0, 1fr) minmax(16rem, 24rem); align-items: end; }
+  .guest-search { justify-items: stretch; }
+}
