@@ -35,7 +35,7 @@ export function DraftForm({ initial, published = false }: { initial: Draft; publ
     </div>
     {state.message && !(state.success && dirty) && <p className={`mt-6 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
     <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-      <button className="primary-button sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live changes" : "Save private draft"}</button>
+      <button className="button button-primary sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live changes" : "Save private draft"}</button>
       {dirty && <p className="text-sm text-[var(--muted)]">You have unsaved changes.</p>}
     </div>
   </form>;

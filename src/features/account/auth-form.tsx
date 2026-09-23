@@ -29,14 +29,14 @@ export function AuthForm({ mode, development = false }: { mode: keyof typeof mod
         <p id="password-help" className={state.errors?.password ? "field-error" : "field-help"}>{state.errors?.password?.[0] ?? (mode === "sign-in" ? "Use the password for your account." : "Use 12–128 characters. A longer passphrase works well.")}</p>
       </div>}
       {state.message && <p role={state.success ? "status" : "alert"} className={state.success ? "form-notice" : "form-error"}>{state.message}</p>}
-      <button className="primary-button w-full" disabled={pending}>{pending ? "Please wait…" : modes[mode].label}</button>
+      <button className="button button-primary w-full" disabled={pending}>{pending ? "Please wait…" : modes[mode].label}</button>
       {mode === "password" && state.success && <Link className="text-link block text-center" href="/dashboard">Return to your workspace</Link>}
     </form>
     {mode === "sign-in" && development && <>
       <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted)]" aria-hidden="true"><span className="h-px flex-1 bg-[var(--line)]" />or<span className="h-px flex-1 bg-[var(--line)]" /></div>
       <form action={signInDemo} className="mt-6 space-y-3 rounded-md border border-dashed border-[var(--line)] p-4">
         <p className="text-sm leading-relaxed text-[var(--muted)]">Local development shortcut. It uses a seeded, fictional account and never appears in production.</p>
-        <button className="primary-button w-full">Use local demo account</button>
+        <button className="button button-secondary w-full">Use local demo account</button>
       </form>
     </>}
     </>

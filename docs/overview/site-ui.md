@@ -153,6 +153,17 @@ Avoid filling pages with many competing calls to action.
 
 There should normally be one obvious next step.
 
+## Platform controls (23 September 2026)
+
+Workspace, account, preview-bar and example-banner controls follow the [Buttons & selectors guide](../ux/designs/claude-designs/SaveTheDates%20—%20Buttons%20%26%20Selectors.pdf), implemented once in `src/components/controls.css`:
+
+* `.button` plus one variant: `button-primary` (dark ink, one per area for the main next step), `button-secondary` (outlined; previews, copy/open links, reversible or destructive actions) or `button-quiet` (text only; back links, Sign out, Reset/Cancel, inline removals). `button-flush` aligns a quiet button's text with the content edge.
+* Every variant is 44px tall with a 2px sage focus ring offset by 2px; disabled states use the muted fills, not opacity.
+* `.badge` (neutral, `badge-positive`, `badge-negative`, optional `badge-dot`), `.tag` for small labels such as "Current theme", and `.status` for quiet confirmations such as "Saved content".
+* `.segmented` / `.segment` for single-choice radio groups (preview theme picker, photo framing page, attendance corrections). The native radios remain keyboard-operable; the dot marks the applied theme.
+
+Inline links within prose stay `.text-link`. Guest wedding themes and the marketing hero keep their own button styles.
+
 ---
 
 # Mobile First

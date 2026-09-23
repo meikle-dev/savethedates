@@ -54,12 +54,12 @@ export function PhotoForm({ published, photo, photoFraming, theme }: { published
       <p id="photo-help" className="field-help">JPEG, PNG or WebP, up to 5 MiB and 25 megapixels. Still photos only.</p>
       {fileError && <p role="alert" className="form-error mt-4">{fileError}</p>}
       <div className="mt-5 flex flex-wrap items-center gap-4">
-        <button ref={photoButton} type="button" className="primary-button" onClick={choosePhoto} disabled={photoPending}>{photoPending ? "Uploading photo…" : photoPresent ? "Change photo" : "Choose photo"}</button>
+        <button ref={photoButton} type="button" className="button button-primary" onClick={choosePhoto} disabled={photoPending}>{photoPending ? "Uploading photo…" : photoPresent ? "Change photo" : "Choose photo"}</button>
       </div>
       {photoPending && <p className="form-notice mt-4" role="status">Uploading and processing your photo…</p>}
       {!photoPending && !fileError && photoState.message && <p className={`mt-4 ${photoState.success ? "form-notice" : "form-error"}`} role={photoState.success ? "status" : "alert"}>{photoState.message}</p>}
     </form>
-    {photoPresent && <form action={photoAction} className="mt-3"><button name="intent" value="remove" className="text-link min-h-11" disabled={photoPending} onClick={() => setFileError("")}>Remove photo</button></form>}
+    {photoPresent && <form action={photoAction} className="mt-3"><button name="intent" value="remove" className="button button-quiet button-flush" disabled={photoPending} onClick={() => setFileError("")}>Remove photo</button></form>}
     {published && <p className="field-help mt-3">A successful photo change updates your live site immediately.</p>}
     {photoPresent && <PhotoFramingEditor key={`${theme}-${photoRevision}`} theme={theme} framing={photoState.success ? {} : photoFraming} published={published} />}
   </>;

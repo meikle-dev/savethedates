@@ -44,7 +44,7 @@ test("owners can preview saved RSVP content without granting guest access or sav
     expect((await local.admin.from("weddings").select("theme").eq("id", weddingId).single()).data?.theme).toBe("minimal");
     await page.getByRole("button", { name: "Apply theme", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("Theme saved");
-    await expect(page.getByText("Your current wedding theme.", { exact: false })).toBeVisible();
+    await expect(page.getByText("This is your current theme.", { exact: true })).toBeVisible();
     await page.reload();
     await expect(designs.getByRole("radio", { name: /Modern & Bold/ })).toBeChecked();
     expect((await local.admin.from("weddings").select("theme").eq("id", weddingId).single()).data?.theme).toBe("bold");

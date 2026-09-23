@@ -4,6 +4,7 @@ import Link from "next/link";
 import { startTransition, useActionState, useState, type FormEvent } from "react";
 import { validOptionalUrl, type DetailsFormState, type WeddingDetails } from "@/features/weddings/details";
 import { saveDetails } from "./details-actions";
+import { Icon } from "./workspace-icons";
 
 type StringField = Exclude<keyof WeddingDetails, "details_enabled" | "faqs">;
 
@@ -20,7 +21,7 @@ function TextField({ name, label, value, error, onChange, url = false, help, che
     <input id={name} name={name} type={url ? "url" : "text"} className="field-input" value={value} maxLength={url ? 2048 : 160} onChange={(event) => onChange(name, event.target.value)} aria-invalid={!!error} aria-describedby={[help && `${name}-help`, error && `${name}-error`].filter(Boolean).join(" ") || undefined} />
     {help && <p id={`${name}-help`} className="field-help">{help}</p>}
     {error && <p id={`${name}-error`} className="field-error">{error[0]}</p>}
-    {checkHref && <a href={checkHref} target="_blank" rel="noopener noreferrer" className="text-link mt-2 inline-flex min-h-11 items-center">{checkLabel} (opens in a new tab)</a>}
+    {checkHref && <a href={checkHref} target="_blank" rel="noopener noreferrer" className="button button-quiet button-flush mt-2">{checkLabel} (opens in a new tab)<Icon name="external" /></a>}
   </div>;
 }
 
@@ -115,17 +116,17 @@ export function DetailsForm({ initial, published }: { initial: WeddingDetails; p
             <label className="field-label" htmlFor={`faq-answer-${index}`}>Answer {index + 1}</label>
             <textarea id={`faq-answer-${index}`} className="field-input min-h-28 resize-y" value={faq.answer} maxLength={1000} onChange={(event) => updateFaq(index, "answer", event.target.value)} />
           </div>
-          <button type="button" className="text-link mt-3 min-h-11" onClick={() => removeFaq(index)}>Remove question {index + 1}</button>
+          <button type="button" className="button button-quiet button-flush mt-3" onClick={() => removeFaq(index)}>Remove question {index + 1}</button>
         </div>)}
       </div>
       {state.errors?.faqs && <p className="field-error" role="alert">Complete every FAQ question and answer, using the character limits.</p>}
-      {values.faqs.length < 5 && <button type="button" className="text-link mt-4 min-h-11" onClick={() => { setValues((current) => ({ ...current, faqs: [...current.faqs, { question: "", answer: "" }] })); setDirty(true); }}>Add a question</button>}
+      {values.faqs.length < 5 && <button type="button" className="button button-secondary mt-4" onClick={() => { setValues((current) => ({ ...current, faqs: [...current.faqs, { question: "", answer: "" }] })); setDirty(true); }}>Add a question</button>}
     </fieldset>
 
     {state.message && !(state.success && dirty) && <p className={`mt-6 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
     <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center">
-      <button className="primary-button sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live Details" : "Save Details"}</button>
-      <Link href="/dashboard/preview/details" prefetch={false} className="text-link inline-flex min-h-11 items-center">Preview saved Details</Link>
+      <button className="button button-primary sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live Details" : "Save Details"}</button>
+      <Link href="/dashboard/preview/details" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview saved Details</Link>
       {dirty && <p className="text-sm text-[var(--muted)]">You have unsaved Details changes.</p>}
     </div>
   </form>;

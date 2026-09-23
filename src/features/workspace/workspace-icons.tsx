@@ -13,6 +13,8 @@ const paths = {
   globe: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z",
   lock: "M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3",
   chevron: "m9 6 6 6-6 6",
+  arrowRight: "M5 12h14M13 6l6 6-6 6",
+  arrowLeft: "M19 12H5M11 6l-6 6 6 6",
 } as const;
 
 export type IconName = keyof typeof paths;

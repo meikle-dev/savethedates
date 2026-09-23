@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { detailsSchema } from "@/features/weddings/details";
 import { formatWeddingDate } from "@/features/weddings/wedding";
 import { sharedRsvpHref } from "@/features/weddings/invitation-context";
+import { AttendanceBadge } from "@/features/workspace/attendance-badge";
 import { CopyLinkButton } from "@/features/workspace/copy-link-button";
 import { Icon } from "@/features/workspace/workspace-icons";
 import { loadResponses, loadWorkspace } from "@/features/workspace/workspace-data";
@@ -89,12 +90,12 @@ export default async function Overview() {
           </ul>
         </section>}
         <section aria-labelledby="latest-title" className="ws-panel">
-          <div className="ws-panel-head"><h2 id="latest-title">Latest responses</h2><Link href="/dashboard/guests" className="ws-text-link">All guests</Link></div>
+          <div className="ws-panel-head"><h2 id="latest-title">Latest responses</h2><Link href="/dashboard/guests" className="button button-quiet button-flush">All guests<Icon name="arrowRight" /></Link></div>
           {responses.length === 0
             ? <p className="ws-empty">{emptyResponses[availability]}</p>
             : <ul className="ws-responses">{responses.slice(0, 5).map((response) => <li key={response.id}>
               <strong>{response.name}</strong>
-              <span className={`rsvp-status ${response.attending ? "is-attending" : "is-declined"}`}>{response.attending ? "Attending" : "Not attending"}</span>
+              <AttendanceBadge attending={response.attending} />
               {response.respondedAt && <time dateTime={response.respondedAt}>{dateFormat.format(new Date(response.respondedAt))}</time>}
             </li>)}</ul>}
         </section>
@@ -102,9 +103,9 @@ export default async function Overview() {
       <section aria-labelledby="actions-title" className="ws-panel">
         <h2 id="actions-title">Quick actions</h2>
         <div className="ws-actions">
-          <Link href="/dashboard/preview" prefetch={false} className="ws-button"><Icon name="eye" className="size-4" />Preview your site</Link>
-          {live && wedding.slug && <a href={`/${wedding.slug}`} className="ws-button"><Icon name="external" className="size-4" />Open live site</a>}
-          {rsvpHref && <CopyLinkButton href={rsvpHref} label="Copy RSVP link" className="ws-button" failure="We couldn’t copy the link. Open the RSVP section to select and copy it manually."><Icon name="link" className="size-4" /></CopyLinkButton>}
+          <Link href="/dashboard/preview" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview your site</Link>
+          {live && wedding.slug && <a href={`/${wedding.slug}`} className="button button-secondary"><Icon name="external" />Open live site</a>}
+          {rsvpHref && <CopyLinkButton href={rsvpHref} label="Copy RSVP link" className="button button-secondary" failure="We couldn’t copy the link. Open the RSVP section to select and copy it manually."><Icon name="link" /></CopyLinkButton>}
         </div>
       </section>
     </div>

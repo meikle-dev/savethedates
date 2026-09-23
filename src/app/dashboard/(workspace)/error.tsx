@@ -8,6 +8,6 @@ export default function SectionError({ reset }: { reset: () => void }) {
       <h1>This section is unavailable.</h1>
       <p>We couldn’t load it just now. Your saved details are unchanged; please try again in a moment.</p>
     </header>
-    <button onClick={reset} className="primary-button">Try again</button>
+    <button onClick={reset} className="button button-primary">Try again</button>
   </div>;
 }

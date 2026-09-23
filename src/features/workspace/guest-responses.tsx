@@ -2,11 +2,12 @@
 
 import { useActionState } from "react";
 import type { OwnerInvitation, RsvpState, SharedResponse } from "@/features/weddings/rsvp";
+import { AttendanceBadge } from "./attendance-badge";
 import { manageSharedResponse, revokeInvitation } from "./rsvp-actions";
 
 function RevokeButton({ invitationId }: { invitationId: string }) {
   const [state, action, pending] = useActionState<RsvpState, FormData>(revokeInvitation, {});
-  return <div><form action={action}><input type="hidden" name="invitation_id" value={invitationId} /><button className="text-link min-h-11 text-sm" disabled={pending}>{pending ? "Revoking…" : "Revoke link"}</button></form>{state.message && <p className={state.success ? "form-notice" : "field-error"} role={state.success ? "status" : "alert"}>{state.message}</p>}</div>;
+  return <div><form action={action}><input type="hidden" name="invitation_id" value={invitationId} /><button className="button button-secondary" disabled={pending}>{pending ? "Revoking…" : "Revoke link"}</button></form>{state.message && <p className={state.success ? "form-notice" : "field-error"} role={state.success ? "status" : "alert"}>{state.message}</p>}</div>;
 }
 
 function SharedResponseRow({ response }: { response: SharedResponse }) {
@@ -15,17 +16,17 @@ function SharedResponseRow({ response }: { response: SharedResponse }) {
     <div className="min-w-0 w-full">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <strong className="break-words">{response.responding_name}</strong>
-        <span className={`rsvp-status ${response.attending ? "is-attending" : "is-declined"}`}>{response.attending ? "Attending" : "Not attending"}</span>
+        <AttendanceBadge attending={response.attending} />
         <span className="text-sm text-[var(--muted)]">{new Date(response.responded_at).toLocaleDateString("en-GB")}</span>
       </div>
-      <details className="mt-1"><summary className="text-link inline-flex min-h-11 cursor-pointer items-center text-sm">Correct or remove response</summary>
+      <details className="mt-1"><summary className="button button-quiet button-flush">Correct or remove response</summary>
         <form action={action} noValidate className="mt-3 grid gap-3">
           <input type="hidden" name="response_id" value={response.id} />
           <div><label htmlFor={`name-${response.id}`} className="field-label">Responding name</label><input id={`name-${response.id}`} name="responding_name" className="field-input" defaultValue={response.responding_name} maxLength={80} aria-invalid={!!state.errors?.responding_name} aria-describedby={state.errors?.responding_name ? `name-error-${response.id}` : undefined} />{state.errors?.responding_name && <p id={`name-error-${response.id}`} className="field-error">{state.errors.responding_name[0]}</p>}</div>
-          <fieldset aria-invalid={!!state.errors?.attending} aria-describedby={state.errors?.attending ? `attendance-error-${response.id}` : undefined}><legend className="field-label">Attendance</legend><div className="flex flex-wrap gap-4 text-sm"><label><input type="radio" name="attending" value="yes" defaultChecked={response.attending} /> Attending</label><label><input type="radio" name="attending" value="no" defaultChecked={!response.attending} /> Not attending</label></div>{state.errors?.attending && <p id={`attendance-error-${response.id}`} className="field-error">{state.errors.attending[0]}</p>}</fieldset>
-          <button name="intent" value="correct" className="text-link min-h-11 justify-self-start" disabled={pending}>Save correction</button>
+          <fieldset aria-invalid={!!state.errors?.attending} aria-describedby={state.errors?.attending ? `attendance-error-${response.id}` : undefined}><legend className="field-label">Attendance</legend><div className="segmented"><label className="segment"><input type="radio" name="attending" value="yes" defaultChecked={response.attending} />Attending</label><label className="segment"><input type="radio" name="attending" value="no" defaultChecked={!response.attending} />Not attending</label></div>{state.errors?.attending && <p id={`attendance-error-${response.id}`} className="field-error">{state.errors.attending[0]}</p>}</fieldset>
+          <button name="intent" value="correct" className="button button-primary justify-self-start" disabled={pending}>Save correction</button>
           <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_remove" value="yes" /><span>Remove this response from the list and totals</span></label>
-          <button name="intent" value="remove" className="text-link min-h-11 justify-self-start" disabled={pending}>Remove response</button>
+          <button name="intent" value="remove" className="button button-secondary justify-self-start" disabled={pending}>Remove response</button>
           {state.message && <p className={state.success ? "form-notice" : "form-error"} role={state.success ? "status" : "alert"}>{state.message}</p>}
         </form>
       </details>

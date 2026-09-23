@@ -94,7 +94,7 @@ test("owner edits and previews Details while guests see only enabled published c
     await page.goto("/dashboard/preview");
     await expect(page.getByText("Private Save the Date preview", { exact: true })).toBeVisible();
     await expect(page.getByRole("radio", { name: /Modern Minimal/ })).toBeChecked();
-    await expect(page.getByText("Your current wedding theme.", { exact: false })).toBeVisible();
+    await expect(page.getByText("This is your current theme.", { exact: true })).toBeVisible();
     await page.getByRole("link", { name: "Back to workspace" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
     await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Details", exact: true }).click();

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { parsePhotoFraming } from "@/features/weddings/photo-framing";
 import { swatchBackground, themes } from "@/features/weddings/themes";
 import { PhotoForm } from "@/features/workspace/photo-form";
+import { Icon } from "@/features/workspace/workspace-icons";
 import { requireWedding } from "@/features/workspace/workspace-data";
 import { WorkspacePage } from "@/features/workspace/workspace-page";
 
@@ -18,11 +19,10 @@ export default async function Design() {
         <div className="ws-theme">
           <span className="ws-theme-swatch" aria-hidden="true" style={{ background: swatchBackground(current.swatch) }} />
           <div className="ws-theme-text">
-            <p className="ws-theme-label">Current theme</p>
-            <p className="ws-theme-name">{current.name}</p>
+            <p className="ws-theme-heading"><span className="ws-theme-name">{current.name}</span><span className="tag">Current theme</span></p>
             <p className="ws-theme-description">{current.description}</p>
           </div>
-          <Link href="/dashboard/preview" className="primary-button ws-theme-action">Change theme <span aria-hidden="true">→</span></Link>
+          <Link href="/dashboard/preview" className="button button-primary ws-theme-action">Change theme<Icon name="arrowRight" /></Link>
         </div>
         <p className="ws-theme-note"><span className="ws-theme-dots" aria-hidden="true">{themes.map((theme) => <span key={theme.id} style={{ background: swatchBackground(theme.swatch) }} />)}</span>Try {themes.length} themes with your own content. Nothing changes until you apply one.</p>
       </section>

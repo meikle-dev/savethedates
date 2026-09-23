@@ -103,7 +103,6 @@
 .marketing-footer .marketing-brand { font-size: 26px; }
 .marketing-footer p { font: italic 16px Georgia, serif; }
 .example-banner { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px max(24px, calc((100% - 1050px) / 2)); border-bottom: 1px solid #c6d0cc; }
-.example-banner > a { min-height: 44px; display: inline-flex; align-items: center; font-size: 13px; }
 .example-banner p { text-align: center; font-size: 13px; }
 .example-banner p span { display: block; margin-top: 5px; font-size: 11px; }
 @media (max-width: 1000px) {

@@ -16,12 +16,12 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
           <span aria-hidden="true" className="h-5 border-l border-[var(--line)]" />
           <span className="ws-top-names">{wedding.first_name} &amp; {wedding.second_name}</span>
           <span className="whitespace-nowrap">{formatWeddingDate(wedding.wedding_date)}</span>
-          <span className="ws-pill" data-live={live}>{live ? "Published" : "Private draft"}</span>
+          {live ? <span className="badge badge-positive badge-dot">Published</span> : <span className="badge"><Icon name="lock" />Private draft</span>}
         </div>}
       </div>
       <div className="ws-top-actions">
-        {wedding && <Link href="/dashboard/preview" prefetch={false} className="ws-button"><Icon name="eye" className="size-4" />Preview<span className="sr-only"> site</span></Link>}
-        <SignOutButton className="ws-button ws-button-quiet" />
+        {wedding && <Link href="/dashboard/preview" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview<span className="sr-only"> site</span></Link>}
+        <SignOutButton className="button button-quiet" />
       </div>
     </header>
     <div className={wedding ? "ws-body" : "ws-solo"}>

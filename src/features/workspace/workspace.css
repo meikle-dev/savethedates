@@ -9,14 +9,7 @@
 .ws-top-names { color: var(--navy); font-family: Georgia, serif; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ws-top-actions { display: flex; align-items: center; gap: 0.5rem; }
 
-.ws-pill { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.75rem; border-radius: 99px; background: #eaf2f6; color: var(--teal); font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
-.ws-pill::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: currentColor; opacity: 0.7; }
-.ws-pill[data-live="true"] { background: var(--sage-soft); color: #254e39; }
-
-.ws-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 44px; padding: 0.55rem 1rem; border: 1px solid #b8c3c2; border-radius: 10px; background: var(--surface); color: var(--navy); font-size: 0.875rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
-.ws-button:hover { border-color: var(--teal); color: var(--teal); }
-.ws-button:focus-visible, .ws-nav a:focus-visible, .ws-row-link:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
-.ws-button-quiet { border-color: transparent; background: transparent; color: var(--muted); }
+.ws-nav a:focus-visible, .ws-row-link:focus-visible { outline: 2px solid var(--control-focus); outline-offset: 2px; }
 
 .ws-nav { position: sticky; top: 0; z-index: 20; border-block: 1px solid var(--line); background: rgb(248 246 240 / 0.94); backdrop-filter: blur(10px); }
 .ws-nav ul { display: flex; gap: 0.35rem; margin: 0; padding: 0.55rem 1rem; overflow-x: auto; list-style: none; scrollbar-width: none; }
@@ -74,9 +67,8 @@
 .ws-responses time { color: var(--muted); font-size: 0.8125rem; }
 
 .ws-actions { display: grid; gap: 0.5rem; margin-top: 1rem; }
-.ws-actions .ws-button { justify-content: flex-start; width: 100%; }
+.ws-actions .button { justify-content: flex-start; width: 100%; }
 .ws-empty { margin-top: 0.75rem; color: var(--muted); font-size: 0.875rem; line-height: 1.6; }
-.ws-text-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--teal); font-size: 0.875rem; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
 
 @media (min-width: 640px) {
   .ws-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -106,10 +98,10 @@
 /* Design: current theme summary linking to the full-page theme preview. */
 .ws-theme { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 1rem 1.1rem; margin-top: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: white; }
 .ws-theme-swatch { width: 3.75rem; height: 3.75rem; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(11 42 61 / 0.14), 0 0 0 4px var(--surface), 0 0 0 5px var(--line); }
-.ws-theme-label { color: var(--muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
-.ws-theme-name { margin-top: 0.2rem; color: var(--navy); font-family: Georgia, serif; font-size: 1.3rem; }
+.ws-theme-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.65rem; }
+.ws-theme-name { color: var(--navy); font-family: Georgia, serif; font-size: 1.3rem; }
 .ws-theme-description { margin-top: 0.2rem; color: var(--muted); font-size: 0.875rem; line-height: 1.5; }
-.ws-theme-action { grid-column: 1 / -1; gap: 0.5rem; border-radius: 10px; }
+.ws-theme-action { grid-column: 1 / -1; }
 .ws-theme-note { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.9rem; color: var(--muted); font-size: 0.8125rem; line-height: 1.5; }
 .ws-theme-dots { display: flex; flex: none; }
 .ws-theme-dots span { width: 1.1rem; height: 1.1rem; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface), inset 0 0 0 1px rgb(11 42 61 / 0.14); }

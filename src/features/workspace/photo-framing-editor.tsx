@@ -77,10 +77,10 @@ export function PhotoFramingEditor({ theme, framing, published }: { theme: Weddi
     {published && <p className="field-help mt-2">Saving framing updates your live site immediately.</p>}
     <fieldset className="mt-5">
       <legend className="sr-only">Page to frame</legend>
-      <div className="flex flex-wrap gap-3">
-        {(["saveTheDate", "details"] as const).map((option) => <label key={option} className="theme-option min-h-11 flex-1 sm:flex-none">
+      <div className="segmented segmented-fill">
+        {(["saveTheDate", "details"] as const).map((option) => <label key={option} className="segment">
           <input type="radio" name="framing-page-picker" value={option} checked={page === option} onChange={() => setPage(option)} disabled={pending} />
-          <span>{pageLabels[option]}</span>
+          {pageLabels[option]}
         </label>)}
       </div>
     </fieldset>
@@ -99,13 +99,13 @@ export function PhotoFramingEditor({ theme, framing, published }: { theme: Weddi
           ["zoom", "Zoom", 1, 2, 0.01],
         ] as const).map(([key, label, min, max, step]) => <label key={key} className="block text-sm font-semibold">
           <span className="flex justify-between gap-3"><span>{label}</span><output>{key === "zoom" ? `${frame[key].toFixed(2)}x` : `${Math.round(frame[key])}%`}</output></span>
-          <input className="mt-3 w-full accent-[var(--teal)]" type="range" name={key} min={min} max={max} step={step} value={frame[key]} onChange={(event) => change({ ...frame, [key]: Number(event.target.value) })} disabled={pending} />
+          <input className="mt-3 w-full" type="range" name={key} min={min} max={max} step={step} value={frame[key]} onChange={(event) => change({ ...frame, [key]: Number(event.target.value) })} disabled={pending} />
         </label>)}
       </div>
       <div className="mt-6 flex flex-wrap gap-3">
-        <button type="submit" className="primary-button" disabled={pending}>{pending ? "Saving framing…" : `Save ${pageLabels[page]} framing`}</button>
-        <button type="button" className="text-link min-h-11 px-2" disabled={pending} onClick={() => change(defaultPhotoFrame(page))}>Reset</button>
-        <button type="button" className="text-link min-h-11 px-2" disabled={pending} onClick={() => change(saved.current[page])}>Cancel</button>
+        <button type="submit" className="button button-primary" disabled={pending}>{pending ? "Saving framing…" : `Save ${pageLabels[page]} framing`}</button>
+        <button type="button" className="button button-quiet" disabled={pending} onClick={() => change(defaultPhotoFrame(page))}>Reset</button>
+        <button type="button" className="button button-quiet" disabled={pending} onClick={() => change(saved.current[page])}>Cancel</button>
       </div>
       {state.message && (!state.success || state.page === page) && <p className={`mt-4 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
     </form>
