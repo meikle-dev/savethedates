@@ -22,7 +22,7 @@ All three files are transparent, portrait SVGs with `width="240"`, `height="360"
 | Save the Date and Details missing/failed photo | Two opposing illustrations at the photo edges, on the existing theme tint; reduced and repositioned on phones. Existing text contrast backing is retained. |
 | Romantic Save the Date announcement | One 60×90px floral accent after the message, in normal flow. |
 | Details divider | One 36×54px theme illustration between rules. |
-| RSVP | One subdued theme illustration at the outer margin; reduced to 40×60px in the upper-right corner at widths up to 900px, clear of introductory text. The F019 redesign may reuse these sources. |
+| RSVP | One small theme illustration centred between fine rules at the top of the invitation panel for every link state. |
 | Owner previews and public `/examples/{theme}` pages | Use the same guest components and therefore the same artwork. |
 
 The informational Details icons remain the existing original line icons. The marketing phone illustrations contain photography/type rather than standalone botanical graphics. The scenic example photograph and private customer uploads are separate assets; neither is replaced by a botanical SVG.
@@ -32,3 +32,9 @@ The informational Details icons remain the existing original line icons. The mar
 Keep each source below 6 KB uncompressed and the combined set below 15 KB. Paths use compact coordinate commands, shared group styles, no editor metadata, no filters and no dependencies; readability is retained for future edits. Inspect at footer/divider sizes as well as enlarged fallback size after changes. Maintain the 2:3 viewBox and safe margins so rotation and mobile placement stay predictable. Do not add names, initials, dates or other UI text to the files.
 
 Verification evidence and actual file sizes are recorded in the F018 backlog handoff. Public shared decoration belongs here; customer uploads remain in private storage.
+
+## RSVP background photograph (F019)
+
+`romantic-rsvp-floral.webp` is an original AI-generated, text-free decorative still life created for this project on 22 September 2026. It depicts blush roses, small white flowers, sage foliage and burgundy fabric along the left edge of blank ivory paper. The supplied RSVP reference informed the composition; its pixels and UI were not copied. The source PNG was generated with the built-in image generation tool, then resized with Sharp to 1440×960 WebP at quality 76 (56,706 bytes). No external stock licence or attribution is required for project use; no exclusivity claim is made. The source generation is retained in the local Codex generated-image directory, while the optimised WebP is the shipped asset.
+
+CSS requests this image only for Romantic RSVP at widths of at least 901px. The form panel is opaque; mobile and the other themes use their existing vector artwork and CSS colour. No customer names, invitation labels, initials, controls or text are embedded in the raster asset.

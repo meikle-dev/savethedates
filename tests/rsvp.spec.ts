@@ -18,7 +18,7 @@ function expectPrivateInviteResponse(response: Response | null) {
 }
 
 test("owner creates an invitation and a guest submits, corrects, and sees closure", async ({ page, browser, baseURL }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
   const email = `rsvp-e2e-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
   const slug = `rsvp-e2e-${crypto.randomUUID()}`;
@@ -82,6 +82,7 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
     expectPrivateInviteResponse(inviteResponse);
     await expect(guestPage.getByRole("heading", { name: "RSVP" })).toBeVisible();
     await expect(guestPage.getByText("This invitation is for Sam Taylor.")).toBeVisible();
+    await expect(guestPage.locator(".rsvp-invitation-context")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
     await expect(guestPage.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(guestPage.locator('meta[name="referrer"]')).toHaveAttribute("content", "no-referrer");
 
@@ -126,14 +127,20 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
     await publicPage.goto(`/${slug}/rsvp`);
     await expect(publicPage.getByText("This RSVP link is unavailable")).toBeVisible();
     await expect(publicPage.getByText("This invitation is for Sam Taylor.")).toHaveCount(0);
+    await publicPage.screenshot({ path: test.info().outputPath("rsvp-unavailable.png"), fullPage: true });
     await publicPage.goto(`/${slug}/rsvp?invite=${inviteToken}&invite=${inviteToken}`);
     await expect(publicPage.getByText("This RSVP link is unavailable")).toBeVisible();
     await publicPage.close();
 
+    await guestPage.getByRole("button", { name: "Send RSVP" }).click();
+    await expect(guestPage.getByText("Enter your name.")).toBeVisible();
+    await expect(guestPage.getByText("Choose attending or not attending.")).toBeVisible();
+    await guestPage.screenshot({ path: test.info().outputPath("rsvp-validation.png"), fullPage: true });
     await guestPage.getByLabel("Your name").fill("Sam Taylor");
     await guestPage.getByLabel("Joyfully accepts").check();
     await guestPage.getByRole("button", { name: "Send RSVP" }).click();
     await expect(guestPage.getByRole("status")).toContainText("saved");
+    await guestPage.screenshot({ path: test.info().outputPath("rsvp-success.png"), fullPage: true });
     await guestPage.reload();
     await expect(guestPage.getByLabel("Your name")).toHaveValue("Sam Taylor");
     await guestPage.getByLabel("Regretfully declines").check();
@@ -145,11 +152,19 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
     const updatedSection = page.getByRole("region", { name: "RSVP" });
     await expect(updatedSection.getByText("Not attending")).toBeVisible();
     await expect(updatedSection.getByText(/Response from Sam T\./)).toBeVisible();
+    const longName = "Alexandria-Catherine";
+    const longInvite = "The Taylor and Rivera family, with everyone celebrating together";
+    expect((await local.admin.from("weddings").update({ first_name: longName, second_name: "Maximilian-Alexander" }).eq("owner_id", ownerId)).error).toBeNull();
+    expect((await local.admin.from("rsvp_invitations").update({ invite_name: longInvite }).eq("wedding_id", wedding.data!.id).eq("invite_name", "Sam Taylor")).error).toBeNull();
     for (const theme of ["minimal", "romantic", "bold"]) {
       expect((await local.admin.from("weddings").update({ theme }).eq("owner_id", ownerId)).error).toBeNull();
       await guestPage.reload();
       await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
-      expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await expect(guestPage.getByText(`This invitation is for ${longInvite}.`)).toBeVisible();
+      for (const width of [320, 390, 1440]) {
+        await guestPage.setViewportSize({ width, height: 900 });
+        expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${theme} RSVP fits ${width}px`).toBe(true);
+      }
       const submit = guestPage.getByRole("button", { name: "Update RSVP" });
       await submit.focus();
       const focusContrast = await submit.evaluate((button) => {
@@ -165,8 +180,31 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
         return (Math.max(outline, surface) + 0.05) / (Math.min(outline, surface) + 0.05);
       });
       expect(focusContrast, `${theme} keyboard focus has at least 3:1 contrast`).toBeGreaterThanOrEqual(3);
+      await guestPage.setViewportSize({ width: test.info().project.name === "mobile" ? 390 : 1440, height: 900 });
       await guestPage.screenshot({ path: test.info().outputPath(`rsvp-${theme}.png`), fullPage: true });
+      if (theme === "romantic") {
+        const fallbackPage = await guest.newPage();
+        await fallbackPage.setViewportSize({ width: 1440, height: 900 });
+        await fallbackPage.route("**/romantic-rsvp-floral.webp", route => route.abort());
+        await fallbackPage.goto(inviteUrl);
+        await expect(fallbackPage.getByRole("heading", { name: "RSVP" })).toBeVisible();
+        await expect(fallbackPage.getByRole("button", { name: "Update RSVP" })).toBeVisible();
+        expect(await fallbackPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await fallbackPage.screenshot({ path: test.info().outputPath("rsvp-romantic-failed-backdrop.png"), fullPage: true });
+        await fallbackPage.close();
+        const phone = await guest.newPage();
+        const floralRequests: string[] = [];
+        phone.on("request", request => {
+          if (request.url().includes("romantic-rsvp-floral.webp")) floralRequests.push(request.url());
+        });
+        await phone.setViewportSize({ width: 390, height: 844 });
+        await phone.goto(inviteUrl);
+        await expect(phone.getByRole("heading", { name: "RSVP" })).toBeVisible();
+        expect(floralRequests, "phone does not download the desktop backdrop").toEqual([]);
+        await phone.close();
+      }
     }
+    expect((await local.admin.from("rsvp_invitations").update({ invite_name: "Sam Taylor" }).eq("wedding_id", wedding.data!.id).eq("invite_name", longInvite)).error).toBeNull();
 
     await updatedSection.getByLabel("Accept RSVPs").uncheck();
     await updatedSection.getByRole("button", { name: "Save RSVP settings" }).click();
@@ -174,6 +212,7 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
     await guestPage.reload();
     await expect(guestPage.getByRole("heading", { name: "RSVP is closed" })).toBeVisible();
     await expect(guestPage.getByText("Saved response: Sam T. · Not attending")).toBeVisible();
+    await guestPage.screenshot({ path: test.info().outputPath("rsvp-closed.png"), fullPage: true });
     await guestPage.goto(`/${slug}`);
     await expect(guestPage.getByRole("link", { name: "RSVP" })).toHaveCount(0);
 
@@ -184,6 +223,7 @@ test("owner creates an invitation and a guest submits, corrects, and sees closur
     await expect(samInvitation.getByText("Revoked")).toBeVisible();
     await guestPage.reload();
     await expect(guestPage.getByText("This RSVP link is unavailable")).toBeVisible();
+    await guestPage.screenshot({ path: test.info().outputPath("rsvp-revoked.png"), fullPage: true });
   } finally {
     await guest.close();
     await local.admin.auth.admin.deleteUser(ownerId);

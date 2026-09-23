@@ -130,30 +130,50 @@
   .details-shell[data-theme="romantic"] .details-photo > .wedding-photo { inset: 24px 48px 0; border-radius: 300px 300px 0 0; }
   .details-shell[data-theme="bold"] .details-photo > .wedding-photo { inset: 24px 24px 0; }
 }
-.details-intro { position: relative; text-align: center; max-width: 650px; margin: 0 auto; }
 .details-kicker { color: var(--theme-accent); }
-.details-intro h1 { margin-top: 20px; font-size: clamp(62px, 7.5vw, 104px); line-height: .83; letter-spacing: -.055em; }
-.details-intro h1 em { display: block; font-weight: 400; }
-.details-intro > p:last-child { margin-top: 23px; line-height: 1.65; font-family: var(--theme-heading); font-size: 23px; }
-/* RSVP keeps the same controls and states, presented as a matching invitation. */
-.rsvp-main { position: relative; padding: 70px 24px 80px; background: radial-gradient(ellipse at top left, var(--theme-tint), transparent 65%); }
-.rsvp-main > .botanical-art { position: absolute; top: 32px; left: 12px; width: clamp(65px, 12vw, 145px); height: 220px; opacity: .45; }
-.rsvp-card { position: relative; max-width: 620px; margin: 35px auto 0; padding: 36px; border: 1px solid var(--theme-line); border-radius: var(--theme-radius); background: var(--theme-surface); box-shadow: 0 16px 55px #34321f0a; }
-.rsvp-card .field-input { color: var(--theme-text); }
+/* RSVP presents each link state inside the same invitation panel. */
+.rsvp-main { position: relative; isolation: isolate; min-height: 690px; padding: 66px 24px 82px; background: radial-gradient(ellipse at 8% 12%, var(--theme-tint), transparent 60%), var(--theme-surface); }
+.rsvp-intro { max-width: 720px; margin: 0 auto; text-align: center; }
+.rsvp-ornament { display: flex; align-items: center; justify-content: center; gap: 20px; color: var(--theme-accent); font-size: 17px; line-height: 1; margin-bottom: 21px; }
+.rsvp-ornament::before, .rsvp-ornament::after { content: ""; width: 48px; height: 1px; background: var(--theme-line); }
+.rsvp-intro h1 { margin-top: 14px; font-size: clamp(70px, 9vw, 120px); line-height: .85; letter-spacing: -.06em; }
+.rsvp-invitation-context { margin: 20px auto 0; max-width: 620px; font-family: var(--theme-heading); font-size: clamp(21px, 2.5vw, 29px); line-height: 1.25; }
+.rsvp-card { position: relative; max-width: 670px; margin: 34px auto 0; padding: 36px 42px 32px; border: 1px solid var(--theme-line); border-radius: var(--theme-radius); background: var(--theme-surface); box-shadow: 0 22px 65px #34321f21; }
+.rsvp-card-art { display: flex; align-items: center; justify-content: center; gap: 13px; height: 38px; margin-bottom: 22px; }
+.rsvp-card-art::before, .rsvp-card-art::after { content: ""; width: 42px; height: 1px; background: var(--theme-line); }
+.rsvp-card-art .botanical-art { width: 29px; height: 44px; transform: rotate(20deg); }
+.rsvp-card .field-label { color: var(--theme-text); font-family: var(--theme-heading); font-size: 20px; font-weight: 400; line-height: 1.2; margin-bottom: 10px; }
+.rsvp-card .field-input { color: var(--theme-text); background: #fffefa; border-color: var(--theme-line); border-radius: var(--theme-radius); }
 .rsvp-card .field-input:focus-visible { outline-color: var(--theme-accent); }
-.rsvp-choice { display: flex; min-height: 56px; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--theme-line); border-radius: var(--theme-radius); cursor: pointer; font-size: 14px; }
+.rsvp-card .form-notice { background: var(--theme-tint); color: var(--theme-text); }
+.rsvp-attendance { margin-top: 27px; }
+.rsvp-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.rsvp-choice { display: flex; min-height: 68px; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--theme-line); border-radius: var(--theme-radius); cursor: pointer; background: #fffefa; font-family: var(--theme-heading); font-size: 19px; line-height: 1.15; }
 .rsvp-choice:has(:checked) { border-color: var(--theme-accent); background: var(--theme-tint); box-shadow: inset 0 0 0 1px var(--theme-accent); }
 .rsvp-choice:has(:focus-visible) { outline: 2px solid var(--theme-accent); outline-offset: 3px; }
-.rsvp-choice input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--theme-accent); }
-.rsvp-submit { display: inline-flex; min-height: 52px; width: 100%; align-items: center; justify-content: center; padding: 14px 22px; border-radius: var(--theme-radius); background: var(--theme-accent); color: #fff; font-weight: 700; cursor: pointer; }
+.rsvp-choice input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--theme-accent); }
+.rsvp-submit { display: flex; min-height: 54px; width: 100%; align-items: center; justify-content: center; gap: 15px; margin-top: 25px; padding: 13px 22px; border-radius: var(--theme-radius); background: var(--theme-accent); color: #fff; font-family: var(--theme-heading); font-size: 22px; cursor: pointer; }
+.rsvp-submit:hover:not(:disabled) { filter: brightness(.9); }
 .rsvp-submit:disabled { opacity: .65; cursor: wait; }
-.rsvp-shell[data-theme="romantic"] .rsvp-card { border-top: 4px solid var(--theme-accent); }
-.rsvp-shell[data-theme="bold"] .rsvp-main { background: #133f3e; }
-.rsvp-shell[data-theme="bold"] .details-intro { color: #f1f3e9; text-align: left; }
-.rsvp-shell[data-theme="bold"] .details-kicker { color: #e5edac; }
-.rsvp-shell[data-theme="bold"] .rsvp-main > .botanical-art { opacity: .65; }
+.rsvp-submit span { font-family: Georgia, serif; font-size: 25px; line-height: 1; }
+.rsvp-privacy { max-width: 460px; margin: 20px auto 0; padding-top: 18px; border-top: 1px solid var(--theme-line); color: var(--theme-muted); font-size: 12px; line-height: 1.55; text-align: center; }
+.rsvp-state { max-width: 510px; margin: 0 auto; text-align: center; }
+.rsvp-state h2 { font-family: var(--theme-heading); font-size: 33px; line-height: 1.1; }
+.rsvp-state > p:not(.form-error):not(.form-notice) { margin-top: 12px; }
+.rsvp-state .form-error, .rsvp-state .form-notice { margin-top: 20px; text-align: left; }
+.rsvp-shell[data-theme="romantic"] .rsvp-main { background: #fff4eb; }
+.rsvp-shell[data-theme="romantic"] .rsvp-card { background: #fffaf5; border-color: #b98280; box-shadow: 0 0 0 5px #fffaf5, 0 20px 60px #582b3930; }
+.rsvp-shell[data-theme="romantic"] .rsvp-choice { background: #fffaf5; }
+.rsvp-shell[data-theme="romantic"] .rsvp-choice:has(:checked) { background: #f4e1db; }
+.rsvp-shell[data-theme="bold"] .rsvp-main { background: radial-gradient(circle at 88% 12%, #255f54, transparent 40%), #133f3e; }
+.rsvp-shell[data-theme="bold"] .rsvp-intro { color: #f1f3e9; }
+.rsvp-shell[data-theme="bold"] .rsvp-ornament, .rsvp-shell[data-theme="bold"] .details-kicker { color: #e5edac; }
+.rsvp-shell[data-theme="bold"] .rsvp-ornament::before, .rsvp-shell[data-theme="bold"] .rsvp-ornament::after { background: #829b78; }
+.rsvp-shell[data-theme="bold"] .rsvp-card { background: #f1f3e9; }
+@media (min-width: 901px) {
+  .rsvp-shell[data-theme="romantic"] .rsvp-main { background: #fff4eb url("/assets/wedding/romantic-rsvp-floral.webp") left top / cover no-repeat; }
+}
 @media (max-width: 900px) {
-  .rsvp-main > .botanical-art { top: 6px; left: auto; right: 16px; width: 40px; height: 60px; opacity: .35; }
   .wedding-shell { margin: 0 auto; border-inline: 0; }
   .wedding-header { padding: 18px 24px; grid-template-columns: minmax(0, 1fr) auto; gap: 15px; }
   .header-flourish { display: none; }
@@ -193,8 +213,10 @@
   .announcement-shell[data-theme="bold"] .wedding-announcement { padding: 50px 30px 42px; order: 0; }
   .announcement-shell[data-theme="bold"] h1 { font-size: clamp(94px, 25vw, 150px); }
   .announcement-shell[data-theme="bold"] .wedding-photo { order: 1; min-height: 0; height: 380px; margin: 0 22px 22px; }
-  .rsvp-main { padding: 50px 20px; }
-  .rsvp-main .details-intro h1 { font-size: 72px; }
-  .rsvp-main .details-intro > p:last-child { font-size: 22px; }
-  .rsvp-card { padding: 24px; }
+  .rsvp-main { min-height: 0; padding: 42px 18px 58px; }
+  .rsvp-intro h1 { font-size: clamp(67px, 19vw, 94px); }
+  .rsvp-invitation-context { font-size: 22px; }
+  .rsvp-card { margin-top: 29px; padding: 27px 22px; }
+  .rsvp-choices { grid-template-columns: 1fr; }
+  .rsvp-choice { min-height: 58px; }
 }

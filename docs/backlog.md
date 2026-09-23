@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F018 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F019**, from the 21 September owner review below. F019-F022 remain ordered review follow-up work.
+Ordered by recommended implementation sequence. F001-F008 and F011-F019 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F020**, from the 21 September owner review below. F020-F022 remain ordered review follow-up work.
 
 ## Status and handoff rules
 
@@ -406,7 +406,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 
 ## F019 - RSVP redesign using the supplied reference
 
-**Status:** Planned
+**Status:** Done
 **Priority / lead:** P2 / UX then Software Engineer; independent feature review
 **Purpose:** Make the invitation response feel as polished as the rest of the wedding site.
 **Depends on:** F015, F018
@@ -420,7 +420,14 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - All three themes pass mobile/desktop and narrow-width inspection with long names, long invitation labels, missing imagery and readable contrast. Assets do not cause layout shifts or unnecessary full-resolution mobile downloads.
 - Relevant RSVP/theme checks and independent review pass; update canonical theme guidance to describe the final implemented layout.
 
-**Next preparation:** Define mobile composition, state layouts and asset dimensions before image generation or implementation. Do not use the supplied screenshot as a page background containing UI.
+**Prepared design:** Keep the invitation context, heading, form and confirmation in one centred reading column. On phones, stack the name field, full-width attendance choices and full-width action within a bordered paper panel; use the existing small theme botanical outside the controls. At desktop widths, give the panel more breathing room and use text-free, theme-coloured background artwork only beyond the reading column. Keep invalid/revoked, closed, success, validation and pending states in the same panel, with the same heading and guest navigation. Use one 1440px-wide decorative WebP on Romantic desktop only, overlaid by a solid panel; phones do not request it. Minimal and Bold use their established colours and vector decoration. Personalised names and labels remain HTML text. See `docs/ux/template-ui-summary.md` for the implemented guidance and `public/assets/wedding/README.md` for asset provenance.
+
+**Handoff (23 September 2026):**
+
+- Rebuilt the guest RSVP hierarchy in `src/features/weddings/rsvp-page.tsx` and `wedding.css`: editorial heading, dynamic invitation context, theme botanical, bordered response panel, prominent radio choices/action, and matching confirmation, validation, closed and unavailable states. The existing private-link flow, server action and collected fields remain unchanged. Added `romantic-rsvp-floral.webp` (1440×960, 56,706 bytes) for Romantic desktop; narrow screens do not request it. Provenance/usage and final theme guidance are in `public/assets/wedding/README.md` and `docs/ux/template-ui-summary.md`.
+- Passed `npm.cmd run check` (lint, typecheck, 25 Vitest tests, production build). After refreshing a stale local Docker development app, `$env:E2E_BASE_URL='http://127.0.0.1:3000'; npx.cmd playwright test tests/rsvp.spec.ts tests/theme-design.spec.ts` passed 8/8 desktop/mobile checks. The RSVP flow covers navigation continuity, validation, submit/correction, closure and revocation; added long-name/invitation checks at 320, 390 and 1440px, mobile non-download of the desktop image and a failed-image fallback. `git diff --check` passed.
+- Inspected desktop and phone screenshots across the three themes, including long content and validation, success, closed and unavailable states. Text, controls and focus remain readable without overflow. Independent reviewer `review_f019` found an Important guest/workspace CSS class collision and a Minor stale artwork-inventory note; both were fixed and re-reviewed with no remaining findings. Hosted CI, Safari/Firefox, production-container browser and database integration/persistence checks were not run for this visual-only feature.
+- Blockers: None. Next: Product Manager and UX prepare F020 homepage CTA copy/treatment. F009 external release blockers remain.
 
 ## F020 - Friendlier homepage entry and polished CTA controls
 
@@ -486,7 +493,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. Following the owner review and completion of F013-F018, F019 is the next executable ticket while external release inputs remain blocked; complete the review gate above before final release review.
+- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. Following the owner review and completion of F013-F019, F020 is the next executable ticket while external release inputs remain blocked; complete the review gate above before final release review.
 
 ## F010 - Post-launch extensions
 
