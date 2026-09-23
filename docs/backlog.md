@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers.
+Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers. The 23 September review adds F028-F033; the next eligible ticket is F028.
 
 ## Status and handoff rules
 
@@ -595,12 +595,168 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - Applied `npx.cmd supabase migration up --local`; `npx.cmd supabase db lint --local` reported no schema errors; `npm.cmd run test:integration` passed 19/19 including month-end leap-year, near-cutoff rejection, existing attempt and legacy paid expiry cases; `npm.cmd run check` passed lint, typecheck, 25 unit tests and production build; `npx.cmd playwright test tests/payments.spec.ts tests/marketing.spec.ts` passed 10/10 desktop/mobile. After final purchase-copy clarification, `npx.cmd playwright test tests/payments.spec.ts` passed 2/2. `git diff --check` passed. Inspected marketing and purchase panel at desktop/mobile screenshots. Production deployment and hosted checkout were not run.
 - Independent review `review_f024` found no remaining Blocking or Important findings after the required cutoff and legacy-entitlement tests were added. No production system was changed. Blockers: production deployment remains under F009 release gates. Next: F009 release preparation; owner must still provide host/domain, managed Supabase, live billing/release authority, support contact and approved terms/privacy/retention/deletion rules.
 
+## 23 September review follow-up
+
+Source: [owner review notes](notes/23-09-2026.md). Triage is based on reading the source code. None of the reports has been reproduced in a browser during planning.
+
+**Sequence and release gate:** F028 first (bug). Next come the mobile and Guests usability fixes (F029-F030), then the legacy retirement (F031, owner-confirmed). Motion polish (F032) comes after that because it touches the same workspace shell and CSS. F028-F031 must be Done before F009's final release review. F032-F033 do not gate release. F009's existing external blockers still apply.
+
+**Delegation:** Each ID is one ticket; the listed lead owns the handoff. F029, F030 and F032 all change `workspace.css`/the workspace shell, so do them one after another, not at the same time. F033 is docs-only and can be done at any point.
+
+| Owner observation | Ticket | Priority |
+| --- | --- | --- |
+| Hovering the disabled Send RSVP button in preview shows a loading spinner | F028 | P1 bug |
+| Dashboard tab menu at the top is probably not usable on mobile | F029 | P1 usability |
+| Guest responses are one endless list; want a clear, paginated, full-width view | F030 | P1 usability |
+| "Earlier individual invitations" in Guests looks like a leftover; confirm, then remove | F031 | P2 cleanup (owner confirmed) |
+| Page changes feel abrupt; want subtle, fast animation | F032 | P3 polish |
+| Add a manually invoked Innovation agent that suggests features | F033 | P3 process |
+
+All implementation tickets follow the definition of done. That means the checks in `run-app-instructions.md`, exact results in the handoff, mobile and desktop inspection for UI changes, and independent review where a ticket requires it.
+
+## F028 - No loading cursor on the disabled preview RSVP button
+
+**Status:** Ready
+**Priority / lead:** P1 / Software Engineer
+**Purpose:** In preview, the Send RSVP button should look disabled, not look like it is loading.
+**Depends on:** F019, F025 (Done)
+**References:** `src/features/weddings/wedding.css:158` (`.rsvp-submit:disabled { opacity: .65; cursor: wait; }`), `src/features/weddings/rsvp-page.tsx:56` (the button is `disabled` both when `pending` and in preview), `tests/rsvp-preview.spec.ts`.
+**Cause (from code):** The "spinner" is the browser's `wait` cursor. It is applied to every disabled `.rsvp-submit`, so preview's permanently disabled button looks busy on hover.
+**Scope:** Show the busy cursor only while a real submission is pending, for example by marking the pending state with `aria-busy`/a data attribute. The disabled preview button uses `not-allowed`. Keep the "Saving…" label, the disabled behaviour and all three themes as they are.
+**Done when:**
+
+- In owner preview, in all three themes, the button is disabled, cannot submit, and its computed cursor is `not-allowed` rather than `wait`/`progress`.
+- During a real shared-link submission the button stays disabled and reads "Saving…". The busy cursor is allowed only while pending.
+- A regression assertion in `tests/rsvp-preview.spec.ts` checks the preview button's computed cursor. `npm.cmd run check`, targeted `rsvp-preview`/`rsvp` specs and `git diff --check` pass. No independent review needed.
+
+## F029 - Mobile-friendly workspace section navigation
+
+**Status:** Ready
+**Priority / lead:** P1 / UX/UI Designer then Software Engineer
+**Purpose:** Couples on a phone can see every workspace section and move between them without hunting through a sideways-scrolling strip.
+**Depends on:** F027 (Done)
+**References:** `src/features/workspace/workspace-nav.tsx`, `src/features/workspace/workspace.css` (`.ws-nav`, lines 12-21 and 87-93), `src/app/dashboard/(workspace)/layout.tsx`, `docs/overview/site-ui.md` (Sectioned workspace), `tests/dashboard.spec.ts`.
+**Current behaviour:** Below 1024px, all seven sections sit in a sticky pill bar that scrolls sideways with its scrollbar hidden. At phone widths most sections are off screen, and nothing shows that the bar scrolls.
+**UX decision:**
+- **Below 768px:** replace the pill bar with a compact sticky bar. It shows the current section's icon and name next to a "Sections" button (`aria-expanded`/`aria-controls`). The button opens a full-width list of all seven sections with icons, and the current one is marked. The list closes on selection, Escape, a tap outside, or the button, and focus goes back to the button.
+- **768-1023px:** show all seven sections in one row without scrolling.
+- **1024px and up:** keep the existing sidebar.
+
+This needs no hover, no bottom tab bar (seven items is too many) and no new sections.
+**Done when:**
+
+- At 320, 375, 390 and 767px, the current section is visible without scrolling, and every section can be reached in at most two taps with targets of 44px or more. There is no horizontal overflow, and the sticky bar is 64px tall or less.
+- At 768 and 1023px, all seven sections are visible in one row with no sideways scroll or clipping. At 1024px and up, the sidebar is unchanged.
+- The keyboard works: Tab reaches the toggle, Enter/Space open it, Escape closes it and returns focus. `aria-current="page"` and section titles are kept. The menu closes after client navigation and after back/forward.
+- `tests/dashboard.spec.ts` covers the phone menu, the tablet row and focus behaviour. `npm.cmd run check` passes, as do targeted dashboard specs at mobile and desktop. `docs/overview/site-ui.md` is updated. Screenshots are inspected at 320, 390, 768 and 1440px. Independent review is not required (navigation presentation only; routes and authorisation are unchanged).
+
+## F030 - Clear, paginated guest responses
+
+**Status:** Ready
+**Priority / lead:** P1 / UX/UI Designer then Software Engineer; independent review required (owner data queries and URL parameters)
+**Purpose:** Couples can quickly see who has replied and find a specific guest, even with hundreds of responses.
+**Depends on:** F026, F027 (Done). Schedule after F029 because both change the workspace shell CSS.
+**References:** `src/app/dashboard/(workspace)/guests/page.tsx`, `src/features/workspace/guest-responses.tsx`, `src/features/workspace/workspace-data.ts` (`loadResponses` currently selects every row, unbounded), `src/features/workspace/workspace-summary.ts`, `src/app/dashboard/(workspace)/page.tsx` (Overview also loads every row to count them), `docs/overview/site-ui.md`, `tests/dashboard.spec.ts`, `tests/rsvp.spec.ts`.
+**Current behaviour:** Guests renders every shared response as a single list, up to the 5,000-per-wedding storage cap. Overview loads the same full set to work out totals and the latest responses.
+**UX decision:** The existing Guests section (`/dashboard/guests`) becomes the guest page. Nothing moves to a new route.
+
+- **Layout:** the totals stay at the top. The response area uses the full content width (no narrow reading column).
+- **Controls:** a filter (All / Attending / Not attending, showing counts) and a name search. Both are kept in the URL (`?filter=`, `?q=`, `?page=`), so back, reload and bookmarks work.
+- **Table:** 25 rows per page, newest first. Columns are Name, Response, Date and an action.
+- **Pagination:** Previous/Next plus "Showing 26-50 of 312".
+- **Phones:** below 640px, each row stacks as a compact list item with the same information in the same order.
+- **Corrections:** Correct/remove opens inline for that row, reusing the existing action.
+- **Empty states:** separate messages for "No responses yet", "No matches" and "Page out of range".
+- **Overview:** shows totals plus the five latest responses, with a "View all guests" link.
+
+No export, sorting controls, bulk actions or new stored data.
+**Done when:**
+
+- With 0, 1, 25, 26 and 312 seeded responses, the pages, counts and "Showing" text are correct. Each page contains 25 rows or fewer. Filter and search combine and reset to page 1. Invalid, negative or out-of-range `page` values and invalid `filter` values fall back safely without errors.
+- The server fetches only the requested page, using a range query ordered by `responded_at` with a stable tie-break. Totals come from aggregate/`count` queries, and Overview no longer loads every response. Search input is bounded and escaped (no raw pattern injection). Every query stays scoped to the verified owner's wedding. A cross-owner test shows no leakage through parameters.
+- Correcting or removing a response on a later page keeps the current page/filter where possible and updates the totals.
+- The table uses semantic headers on wide screens. Stacked phone rows are readable at 320px with long names and have no horizontal overflow. Controls are labelled and keyboard reachable, and pagination links have 44px targets.
+- Until F031 is complete, any legacy invitations stay in their existing separate section below the table, and totals continue to include answered legacy invitations.
+- Browser checks cover pagination, filter, search, URL state, corrections and cross-tenant isolation. `npm.cmd run check`, relevant integration/E2E specs and `git diff --check` pass. Visual inspection at 320, 390, 1024 and 1440px. Independent review passes with Blocking/Important findings resolved.
+
+## F031 - Retire earlier individual invitations
+
+**Status:** Ready
+**Priority / lead:** P2 / Software Engineer; independent security and database review required
+**Purpose:** Remove the leftover pre-F026 invitation model so there is one RSVP route, one response list and less public attack surface.
+**Depends on:** F026 (Done); owner confirmation recorded below. Schedule after F030 so there is one Guests implementation to simplify.
+**References:** `src/features/workspace/guest-responses.tsx` (legacy section and `RevokeButton`), `src/features/workspace/rsvp-actions.ts` (`createInvitation` has no UI, plus `revokeInvitation` and `submitRsvp`), `src/features/workspace/workspace-data.ts`, `src/features/workspace/workspace-summary.ts` (`collectResponses` merges legacy answers), `src/app/[weddingSlug]/rsvp/page.tsx` and `page.tsx`/`details/page.tsx` (`?invite=`), `src/features/weddings/invitation-context.ts`, `src/features/weddings/published.ts` (`publishedGuestRsvp`), `src/features/weddings/rsvp.ts`, `src/features/weddings/rsvp-page.tsx` (invitation-specific prefill/correction branches), `src/proxy.ts` (`invite` private-header rule), `supabase/migrations/20260918000700_rsvp.sql` to `20260918001200_payment_rsvp_gate.sql`, `tests/rsvp.spec.ts:143-162`, `tests/rsvp-preview.spec.ts`, `tests/integration/rsvp.test.ts`, `docs/overview/site-ui.md`, `docs/ux/template-ui-summary.md`, `docs/overview/architecture.md`.
+**Findings:** The owner's reading is confirmed.
+
+- **What the section is:** it lists `rsvp_invitations` rows (label, response and revoked state) and offers Revoke. F026 kept it only so that links already sent would keep working.
+- **What still depends on it:**
+  - the guest `?invite=` route and journey context, including prefill and correction in `RsvpPage`
+  - the `guest_rsvp`, `submit_guest_rsvp`, `record_invalid_rsvp_attempt`, `revoke_rsvp_invitation` and `limit_rsvp_invitations` database functions
+  - the `rsvp_attempts` throttle, which is keyed by invitation id
+  - legacy answers merged into the Guests and Overview totals
+  - the tests listed above
+- **What does not depend on it:** the shared-link path uses its own table, functions and attempts table. Only `invitationTokenPattern`/`invitationTokenSchema` are shared with it, and they must be kept.
+- **Dead code:** `createInvitation` is no longer reachable from any UI.
+- **Release status:** the service has not been released (F009: no hosted deployment). Legacy invitations should therefore exist only in local, test or development data.
+
+**Recommendation:** Remove completely rather than keep a read-only view:
+
+- Take out the UI, the actions, `?invite=` handling and the invitation-specific RSVP branches.
+- Add one forward migration that drops the legacy functions, the `rsvp_invitations` table and the `rsvp_attempts` table. Do not edit existing migrations.
+- After removal, an old `?invite=` URL should behave like any link without valid credentials: public pages still work, and RSVP shows the existing "open the private link" state. It must not error or reveal whether a token existed.
+
+**Owner decision (23 September 2026):** Confirmed. No individual invitation links were ever sent to real guests (the app has never been live), and existing legacy invitations and their responses may be permanently deleted. Proceed with full removal.
+**Done when:**
+
+- Guests and Overview show no legacy section. Totals and lists come only from shared responses. No code, types or tests still reference `rsvp_invitations`/`?invite=`, apart from the drop migration and a regression test.
+- Old `?invite=` URLs, whether valid-format, malformed or previously revoked, behave the same as no credential on all three pages. Private/no-store/noindex headers still apply to the shared secret route. Shared-link submission, rotation, correction, removal, throttling and tenant isolation are unchanged.
+- The migration applies cleanly to the current local database without a reset, and `npx.cmd supabase db lint --local` passes. Integration tests confirm the legacy functions are gone for anon/authenticated users. Docs no longer describe legacy invitations.
+- `npm.cmd run check`, `npm.cmd run test:integration`, the affected RSVP/dashboard/preview specs and `git diff --check` pass. Independent security/database review passes.
+
+## F032 - Subtle, fast motion across the site
+
+**Status:** Planned
+**Priority / lead:** P3 / UX/UI Designer then Software Engineer; independent review of the final visual feature
+**Purpose:** Navigating and changing state should feel smooth and calm instead of abrupt, without slowing anything down.
+**Depends on:** F029, F030 (shared workspace shell/CSS). Becomes Ready when they are Done and UX has confirmed the motion list below against the current screens.
+**References:** `node_modules/next/dist/docs/01-app/02-guides/view-transitions.md` (Next.js 16.3.5 with React 19.3: `<ViewTransition>` from `react` works in the App Router without config, route navigations activate it, persistent elements use `viewTransitionName`, and there is a "Respecting reduced motion" section), `node_modules/next/dist/docs/01-app/03-api-reference/02-components/link.md` (`transitionTypes`, v16.2+), `src/app/layout.tsx`, `src/features/workspace/workspace.css`, `src/features/marketing/marketing.css`, `src/features/weddings/wedding.css`, `src/components/controls.css`, `docs/overview/site-ui.md`, `docs/ux/template-ui-summary.md`.
+**Proposed motion list:**
+
+- A short crossfade (about 150-200ms, opacity plus at most an 8px translate) when moving between workspace sections, between the three wedding pages, and between marketing and account pages. Workspace and wedding headers/navigation stay fixed rather than animating.
+- Gentle open/close for the F029 section menu, row correction panels and disclosure panels.
+- A quick fade-in for success and error notices.
+- Consistent transitions of 150ms or less on control hover and press.
+
+Excluded: parallax, scroll-triggered effects, animated page-load heroes, animation libraries, and changes to layout timing.
+**Done when:**
+
+- Only `opacity`/`transform` are animated. Each animation lasts 250ms or less and never delays interaction or navigation. Content and focus are available immediately, with no layout shift and no animation on first load.
+- `prefers-reduced-motion: reduce` turns off transitions and view-transition animations everywhere. Browsers without View Transitions support work normally.
+- All three wedding themes use the same motion behaviour. Previews and noindex/private headers are unchanged.
+- Browser checks cover reduced-motion (emulated), navigation still working with transitions, and absence of overflow. Visual inspection is done at mobile and desktop widths. `npm.cmd run check` passes, with no significant increase in client bundle size (record before/after). Motion guidance is recorded in `docs/overview/site-ui.md`.
+
+## F033 - Manually invoked Innovation role
+
+**Status:** Ready
+**Priority / lead:** P3 / Product Manager
+**Purpose:** Give the owner an on-demand way to get grounded new-feature ideas without adding work to the normal delivery flow.
+**Depends on:** None
+**References:** `AGENTS.md` (Roles and delegation, Default work request), `.agents/product-manager.md`, F010 in this backlog.
+**Scope:**
+
+- Create a short `.agents/innovation.md`. It proposes a few small, evidence-backed feature ideas, each with the customer problem, expected value, rough size, risks and privacy impact.
+- It suggests ideas; it does not decide or implement. The Product Manager decides whether an idea becomes a backlog entry, normally under F010 or as a new Planned ticket.
+- Add the role to the AGENTS.md roles list marked as manual-only.
+- Documentation only; no application change.
+
+**Done when:** The role file exists and is concise. AGENTS.md lists it as manual-only. Neither the default work request nor any other role invokes it automatically, and ideas it produces do not change backlog status without Product Manager triage. `git diff --check` passes.
+
 ## F009 - Launch and operate the service
 
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above)
+**Depends on:** F008; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate).
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Hosting selection, external provisioning, live billing and policy-dependent export/deletion remain blocked on owner decisions; do not invent retention periods or publish policies. No additional product feature or hosting purchase is authorised by this preparation.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
 **Decisions/access before release:** Production accounts/domain, live billing configuration, support contact, owner-approved terms/privacy/retention/deletion policy and site lifetime communication. Record any external review still needed; do not invent assurances.
