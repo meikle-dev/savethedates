@@ -107,7 +107,7 @@ Navigation
 Hero
 ├── Strong value proposition
 ├── Short explanation
-├── Start Your Site
+├── Create your save the date
 └── View Templates
 
 Theme Showcase
@@ -133,9 +133,13 @@ A visitor should understand what SaveTheDates does within a few seconds.
 
 # Calls to Action
 
-The primary action throughout the marketing site should be something similar to:
+The primary action for signed-out visitors is:
 
-**Start your site**
+**Create your save the date**
+
+Use this wording in the homepage hero and pricing actions and on the fictional example banner. Keep the nearby free draft and preview explanation, with the approved £29 publication price. A verified signed-in owner instead sees **Return to your workspace** on the homepage; both homepage primary actions link to the corresponding real route.
+
+On the dark Modern Luxe homepage, primary actions use a warm off-white surface, dark text, generous spacing and a clearly visible arrow in a deep-teal 32px square. Keep the label and icon aligned when the label wraps. The hero actions may stack on narrow screens; buttons have at least 44px touch height. Hover changes the surface and icon colour, and keyboard focus has a visible outline. Keep the hero and pricing treatments identical.
 
 Secondary actions may include:
 

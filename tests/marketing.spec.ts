@@ -16,7 +16,13 @@ test("marketing leads to signup and accurately explains price, visibility and RS
   for (const section of [".marketing-hero", ".theme-showcase", ".marketing-pricing", ".marketing-faq"]) {
     await page.locator(section).screenshot({ path: test.info().outputPath(`${section.slice(1)}.png`) });
   }
-  await page.getByRole("link", { name: /Start your site/ }).first().click();
+  const createLinks = page.getByRole("link", { name: "Create your save the date", exact: true });
+  await expect(createLinks).toHaveCount(2);
+  for (const link of await createLinks.all()) {
+    await expect(link).toHaveAttribute("href", "/account/sign-up");
+    expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }
+  await createLinks.first().click();
   await expect(page).toHaveURL(/\/account\/sign-up$/);
   await expect(page.getByLabel("Email address")).toBeVisible();
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
@@ -30,6 +36,7 @@ test("all public examples use fictional content, working Details and noindex", a
     await page.goto("/#themes");
     await page.getByRole("link", { name: new RegExp(`${name}.*Explore this example`) }).click();
     await expect(page).toHaveURL(new RegExp(`/examples/${theme}$`));
+    await expect(page.getByRole("link", { name: "Create your save the date" })).toHaveAttribute("href", "/account/sign-up");
     await expect(page.getByText("Fictional wedding example")).toBeVisible();
     await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);

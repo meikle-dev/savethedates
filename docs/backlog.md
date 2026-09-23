@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F019 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F020**, from the 21 September owner review below. F020-F022 remain ordered review follow-up work.
+Ordered by recommended implementation sequence. F001-F008 and F011-F020 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F021** as a bounded venue-entry decision; F022 remains an owner decision.
 
 ## Status and handoff rules
 
@@ -431,14 +431,18 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 
 ## F020 - Friendlier homepage entry and polished CTA controls
 
-**Status:** Planned
+**Status:** Done
 **Priority / lead:** P2 / UX then Software Engineer
 **Purpose:** Starting feels approachable and the main actions look deliberate.
 **Depends on:** F014
 **References:** `src/features/marketing/home.tsx`, `src/features/marketing/marketing.css`, `docs/overview/site-ui.md`, `tests/marketing.spec.ts`.
 **Scope:** Replace "Start your site" consistently with proposed copy "Create your save the date", supported by the existing truthful free-draft/preview message. Improve the primary CTA's spacing, icon scale, alignment, contrast, focus and hover treatment within Modern Luxe. Signed-in owners use F014's workspace action.
 **Done when:** Hero and pricing actions have consistent welcoming copy, balanced visible icons and at least 44px touch targets; text wraps cleanly on narrow screens; all links lead to the correct real account/workspace flow. Price/lifetime wording remains aligned with the approved product terms. Mobile/desktop, keyboard and marketing checks pass without loss of homepage metadata/indexation.
-**Next preparation:** Set final CTA wording and control treatment in the existing platform guidance; no new marketing sections, claims or animation.
+**Handoff (23 September 2026):**
+
+- Set the signed-out CTA to “Create your save the date” in the hero, pricing section and fictional example banner. Hero and pricing now share one button component with an aligned 32px arrow tile; mobile actions stack and labels wrap within the button. Verified owners retain “Return to your workspace” and the `/dashboard` destination. Updated `docs/overview/site-ui.md` with the final copy and control guidance.
+- Passed `npm.cmd run check` (lint, typecheck, 25 Vitest tests, production build); `npx.cmd playwright test tests/marketing.spec.ts tests/preview.spec.ts` (20/20 desktop/mobile); `npx.cmd playwright test tests/account.spec.ts` (4/4 desktop/mobile, including signed-in homepage navigation); `git diff --check`. Browser checks cover both CTA destinations and touch height, keyboard entry, metadata/indexation, and overflow from 320px through desktop breakpoints. Inspected hero and pricing screenshots at desktop, iPhone 13 and 320px: labels, icon treatment and spacing remain readable without horizontal overflow. Hosted CI and Safari/Firefox were not run for this visual-only update.
+- Independent review is not required for this narrow copy and CSS update. Blockers: None. Next: Product Manager prepares F021 venue-entry decision. F009 external release blockers remain.
 
 ## F021 - Decide the smallest useful venue address assistance
 
@@ -493,7 +497,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. Following the owner review and completion of F013-F019, F020 is the next executable ticket while external release inputs remain blocked; complete the review gate above before final release review.
+- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. F013-F020 are now Done; F021-F022 decisions remain before final release review.
 
 ## F010 - Post-launch extensions
 
