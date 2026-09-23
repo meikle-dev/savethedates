@@ -27,6 +27,8 @@ export type OwnerInvitation = {
   revoked_at: string | null;
 };
 
+export type SharedResponse = { id: string; responding_name: string; attending: boolean; responded_at: string };
+
 export type GuestRsvp = {
   first_name: string;
   second_name: string;

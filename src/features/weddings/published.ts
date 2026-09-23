@@ -25,6 +25,13 @@ export async function publishedGuestRsvp(slug: string, token: string): Promise<G
   return data;
 }
 
+export async function publishedSharedRsvp(slug: string, secret: string): Promise<{ is_open: boolean } | null> {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_PUBLISHABLE_KEY) return null;
+  const { data, error } = await publicClient().rpc("shared_guest_rsvp", { requested_slug: slug, requested_secret: secret }).maybeSingle<{ is_open: boolean }>();
+  if (error) throw new Error("Unable to load RSVP.");
+  return data;
+}
+
 export async function publishedWeddingDetails(slug: string): Promise<(WeddingDetailsPage & { photoFraming: PhotoFraming }) | null> {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_PUBLISHABLE_KEY) return null;
   const { data, error } = await publicClient().rpc("published_wedding_details", { requested_slug: slug }).maybeSingle<Omit<WeddingDetailsPage, "details_enabled"> & { photo_framing: unknown }>();

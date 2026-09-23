@@ -76,10 +76,12 @@ The couple should be able to publish only the information relevant to their wedd
 Example:
 
 ```text
-savethedates.co.uk/chloeandross/rsvp
+savethedates.co.uk/s/<private-secret>/chloeandross/rsvp
 ```
 
 The RSVP feature allows guests to respond to their invitation online.
+
+The couple shares one private RSVP link with everyone. Guests enter their own name and answer; only the couple can see saved responses. Guests contact the couple to correct an answer.
 
 Its main purpose is to make RSVP collection easier for both the couple and their guests.
 

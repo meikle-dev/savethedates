@@ -7,7 +7,7 @@ test("marketing leads to signup and accurately explains price, visibility and RS
   await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: /Sign in/ })).toHaveAttribute("href", "/account/sign-in");
   await expect(page.getByRole("link", { name: /Your workspace/ })).toHaveCount(0);
   await expect(page.locator(".price")).toContainText("£29");
-  await expect(page.getByText("Up to 100 private RSVP invitations", { exact: true })).toBeVisible();
+  await expect(page.getByText("One private RSVP link for all guests", { exact: true })).toBeVisible();
   await expect(page.getByText("Published until six months after your wedding date*", { exact: true })).toBeVisible();
   await page.getByText("Who can see our website?", { exact: true }).focus();
   await page.keyboard.press("Enter");

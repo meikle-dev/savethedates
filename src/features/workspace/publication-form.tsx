@@ -82,7 +82,7 @@ export function PublicationForm({ slug, published, photo, photoFraming, theme, l
       <PurchasePanel entitlement={entitlement} checkout={checkout} />
       {published ? <>
         <p className="mt-4 break-all">Your wedding URL: <a className="text-link" href={`/${slug}`}>/{slug}</a></p>
-        <p className="field-help mt-3">This general link shows your wedding pages. For guest RSVPs, share each invitation’s private link from the RSVP section above.</p>
+        <p className="field-help mt-3">This general link shows your wedding pages. For responses, share the one private RSVP link from the RSVP section above.</p>
         <p className="field-help mt-3">Saved details and photo changes are immediately visible to guests.</p>
         <form action={unpublishAction} className="mt-6">
           <p className="mb-4 text-sm leading-relaxed">Unpublishing hides your site and photo on new visits. It cannot remove copies someone has already downloaded.</p>

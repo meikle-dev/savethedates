@@ -2,95 +2,75 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import type { OwnerInvitation, RsvpState } from "@/features/weddings/rsvp";
-import { createInvitation, revokeInvitation, saveRsvpSettings } from "./rsvp-actions";
-
-function ResponseState({ invitation }: { invitation: OwnerInvitation }) {
-  return <>{invitation.revoked_at && <span className="rsvp-status">Revoked</span>}<span className={`rsvp-status ${invitation.attending === true ? "is-attending" : invitation.attending === false ? "is-declined" : ""}`}>{invitation.attending === null ? "Awaiting response" : invitation.attending ? "Attending" : "Not attending"}</span></>;
-}
+import { sharedRsvpHref } from "@/features/weddings/invitation-context";
+import type { OwnerInvitation, RsvpState, SharedResponse } from "@/features/weddings/rsvp";
+import { manageSharedResponse, revokeInvitation, rotateSharedRsvp, saveRsvpSettings } from "./rsvp-actions";
 
 function RevokeButton({ invitationId }: { invitationId: string }) {
   const [state, action, pending] = useActionState<RsvpState, FormData>(revokeInvitation, {});
-  return <div><form action={action}><input type="hidden" name="invitation_id" value={invitationId} /><button className="text-link min-h-11 text-sm" disabled={pending}>{pending ? "Revoking…" : "Revoke link"}</button></form>{state.message && <p className={`mt-1 text-xs ${state.success ? "text-[var(--muted)]" : "field-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}</div>;
+  return <div><form action={action}><input type="hidden" name="invitation_id" value={invitationId} /><button className="text-link min-h-11 text-sm" disabled={pending}>{pending ? "Revoking…" : "Revoke link"}</button></form>{state.message && <p className={state.success ? "form-notice" : "field-error"} role={state.success ? "status" : "alert"}>{state.message}</p>}</div>;
 }
 
-export function RsvpManager({ enabled, closesOn, slug, invitations }: { enabled: boolean; closesOn: string | null; slug: string | null; invitations: OwnerInvitation[] }) {
+function SharedResponseRow({ response }: { response: SharedResponse }) {
+  const [state, action, pending] = useActionState<RsvpState, FormData>(manageSharedResponse, {});
+  return <li className="rsvp-invitation">
+    <div className="min-w-0 w-full">
+      <strong className="break-words">{response.responding_name}</strong>
+      <p className="mt-2 text-sm">{response.attending ? "Attending" : "Not attending"} · {new Date(response.responded_at).toLocaleDateString("en-GB")}</p>
+      <details className="mt-3"><summary className="text-link inline-flex min-h-11 cursor-pointer items-center">Correct or remove response</summary>
+        <form action={action} noValidate className="mt-3 grid gap-3">
+          <input type="hidden" name="response_id" value={response.id} />
+          <div><label htmlFor={`name-${response.id}`} className="field-label">Responding name</label><input id={`name-${response.id}`} name="responding_name" className="field-input" defaultValue={response.responding_name} maxLength={80} aria-invalid={!!state.errors?.responding_name} aria-describedby={state.errors?.responding_name ? `name-error-${response.id}` : undefined} />{state.errors?.responding_name && <p id={`name-error-${response.id}`} className="field-error">{state.errors.responding_name[0]}</p>}</div>
+          <fieldset aria-invalid={!!state.errors?.attending} aria-describedby={state.errors?.attending ? `attendance-error-${response.id}` : undefined}><legend className="field-label">Attendance</legend><div className="flex flex-wrap gap-4 text-sm"><label><input type="radio" name="attending" value="yes" defaultChecked={response.attending} /> Attending</label><label><input type="radio" name="attending" value="no" defaultChecked={!response.attending} /> Not attending</label></div>{state.errors?.attending && <p id={`attendance-error-${response.id}`} className="field-error">{state.errors.attending[0]}</p>}</fieldset>
+          <button name="intent" value="correct" className="text-link min-h-11 justify-self-start" disabled={pending}>Save correction</button>
+          <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_remove" value="yes" /><span>Remove this response from the list and totals</span></label>
+          <button name="intent" value="remove" className="text-link min-h-11 justify-self-start" disabled={pending}>Remove response</button>
+          {state.message && <p className={state.success ? "form-notice" : "form-error"} role={state.success ? "status" : "alert"}>{state.message}</p>}
+        </form>
+      </details>
+    </div>
+  </li>;
+}
+
+export function RsvpManager({ enabled, closesOn, slug, shareSecret, invitations, sharedResponses }: { enabled: boolean; closesOn: string | null; slug: string | null; shareSecret: string; invitations: OwnerInvitation[]; sharedResponses: SharedResponse[] }) {
   const [settings, settingsAction, settingsPending] = useActionState<RsvpState, FormData>(saveRsvpSettings, {});
-  const [created, createAction, createPending] = useActionState<RsvpState, FormData>(createInvitation, {});
-  const [copyResult, setCopyResult] = useState<{ url: string; failed: boolean } | null>(null);
-  const active = invitations.filter((invite) => !invite.revoked_at);
-  const responses = active.filter((invite) => invite.attending !== null);
-  const attending = responses.filter((invite) => invite.attending).length;
+  const [rotated, rotateAction, rotatePending] = useActionState<RsvpState, FormData>(rotateSharedRsvp, {});
+  const [copyFailed, setCopyFailed] = useState(false);
+  const shareUrl = rotated.inviteUrl ?? (slug ? sharedRsvpHref(slug, shareSecret) : null);
+  const legacyResponses = invitations.filter((invite) => invite.attending !== null);
+  const responses = [...sharedResponses, ...legacyResponses];
+  const attending = responses.filter((response) => response.attending).length;
 
   async function copyLink() {
-    if (!created.inviteUrl) return;
-    try {
-      await navigator.clipboard.writeText(new URL(created.inviteUrl, window.location.origin).href);
-      setCopyResult({ url: created.inviteUrl, failed: false });
-    } catch {
-      setCopyResult({ url: created.inviteUrl, failed: true });
-    }
+    if (!shareUrl) return;
+    try { await navigator.clipboard.writeText(new URL(shareUrl, window.location.origin).href); setCopyFailed(false); }
+    catch { setCopyFailed(true); }
   }
 
   return <div className="mt-7 grid gap-8">
-    <div><Link href="/dashboard/preview/rsvp" prefetch={false} className="text-link inline-flex min-h-11 items-center">Preview RSVP page</Link><p className="field-help">Preview your saved names and wedding style. After creating an invitation below, use Open invitation to view the exact private link your guest will receive.</p></div>
+    <div><Link href="/dashboard/preview/rsvp" prefetch={false} className="text-link inline-flex min-h-11 items-center">Preview RSVP page</Link><p className="field-help">Preview your saved names and wedding style. Your shared link below opens the live guest page.</p></div>
     <form action={settingsAction} noValidate>
-      <label className="details-toggle">
-        <input name="rsvp_enabled" type="checkbox" defaultChecked={enabled} />
-        <span><strong>Accept RSVPs</strong><span className="mt-1 block text-sm text-[var(--muted)]">Only guests with a private invitation link can respond. Closing RSVP keeps saved responses.</span></span>
-      </label>
-      <div className="mt-5 max-w-sm">
-        <label htmlFor="rsvp_closes_on" className="field-label">Closing date <span className="font-normal text-[var(--muted)]">(optional)</span></label>
-        <input id="rsvp_closes_on" name="rsvp_closes_on" type="date" defaultValue={closesOn ?? ""} min="1900-01-01" max="2199-12-31" className="field-input" aria-invalid={!!settings.errors?.rsvp_closes_on} aria-describedby="rsvp-close-help" />
-        <p id="rsvp-close-help" className={settings.errors?.rsvp_closes_on ? "field-error" : "field-help"}>{settings.errors?.rsvp_closes_on?.[0] ?? "Responses stay open through 23:59 UTC on this date."}</p>
-      </div>
-      {settings.message && <p className={`mt-5 ${settings.success ? "form-notice" : "form-error"}`} role={settings.success ? "status" : "alert"}>{settings.message}</p>}
+      <label className="details-toggle"><input name="rsvp_enabled" type="checkbox" defaultChecked={enabled} /><span><strong>Accept RSVPs</strong><span className="mt-1 block text-sm text-[var(--muted)]">Anyone with your shared private link can respond. Closing RSVP keeps saved responses.</span></span></label>
+      <div className="mt-5 max-w-sm"><label htmlFor="rsvp_closes_on" className="field-label">Closing date <span className="font-normal text-[var(--muted)]">(optional)</span></label><input id="rsvp_closes_on" name="rsvp_closes_on" type="date" defaultValue={closesOn ?? ""} min="1900-01-01" max="2199-12-31" className="field-input" aria-invalid={!!settings.errors?.rsvp_closes_on} aria-describedby="rsvp-close-help" /><p id="rsvp-close-help" className={settings.errors?.rsvp_closes_on ? "field-error" : "field-help"}>{settings.errors?.rsvp_closes_on?.[0] ?? "Responses stay open through 23:59 UTC on this date."}</p></div>
+      {settings.message && <p className={settings.success ? "form-notice" : "form-error"} role={settings.success ? "status" : "alert"}>{settings.message}</p>}
       <button className="primary-button mt-5" disabled={settingsPending}>{settingsPending ? "Saving…" : "Save RSVP settings"}</button>
     </form>
-
-    <div className="rsvp-summary" aria-label="RSVP summary">
-      <div><strong>{active.length}</strong><span>Active invitations</span></div>
-      <div><strong>{responses.length}</strong><span>Responses</span></div>
-      <div><strong>{attending}</strong><span>Attending</span></div>
-    </div>
-
-    <form action={createAction} noValidate className="border-t border-[var(--line)] pt-6">
-      <h3 className="font-semibold">Create a private invitation link</h3>
-      <p className="field-help">One link collects one response. Anyone given the link can use it, so share it privately.</p>
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="grow">
-          <label htmlFor="invite_name" className="field-label">Guest or household name</label>
-          <input id="invite_name" name="invite_name" className="field-input" maxLength={80} placeholder="e.g. Sam Taylor" aria-invalid={!!created.errors?.invite_name} aria-describedby={created.errors?.invite_name ? "invite-name-error" : undefined} />
-          {created.errors?.invite_name && <p id="invite-name-error" className="field-error">{created.errors.invite_name[0]}</p>}
-        </div>
-        <button className="primary-button shrink-0" disabled={createPending || !slug}>{createPending ? "Creating…" : "Create link"}</button>
-      </div>
-      {!slug && <p className="form-error mt-4">Publish your site and choose its permanent URL before creating invitation links.</p>}
-      {created.message && <p className={`mt-4 ${created.success ? "form-notice" : "form-error"}`} role={created.success ? "status" : "alert"}>{created.message}</p>}
-      {created.inviteUrl && <div className="mt-4 rounded-md border border-[var(--line)] bg-white/60 p-4">
-        <dl className="mb-3 grid gap-1 text-sm">
-          <div><dt className="inline font-semibold">For: </dt><dd className="inline break-words">{created.inviteName}</dd></div>
-          <div><dt className="inline font-semibold">Wedding URL: </dt><dd className="inline break-all font-mono text-xs">{created.weddingUrl}</dd></div>
-        </dl>
-        <label htmlFor="new-invite-url" className="field-label">New private link</label>
-        <input id="new-invite-url" className="field-input font-mono text-xs" value={created.inviteUrl} readOnly onFocus={(event) => event.currentTarget.select()} />
-        <button type="button" className="text-link mt-3 min-h-11" onClick={copyLink}>{copyResult?.url === created.inviteUrl && !copyResult.failed ? "Copied" : "Copy full link"}</button>
-        <a href={created.inviteUrl} target="_blank" rel="noopener noreferrer" className="text-link mt-3 ml-5 inline-flex min-h-11 items-center">Open invitation<span className="sr-only"> (opens in a new tab)</span></a>
-        {copyResult?.url === created.inviteUrl && copyResult.failed && <p className="field-error mt-2" role="alert">We couldn’t copy the link. Select the link above and copy it manually.</p>}
-      </div>}
-    </form>
-
-    <div className="border-t border-[var(--line)] pt-6">
-      <h3 className="font-semibold">Invitations and responses</h3>
-      {invitations.length === 0 ? <p className="mt-3 text-sm text-[var(--muted)]">No invitations yet.</p> : <ul className="mt-4 grid gap-3">
-        {invitations.map((invitation) => <li key={invitation.id} className="rsvp-invitation">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2"><strong className="break-words">{invitation.invite_name}</strong><ResponseState invitation={invitation} /></div>
-            {invitation.responding_name && <p className="mt-2 text-sm">Response from {invitation.responding_name}{invitation.responded_at ? ` · ${new Date(invitation.responded_at).toLocaleDateString("en-GB")}` : ""}</p>}
-          </div>
-          {!invitation.revoked_at && <RevokeButton invitationId={invitation.id} />}
-        </li>)}
-      </ul>}
-    </div>
+    <div className="rsvp-summary" aria-label="RSVP summary"><div><strong>{responses.length}</strong><span>Responses</span></div><div><strong>{attending}</strong><span>Attending</span></div><div><strong>{responses.length - attending}</strong><span>Not attending</span></div></div>
+    <section className="border-t border-[var(--line)] pt-6" aria-labelledby="shared-rsvp-title">
+      <h3 id="shared-rsvp-title" className="font-semibold">One link for all guests</h3>
+      <p className="field-help">Share this same private link with everyone. Guests enter their own names; only you can see responses. They should contact you if plans change.</p>
+      {shareUrl ? <div className="mt-4 rounded-md border border-[var(--line)] bg-white/60 p-4">
+        <label htmlFor="shared-rsvp-url" className="field-label">Your shared RSVP link</label>
+        <input id="shared-rsvp-url" className="field-input font-mono text-xs" value={shareUrl} readOnly onFocus={(event) => event.currentTarget.select()} />
+        <button type="button" className="text-link mt-3 min-h-11" onClick={copyLink}>Copy full link</button>
+        <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="text-link mt-3 ml-5 inline-flex min-h-11 items-center">Open RSVP page<span className="sr-only"> (opens in a new tab)</span></a>
+        {copyFailed && <p className="field-error mt-2" role="alert">We couldn’t copy the link. Select it above and copy it manually.</p>}
+      </div> : <p className="field-help mt-4">Publish your site and choose its permanent URL to get the shared link.</p>}
+      {shareUrl && <form action={rotateAction} className="mt-5"><label className="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_rotate" value="yes" required /><span>Replace this link and stop previously shared copies from working</span></label><button className="text-link mt-2 min-h-11" disabled={rotatePending}>{rotatePending ? "Replacing…" : "Replace shared link"}</button>{rotated.message && <p className={rotated.success ? "form-notice" : "form-error"} role={rotated.success ? "status" : "alert"}>{rotated.message}</p>}</form>}
+    </section>
+    <section className="border-t border-[var(--line)] pt-6" aria-labelledby="responses-title"><h3 id="responses-title" className="font-semibold">Guest responses</h3><p className="field-help">Each submission appears separately, even if two guests enter the same name. Contact guests to resolve duplicates or changes.</p>
+      {sharedResponses.length === 0 ? <p className="mt-3 text-sm text-[var(--muted)]">No shared-link responses yet.</p> : <ul className="mt-4 grid gap-3">{sharedResponses.map((response) => <SharedResponseRow key={response.id} response={response} />)}</ul>}
+    </section>
+    {invitations.length > 0 && <section className="border-t border-[var(--line)] pt-6" aria-labelledby="legacy-rsvp-title"><h3 id="legacy-rsvp-title" className="font-semibold">Earlier individual invitations</h3><p className="field-help">Previously sent links still work. You can revoke them here; their saved responses remain visible.</p><ul className="mt-4 grid gap-3">{invitations.map((invitation) => <li key={invitation.id} className="rsvp-invitation"><div className="min-w-0"><strong className="break-words">{invitation.invite_name}</strong><p className="mt-2 text-sm">{invitation.revoked_at ? "Revoked · " : ""}{invitation.responding_name ? `${invitation.responding_name} · ${invitation.attending ? "Attending" : "Not attending"}` : "Awaiting response"}</p></div>{!invitation.revoked_at && <RevokeButton invitationId={invitation.id} />}</li>)}</ul></section>}
   </div>;
 }

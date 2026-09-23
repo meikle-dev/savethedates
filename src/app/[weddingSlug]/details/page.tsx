@@ -5,10 +5,10 @@ import { WeddingDetailsPageView } from "@/features/weddings/wedding-details";
 
 export const dynamic = "force-dynamic";
 
-export default async function DetailsPage({ params, searchParams }: { params: Promise<{ weddingSlug: string }>; searchParams: Promise<{ invite?: string | string[] }> }) {
-  const [{ weddingSlug }, { invite }] = await Promise.all([params, searchParams]);
+export default async function DetailsPage({ params, searchParams }: { params: Promise<{ weddingSlug: string }>; searchParams: Promise<{ invite?: string | string[]; share?: string | string[] }> }) {
+  const [{ weddingSlug }, { invite, share }] = await Promise.all([params, searchParams]);
   const [details, wedding] = await Promise.all([publishedWeddingDetails(weddingSlug), publishedWedding(weddingSlug)]);
   if (!details) notFound();
-  const hrefs = weddingJourneyHrefs(weddingSlug, invitationTokenFromSearchParam(invite));
+  const hrefs = weddingJourneyHrefs(weddingSlug, invitationTokenFromSearchParam(invite), invitationTokenFromSearchParam(share));
   return <WeddingDetailsPageView details={details} image={wedding?.photo_path ? { src: `/${weddingSlug}/photo`, alt: "" } : undefined} photoFraming={details.photoFraming} homeHref={hrefs.home} detailsHref={hrefs.details} rsvpHref={wedding?.rsvp_enabled ? hrefs.rsvp : undefined} />;
 }

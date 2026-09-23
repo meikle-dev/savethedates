@@ -21,12 +21,13 @@ export async function proxy(request: NextRequest) {
     });
     await supabase.auth.getUser();
   }
-  if (refreshAuth || request.nextUrl.searchParams.has("invite")) {
+  const privateGuestLink = request.nextUrl.searchParams.has("invite") || request.nextUrl.searchParams.has("share") || /^\/s\/[A-Za-z0-9_-]{43}\/[^/]+\/rsvp$/.test(request.nextUrl.pathname);
+  if (refreshAuth || privateGuestLink) {
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
     response.headers.set("Referrer-Policy", "no-referrer");
   }
-  if (request.nextUrl.searchParams.has("invite")) response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  if (privateGuestLink) response.headers.set("X-Robots-Tag", "noindex, nofollow");
   return response;
 }
 
-export const config = { matcher: ["/", "/dashboard/:path*", "/account/:path*", "/auth/:path*", "/:weddingSlug", "/:weddingSlug/details", "/:weddingSlug/rsvp"] };
+export const config = { matcher: ["/", "/dashboard/:path*", "/account/:path*", "/auth/:path*", "/:weddingSlug", "/:weddingSlug/details", "/:weddingSlug/rsvp", "/s/:shareSecret/:weddingSlug/rsvp"] };

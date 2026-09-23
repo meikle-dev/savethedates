@@ -6,11 +6,11 @@ import { invitationTokenFromSearchParam, weddingJourneyHrefs } from "@/features/
 
 export const dynamic = "force-dynamic";
 
-export default async function WeddingPage({ params, searchParams }: { params: Promise<{ weddingSlug: string }>; searchParams: Promise<{ invite?: string | string[] }> }) {
-  const [{ weddingSlug }, { invite }] = await Promise.all([params, searchParams]);
+export default async function WeddingPage({ params, searchParams }: { params: Promise<{ weddingSlug: string }>; searchParams: Promise<{ invite?: string | string[]; share?: string | string[] }> }) {
+  const [{ weddingSlug }, { invite, share }] = await Promise.all([params, searchParams]);
   const row = await publishedWedding(weddingSlug);
   const wedding = row ? toWedding(row, `/${weddingSlug}/photo`) : getDevelopmentWedding(weddingSlug);
   if (!wedding) notFound();
-  const hrefs = weddingJourneyHrefs(weddingSlug, invitationTokenFromSearchParam(invite));
+  const hrefs = weddingJourneyHrefs(weddingSlug, invitationTokenFromSearchParam(invite), invitationTokenFromSearchParam(share));
   return <SaveTheDate wedding={wedding} homeHref={hrefs.home} detailsHref={row?.details_enabled ? hrefs.details : undefined} rsvpHref={row?.rsvp_enabled ? hrefs.rsvp : undefined} />;
 }

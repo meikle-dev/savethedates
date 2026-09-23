@@ -10,7 +10,7 @@ import { ThemePicker } from "@/features/workspace/theme-picker";
 import { DetailsForm } from "@/features/workspace/details-form";
 import { detailsSchema } from "@/features/weddings/details";
 import { RsvpManager } from "@/features/workspace/rsvp-manager";
-import type { OwnerInvitation } from "@/features/weddings/rsvp";
+import type { OwnerInvitation, SharedResponse } from "@/features/weddings/rsvp";
 import type { Entitlement } from "@/features/payments/purchase-panel";
 import { parsePhotoFraming } from "@/features/weddings/photo-framing";
 
@@ -18,12 +18,16 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const client = await createClient();
   const { data: { user } } = await client.auth.getUser();
   if (!user) redirect("/account/sign-in");
-  const { data, error } = await client.from("weddings").select("id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on").eq("owner_id", user.id).maybeSingle();
+  const { data, error } = await client.from("weddings").select("id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on, rsvp_share_secret").eq("owner_id", user.id).maybeSingle();
   if (error) throw new Error("Unable to load wedding workspace.");
   const invitationResult = data
     ? await client.from("rsvp_invitations").select("id, invite_name, responding_name, attending, responded_at, revoked_at").eq("wedding_id", data.id).order("created_at", { ascending: false })
     : { data: [], error: null };
   if (invitationResult.error) throw new Error("Unable to load RSVP responses.");
+  const sharedResult = data
+    ? await client.from("shared_rsvp_responses").select("id, responding_name, attending, responded_at").eq("wedding_id", data.id).order("responded_at", { ascending: false })
+    : { data: [], error: null };
+  if (sharedResult.error) throw new Error("Unable to load shared RSVP responses.");
   const entitlementResult = data
     ? await client.rpc("owner_entitlement").maybeSingle<Entitlement>()
     : { data: null, error: null };
@@ -49,7 +53,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       </section>
       {data && <section aria-labelledby="theme-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="theme-title" className="text-xl font-medium">Your wedding style</h2><p className="mt-2 text-sm leading-relaxed">Try a theme privately before applying it to your site.</p><ThemePicker key={data.theme} selected={data.theme} /></section>}
       {data && <section aria-labelledby="details-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="details-title" className="text-xl font-medium">Wedding Details</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">Share only the practical information your guests need. Empty sections won’t appear.</p><DetailsForm initial={detailsSchema.parse(data)} published={publiclyAvailable} /></section>}
-      {data && <section aria-labelledby="rsvp-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="rsvp-title" className="text-xl font-medium">RSVP</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">Create one private link per invitation, then see and manage responses here.</p><RsvpManager enabled={data.rsvp_enabled} closesOn={data.rsvp_closes_on} slug={data.slug} invitations={(invitationResult.data ?? []) as OwnerInvitation[]} /></section>}
+      {data && <section aria-labelledby="rsvp-title" className="mt-10 border-t border-[var(--line)] pt-8"><h2 id="rsvp-title" className="text-xl font-medium">RSVP</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">Share one private link with all guests, then see their named responses here.</p><RsvpManager enabled={data.rsvp_enabled} closesOn={data.rsvp_closes_on} slug={data.slug} shareSecret={data.rsvp_share_secret} invitations={(invitationResult.data ?? []) as OwnerInvitation[]} sharedResponses={(sharedResult.data ?? []) as SharedResponse[]} /></section>}
       {data ? <PublicationForm slug={data.slug} published={publiclyAvailable} photo={!!data.photo_path} photoFraming={parsePhotoFraming(data.photo_framing)} theme={data.theme} locked={!!data.first_published_at} entitlement={entitlement} checkout={params.checkout} /> : <aside className="mt-12 border-t border-[var(--line)] pt-6">
         <h2 className="text-sm font-semibold">What comes next?</h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--muted)]">Save your details to add a photo, preview your site and choose a URL to share.</p>
