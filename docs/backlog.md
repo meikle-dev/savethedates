@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers. The 23 September review adds F028-F033; F028-F030 are Done and the next eligible ticket is F031.
+Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F032 awaits UX confirmation; F033 is the next Ready ticket.
 
 ## Status and handoff rules
 
@@ -694,7 +694,7 @@ No export, sorting controls, bulk actions or new stored data.
 
 ## F031 - Retire earlier individual invitations
 
-**Status:** Ready
+**Status:** Done (23 September 2026)
 **Priority / lead:** P2 / Software Engineer; independent security and database review required
 **Purpose:** Remove the leftover pre-F026 invitation model so there is one RSVP route, one response list and less public attack surface.
 **Depends on:** F026 (Done); owner confirmation recorded below. Schedule after F030 so there is one Guests implementation to simplify.
@@ -725,6 +725,11 @@ No export, sorting controls, bulk actions or new stored data.
 - Old `?invite=` URLs, whether valid-format, malformed or previously revoked, behave the same as no credential on all three pages. Private/no-store/noindex headers still apply to the shared secret route. Shared-link submission, rotation, correction, removal, throttling and tenant isolation are unchanged.
 - The migration applies cleanly to the current local database without a reset, and `npx.cmd supabase db lint --local` passes. Integration tests confirm the legacy functions are gone for anon/authenticated users. Docs no longer describe legacy invitations.
 - `npm.cmd run check`, `npm.cmd run test:integration`, the affected RSVP/dashboard/preview specs and `git diff --check` pass. Independent security/database review passes.
+
+**Handoff (23 September 2026):** Removed the legacy owner section, actions, public query context, guest prefill/correction branches, count merging, types and unused styling. The shared RSVP route and response management remain the only active path. Old `?invite=` URLs now behave as ordinary public links; a verified owner visiting the public RSVP entry still reaches private preview. New migration `20260923000500_retire_individual_rsvp_invitations.sql` drops the six legacy functions and two tables without `CASCADE` or edits to historical migrations. It applied to the existing local database without a reset; `npx.cmd supabase db lint --local` found no schema errors.
+- `npm.cmd run check` passed after the final application change: lint, typecheck, 33 unit tests and production build. `npm.cmd run test:integration` passed 21/21, including absent legacy RPCs and tables for anonymous, authenticated and service clients.
+- With `E2E_BASE_URL=http://127.0.0.1:3000`, Playwright passed 16/16 across RSVP, preview, dashboard, Guests and Details at desktop/mobile widths. The retired-link regression covers valid-format, malformed and formerly usable token shapes on all three wedding pages. Inspected Guests at 390/1440px, guest RSVP at desktop width and RSVP preview at mobile width; existing browser checks covered overflow at 320-1440px.
+- Independent security/database reviewer found no Blocking or Important issues. Its one Minor documentation finding was fixed. `git diff --check` passed. No hosted CI, production-container run, Safari/Firefox or hosted migration was run for F031; F009 tracks those release checks. Blockers: none. Next: F009 release inputs when available; F033 is the next Ready ticket while F032 awaits UX confirmation.
 
 ## F032 - Subtle, fast motion across the site
 

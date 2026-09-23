@@ -3,7 +3,6 @@ import { publicClient } from "@/lib/supabase/public";
 import type { WeddingTheme } from "./themes";
 import type { Wedding } from "./wedding";
 import { detailsSchema, type WeddingDetailsPage } from "./details";
-import { hashInvitationToken, type GuestRsvp } from "./rsvp";
 import { parsePhotoFraming, type PhotoFraming } from "./photo-framing";
 
 export type WeddingContent = { first_name: string; second_name: string; wedding_date: string; location: string; message: string; photo_path: string | null; photo_framing: unknown; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean };
@@ -15,13 +14,6 @@ export async function publishedWedding(slug: string) {
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_PUBLISHABLE_KEY) return null;
   const { data, error } = await publicClient().rpc("published_wedding", { requested_slug: slug }).maybeSingle<WeddingContent>();
   if (error) throw new Error("Unable to load wedding.");
-  return data;
-}
-
-export async function publishedGuestRsvp(slug: string, token: string): Promise<GuestRsvp | null> {
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_PUBLISHABLE_KEY) return null;
-  const { data, error } = await publicClient().rpc("guest_rsvp", { requested_slug: slug, requested_token_hash: hashInvitationToken(token) }).maybeSingle<GuestRsvp>();
-  if (error) throw new Error("Unable to load RSVP.");
   return data;
 }
 

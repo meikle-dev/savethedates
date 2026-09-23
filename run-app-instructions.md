@@ -49,7 +49,7 @@ npm run db:start
 npx supabase migration up --local
 ```
 
-Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, and preview saved content. Preview theme does not save changes; Apply theme persists the previewed choice. **Preview RSVP page** opens the saved couple/theme presentation without creating an invitation or saving a response, including before publication. A verified £29 test-mode purchase is required before choosing the permanent URL and publishing. Published edits take effect when saved. The RSVP section can enable or close responses, create one private invitation link per response, and show attendance totals; copy each new link when it is created because its bearer token is not displayed again. **Open invitation** opens that exact guest URL, including its token, in a new tab. The general wedding URL contains no guest token; owners reaching RSVP through it are directed to private preview. Unpublishing hides the page, photo, and RSVP on new requests; copies already downloaded cannot be recalled.
+Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, and preview saved content. Preview theme does not save changes; Apply theme persists the previewed choice. **Preview RSVP page** opens the saved couple/theme presentation without saving a response, including before publication. A verified £29 test-mode purchase is required before choosing the permanent URL and publishing. Published edits take effect when saved. The RSVP section can enable or close responses, copy or rotate one shared private link, and show attendance totals. Guests can submit separate responses through that link; owners correct or remove them in Guests. The general wedding URL contains no guest secret; owners reaching RSVP through it are directed to private preview. Unpublishing hides the page, photo, and RSVP on new requests; copies already downloaded cannot be recalled.
 
 ## Stripe test-mode checkout
 
@@ -92,7 +92,8 @@ Development routes:
 | `/preview-photo` | Development-only photo response |
 | `/[weddingSlug]` | Published wedding landing page |
 | `/[weddingSlug]/details` | Enabled published Details page |
-| `/[weddingSlug]/rsvp` | Enabled RSVP entry; a private `invite` token is required to respond |
+| `/[weddingSlug]/rsvp` | Public RSVP entry showing how to obtain the private link; the verified owner goes to preview |
+| `/s/[shareSecret]/[weddingSlug]/rsvp` | Shared private link where guests submit separate responses |
 
 Unknown and unpublished slugs return 404. Only the marketing homepage permits indexing and appears in `/sitemap.xml`; wedding, account and example pages remain noindex. All fixtures are fictional. Production returns 404 for every demo slug and the fixture photo route. Accounts, private preview, publication, Details, and RSVP work with configured Supabase.
 

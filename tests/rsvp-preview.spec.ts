@@ -32,11 +32,11 @@ test("owners can preview saved RSVP content without granting guest access or sav
     await expect(page.getByRole("heading", { name: "RSVP", exact: true })).toBeVisible();
     await expect(page.getByText("Private RSVP preview", { exact: false })).toBeVisible();
     await expect(page.getByRole("button", { name: "Send RSVP" })).toBeDisabled();
-    await expect(page.locator("input[name=token]")).toHaveCount(0);
+    await expect(page.locator("input[name=secret]")).toHaveCount(0);
     await page.getByLabel("Your name").fill("Preview visitor");
     await page.getByLabel("Joyfully accepts").check();
     await page.getByLabel("Your name").press("Enter");
-    expect((await local.admin.from("rsvp_invitations").select("id").eq("wedding_id", weddingId)).data).toEqual([]);
+    expect((await local.admin.from("shared_rsvp_responses").select("id").eq("wedding_id", weddingId)).data).toEqual([]);
 
     const designs = page.getByRole("region", { name: "Preview controls" });
     await designs.getByRole("radio", { name: /Modern & Bold/ }).check();
@@ -91,10 +91,6 @@ test("owners can preview saved RSVP content without granting guest access or sav
     await expect(page.getByRole("button", { name: "Send RSVP" })).toBeDisabled();
     await guest.goto(`/${slug}/rsvp`);
     await expect(guest.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
-    for (const credential of ["", "invalid", "A".repeat(43), `${"A".repeat(43)}&invite=${"A".repeat(43)}`]) {
-      await page.goto(`/${slug}/rsvp?invite=${credential}`);
-      await expect(page.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
-    }
 
     const otherWedding = await local.admin.from("weddings").insert({ owner_id: otherId, first_name: "Other", second_name: "Couple", wedding_date: "2027-09-18", location: "York", slug: otherSlug, rsvp_enabled: true }).select("id").single();
     expect(otherWedding.error).toBeNull();

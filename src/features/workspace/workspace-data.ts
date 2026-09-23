@@ -4,7 +4,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Entitlement } from "@/features/payments/purchase-panel";
-import type { OwnerInvitation, SharedResponse } from "@/features/weddings/rsvp";
+import type { SharedResponse } from "@/features/weddings/rsvp";
 import { filteredCount, guestPagination, namePattern, type GuestQuery } from "./guest-list";
 import { collectResponses } from "./workspace-summary";
 
@@ -49,31 +49,17 @@ async function countSharedResponses(q = ""): Promise<ResponseCounts> {
 
 const loadSharedCounts = cache(() => countSharedResponses());
 
-// Earlier individual invitations are capped at 100 per wedding by the database, so loading them all is bounded.
-export const loadInvitations = cache(async () => {
-  const { client, wedding } = await requireWedding();
-  const { data, error } = await client.from("rsvp_invitations").select("id, invite_name, responding_name, attending, responded_at, revoked_at").eq("wedding_id", wedding.id).order("created_at", { ascending: false });
-  if (error) throw new Error("Unable to load RSVP responses.");
-  return (data ?? []) as OwnerInvitation[];
-});
-
-// Totals from aggregate counts plus answered legacy invitations; never loads every response.
+// Totals use aggregate counts without loading every response.
 export const loadResponseTotals = cache(async () => {
-  const [shared, invitations] = await Promise.all([loadSharedCounts(), loadInvitations()]);
-  const legacy = invitations.filter((invitation) => invitation.attending !== null);
-  const total = shared.total + legacy.length;
-  const attending = shared.attending + legacy.filter((invitation) => invitation.attending).length;
-  return { total, attending, declined: total - attending, shared };
+  const counts = await loadSharedCounts();
+  return { ...counts, declined: counts.total - counts.attending };
 });
 
 export async function loadLatestResponses(limit = 5) {
   const { client, wedding } = await requireWedding();
-  const [shared, invitations] = await Promise.all([
-    client.from("shared_rsvp_responses").select("id, responding_name, attending, responded_at").eq("wedding_id", wedding.id).order("responded_at", { ascending: false }).order("id", { ascending: false }).limit(limit),
-    loadInvitations(),
-  ]);
+  const shared = await client.from("shared_rsvp_responses").select("id, responding_name, attending, responded_at").eq("wedding_id", wedding.id).order("responded_at", { ascending: false }).order("id", { ascending: false }).limit(limit);
   if (shared.error) throw new Error("Unable to load shared RSVP responses.");
-  return collectResponses((shared.data ?? []) as SharedResponse[], invitations).slice(0, limit);
+  return collectResponses((shared.data ?? []) as SharedResponse[]);
 }
 
 // One page of shared responses for the owner's wedding, newest first with a stable tie-break.

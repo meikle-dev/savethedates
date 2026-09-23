@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Form from "next/form";
 import Link from "next/link";
 import { guestHref, guestPageSize, parseGuestQuery, filteredCount, type GuestFilter, type GuestQuery } from "@/features/workspace/guest-list";
-import { GuestTable, LegacyInvitations } from "@/features/workspace/guest-responses";
-import { loadGuestPage, loadInvitations } from "@/features/workspace/workspace-data";
+import { GuestTable } from "@/features/workspace/guest-responses";
+import { loadGuestPage } from "@/features/workspace/workspace-data";
 import { WorkspacePage } from "@/features/workspace/workspace-page";
 
 export const metadata: Metadata = { title: "Guests · SaveTheDates" };
@@ -27,12 +27,12 @@ function Pager({ query, count, pages, from, to }: { query: GuestQuery; count: nu
 
 export default async function Guests({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const query = parseGuestQuery(await searchParams);
-  const [{ totals, matches, count, pagination, rows }, invitations] = await Promise.all([loadGuestPage(query), loadInvitations()]);
+  const { totals, matches, count, pagination, rows } = await loadGuestPage(query);
   const reset = guestHref({ filter: "all", q: "", page: 1 });
 
   let body: React.ReactNode;
-  if (totals.shared.total === 0) {
-    body = <EmptyState title={totals.total > 0 ? "No shared-link responses yet" : "No responses yet"}>Share your RSVP link from the <Link href="/dashboard/rsvp" className="text-link">RSVP section</Link> and replies will appear here.</EmptyState>;
+  if (totals.total === 0) {
+    body = <EmptyState title="No responses yet">Share your RSVP link from the <Link href="/dashboard/rsvp" className="text-link">RSVP section</Link> and replies will appear here.</EmptyState>;
   } else if (count === 0) {
     body = <EmptyState title="No matches">{query.q ? <>No {query.filter === "all" ? "" : `${filterLabels[query.filter].toLowerCase()} `}responses match “{query.q}”.</> : <>No responses are {filterLabels[query.filter].toLowerCase()} yet.</>} <Link href={reset} className="text-link">Show all responses</Link></EmptyState>;
   } else if (pagination.outOfRange) {
@@ -50,7 +50,7 @@ export default async function Guests({ searchParams }: { searchParams: Promise<R
       <section className="ws-panel" aria-labelledby="responses-title">
         <h2 id="responses-title">Guest responses</h2>
         <p className="ws-panel-intro">Each submission appears separately, even if two guests enter the same name. Contact guests to resolve duplicates or changes. {guestPageSize} responses per page, newest first.</p>
-        {totals.shared.total > 0 && <div className="guest-controls">
+        {totals.total > 0 && <div className="guest-controls">
           <nav aria-label="Filter responses" className="guest-filters">
             {(Object.keys(filterLabels) as GuestFilter[]).map((filter) => <Link key={filter} href={guestHref({ ...query, filter, page: 1 })} aria-current={filter === query.filter ? "true" : undefined}>
               {filterLabels[filter]} <span className="guest-count">{filteredCount(filter, matches).toLocaleString("en-GB")}</span>
@@ -68,7 +68,6 @@ export default async function Guests({ searchParams }: { searchParams: Promise<R
         </div>}
         {body}
       </section>
-      <LegacyInvitations invitations={invitations} />
     </div>
   </WorkspacePage>;
 }

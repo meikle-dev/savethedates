@@ -11,7 +11,7 @@ import { Icon } from "./workspace-icons";
 export function RsvpManager({ enabled, closesOn, slug, shareSecret }: { enabled: boolean; closesOn: string | null; slug: string | null; shareSecret: string }) {
   const [settings, settingsAction, settingsPending] = useActionState<RsvpState, FormData>(saveRsvpSettings, {});
   const [rotated, rotateAction, rotatePending] = useActionState<RsvpState, FormData>(rotateSharedRsvp, {});
-  const shareUrl = rotated.inviteUrl ?? (slug ? sharedRsvpHref(slug, shareSecret) : null);
+  const shareUrl = rotated.shareUrl ?? (slug ? sharedRsvpHref(slug, shareSecret) : null);
 
   return <div className="ws-stack">
     <section className="ws-panel" aria-labelledby="shared-rsvp-title">

@@ -1,5 +1,4 @@
 import { expect, test, type Page, type Response } from "@playwright/test";
-import { createHash, randomBytes } from "node:crypto";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
 
@@ -127,46 +126,45 @@ test("one shared link collects separate named responses and can be replaced", as
   }
 });
 
-test("previously issued individual links still support correction and revocation", async ({ page, browser, baseURL }) => {
-  const email = `legacy-e2e-${crypto.randomUUID()}@example.test`;
+test("retired invitation parameters behave like public links on every wedding page", async ({ page, browser, baseURL }) => {
+  const email = `retired-e2e-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
-  const slug = `legacy-e2e-${crypto.randomUUID()}`;
-  const token = randomBytes(32).toString("base64url");
+  const slug = `retired-e2e-${crypto.randomUUID()}`;
   const created = await local.admin.auth.admin.createUser({ email, password, email_confirm: true });
   if (created.error || !created.data.user) throw new Error("Cannot create RSVP test owner");
   const ownerId = created.data.user.id;
   const guest = await browser.newContext({ baseURL });
   const guestPage = await guest.newPage();
   try {
-    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug, rsvp_enabled: true }).select("id").single();
+    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug, details_enabled: true, ceremony_venue: "Bath Abbey", rsvp_enabled: true }).select("id").single();
     expect(wedding.error).toBeNull();
     expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
-    const invitation = await local.admin.from("rsvp_invitations").insert({ wedding_id: wedding.data!.id, invite_name: "Legacy Guest", token_hash: createHash("sha256").update(token).digest("hex") }).select("id").single();
-    expect(invitation.error).toBeNull();
-    await guestPage.goto(`/${slug}/rsvp?invite=${token}`);
-    await expect(guestPage.getByText("This invitation is for Legacy Guest.")).toBeVisible();
-    await guestPage.getByLabel("Your name").fill("Legacy Guest");
-    await guestPage.getByLabel("Joyfully accepts").check();
-    await guestPage.getByRole("button", { name: "Send RSVP" }).click();
-    await expect(guestPage.getByRole("status")).toContainText("saved");
-    await guestPage.reload();
-    await expect(guestPage.getByLabel("Your name")).toHaveValue("Legacy Guest");
-    await guestPage.getByLabel("Regretfully declines").check();
-    await guestPage.getByRole("button", { name: "Update RSVP" }).click();
-    await expect(guestPage.getByRole("status")).toContainText("saved");
+    const oldTokens = ["A".repeat(43), "malformed", "B".repeat(43)];
+    for (const token of oldTokens) {
+      await guestPage.goto(`/${slug}?invite=${token}`);
+      await expect(guestPage.getByRole("link", { name: "Details" })).toHaveAttribute("href", `/${slug}/details`);
+      await guestPage.getByRole("link", { name: "Details" }).click();
+      await expect(guestPage.getByRole("link", { name: "RSVP" })).toHaveAttribute("href", `/${slug}/rsvp`);
+      await guestPage.goto(`/${slug}/details?invite=${token}`);
+      await expect(guestPage.getByRole("link", { name: "RSVP" })).toHaveAttribute("href", `/${slug}/rsvp`);
+      await guestPage.goto(`/${slug}/rsvp?invite=${token}`);
+      await expect(guestPage.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
+      await expect(guestPage.getByLabel("Your name")).toHaveCount(0);
+    }
+    await guestPage.goto(`/${slug}/rsvp`);
+    await expect(guestPage.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
+    expect((await local.admin.from("shared_rsvp_responses").select("id").eq("wedding_id", wedding.data!.id)).data).toEqual([]);
 
     await page.goto("/account/sign-in");
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await openSection(page, "Guests");
-    const legacy = page.getByRole("region", { name: "Who’s coming" }).getByRole("region", { name: "Earlier individual invitations" });
-    await expect(legacy.getByText("Not attending")).toBeVisible();
-    await legacy.getByRole("button", { name: "Revoke link" }).click();
-    await expect(legacy.getByText("Revoked")).toBeVisible();
-    await guestPage.reload();
-    await expect(guestPage.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard(?:\/|$)/);
+    await page.goto(`/${slug}/rsvp`);
+    await expect(page).toHaveURL(/\/dashboard\/preview\/rsvp$/);
+    await page.goto(`/${slug}/rsvp?invite=${oldTokens[0]}`);
+    await expect(page).toHaveURL(/\/dashboard\/preview\/rsvp$/);
   } finally {
     await guest.close();
     await local.admin.auth.admin.deleteUser(ownerId);

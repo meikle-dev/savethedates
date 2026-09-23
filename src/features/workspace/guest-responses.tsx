@@ -1,14 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import type { OwnerInvitation, RsvpState, SharedResponse } from "@/features/weddings/rsvp";
+import type { RsvpState, SharedResponse } from "@/features/weddings/rsvp";
 import { AttendanceBadge } from "./attendance-badge";
-import { manageSharedResponse, revokeInvitation } from "./rsvp-actions";
-
-function RevokeButton({ invitationId }: { invitationId: string }) {
-  const [state, action, pending] = useActionState<RsvpState, FormData>(revokeInvitation, {});
-  return <div><form action={action}><input type="hidden" name="invitation_id" value={invitationId} /><button className="button button-secondary" disabled={pending}>{pending ? "Revoking…" : "Revoke link"}</button></form>{state.message && <p className={state.success ? "form-notice" : "field-error"} role={state.success ? "status" : "alert"}>{state.message}</p>}</div>;
-}
+import { manageSharedResponse } from "./rsvp-actions";
 
 // One table row plus an inline correction panel directly beneath it.
 function GuestRow({ response, date, onSuccess }: { response: SharedResponse; date: string; onSuccess: (message: string) => void }) {
@@ -57,13 +52,4 @@ export function GuestTable({ rows, caption }: { rows: { response: SharedResponse
       <tbody>{rows.map(({ response, date }) => <GuestRow key={response.id} response={response} date={date} onSuccess={setNotice} />)}</tbody>
     </table>
   </>;
-}
-
-export function LegacyInvitations({ invitations }: { invitations: OwnerInvitation[] }) {
-  if (invitations.length === 0) return null;
-  return <section className="ws-panel" aria-labelledby="legacy-rsvp-title">
-    <h2 id="legacy-rsvp-title">Earlier individual invitations</h2>
-    <p className="ws-panel-intro">Previously sent links still work. You can revoke them here; their saved responses remain visible.</p>
-    <ul className="mt-5 grid gap-3">{invitations.map((invitation) => <li key={invitation.id} className="rsvp-invitation"><div className="min-w-0"><strong className="break-words">{invitation.invite_name}</strong><p className="mt-2 text-sm">{invitation.revoked_at ? "Revoked · " : ""}{invitation.responding_name ? `${invitation.responding_name} · ${invitation.attending ? "Attending" : "Not attending"}` : "Awaiting response"}</p></div>{!invitation.revoked_at && <RevokeButton invitationId={invitation.id} />}</li>)}</ul>
-  </section>;
 }

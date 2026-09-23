@@ -21,7 +21,7 @@ export async function proxy(request: NextRequest) {
     });
     await supabase.auth.getUser();
   }
-  const privateGuestLink = request.nextUrl.searchParams.has("invite") || request.nextUrl.searchParams.has("share") || /^\/s\/[A-Za-z0-9_-]{43}\/[^/]+\/rsvp$/.test(request.nextUrl.pathname);
+  const privateGuestLink = request.nextUrl.searchParams.has("share") || /^\/s\/[A-Za-z0-9_-]{43}\/[^/]+\/rsvp$/.test(request.nextUrl.pathname);
   if (refreshAuth || privateGuestLink) {
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
     response.headers.set("Referrer-Policy", "no-referrer");

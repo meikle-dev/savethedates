@@ -1,5 +1,5 @@
 import { hasVenue, type WeddingDetails } from "../weddings/details";
-import type { OwnerInvitation, SharedResponse } from "../weddings/rsvp";
+import type { SharedResponse } from "../weddings/rsvp";
 
 const dayMs = 24 * 60 * 60 * 1000;
 
@@ -18,11 +18,9 @@ export function daysUntil(weddingDate: string, today: string) {
 
 export type RsvpResponse = { id: string; name: string; attending: boolean; respondedAt: string | null };
 
-// Shared-link submissions plus answered legacy invitations, newest first.
-export function collectResponses(sharedResponses: SharedResponse[], invitations: OwnerInvitation[]): RsvpResponse[] {
-  const shared = sharedResponses.map((response) => ({ id: response.id, name: response.responding_name, attending: response.attending, respondedAt: response.responded_at }));
-  const legacy = invitations.flatMap((invitation) => invitation.attending === null ? [] : [{ id: invitation.id, name: invitation.responding_name ?? invitation.invite_name, attending: invitation.attending, respondedAt: invitation.responded_at }]);
-  return [...shared, ...legacy].sort((a, b) => (b.respondedAt ?? "").localeCompare(a.respondedAt ?? ""));
+// The query already orders shared responses newest first.
+export function collectResponses(sharedResponses: SharedResponse[]): RsvpResponse[] {
+  return sharedResponses.map((response) => ({ id: response.id, name: response.responding_name, attending: response.attending, respondedAt: response.responded_at }));
 }
 
 export type RsvpAvailability = "off" | "not-live" | "open" | "closed";

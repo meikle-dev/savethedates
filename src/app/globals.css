@@ -51,10 +51,6 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .rsvp-summary div + div { border-left: 1px solid var(--line); }
 .rsvp-summary strong { display: block; color: var(--teal); font-family: Georgia, serif; font-size: 1.6rem; }
 .rsvp-summary span { display: block; margin-top: 0.25rem; color: var(--muted); font-size: 0.72rem; line-height: 1.3; }
-.rsvp-invitation { display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,0.45); }
-@media (min-width: 768px) {
-  .rsvp-invitation { flex-direction: row; align-items: center; justify-content: space-between; gap: 1.5rem; }
-}
 @media (max-width: 520px) {
   .photo-framing-previews { grid-template-columns: minmax(0, 1fr); }
   .photo-framing-previews figure:first-child { max-width: 230px; }
