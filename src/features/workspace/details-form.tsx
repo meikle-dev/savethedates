@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { startTransition, useActionState, useState, type FormEvent } from "react";
-import type { DetailsFormState, WeddingDetails } from "@/features/weddings/details";
+import { validOptionalUrl, type DetailsFormState, type WeddingDetails } from "@/features/weddings/details";
 import { saveDetails } from "./details-actions";
 
 type StringField = Exclude<keyof WeddingDetails, "details_enabled" | "faqs">;
@@ -11,13 +11,16 @@ function Optional({ children }: { children: React.ReactNode }) {
   return <span className="font-normal text-[var(--muted)]"> ({children})</span>;
 }
 
-function TextField({ name, label, value, error, onChange, url = false }: {
-  name: StringField; label: string; value: string; error?: string[]; onChange: (name: StringField, value: string) => void; url?: boolean;
+function TextField({ name, label, value, error, onChange, url = false, help, checkLabel }: {
+  name: StringField; label: string; value: string; error?: string[]; onChange: (name: StringField, value: string) => void; url?: boolean; help?: string; checkLabel?: string;
 }) {
+  const checkHref = checkLabel ? validOptionalUrl(value) : null;
   return <div>
     <label htmlFor={name} className="field-label">{label}<Optional>optional</Optional></label>
-    <input id={name} name={name} type={url ? "url" : "text"} className="field-input" value={value} maxLength={url ? 2048 : 160} onChange={(event) => onChange(name, event.target.value)} aria-invalid={!!error} aria-describedby={error ? `${name}-error` : undefined} />
+    <input id={name} name={name} type={url ? "url" : "text"} className="field-input" value={value} maxLength={url ? 2048 : 160} onChange={(event) => onChange(name, event.target.value)} aria-invalid={!!error} aria-describedby={[help && `${name}-help`, error && `${name}-error`].filter(Boolean).join(" ") || undefined} />
+    {help && <p id={`${name}-help`} className="field-help">{help}</p>}
     {error && <p id={`${name}-error`} className="field-error">{error[0]}</p>}
+    {checkHref && <a href={checkHref} target="_blank" rel="noopener noreferrer" className="text-link mt-2 inline-flex min-h-11 items-center">{checkLabel} (opens in a new tab)</a>}
   </div>;
 }
 
@@ -68,21 +71,23 @@ export function DetailsForm({ initial, published }: { initial: WeddingDetails; p
 
     <fieldset className="details-editor-group">
       <legend>Ceremony</legend>
+      <p className="field-help mt-2 mb-5">You can enter any venue, including a private home or rural location. Add a shared pin link if useful, and explain how to arrive in Travel and transport below.</p>
       <div className="grid gap-5 md:grid-cols-2">
         <TextField name="ceremony_time" label="Time" value={values.ceremony_time} error={state.errors?.ceremony_time} onChange={change} />
         <TextField name="ceremony_venue" label="Venue" value={values.ceremony_venue} error={state.errors?.ceremony_venue} onChange={change} />
-        <TextField name="ceremony_address" label="Address" value={values.ceremony_address} error={state.errors?.ceremony_address} onChange={change} />
-        <TextField name="ceremony_url" label="Directions link" value={values.ceremony_url} error={state.errors?.ceremony_url} onChange={change} url />
+        <TextField name="ceremony_address" label="Address" value={values.ceremony_address} error={state.errors?.ceremony_address} onChange={change} help="Include the town and postcode when available. Check the entrance guests should use." />
+        <TextField name="ceremony_url" label="Directions link" value={values.ceremony_url} error={state.values?.ceremony_url === values.ceremony_url ? state.errors?.ceremony_url : undefined} onChange={change} url help="Paste a map link or the venue’s directions. Check the destination and entrance before saving." checkLabel="Check ceremony directions" />
       </div>
     </fieldset>
 
     <fieldset className="details-editor-group">
       <legend>Reception</legend>
+      <p className="field-help mt-2 mb-5">You can enter any venue, including a private home or rural location. Add a shared pin link if useful, and explain how to arrive in Travel and transport below.</p>
       <div className="grid gap-5 md:grid-cols-2">
         <TextField name="reception_time" label="Time" value={values.reception_time} error={state.errors?.reception_time} onChange={change} />
         <TextField name="reception_venue" label="Venue" value={values.reception_venue} error={state.errors?.reception_venue} onChange={change} />
-        <TextField name="reception_address" label="Address" value={values.reception_address} error={state.errors?.reception_address} onChange={change} />
-        <TextField name="reception_url" label="Directions link" value={values.reception_url} error={state.errors?.reception_url} onChange={change} url />
+        <TextField name="reception_address" label="Address" value={values.reception_address} error={state.errors?.reception_address} onChange={change} help="Include the town and postcode when available. Check the entrance guests should use." />
+        <TextField name="reception_url" label="Directions link" value={values.reception_url} error={state.values?.reception_url === values.reception_url ? state.errors?.reception_url : undefined} onChange={change} url help="Paste a map link or the venue’s directions. Check the destination and entrance before saving." checkLabel="Check reception directions" />
       </div>
     </fieldset>
 

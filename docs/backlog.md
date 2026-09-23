@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F020 are complete and the usable-core MVP milestone is verified. **Current: F009** remains In Progress with external release blockers. **Next follow-up: prepare F021** as a bounded venue-entry decision; F022 remains an owner decision.
+Ordered by recommended implementation sequence. F001-F008, F011-F023 and F022's lifetime decision are complete; F024 implements that decision. **Current: F009** remains In Progress with external release blockers; F024 is the active bounded change needed before its final release review.
 
 ## Status and handoff rules
 
@@ -172,7 +172,7 @@ For active work add a compact **Handoff**: implemented paths, exact checks/resul
 **Description:** Stripe hosted checkout and server-controlled entitlement. Develop with test mode first. Free publishing from earlier slices is for development/testing; paid launch must enforce the agreed rule.
 **Depends on:** F006
 **Decisions before Ready:** Owner-approved price/currency, what the purchase includes, site lifetime, purchase timing, refunds and entitlement revocation. The design board's $29 is a placeholder.
-**Approved scope:** One payment of £29 GBP buys one wedding site with all three themes, one photo, Details, and RSVP. Owners may draft and preview without paying, but must purchase before first publication. Entitlement runs until 12 months after the wedding date. A refund or chargeback immediately revokes entitlement and unpublishes the site; the private draft and owner data remain available for a later repurchase. Republishing is allowed while an entitlement is active. Stripe Checkout runs in test mode during development; verified webhook state, never the browser return URL, grants or revokes entitlement.
+**Approved scope:** One payment of £29 GBP buys one wedding site with all three themes, one photo, Details, and RSVP. Owners may draft and preview without paying, but must purchase before first publication. By the owner's decision on 23 September 2026, new checkout attempts grant an entitlement through six months after the wedding date. Purchases and checkout attempts created before the six-month change is deployed retain their frozen twelve-month expiry. A refund or chargeback immediately revokes entitlement and unpublishes the site; the private draft and owner data remain available for a later repurchase. Republishing is allowed while an entitlement is active. Stripe Checkout runs in test mode during development; verified webhook state, never the browser return URL, grants or revokes entitlement.
 **References:** `docs/overview/tech-stack.md`, `docs/overview/architecture.md`.
 **Done when:**
 
@@ -446,7 +446,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 
 ## F021 - Decide the smallest useful venue address assistance
 
-**Status:** Planned
+**Status:** Done
 **Priority / lead:** P3 / Product Manager with UX; engineering feasibility input
 **Purpose:** Make ceremony/reception locations easier to enter accurately without adding an unnecessary maps subsystem.
 **Depends on:** F013
@@ -458,30 +458,95 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - For an external provider, verify current pricing/quotas, key restrictions, attribution/licensing, data sent to the provider and account/access requirements from primary documentation. Separate known facts from estimates; obtain a business decision only where cost/data exposure warrants it.
 - Either create one narrowly scoped implementation ticket with testable acceptance and explicit dependencies, or record why the existing manual flow remains sufficient and defer the integration. F021 completion means a decision, not a shipped picker.
 
-**Next preparation:** Review the current entry flow and compare options. Owner's mention of Google Maps is a suggestion, not provider selection. This optional enhancement does not block F013-F020.
+**Decision (23 September 2026):** Retain manual entry and prepare F023 for guidance and checking an owner-supplied directions link. Defer autocomplete and map picking. The current form already stores independent venue/address/URL fields, preserves failed saves, and offers saved preview; its labels give no help with choosing a destination or checking an entrance. This is code-inspection evidence and a UX judgement, not measured user failure data. The mobile/keyboard journey, confirmation and unlisted-venue/failure fallback are canonical in `docs/overview/site-ui.md` under Venue entry decision.
+
+| Option | Fit for the current ceremony/reception flow | Disposition |
+| --- | --- | --- |
+| Manual address plus directions-link help | Reuses existing fields and validation, supports any venue or map provider, and lets owners check the entrance. Does not automatically verify an address. | Recommended; F023 Ready. |
+| Address/place autocomplete | Could reduce typing for listed venues, but selecting a result still needs address/entrance confirmation and a manual fallback. Adds requests while typing, billing and attribution obligations. | Deferred pending evidence of entry problems. |
+| Embedded map picker | Could identify an unusual entrance, but adds map interaction, coordinate handling and keyboard alternatives; a shared pin URL already fits the existing directions field. | Deferred; disproportionate to the current need. |
+
+**Provider feasibility snapshot:** Google was evaluated because the owner's note suggested it; no provider selected or account provisioned. Primary documentation checked 23 September 2026:
+
+- [Maps URLs](https://developers.google.com/maps/documentation/urls/get-started) open Google Maps across devices without an API key. A future generated search link could use owner-entered venue/address, but it cannot confirm the correct match. F023 simply checks a supplied URL; no API integration or generated search is needed.
+- [Global pricing](https://developers.google.com/maps/billing-and-pricing/pricing): monthly free caps are 10,000 events each for Autocomplete Requests, Place Details Essentials, Dynamic Maps and Geocoding. The next tier, through 100,000, costs USD 2.83, 5, 7 and 5 per 1,000 respectively. These are SKU allowances, not a promise of free operation. [Essentials session pricing](https://developers.google.com/maps/documentation/places/web-service/session-pricing) bills the first 12 autocomplete requests and the terminating Details request; later autocomplete requests in that completed session have no charge. Abandoned sessions remain billed per request. Selected fields can change the SKU. No traffic forecast or cost estimate is asserted.
+- [Usage and quotas](https://developers.google.com/maps/documentation/places/web-service/usage-and-billing): billing-enabled Cloud project and credentials are required; Places New rate limits are per method per project, configurable in Cloud Console, and exhausted quotas stop requests. Actual account limits are unknown without access. [Key restrictions](https://developers.google.com/maps/api-security-best-practices) should limit browser keys to approved websites and APIs; server web-service keys need appropriate IP/API restrictions and must remain server-side.
+- [Autocomplete request data](https://developers.google.com/maps/documentation/places/web-service/place-autocomplete) includes entered search text and, if supplied, location bias and session token. A browser integration would expose requests to Google while typing; a map picker would also request map content and potentially send selected coordinates for geocoding. This is the integration data-flow assessment, not a claim about Google's retention. Any future integration needs owner agreement on cost and data exposure before provisioning.
+- [Places policies](https://developers.google.com/maps/documentation/places/web-service/policies) require Google Maps attribution for displayed API content and preserve built-in attribution. Place IDs are exempt from caching restrictions; do not assume all returned address/place content can be stored indefinitely. Applicable terms vary with billing region. [JavaScript policies](https://developers.google.com/maps/documentation/javascript/policies) also require public terms/privacy notices. These constraints need review against the chosen implementation before any future integration; manual owner-entered text and supplied links avoid importing API content.
+
+**Handoff (23 September 2026):**
+
+- Completed the decision and comparison; documented UX in `docs/overview/site-ui.md` and created one bounded implementation ticket, F023. F021 does not ship a picker. F022 and F009 remain blocked as recorded.
+- Verified the current form, schema, save action, guest rendering and existing `tests/details.spec.ts` by inspection; checked provider facts against the primary sources above. `git diff --check` passed. Application tests and mobile/desktop UI inspection were not run because this changes documentation only; F023 requires them for its implementation. Independent review is not required for this bounded product decision.
+- Blockers: None for F021. F023 implements the selected small enhancement. Defer provider integration unless observed entry problems justify reconsideration. F021's decision disposition satisfies its F009 decision gate; it does not approve release.
+
+## F023 - Help couples enter and check venue directions
+
+**Status:** Done
+**Priority / lead:** P3 / Software Engineer
+**Purpose:** Make the existing ceremony/reception entry clearer and let owners check directions before saving.
+**Depends on:** F013, F021 (Done)
+**References:** `docs/overview/site-ui.md` (Venue entry decision), `src/features/workspace/details-form.tsx`, `src/features/weddings/details.ts`, `src/features/workspace/details-actions.ts`, `tests/details.spec.ts`.
+**Scope:** Small helper-copy and link-checking update to the existing form. No API, SDK, map, geolocation, schema change, generated directions or automatic address verification. Optional follow-up; not an additional F009 release gate.
+**Done when:**
+
+- Both venue groups explain town/postcode where available, checking the guest entrance, and using a map or venue directions URL. Guidance covers unlisted venues through manual address and Travel and transport; all fields remain optional.
+- A non-empty URL that passes the existing HTTP(S) validation exposes a ceremony/reception-specific check link opening in a new tab with `noopener noreferrer`. Blank/invalid URLs expose no navigable check link; validation is reused rather than duplicated. No external request or link prefetch occurs before activation; the application never fetches the supplied URL.
+- Opening a check link retains unsaved form values and does not submit, mark saved or assert address accuracy. Address and link can be edited or cleared independently. Owner confirmation is expressed through guidance to check before saving and the existing saved preview.
+- Help and errors have correct input associations. Check links have visible keyboard focus, descriptive new-tab labels and at least 44px touch targets; 320px/mobile and desktop inspection finds no overflow or confusing ordering.
+- `npm.cmd run check`, targeted `npx.cmd playwright test tests/details.spec.ts`, and `git diff --check` pass. Extend the Details journey to cover valid/invalid/cleared check links, new-tab behaviour without contacting a real provider, unsaved-value retention and manual-only save/preview. Check existing publication/privacy behaviour remains intact; record visual evidence.
+
+**Handoff (23 September 2026):**
+
+- Added venue, address and entrance guidance to both Details groups in `src/features/workspace/details-form.tsx`. An owner-supplied HTTP(S) directions URL now exposes a descriptive check link only while valid; it opens in a new tab and does not submit the form. `src/features/weddings/details.ts` shares the server URL schema with the check link. Help and error descriptions remain associated with their inputs; correcting a URL clears its stale error.
+- Passed `npm.cmd run check` (lint, typecheck, 25 Vitest tests, production build), `npx.cmd playwright test tests/details.spec.ts` (2/2 desktop/mobile), and `git diff --check`. The browser journey covers invalid/cleared links, no provider request before click, new-tab behaviour with a stubbed destination, retained unsaved content, live save, manual-only address/preview, three themes and disabled guest access. Inspected workspace screenshots at desktop, iPhone 13 and 320px; controls and help wrap without horizontal overflow, and the check link has a 44px target and keyboard focus. No database, schema or external provider change; broader suites, hosted CI and Safari/Firefox were not run for this narrow form update.
+- Independent review is not required for this small form update. Blockers: None. Next: F022 owner lifetime decision; F009 external release blockers remain.
 
 ## F022 - Confirm the post-wedding publication lifetime
 
-**Status:** Planned
+**Status:** Done
 **Priority / lead:** Business decision / Product Manager and owner
-**Purpose:** Resolve the six-month suggestion without accidentally changing purchased terms.
+**Purpose:** Record the owner's decision on publication lifetime and protect existing purchase terms.
 **Depends on:** F007 (Done)
 **References:** `docs/release-inputs.md`, `docs/overview/architecture.md` (fixed expiry at checkout), `src/features/payments/`, `supabase/migrations/`, `tests/payments.spec.ts`, `tests/integration/payments.test.ts`.
-**Current position:** The approved and implemented term is twelve months after the wedding date captured at checkout. The note asks whether six months is preferable; it does not approve a change. Product recommendation: retain twelve months for launch unless an evidenced cost/support reason and explicit owner decision justify changing it. Publication expiry is separate from deleting private photos, drafts, responses and backups; halving publication time alone does not establish storage savings.
+**Decision (23 September 2026):** The owner selected six months after the wedding date, for checkout attempts created after the change is deployed. The date is fixed when checkout begins. Existing purchases and pending checkout attempts retain their stored twelve-month expiry snapshots; no existing customer term is shortened. The £29 one-time price, payment/refund rules and private data handling are unchanged. Publication expiry hides public pages and assets but does not delete private photos, drafts, responses or backups.
 **Done when:**
 
-- Record the owner's explicit six/twelve-month decision in release inputs with the customer wording and rationale. Until then, twelve months remains the implementation baseline; this decision does not hold up unrelated fixes.
-- If twelve months is retained, no billing change is needed. If six is selected, create a separate payment-change ticket covering effective date, existing purchases/open checkout attempts, preserved entitlement snapshots, all marketing/checkout/support copy, expiry boundary tests and independent payment review. Do not retroactively shorten existing entitlements as a routine copy edit.
-- Link any resulting implementation ticket into the F009 release gate. Data-retention/deletion policy remains an independent F009 input.
+- Record the decision and chosen customer wording in release inputs.
+- If six months is selected, implement it in a separate payment-change feature covering effective date, existing purchases/open checkout attempts, preserved entitlement snapshots, all marketing/checkout/support copy, expiry boundary tests and independent payment review. Do not retroactively shorten existing entitlements.
+- Link the implementation feature into the F009 release gate. Data-retention/deletion policy remains an independent F009 input.
 
-**Blocker / next action:** Explicit owner lifetime decision is outstanding. Bring the recommendation to the owner when completing release decisions; no code change authorised by this ticket alone.
+**Handoff (23 September 2026):** Owner explicitly chose six months. Decision is recorded in `docs/release-inputs.md`; F024 implements the six-month term for new checkout attempts and preserves previous snapshots. The pending legal wording and all other release decisions remain separate F009 inputs.
+
+## F024 - Apply the six-month publication lifetime
+
+**Status:** Done
+**Priority / lead:** P2 / Software Engineer; independent payment review required
+**Purpose:** Apply the owner's six-month site lifetime decision consistently while honoring existing purchases.
+**Depends on:** F007, F022 (Done)
+**References:** `docs/overview/architecture.md`, `docs/operations.md`, `docs/release-inputs.md`, `src/features/payments/purchase-panel.tsx`, `src/features/marketing/home.tsx`, `supabase/migrations/20260918001600_checkout_attempts_and_expiry_snapshot.sql`, `supabase/migrations/20260918001800_checkout_completion_reconciliation.sql`, `tests/integration/payments.test.ts`, `tests/payments.spec.ts`.
+**Effective date:** Checkout attempts created after this migration and copy are deployed receive an expiry six months after the wedding date frozen at checkout. Existing paid entitlements and already-created attempts preserve their recorded twelve-month snapshots, including webhook completion after deployment. No backfill or retroactive shortening.
+**Scope:** Preserve £29 price, payment timing, refunds/revocation, repurchase rules, and private-data retention. Update customer-facing marketing and workspace copy, the server-side entitlement snapshot, relevant tests and operations/architecture/release docs.
+**Done when:**
+
+- New attempts expire at wedding date plus six calendar months (UTC midnight following the existing date convention); insufficient time to complete checkout is rejected using the new boundary.
+- Existing attempt snapshots are reused unchanged; verified webhook processing preserves a supplied pre-change snapshot. Existing `stripe_payments.expires_at` values remain unchanged by migration.
+- Pricing, marketing, purchase, expiry and customer support copy consistently says six months and preserves the existing note that checkout fixes the date. The site-expiry data deletion distinction remains clear.
+- Integration and browser tests cover six-month expiry, six-calendar-month end-of-month/leap-year arithmetic, insufficient-checkout boundary, existing attempts and existing entitlements. Independent reviewer passes; resolve Blocking and Important findings.
+- `npm.cmd run check`, local migration/lint, `npm.cmd run test:integration`, targeted `npx.cmd playwright test tests/payments.spec.ts tests/marketing.spec.ts`, and `git diff --check` pass. Record anything unavailable; do not change production systems in this feature.
+
+**Handoff (23 September 2026):**
+
+- New checkout attempts now receive six months after the wedding date in UTC, with PostgreSQL calendar-month clamping. Updated the purchase panel, marketing price copy, architecture, operations and release inputs. Existing payment expiry rows are not changed. Existing attempt snapshots are returned before recalculating the current policy, and Stripe webhook completion continues using its signed metadata snapshot.
+- Applied `npx.cmd supabase migration up --local`; `npx.cmd supabase db lint --local` reported no schema errors; `npm.cmd run test:integration` passed 19/19 including month-end leap-year, near-cutoff rejection, existing attempt and legacy paid expiry cases; `npm.cmd run check` passed lint, typecheck, 25 unit tests and production build; `npx.cmd playwright test tests/payments.spec.ts tests/marketing.spec.ts` passed 10/10 desktop/mobile. After final purchase-copy clarification, `npx.cmd playwright test tests/payments.spec.ts` passed 2/2. `git diff --check` passed. Inspected marketing and purchase panel at desktop/mobile screenshots. Production deployment and hosted checkout were not run.
+- Independent review `review_f024` found no remaining Blocking or Important findings after the required cutoff and legacy-entitlement tests were added. No production system was changed. Blockers: production deployment remains under F009 release gates. Next: F009 release preparation; owner must still provide host/domain, managed Supabase, live billing/release authority, support contact and approved terms/privacy/retention/deletion rules.
 
 ## F009 - Launch and operate the service
 
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F013-F020 completion and F021-F022 decision dispositions before final release review (see review gate above)
+**Depends on:** F008; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above)
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Hosting selection, external provisioning, live billing and policy-dependent export/deletion remain blocked on owner decisions; do not invent retention periods or publish policies. No additional product feature or hosting purchase is authorised by this preparation.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
 **Decisions/access before release:** Production accounts/domain, live billing configuration, support contact, owner-approved terms/privacy/retention/deletion policy and site lifetime communication. Record any external review still needed; do not invent assurances.
@@ -497,7 +562,7 @@ Retain existing unguessable tokens and existing shared links. A six-digit code h
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. F013-F020 are now Done; F021-F022 decisions remain before final release review.
+- Blockers: owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. F013-F024 are Done and the F021-F022 dispositions are recorded. F023 is not an additional release gate.
 
 ## F010 - Post-launch extensions
 

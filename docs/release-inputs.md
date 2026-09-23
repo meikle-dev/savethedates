@@ -47,7 +47,7 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` callback. The ap
 
 - [ ] Stripe account/business owner: `
 - [ ] Production price confirmed: `GBP 29 one-off / other: `
-- [ ] Site lifetime confirmed (F022): `12 months currently approved/implemented; confirm retain 12 or explicitly approve 6 for future purchases: `
+- [x] Site lifetime confirmed (F022): `6 months after wedding date, fixed when checkout begins, for checkout attempts created after the F024 change is deployed. Purchases and checkout attempts already created retain their frozen 12-month expiry.`
 - [ ] Refund policy approved: `
 - [ ] Production Stripe account is separate from test account: `yes / no`
 - [ ] Webhook endpoint domain: `

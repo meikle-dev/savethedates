@@ -38,6 +38,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByText("£29", { exact: false })).toBeVisible();
+    await expect(page.getByText(/A new purchase keeps your site online until six months after the wedding date/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Buy and continue to Stripe" })).toBeVisible();
     await expect(page.getByLabel("Your wedding URL")).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("payment-required.png"), fullPage: true });
@@ -51,6 +52,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     const pendingAttempt = await checkoutOwner.rpc("begin_checkout_attempt");
     expect(pendingAttempt.error).toBeNull();
     const attempt = pendingAttempt.data![0];
+    expect(new Date(attempt.entitlement_expires_at).toISOString()).toBe("2028-03-18T00:00:00.000Z");
     const expiringSessionId = `cs_test_${crypto.randomUUID()}`;
     expect((await checkoutOwner.rpc("attach_checkout_session", {
       requested_attempt_id: attempt.attempt_id,
@@ -74,7 +76,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
       currency: "gbp",
       payment_intent: paymentIntent,
       payment_status: "paid",
-      metadata: { wedding_id: wedding.data.id, owner_id: ownerId, entitlement_expires_at: "2028-09-18T00:00:00.000Z" },
+      metadata: { wedding_id: wedding.data.id, owner_id: ownerId, entitlement_expires_at: "2028-03-18T00:00:00.000Z" },
     });
     expect((await page.request.post("/api/stripe/webhook", { data: paid.payload, headers: { "content-type": "application/json", "stripe-signature": "invalid" } })).status()).toBe(400);
     const wrongTotal = signedEvent("checkout.session.completed", { ...JSON.parse(paid.payload).data.object, amount_total: 3000 });

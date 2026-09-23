@@ -248,6 +248,16 @@ Avoid exposing technical concepts.
 
 Creating a wedding website should feel like completing a short guided process rather than configuring software.
 
+## Venue entry decision (F021, 23 September 2026)
+
+Keep ceremony and reception as independent, optional manual venue/address/directions fields. F023 adds focused guidance and a way to check a pasted directions link. Defer address autocomplete and an embedded map picker until evidence shows that manual entry causes problems.
+
+On mobile, keep the existing stacked fields; desktop retains the existing grid. Explain that the address should include the town and postcode where available, and that guests need the correct entrance. Directions may use a map service or the venue's own instructions. For an unlisted venue, private home or rural entrance, accept the owner's written address, an optional shared pin link, and arrival instructions in Travel and transport. A recognised postal address is never required.
+
+After pasting a valid directions URL, the owner can activate a clearly labelled "Check ceremony directions (opens in a new tab)" or reception equivalent. Use a normal keyboard-accessible link with visible focus and a 44px touch target. Keep the current form and unsaved values in place; opening a link does not save or confirm the venue automatically. Explain that the owner should check the destination and entrance before saving, then use Preview saved Details to check guest-facing text. No extra confirmation checkbox is needed.
+
+If the URL is blank or invalid, omit the check link; keep manual entry and the existing save validation. If the external page fails or gives an incorrect location, the owner can replace/remove the URL and keep the address. No provider request, prefetch, embed or geolocation occurs while entering details; checking a link contacts its destination only when activated. Help text must remain associated with its input alongside any error. Preserve the existing warning that saving published Details updates the live site.
+
 ---
 
 # Accessibility

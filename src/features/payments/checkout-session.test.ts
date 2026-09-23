@@ -8,7 +8,7 @@ describe("checkoutSessionParams", () => {
       wedding_id: "00000000-0000-4000-8000-000000000002",
       checkout_url: null,
       checkout_expires_at: "2026-09-19T12:31:00.900Z",
-      entitlement_expires_at: "2028-09-18T00:00:00.000Z",
+      entitlement_expires_at: "2028-03-18T00:00:00.000Z",
     };
     const params = checkoutSessionParams(attempt, "owner-1", "owner@example.test", "https://example.test");
     expect(params).toMatchObject({

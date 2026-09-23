@@ -10,6 +10,13 @@ let weddingId = "";
 let otherWeddingId = "";
 const slug = `paid-${crypto.randomUUID()}`;
 
+function dateSixMonthsBefore(value: string) {
+  const source = new Date(`${value}T00:00:00.000Z`);
+  const monthStart = new Date(Date.UTC(source.getUTCFullYear(), source.getUTCMonth() - 6, 1));
+  const lastDay = new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth(), Math.min(source.getUTCDate(), lastDay))).toISOString().slice(0, 10);
+}
+
 beforeAll(async () => {
   for (const [client, assign] of [[owner, (id: string) => { ownerId = id; }], [other, (id: string) => { otherId = id; }]] as const) {
     const email = `payment-${crypto.randomUUID()}@example.test`;
@@ -38,7 +45,7 @@ async function paymentEvent(input: { id: string; type: "paid" | "refunded" | "di
     requested_event_created_at: input.createdAt ?? new Date().toISOString(),
     requested_event_type: input.type,
     requested_payment_intent_id: input.intent,
-    requested_entitlement_expires_at: input.type === "paid" ? input.expiry ?? "2028-09-18T00:00:00.000Z" : null,
+    requested_entitlement_expires_at: input.type === "paid" ? input.expiry ?? "2028-03-18T00:00:00.000Z" : null,
     requested_wedding_id: input.wedding ?? null,
     requested_owner_id: input.owner ?? null,
     requested_checkout_session_id: input.session ?? null,
@@ -75,7 +82,7 @@ it("handles out-of-order, duplicate, refund and repurchase events", async () => 
   expect((await local.admin.from("stripe_payments").select("payment_intent_id").eq("payment_intent_id", secondIntent)).data).toHaveLength(1);
   const entitlement = await owner.rpc("owner_entitlement");
   expect(entitlement.data?.[0]).toMatchObject({ active: true, revoked_reason: null });
-  expect(entitlement.data?.[0]?.expires_at).toContain("2028-09-18");
+  expect(entitlement.data?.[0]?.expires_at).toContain("2028-03-18");
   expect((await owner.from("weddings").update({ published: true }).eq("id", weddingId)).error).toBeNull();
   expect((await local.anonymous().rpc("published_wedding", { requested_slug: slug })).data).toHaveLength(1);
 
@@ -106,7 +113,7 @@ it("reuses one pending checkout and freezes the entitlement expiry snapshot", as
   expect(first.error).toBeNull();
   expect(second.error).toBeNull();
   expect(first.data![0].attempt_id).toBe(second.data![0].attempt_id);
-  expect(first.data![0].entitlement_expires_at).toContain("2028-09-18");
+  expect(new Date(first.data![0].entitlement_expires_at).toISOString()).toBe("2028-03-18T00:00:00.000Z");
   expect((await owner.rpc("attach_checkout_session", {
     requested_attempt_id: first.data![0].attempt_id,
     requested_session_id: "cs_test_pending",
@@ -135,6 +142,30 @@ it("reuses one pending checkout and freezes the entitlement expiry snapshot", as
   const afterVerifiedExpiry = await owner.rpc("begin_checkout_attempt");
   expect(afterVerifiedExpiry.error).toBeNull();
   expect(afterVerifiedExpiry.data![0].attempt_id).not.toBe(first.data![0].attempt_id);
+});
+
+it("uses six calendar months for new attempts and keeps an existing expiry snapshot", async () => {
+  expect((await local.admin.from("weddings").update({ wedding_date: "2027-08-31" }).eq("id", otherWeddingId)).error).toBeNull();
+  const created = await other.rpc("begin_checkout_attempt");
+  expect(created.error).toBeNull();
+  expect(new Date(created.data![0].entitlement_expires_at).toISOString()).toBe("2028-02-29T00:00:00.000Z");
+
+  const existingExpiry = "2028-08-31T00:00:00.000Z";
+  expect((await local.admin.from("stripe_checkout_attempts").update({ entitlement_expires_at: existingExpiry }).eq("wedding_id", otherWeddingId)).error).toBeNull();
+  expect((await local.admin.from("weddings").update({ wedding_date: "2027-01-01" }).eq("id", otherWeddingId)).error).toBeNull();
+  const retry = await other.rpc("begin_checkout_attempt");
+  expect(retry.error).toBeNull();
+  expect(retry.data![0].attempt_id).toBe(created.data![0].attempt_id);
+  expect(new Date(retry.data![0].entitlement_expires_at).toISOString()).toBe(existingExpiry);
+
+  expect((await local.admin.rpc("expire_checkout_attempt", {
+    requested_attempt_id: created.data![0].attempt_id,
+    requested_session_id: null,
+  })).data).toBe(true);
+  const today = new Date().toISOString().slice(0, 10);
+  const nearCutoffWeddingDate = dateSixMonthsBefore(today);
+  expect((await local.admin.from("weddings").update({ wedding_date: nearCutoffWeddingDate }).eq("id", otherWeddingId)).error).toBeNull();
+  expect((await other.rpc("begin_checkout_attempt")).error).not.toBeNull();
 });
 
 it("reports the latest purchase outcome after an older entitlement expires", async () => {
@@ -167,4 +198,22 @@ it("reports the latest purchase outcome after an older entitlement expires", asy
     createdAt: "2026-02-02T00:00:00.000Z",
   });
   expect((await other.rpc("owner_entitlement")).data?.[0]).toMatchObject({ active: false, revoked_reason: "refunded" });
+});
+
+it("retains a twelve-month expiry snapshot from a checkout started before the policy change", async () => {
+  const intent = `pi_${crypto.randomUUID()}`;
+  const legacyExpiry = "2028-09-18T00:00:00.000Z";
+  const result = await paymentEvent({
+    id: `evt_${crypto.randomUUID()}`,
+    type: "paid",
+    intent,
+    session: `cs_${crypto.randomUUID()}`,
+    wedding: weddingId,
+    owner: ownerId,
+    expiry: legacyExpiry,
+    createdAt: "2027-09-18T12:00:00.000Z",
+  });
+  expect(result.data).toBe("granted");
+  const stored = await local.admin.from("stripe_payments").select("expires_at").eq("payment_intent_id", intent).single();
+  expect(new Date(stored.data!.expires_at).toISOString()).toBe(legacyExpiry);
 });

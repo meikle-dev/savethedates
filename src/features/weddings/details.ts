@@ -15,6 +15,12 @@ const optionalUrl = z.string().trim().max(2048, "Use a shorter link.").refine((v
   }
 }, "Enter a complete http:// or https:// link.").transform((value) => value ? new URL(value).href : "");
 
+export function validOptionalUrl(value: string): string | null {
+  if (!value.trim()) return null;
+  const parsed = optionalUrl.safeParse(value);
+  return parsed.success ? parsed.data : null;
+}
+
 export const faqSchema = z.object({
   question: z.string().trim().min(1, "Add a question.").max(200, "Use no more than 200 characters."),
   answer: longText.pipe(z.string().min(1, "Add an answer.")),
