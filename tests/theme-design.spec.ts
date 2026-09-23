@@ -19,7 +19,7 @@ for (const theme of ["minimal", "romantic", "bold"]) {
       return { path: new URL(source).pathname, width: image.naturalWidth, height: image.naturalHeight };
     });
     const asset = { minimal: "minimal-olive", romantic: "romantic-rose", bold: "bold-laurel" }[theme];
-    expect(artwork).toEqual({ path: `/assets/wedding/${asset}.svg`, width: 240, height: 360 });
+    expect(artwork).toEqual({ path: `/assets/wedding/flowers/${asset}.svg`, width: 240, height: 360 });
     await expect(page.locator(".wedding-photo img")).toHaveJSProperty("naturalWidth", 1400);
     await expect(page.locator(".wedding-photo img")).toHaveCSS("object-position", "46% 52%");
     await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();

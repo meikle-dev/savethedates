@@ -1,5 +1,7 @@
 # Wedding botanical artwork
 
+Layout: vector botanicals are in `flowers/` and the desktop RSVP backdrop photographs are in `backgrounds/`. File names below are relative to those folders.
+
 Original project vector artwork authored for F018 on 22 September 2026. These paths were drawn in source for SaveTheDates, without tracing a photograph, stock illustration or supplied design board. No third-party asset or additional stock licence is involved. The supplied boards guided only the existing palette and placement. Project use requires no third-party attribution; no exclusivity or trademark claim is made.
 
 ## Source inventory

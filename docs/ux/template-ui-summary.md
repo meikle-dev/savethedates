@@ -164,7 +164,7 @@ Layouts grow for long content without clipping. No animation is used. Shared tok
 
 ## Botanical artwork (F018)
 
-Each theme uses one original vector composition: slender sage/olive stems for Minimal, a blush garden rose with buds and muted foliage for Romantic, and broad teal/sage leaves for Bold. Transparent SVGs live in `public/assets/wedding/`; its README records provenance, palettes and the reuse inventory. The illustration is selected by the enclosing theme so previews, published pages and full marketing examples stay consistent.
+Each theme uses one original vector composition: slender sage/olive stems for Minimal, a blush garden rose with buds and muted foliage for Romantic, and broad teal/sage leaves for Bold. Transparent SVGs live in `public/assets/wedding/flowers/` and RSVP backdrops in `public/assets/wedding/backgrounds/`; the `public/assets/wedding/` README records provenance, palettes and the reuse inventory. The illustration is selected by the enclosing theme so previews, published pages and full marketing examples stay consistent.
 
 Footer illustrations occupy reserved space beside the signature (100×150px desktop, 58×87px phone). The Romantic announcement uses a small floral accent, and Details uses a 36×54px divider. F019 places one small theme illustration inside the RSVP invitation panel above its content. Missing and failed photographs use two opposing botanical edges on the theme tint, inset/reduced on mobile, with the existing Minimal text backing. Decoration never intercepts input and is hidden from assistive technology. No customer text is drawn into an asset.
 
