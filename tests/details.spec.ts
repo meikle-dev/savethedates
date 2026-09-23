@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { localSupabase } from "./helpers/local-supabase";
+import { openWorkspaceSection } from "./helpers/workspace";
 
 const local = localSupabase();
 
@@ -27,7 +28,7 @@ test("owner edits and previews Details while guests see only enabled published c
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Details", exact: true }).click();
+    await openWorkspaceSection(page, "Details");
     await expect(page).toHaveURL(/\/dashboard\/details$/);
     const section = page.getByRole("region", { name: "Wedding Details" });
     await expect(section).toBeVisible();
@@ -97,7 +98,7 @@ test("owner edits and previews Details while guests see only enabled published c
     await expect(page.getByText("This is your current theme.", { exact: true })).toBeVisible();
     await page.getByRole("link", { name: "Back to workspace" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Details", exact: true }).click();
+    await openWorkspaceSection(page, "Details");
     await expect(page).toHaveURL(/\/dashboard\/details$/);
 
     await guestPage.goto(`/${slug}`);

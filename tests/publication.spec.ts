@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import sharp from "sharp";
 import { localSupabase } from "./helpers/local-supabase";
+import { openWorkspaceSection } from "./helpers/workspace";
 
 const local = localSupabase();
 test("owner previews, uploads, publishes, updates and unpublishes a wedding", async ({ page, browser, baseURL }) => {
@@ -16,7 +17,7 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
   const photo = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#738c79" } }).jpeg().toBuffer();
   const replacementPhoto = await sharp({ create: { width: 600, height: 900, channels: 3, background: "#a86464" } }).jpeg().toBuffer();
   let weddingId: string | undefined;
-  const openSection = (name: string) => page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name, exact: true }).click();
+  const openSection = (name: string) => openWorkspaceSection(page, name);
   // The header status is shown from 768px; it must follow publish and unpublish without a manual reload.
   const expectHeaderStatus = async (status: string) => {
     if (test.info().project.name === "desktop") await expect(page.getByRole("banner").getByText(status, { exact: true })).toBeVisible();

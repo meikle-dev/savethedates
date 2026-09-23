@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { localSupabase } from "./helpers/local-supabase";
+import { openWorkspaceSection } from "./helpers/workspace";
 
 const local = localSupabase();
 
@@ -26,7 +27,7 @@ test("owners can preview saved RSVP content without granting guest access or sav
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Jamie & Riley" })).toBeVisible();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "RSVP", exact: true }).click();
+    await openWorkspaceSection(page, "RSVP");
     await page.getByRole("link", { name: "Preview RSVP page" }).click();
     await expect(page.getByRole("heading", { name: "RSVP", exact: true })).toBeVisible();
     await expect(page.getByText("Private RSVP preview", { exact: false })).toBeVisible();

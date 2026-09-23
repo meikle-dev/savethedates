@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import Stripe from "stripe";
 import { localSupabase } from "./helpers/local-supabase";
+import { openWorkspaceSection } from "./helpers/workspace";
 
 const local = localSupabase();
 const webhookSecret = "whsec_local_webhook_test_secret";
@@ -37,7 +38,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Publish", exact: true }).click();
+    await openWorkspaceSection(page, "Publish");
     await expect(page.getByText("£29", { exact: false })).toBeVisible();
     await expect(page.getByText(/A new purchase keeps your site online until six months after the wedding date/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Buy and continue to Stripe" })).toBeVisible();
@@ -96,11 +97,11 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.reload();
     await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
     await expect(page.getByText("The previous site period ended", { exact: false })).toBeVisible();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Basics", exact: true }).click();
+    await openWorkspaceSection(page, "Basics");
     await page.locator('[name="location"]').fill("Bristol");
     await page.getByRole("button", { name: "Save private draft" }).click();
     await expect(page.getByRole("status").filter({ hasText: "private draft has been saved" })).toBeVisible();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Publish", exact: true }).click();
+    await openWorkspaceSection(page, "Publish");
     await page.getByRole("link", { name: "Preview saved site" }).click();
     // The saved theme needs no applying; preview another one to reach Apply theme.
     await page.getByRole("radio", { checked: false }).first().check();
@@ -117,7 +118,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     expect(refundResponse.status()).toBe(200);
     await page.reload();
     await expect(page.getByRole("article", { name: "Site status" })).toContainText("Private draft");
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Publish", exact: true }).click();
+    await openWorkspaceSection(page, "Publish");
     await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
     await expect(page.getByText("This purchase was refunded", { exact: false })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("payment-refunded.png"), fullPage: true });

@@ -1,11 +1,12 @@
 import { expect, test, type Page, type Response } from "@playwright/test";
 import { createHash, randomBytes } from "node:crypto";
 import { localSupabase } from "./helpers/local-supabase";
+import { openWorkspaceSection } from "./helpers/workspace";
 
 const local = localSupabase();
 
 function openSection(page: Page, name: string) {
-  return page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name, exact: true }).click();
+  return openWorkspaceSection(page, name);
 }
 
 function expectPrivate(response: Response | null) {

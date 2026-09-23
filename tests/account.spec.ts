@@ -1,5 +1,6 @@
 ﻿import { expect, test } from "@playwright/test";
 import { localSupabase } from "./helpers/local-supabase";
+import { openWorkspaceSection } from "./helpers/workspace";
 import type { BrowserContext } from "@playwright/test";
 
 const local = localSupabase();
@@ -94,7 +95,7 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.locator('textarea[name="message"]').fill("We can’t wait to celebrate with you.");
     await page.getByRole("button", { name: "Save private draft" }).click();
     await expect(page.getByRole("status")).toHaveText("Your private draft has been saved.");
-    await expect(page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Basics" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("navigation", { name: "Workspace sections" }).locator("a[aria-current='page']")).toHaveText("Basics");
     await page.reload();
     await expect(page.getByLabel("Your name", { exact: false })).toHaveValue("Alexandra");
     await expect(page.locator('input[name="location"]')).toHaveValue("Edinburgh, Scotland");
@@ -118,7 +119,7 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.getByRole("link", { name: /Return to your workspace/ }).first().click();
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByRole("heading", { level: 1, name: "Alexandra & Morgan" })).toBeVisible();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Basics" }).click();
+    await openWorkspaceSection(page, "Basics");
     await expect(page.locator('input[name="location"]')).toHaveValue("Edinburgh, Scotland");
 
     // Server validation preserves the other fields instead of resetting the form.
@@ -154,7 +155,7 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.getByRole("button", { name: "Save new password" }).click();
     await expect(page.getByRole("status")).toContainText("password has been changed");
     await page.getByRole("link", { name: "Return to your workspace" }).click();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Basics" }).click();
+    await openWorkspaceSection(page, "Basics");
     await expect(page.locator('input[name="location"]')).toHaveValue("Edinburgh, Scotland");
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page).toHaveURL(/\/account\/sign-in$/);

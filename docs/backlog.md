@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers. The 23 September review adds F028-F033; F028 is Done and the next eligible ticket is F029.
+Ordered by recommended implementation sequence. F001-F008 and F011-F027 are complete. **Current: F009** remains In Progress with external release blockers. The 23 September review adds F028-F033; F028-F029 are Done and the next eligible ticket is F030.
 
 ## Status and handoff rules
 
@@ -635,7 +635,7 @@ All implementation tickets follow the definition of done. That means the checks 
 
 ## F029 - Mobile-friendly workspace section navigation
 
-**Status:** Ready
+**Status:** Done (23 September 2026)
 **Priority / lead:** P1 / UX/UI Designer then Software Engineer
 **Purpose:** Couples on a phone can see every workspace section and move between them without hunting through a sideways-scrolling strip.
 **Depends on:** F027 (Done)
@@ -653,6 +653,11 @@ This needs no hover, no bottom tab bar (seven items is too many) and no new sect
 - At 768 and 1023px, all seven sections are visible in one row with no sideways scroll or clipping. At 1024px and up, the sidebar is unchanged.
 - The keyboard works: Tab reaches the toggle, Enter/Space open it, Escape closes it and returns focus. `aria-current="page"` and section titles are kept. The menu closes after client navigation and after back/forward.
 - `tests/dashboard.spec.ts` covers the phone menu, the tablet row and focus behaviour. `npm.cmd run check` passes, as do targeted dashboard specs at mobile and desktop. `docs/overview/site-ui.md` is updated. Screenshots are inspected at 320, 390, 768 and 1440px. Independent review is not required (navigation presentation only; routes and authorisation are unchanged).
+
+**Handoff (23 September 2026):** `WorkspaceNav` now renders a phone bar (current section icon/name plus a **Sections** toggle with `aria-expanded`/`aria-controls`) and one section list. Below 768px the list is a full-width overlay that shows only when open. It closes on selection, Escape, a pointer outside the nav, the toggle, and any pathname change (back/forward included). Escape and selection return focus to the toggle. From 768px the list is one flex row with no sideways scroll. The 1024px+ sidebar is unchanged. Routes, `aria-current` and titles are unchanged. Tests use a new `tests/helpers/workspace.ts` (`workspaceLink`/`openWorkspaceSection`, which opens the menu below 768px), and every spec that clicked section links now uses it. `tests/dashboard.spec.ts` adds phone (320/375/390/767), keyboard, outside-tap, selection-focus, back/forward, tablet (768/1023) and desktop (1024/1440) checks. `docs/overview/site-ui.md` updated.
+- Passed `npm.cmd run lint`, `npm.cmd run typecheck`, `npm.cmd run check` (lint, typecheck, 29 unit tests, production build). With `$env:E2E_BASE_URL='http://127.0.0.1:3000'` (dev container, after `docker compose restart app` because it was serving stale code), `npx.cmd playwright test tests/dashboard.spec.ts tests/account.spec.ts tests/details.spec.ts tests/publication.spec.ts tests/rsvp-preview.spec.ts tests/rsvp.spec.ts tests/themes.spec.ts` gave 21 passed and 1 failed. The failure was `publication.spec.ts` [mobile], a 5s timeout waiting for the photo-saved notice (unrelated to nav). It passed on rerun (`--project=mobile`, 1/1). `payments.spec.ts` cannot pass against the dev container or `.env.local` servers because their `STRIPE_WEBHOOK_SECRET` differs from the test placeholder (webhook 400). It passed on a temporary production container (`docker build --target production -t save-the-dates:f029 .`, run on 127.0.0.1:3001 with the placeholder Stripe values, `E2E_PRODUCTION=1`): `payments.spec.ts` plus `dashboard.spec.ts` 8/8 desktop/mobile. The container was then removed. The managed `npm run test:e2e` server could not start because an unrelated `next dev --port 3200` from this checkout (started 17:40, not by this session) was already running. It was left untouched, and its sign-in page errored, so it was not used. `git diff --check` passed.
+- Screenshots inspected at 320 (menu open), 390 (closed and open), 768, 1023, 1024 and 1440px: the current section is visible, the menu is legible with 44px rows, the tablet row fits, and the sidebar is unchanged. Pre-existing and outside scope: at 320px the header's Preview button overlaps the "SaveTheDates" wordmark (the header was not changed by F029). Suggest a small follow-up fix to the header. No independent review required (presentation only). Blockers: None. Next: F030 clear, paginated guest responses.
+
 
 ## F030 - Clear, paginated guest responses
 

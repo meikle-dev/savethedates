@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import sharp from "sharp";
 import { localSupabase } from "./helpers/local-supabase";
+import { openWorkspaceSection } from "./helpers/workspace";
 
 const local = localSupabase();
 test("theme preview is private and applying preserves the live wedding", async ({ page, browser, baseURL }) => {
@@ -24,7 +25,7 @@ test("theme preview is private and applying preserves the live wedding", async (
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Design", exact: true }).click();
+    await openWorkspaceSection(page, "Design");
     await expect(page.getByRole("heading", { name: "Your wedding style" })).toBeVisible();
     const currentTheme = page.getByRole("region", { name: "Theme" });
     await expect(currentTheme).toContainText("Modern Minimal");
@@ -41,7 +42,7 @@ test("theme preview is private and applying preserves the live wedding", async (
     await guestPage.goto(`/${slug}`);
     await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", "minimal");
     await page.getByRole("link", { name: "Back to workspace" }).click();
-    await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Design", exact: true }).click();
+    await openWorkspaceSection(page, "Design");
     await expect(currentTheme).toContainText("Modern Minimal");
     for (const [id, name] of [["romantic", "Warm & Romantic"], ["bold", "Modern & Bold"], ["minimal", "Modern Minimal"]]) {
       await currentTheme.getByRole("link", { name: /Change theme/ }).click();
@@ -56,7 +57,7 @@ test("theme preview is private and applying preserves the live wedding", async (
       await guestPage.screenshot({ path: test.info().outputPath(`${id}-no-photo.png`), fullPage: true });
       expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.getByRole("link", { name: "Back to workspace" }).click();
-      await page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link", { name: "Design", exact: true }).click();
+      await openWorkspaceSection(page, "Design");
       await expect(page).toHaveURL(/\/dashboard\/design$/);
       await page.reload();
       await expect(currentTheme).toContainText(name);
