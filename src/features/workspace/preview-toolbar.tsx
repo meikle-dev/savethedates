@@ -15,8 +15,18 @@ export function PreviewToolbar({ label, note, path, backHref, theme, savedTheme,
   const [selected, setSelected] = useState(theme);
   const [pending, startTransition] = useTransition();
   const list = useRef<HTMLDivElement>(null);
-  useEffect(() => { list.current?.querySelector(":checked")?.closest("label")?.scrollIntoView({ block: "nearest", inline: "nearest" }); }, []);
+  useEffect(() => { list.current?.querySelector(":checked")?.closest("label")?.scrollIntoView({ block: "nearest", inline: "nearest" }); }, [selected]);
+  // Prefetch both neighbours so arrow cycling feels instant.
+  useEffect(() => {
+    const at = themes.findIndex((option) => option.id === selected);
+    for (const offset of [-1, 1]) router.prefetch(`${path}?theme=${themes[(at + offset + themes.length) % themes.length].id}`);
+  }, [router, path, selected]);
+  const index = themes.findIndex((option) => option.id === selected);
+  const current = themes[index];
+  // Arrows wrap around so owners can cycle through every theme in either direction.
+  const step = (offset: number) => themes[(index + offset + themes.length) % themes.length];
   const choose = (id: WeddingTheme) => {
+    if (id === selected) return;
     setSelected(id);
     startTransition(() => router.replace(`${path}?theme=${id}`, { scroll: false }));
   };
@@ -29,13 +39,25 @@ export function PreviewToolbar({ label, note, path, backHref, theme, savedTheme,
       <div className="preview-bar-main">
         <form action={path} className="preview-themes">
           <fieldset>
-            <legend className="preview-bar-legend">Theme{pending ? <span className="preview-bar-loading" role="status"> · Loading preview…</span> : null}</legend>
-            <div ref={list} className="segmented">
-              {themes.map((option) => <label key={option.id} className="segment" title={option.description}>
+            <legend className="preview-bar-legend">Theme <span className="preview-bar-count">{index + 1} of {themes.length}</span>{pending ? <span className="preview-bar-loading" role="status"> · Loading preview…</span> : null}</legend>
+            <div className="theme-stepper">
+              <button type="button" className="theme-step" onClick={() => choose(step(-1).id)} aria-label={`Previous theme: ${step(-1).name}`}><Icon name="chevron" /></button>
+              <div className="theme-stepper-current">
+                <p className="theme-stepper-name">
+                  <span className="theme-stepper-palette" aria-hidden="true">{current.swatch.map((colour) => <span key={colour} style={{ background: colour }} />)}</span>
+                  <span>{current.name}</span>
+                  {current.id === savedTheme && <span className="theme-stepper-current-tag">Current</span>}
+                </p>
+                <p className="theme-stepper-description">{current.description}</p>
+              </div>
+              <button type="button" className="theme-step theme-step-next" onClick={() => choose(step(1).id)} aria-label={`Next theme: ${step(1).name}`}><Icon name="chevron" /></button>
+            </div>
+            <div ref={list} className="theme-dots">
+              {themes.map((option) => <label key={option.id} className="theme-dot" title={option.name}>
                 <input type="radio" name="theme" value={option.id} checked={selected === option.id} onChange={() => choose(option.id)} />
-                <span className="segment-swatch" aria-hidden="true" style={{ background: swatchBackground(option.swatch) }} />
-                {option.name}
-                {option.id === savedTheme && <><span className="segment-dot" aria-hidden="true" /><span className="sr-only"> (current theme)</span></>}
+                <span className="theme-dot-swatch" aria-hidden="true" style={{ background: swatchBackground(option.swatch) }} />
+                <span className="sr-only">{option.name}{option.id === savedTheme ? " (current theme)" : ""}</span>
+                {option.id === savedTheme && <span className="theme-dot-saved" aria-hidden="true" />}
               </label>)}
             </div>
           </fieldset>
