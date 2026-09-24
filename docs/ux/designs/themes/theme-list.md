@@ -1,12 +1,17 @@
-Here's the full list with the new Countryside:
+# Wedding themes
 
-| Theme | Tagline | Paper (bg) | Surface | Accent | Ink (text) | Detail |
-|---|---|---|---|---|---|---|
-| **Alcantara** | Soft suede, cognac and deep espresso. | `#EFE8DF` | `#F7F2EC` | `#8B5E3C` | `#2E2420` | `#B89A7E` |
-| **Countryside** | Oatmeal tweed, loden green and bracken. | `#EDE6D6` | `#F6F1E6` | `#3B4431` | `#262A20` | `#A5562E` |
-| **Evening Gold** | Midnight navy, candlelight and champagne. | `#141B26` | `#1C2533` | `#C9A96A` | `#F2EDE3` | `#7D8BA3` |
-| **Terracotta** | Sun-baked clay, olive branches and linen. | `#F5EDE4` | `#FBF6F0` | `#B4583A` | `#3A2A22` | `#7C8452` |
-| **Heather** | Misty lilac, moorland heather and slate. | `#F2EFF3` | `#FAF8FB` | `#6B4E71` | `#2A2630` | `#8A95A0` |
+The eight available themes, their botanical artwork, and their core palettes:
+
+| Theme | Palette direction | Flowers or botanical artwork | Paper / background | Surface | Accent | Ink / text | Detail |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Modern Minimal** | Warm paper, olive and pale sage. | Olive branches | `#F5F1E8` | `#F5F1E8` | `#526044` | `#272B22` | `#E5E6D8` |
+| **Warm & Romantic** | Cream, muted rose and burgundy. | Garden rose and rosebuds | `#FFF4EB` | `#FFF4EB` | `#7C3446` | `#582B39` | `#F1D8CF` |
+| **Modern & Bold** | Deep teal, pale sage and citrus. | Magnolia and laurel foliage with citrus buds | `#133F3E` | `#F1F3E9` | `#164B49` | `#133C3B` | `#DCE8B3` |
+| **Terracotta** | Sun-baked clay, olive branches and linen. | Mediterranean citrus sprig | `#F5EDE4` | `#FBF6F0` | `#B4583A` | `#3A2A22` | `#7C8452` |
+| **Heather** | Misty lilac, moorland heather and slate. | Meadow wildflowers | `#F2EFF3` | `#FAF8FB` | `#6B4E71` | `#2A2630` | `#8A95A0` |
+| **Alcantara** | Soft suede, cognac and deep espresso. | None; stitched decoration | `#EFE8DF` | `#F7F2EC` | `#8B5E3C` | `#2E2420` | `#B89A7E` |
+| **Countryside** | Oatmeal tweed, loden green and bracken. | Autumn dahlia | `#EDE6D6` | `#F6F1E6` | `#3B4431` | `#262A20` | `#A5562E` |
+| **Evening Gold** | Midnight navy, candlelight and champagne. | Winter hellebore | `#141B26` | `#1C2533` | `#C9A96A` | `#F2EDE3` | `#7D8BA3` |
 
 Swatch pairs (light / dark) for the selector chips:
 
