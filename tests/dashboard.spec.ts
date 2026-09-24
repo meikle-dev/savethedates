@@ -62,6 +62,8 @@ test("section navigation fits phones, tablets and desktops", async ({ page }) =>
     const currentLabel = nav.locator(".ws-nav-current");
     const links = nav.getByRole("link");
     const noOverflow = () => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
+    // The phone menu fades in (F032); measure its links once that brief reveal has settled.
+    const settled = () => nav.locator("ul").evaluate((list) => Promise.all(list.getAnimations().map((animation) => animation.finished.catch(() => undefined))).then(() => undefined));
 
     // Phones: the current section is always visible, and every section is two taps away.
     for (const width of [320, 375, 390, 767]) {
@@ -75,6 +77,7 @@ test("section navigation fits phones, tablets and desktops", async ({ page }) =>
       expect(await noOverflow()).toBe(true);
       await workspaceLink(page, "Overview");
       await expect(links).toHaveCount(sections.length);
+      await settled();
       for (const [name] of sections) {
         const box = (await nav.getByRole("link", { name, exact: true }).boundingBox())!;
         expect(box.height).toBeGreaterThanOrEqual(44);

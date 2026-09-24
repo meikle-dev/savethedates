@@ -271,6 +271,14 @@ Guests (F030) keeps the totals at the top and uses the full content width for re
 
 A new account lands on Basics ("Start with your story.") with no section navigation. The first save creates the wedding, keeps the confirmation on screen, and reveals the other sections. Stripe Checkout returns to Publish.
 
+## Motion (F032, 24 September 2026)
+
+Navigation reveals the live main content from 65% to full opacity over 180ms. This applies to workspace sections, marketing/account pages and all twelve wedding themes, including previews. Headers and navigation outside the main stay steady. Initial page loads, same-route form submissions and query-only updates do not trigger page motion. Persistent layouts are not remounted.
+
+New notices, guest correction panels and FAQ answers fade in over 140ms. The phone section menu also moves down 4px as it opens; it uses a keyframe animation so widening past 767px stops it immediately. Panels close immediately so hidden controls leave the keyboard order without delay. Controls use opacity/transform transitions of 120ms, with a 1px press offset on action buttons; there is no hover lift, because moving a button out from under the pointer can make hover flicker. `src/components/motion.css` is the single home for these rules and for the global reduced-motion rule. There are no height, colour, shadow or layout animations, scroll effects, page-load heroes or animation dependencies.
+
+Reduced motion disables CSS transitions/animations and page reveals; changing that preference cancels an active page reveal. Unsupported animation APIs simply leave navigation instant. Native View Transition snapshots were evaluated but are not used: their named participants suppress pointer hit testing while fading. Animating live content keeps controls immediately available, without an overlay or delayed navigation.
+
 ## Venue entry decision (F021, 23 September 2026)
 
 Keep ceremony and reception as independent, optional manual venue/address/directions fields. F023 adds focused guidance and a way to check a pasted directions link. Defer address autocomplete and an embedded map picker until evidence shows that manual entry causes problems.

@@ -20,7 +20,7 @@
 }
 
 /* Buttons: add one variant class alongside .button (links, buttons and summaries alike). */
-.button { display: inline-flex; align-items: center; justify-content: center; gap: 0.625rem; min-height: 44px; padding: 0.5rem 1.125rem; border: 1px solid transparent; border-radius: 10px; font-size: 0.9375rem; font-weight: 600; line-height: 1.25; text-align: center; white-space: nowrap; cursor: pointer; transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s, color 0.15s; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 0.625rem; min-height: 44px; padding: 0.5rem 1.125rem; border: 1px solid transparent; border-radius: 10px; font-size: 0.9375rem; font-weight: 600; line-height: 1.25; text-align: center; white-space: nowrap; cursor: pointer; }
 .button svg { width: 1rem; height: 1rem; flex: none; }
 .button:focus-visible { outline: 2px solid var(--control-focus); outline-offset: 2px; }
 .button:disabled { cursor: not-allowed; }
@@ -58,7 +58,7 @@ summary.button::-webkit-details-marker { display: none; }
 /* Segmented control: a radio group rendered as one track of segments. Scrolls sideways when it cannot fit. */
 .segmented { display: inline-flex; max-width: 100%; gap: 2px; padding: 3px; border: 1px solid #e5e2db; border-radius: 12px; background: var(--control-track); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; }
 .segmented::-webkit-scrollbar { display: none; }
-.segment { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 0.6rem; min-height: 40px; padding: 0.35rem 0.9rem; border: 1px solid transparent; border-radius: 9px; color: var(--control-muted); font-size: 0.9375rem; font-weight: 500; white-space: nowrap; cursor: pointer; scroll-snap-align: start; transition: background-color 0.15s, border-color 0.15s, color 0.15s; }
+.segment { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 0.6rem; min-height: 40px; padding: 0.35rem 0.9rem; border: 1px solid transparent; border-radius: 9px; color: var(--control-muted); font-size: 0.9375rem; font-weight: 500; white-space: nowrap; cursor: pointer; scroll-snap-align: start; }
 .segment input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
 .segment:hover { color: var(--control-ink); }
 .segment:has(:checked) { border-color: #dddcd8; background: var(--control-surface); color: var(--control-ink); font-weight: 600; box-shadow: 0 1px 2px rgb(23 41 51 / 0.08); }
@@ -70,5 +70,3 @@ summary.button::-webkit-details-marker { display: none; }
 @media (min-width: 640px) { .segmented-fill { display: inline-flex; } .segmented-fill .segment { flex: none; } }
 .segment-swatch { width: 1.125rem; height: 1.125rem; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(23 41 51 / 0.14); }
 .segment-dot { width: 0.4rem; height: 0.4rem; flex: none; border-radius: 50%; background: var(--positive-mark); }
-
-@media (prefers-reduced-motion: reduce) { .button, .segment { transition: none; } }

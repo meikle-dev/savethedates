@@ -13,7 +13,7 @@
 
 /* Theme stepper: arrows cycle through the list; the dots below jump directly and scale to many themes. */
 .theme-stepper { display: grid; max-width: 40rem; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 0.5rem; }
-.theme-step { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--navy); cursor: pointer; transition: background-color 0.15s, border-color 0.15s; }
+.theme-step { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--navy); cursor: pointer; }
 .theme-step:hover { border-color: #cfccc4; background: #f8f6f0; }
 .theme-step:focus-visible { outline: 2px solid var(--control-focus); outline-offset: 2px; }
 .theme-step svg { width: 1.1rem; height: 1.1rem; transform: scaleX(-1); }
@@ -29,7 +29,7 @@
 .theme-dot { position: relative; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
 .theme-dot input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
 .theme-dot-swatch, .theme-dot-saved { pointer-events: none; }
-.theme-dot-swatch { width: 1.1rem; height: 1.1rem; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(23 41 51 / 0.14); transition: transform 0.15s, box-shadow 0.15s; }
+.theme-dot-swatch { width: 1.1rem; height: 1.1rem; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(23 41 51 / 0.14); }
 .theme-dot:hover .theme-dot-swatch { transform: scale(1.12); }
 .theme-dot:has(:checked) .theme-dot-swatch { transform: scale(1.12); box-shadow: 0 0 0 2px #fffdf9, 0 0 0 3.5px var(--navy); }
 .theme-dot:has(:focus-visible) { outline: 2px solid var(--control-focus); outline-offset: 0; }
@@ -51,7 +51,7 @@
   .preview-bar-main { grid-template-columns: minmax(0, 1fr) minmax(18rem, 26rem); align-items: end; gap: 1.5rem; }
   /* Theme stepper: arrows cycle through the list; the dots below jump directly and scale to many themes. */
 .theme-stepper { display: grid; max-width: 40rem; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 0.5rem; }
-.theme-step { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--navy); cursor: pointer; transition: background-color 0.15s, border-color 0.15s; }
+.theme-step { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; background: white; color: var(--navy); cursor: pointer; }
 .theme-step:hover { border-color: #cfccc4; background: #f8f6f0; }
 .theme-step:focus-visible { outline: 2px solid var(--control-focus); outline-offset: 2px; }
 .theme-step svg { width: 1.1rem; height: 1.1rem; transform: scaleX(-1); }
@@ -67,7 +67,7 @@
 .theme-dot { position: relative; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; }
 .theme-dot input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
 .theme-dot-swatch, .theme-dot-saved { pointer-events: none; }
-.theme-dot-swatch { width: 1.1rem; height: 1.1rem; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(23 41 51 / 0.14); transition: transform 0.15s, box-shadow 0.15s; }
+.theme-dot-swatch { width: 1.1rem; height: 1.1rem; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(23 41 51 / 0.14); }
 .theme-dot:hover .theme-dot-swatch { transform: scale(1.12); }
 .theme-dot:has(:checked) .theme-dot-swatch { transform: scale(1.12); box-shadow: 0 0 0 2px #fffdf9, 0 0 0 3.5px var(--navy); }
 .theme-dot:has(:focus-visible) { outline: 2px solid var(--control-focus); outline-offset: 0; }
@@ -76,4 +76,3 @@
 .preview-apply { flex-wrap: nowrap; }
   .preview-apply-text { flex: 1 1 auto; }
 }
-@media (prefers-reduced-motion: reduce) { .preview-bar[data-pending] ~ * { transition: none; } .theme-step, .theme-dot-swatch { transition: none; } }

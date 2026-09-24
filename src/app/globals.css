@@ -5,6 +5,7 @@
 @import "../features/weddings/wedding-themes.css";
 @import "../features/workspace/workspace.css";
 @import "../features/workspace/preview.css";
+@import "../components/motion.css";
 
 :root { --paper: #f8f5f0; --ink: #222222; --sage: #2f4f3e; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }

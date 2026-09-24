@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F031 and F034-F037 are Done. The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Next: F040**, then F038 and the eligible launch tickets. F033 is Ready but follows launch work; F032 awaits UX confirmation and F039 is optional. F042-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032 and F034-F037 are Done. The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Next: F040**, then F038 and the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F042-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -787,15 +787,15 @@ No export, sorting controls, bulk actions or new stored data.
 
 ## F032 - Subtle, fast motion across the site
 
-**Status:** Planned
+**Status:** Done (24 September 2026; explicitly selected by owner)
 **Priority / lead:** P3 / UX/UI Designer then Software Engineer; independent review of the final visual feature
 **Purpose:** Navigating and changing state should feel smooth and calm instead of abrupt, without slowing anything down.
-**Depends on:** F029, F030 (shared workspace shell/CSS). Becomes Ready when they are Done and UX has confirmed the motion list below against the current screens.
-**References:** `node_modules/next/dist/docs/01-app/02-guides/view-transitions.md` (Next.js 16.3.5 with React 19.3: `<ViewTransition>` from `react` works in the App Router without config, route navigations activate it, persistent elements use `viewTransitionName`, and there is a "Respecting reduced motion" section), `node_modules/next/dist/docs/01-app/03-api-reference/02-components/link.md` (`transitionTypes`, v16.2+), `src/app/layout.tsx`, `src/features/workspace/workspace.css`, `src/features/marketing/marketing.css`, `src/features/weddings/wedding.css`, `src/components/controls.css`, `docs/overview/site-ui.md`, `docs/ux/template-ui-summary.md`.
-**Proposed motion list:**
+**Depends on:** F029, F030 (Done). UX confirmed against the current workspace menu, guest correction rows, FAQ disclosures and shared twelve-theme renderers; prepared as Ready, then taken into engineering.
+**References:** `src/components/site-motion.tsx`, `src/components/motion.css`, `src/app/layout.tsx`, `tests/motion.spec.ts`, `docs/overview/site-ui.md` (Motion). The Next.js View Transitions guide was evaluated; that approach was rejected (see the motion list).
+**Confirmed motion list (UX, 24 September):**
 
-- A short crossfade (about 150-200ms, opacity plus at most an 8px translate) when moving between workspace sections, between the three wedding pages, and between marketing and account pages. Workspace and wedding headers/navigation stay fixed rather than animating.
-- Gentle open/close for the F029 section menu, row correction panels and disclosure panels.
+- A 180ms opacity reveal (65% to fully opaque) on the live main content when moving between workspace sections, between the three wedding pages, and between marketing and account pages. Workspace and wedding headers/navigation stay fixed. Native View Transition snapshots were evaluated and rejected because named participants suppress hit testing during animation; live content preserves immediate clicks and persistent layouts.
+- Fade newly opened F029 section menu, row correction panels and disclosure panels in 140ms. Close immediately so hidden controls leave focus order immediately and layout is never held open for motion.
 - A quick fade-in for success and error notices.
 - Consistent transitions of 150ms or less on control hover and press.
 
@@ -803,9 +803,19 @@ Excluded: parallax, scroll-triggered effects, animated page-load heroes, animati
 **Done when:**
 
 - Only `opacity`/`transform` are animated. Each animation lasts 250ms or less and never delays interaction or navigation. Content and focus are available immediately, with no layout shift and no animation on first load.
-- `prefers-reduced-motion: reduce` turns off transitions and view-transition animations everywhere. Browsers without View Transitions support work normally.
+- `prefers-reduced-motion: reduce` turns off all transitions, animations and the page fade everywhere. Browsers without the Web Animations API (`Element.animate`) navigate instantly and work normally.
 - All twelve wedding themes use the same motion behaviour. Previews and noindex/private headers are unchanged.
 - Browser checks cover reduced-motion (emulated), navigation still working with transitions, and absence of overflow. Visual inspection is done at mobile and desktop widths. `npm.cmd run check` passes, with no significant increase in client bundle size (record before/after). Motion guidance is recorded in `docs/overview/site-ui.md`.
+
+**Handoff (24 September 2026):** `SiteMotion` (root layout, client) fades the live `<main>` from 65% to 100% opacity over 180ms on pathname changes. It is skipped on first load and under reduced motion, cancelled if the preference changes, and does nothing without `Element.animate`. `motion.css` (imported last) holds every motion rule. It gives 140ms fades for new notices, correction panels and FAQ answers, and a 140ms keyframe fade plus 4px drop for the phone section menu. Using a keyframe animation means widening past 767px stops it immediately. It also sets 120ms opacity/transform control transitions with a 1px press offset (no hover lift, which can flicker), and one global reduced-motion rule. Duplicate transitions and per-file reduced-motion rules were removed from `controls.css`/`preview.css`, and control colour changes are now instant. Unused `::view-transition` rules were dropped because nothing starts view transitions. Headers sit outside `<main>`; layouts are not remounted. No data, route or header changes.
+- `npm.cmd run check` passed after the final code changes: lint, typecheck, 33 unit tests and production build. `git diff --check` passed.
+- After `docker compose restart app`, `E2E_BASE_URL=http://127.0.0.1:3000 npx.cmd playwright test --output=test-results/f032-final-suite` gave 79 passed, 3 failed. Two were `payments.spec.ts`, where the dev container's Stripe CLI webhook secret doesn't match the fixture signatures (as in F027). The other was `guests.spec.ts` [mobile]: a remove request spent 5.6s in server application code (container log) and missed the 5s expectation. `npx.cmd playwright test tests/guests.spec.ts` then passed 2/2.
+- The new `tests/motion.spec.ts` passed 12/12 desktop/mobile in that run. It checks for no first-load motion, fade duration/properties, a real click during a paused fade, cancellation on a reduced-motion change, all twelve themes, headers outside `<main>`, reduced and no-`Element.animate` fallbacks, workspace menu/Escape/focus, guest correction reveals, and 320px overflow. The dashboard nav test now waits for the menu reveal before measuring boxes; it passed 16/16 with `--repeat-each=8`.
+- Bundle, from production standalone builds of HEAD and of the F032 files: initial JS referenced by `/`, `/account/sign-in`, `/examples/minimal` and its Details page grew by 756 B raw / 239 B gzip each. Across all top-level `static/chunks/*.js`, the build went from 26 files / 1,176,285 B (346,085 gzip) to 27 / 1,191,304 B (349,954 gzip), because Next re-split router runtime into its own chunk.
+- Inspected the account, Guests workspace (normal and reduced) and Minimal theme screenshots at 390 and 1440px.
+- Independent reviewer: no Blocking or Important findings. All five Minor ones were fixed: hover lift removed, transitions consolidated, reduced-motion test assertions and header checks strengthened, slow-save timeouts, and backlog wording.
+- Not run: `payments.spec.ts` on Playwright's port-3100 server, because a leftover `next dev --port 3200` from 23 September (PID 35304) blocks a second dev server in this checkout. Also not run: Safari/Firefox, a real screen reader, the production container and hosted CI.
+- Observation, not caused by F032: guest correction/removal server actions occasionally take ~5s in application code (twice in this session, against 0.2-0.4s normally). Product Manager to triage whether to investigate. Blockers: none. Next: F040.
 
 ## F033 - Manually invoked Innovation role
 

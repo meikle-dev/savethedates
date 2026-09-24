@@ -1,0 +1,24 @@
+/* Only newly revealed content fades; closing never retains hidden controls. */
+html[data-motion-ready] :is(.form-notice, .form-error, .field-error, .preview-apply-success, .guest-panel:not([hidden]) form) {
+  transition: opacity 140ms ease-out;
+  @starting-style { opacity: 0; }
+}
+/* Native details uses content-visibility, so its children need an open-state animation. */
+html[data-motion-ready] details[open] > :not(summary) { animation: disclosure-in 140ms ease-out; }
+@keyframes disclosure-in { from { opacity: 0; } to { opacity: 1; } }
+/* An animation, unlike a running transition, stops as soon as a wider layout no longer matches. */
+@media (max-width: 767px) {
+  html[data-motion-ready] .ws-nav ul[data-open] { animation: menu-in 140ms ease-out; }
+}
+@keyframes menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+/* The single home for control transitions. No hover lift: moving under the pointer can make hover flicker. */
+:is(.button, .marketing-button, .rsvp-submit, .theme-step, .theme-dot-swatch) {
+  transition: opacity 120ms ease-out, transform 120ms ease-out;
+}
+:is(.button, .marketing-button, .rsvp-submit, .theme-step):not(:disabled):active { transform: translateY(1px); }
+
+/* Covers every transition and animation on the site, including older per-component ones. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
