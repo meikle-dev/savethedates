@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket.
+Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F035 (Coastal, Riviera, Velvet, Black Tie) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket.
 
 ## Status and handoff rules
 
@@ -748,6 +748,30 @@ No export, sorting controls, bulk actions or new stored data.
 - Independent review (first pass): no Blocking findings. Important I1 said the photo-framing editor showed Minimal's shapes for the new themes; fixed with per-theme frame rules in `globals.css` (arch, oval, wide fade), measured in the browser. Minor fixes: Evening Gold's shadow no longer leaks into the editor; the integration theme loop derives from the registry. Important I2 (asset provenance) is deferred as an F009 release blocker. After the fixes: tsc, lint and `npm.cmd run test:integration` 21/21 passed; `npx.cmd playwright test tests/themes.spec.ts tests/publication.spec.ts --output=test-results/f034-review-fixes` passed 4/4; `git diff --check` passed. Re-review found no remaining Blocking or Important findings.
 - Deploy the migration before the application. Blockers: None for F034 (asset provenance tracked on F009). Next: resume F009 or prepare F033.
 
+## F035 - Coastal, Riviera, Velvet and Black Tie themes
+
+**Status:** Done (24 September 2026)
+**Priority / lead:** P2 / Software Engineer (routine UX decisions resolved in the theme docs); independent review required (database constraint change, significant visual feature)
+**Purpose:** Add four more styles to the whole-site theme picker, using the owner-supplied high-fidelity WebP botanicals and RSVP backdrops.
+**Depends on:** F034 (Done)
+**References:** `docs/ux/designs/themes/theme-list.md`, `docs/ux/template-ui-summary.md#f035-themes-coastal-riviera-velvet-black-tie`, `public/assets/wedding/README.md` (F035 section), `src/features/weddings/wedding-themes.css`.
+**Scope:** Owner request of 24 September 2026. The themes work like F034's: the same content, pages, states and behaviour, with their own hero, Details and RSVP composition. Botanicals are the supplied WebPs, not SVGs. Server and database accept exactly the twelve IDs. Homepage previews and copy are updated to twelve. No new stored data.
+**Done when:** All twelve themes work in preview, Apply theme, published pages and public examples. Text meets WCAG AA. No overflow from 320 to 1440px. Swatches are distinguishable. Checks pass, and independent review has no outstanding Blocking or Important findings.
+**Handoff:** The registry (`themes.ts`, light-to-dark order) and font map reuse existing self-hosted families. Migration `20260924000200_coastal_riviera_velvet_black_tie_themes.sql` extends the theme check and framing validator. Tokens and CSS compositions are appended to `wedding-themes.css`, and framing-editor shapes are in `globals.css`. Homepage phone previews for the four themes come from `scripts/capture-theme-previews.mjs` (list extended). Twelve-theme copy is on the homepage, metadata, share card and purchase panel, and theme card numbers are zero-padded so the grid reads 10–12 rather than 010. `tests/theme-design.spec.ts` now expects the WebP artwork (768×1152) for the new themes.
+- Passed: `npx.cmd supabase migration up --local` (existing data kept). `npm.cmd run check` passed (lint, typecheck, 33 unit tests, production build). `npm.cmd run test:integration` passed 21/21; the owner theme loop covers all twelve IDs against the new constraint. With `$env:E2E_BASE_URL='http://127.0.0.1:3000'`, `npx.cmd playwright test tests/theme-design.spec.ts tests/themes.spec.ts tests/marketing.spec.ts tests/details.spec.ts tests/rsvp-preview.spec.ts tests/rsvp.spec.ts tests/publication.spec.ts --output=test-results/f035-themes` passed 44/44 on desktop and mobile (overflow 320–1440px, failed-photo fallbacks, artwork decode).
+- Inspected at 390px and 1440px: Save the Date, Details and the owner RSVP preview for each new theme; failed-photo fallbacks at 320px; the homepage theme grid; and the Design panel. The photo boxes were measured in the browser to set the framing shapes. Contrast was computed (see the UX summary).
+- The development container needed `docker compose restart app` to pick up the CSS.
+- Not run: Safari/Firefox, production container, hosted CI, published-page RSVP success/closed states beyond the existing specs.
+- Asset provenance for the supplied WebPs is not recorded; this is added to the F009 release blockers, as for F034. The WebP botanicals are 48–146 KB each (see the README note on optional resized derivatives).
+- Independent review found no Blocking or Important findings. Two Minor findings were fixed: the picker-order comment in `themes.ts` was inaccurate, and `tests/integration/publication.test.ts` now saves `black-tie` framing against the database validator. After the fixes, `npm.cmd run test:integration` passed 21/21 and lint and typecheck passed.
+- Deferred Minor findings, all shared with or following the F034 approach:
+  - Riviera and Velvet photo heights follow the text column, so long messages lengthen the real crop compared with the editor.
+  - Tablet (621–900px) crops are not modelled in the editor.
+  - The editor does not model Coastal's 18px scalloped mask.
+  - WebP weight is noted in the README.
+  - The ivory orchid is faint on Black Tie's ivory RSVP card, which is decorative only.
+- Deploy the migration before the application. Blockers: none for F035 (asset provenance tracked on F009). Next: resume F009 or prepare F033.
+
 ## F032 - Subtle, fast motion across the site
 
 **Status:** Planned
@@ -807,7 +831,7 @@ Excluded: parallax, scroll-triggered effects, animated page-load heroes, animati
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: source and licence record for the F034 botanicals and RSVP backdrops supplied on 23 September 2026 (see `public/assets/wedding/README.md`); owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. F013-F024 are Done and the F021-F022 dispositions are recorded. F023 is not an additional release gate.
+- Blockers: source and licence record for the F034 botanicals and RSVP backdrops supplied on 23 September 2026 and the F035 WebP botanicals and backdrops supplied on 24 September 2026 (see `public/assets/wedding/README.md`); owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. F013-F024 are Done and the F021-F022 dispositions are recorded. F023 is not an additional release gate.
 
 ## F010 - Post-launch extensions
 

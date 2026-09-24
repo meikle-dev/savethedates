@@ -106,6 +106,7 @@ it("validates, isolates and narrowly publishes per-theme photo framing, then res
     minimal: { saveTheDate: { x: 22, y: 78, zoom: 1.25 }, details: { x: 66, y: 35, zoom: 1.5 } },
     romantic: { saveTheDate: { x: 10, y: 90, zoom: 2 } },
     "evening-gold": { details: { x: 30, y: 40, zoom: 1.2 } },
+    "black-tie": { saveTheDate: { x: 40, y: 60, zoom: 1.1 } },
   };
   expect((await owner.from("weddings").update({ photo_framing: framing }).eq("id", id)).error).toBeNull();
   for (const invalid of [

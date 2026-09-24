@@ -56,6 +56,15 @@ a:focus-visible { outline: 2px solid var(--sage); outline-offset: 6px; border-ra
 .photo-framing-viewport[data-page="saveTheDate"][data-theme="countryside"][data-preview-size="desktop"] { aspect-ratio: 29 / 30; }
 .photo-framing-viewport[data-page="saveTheDate"][data-theme="evening-gold"][data-preview-size="mobile"] { aspect-ratio: 3 / 4; border-radius: 50%; }
 .photo-framing-viewport[data-page="saveTheDate"][data-theme="evening-gold"][data-preview-size="desktop"] { aspect-ratio: 17 / 22; border-radius: 50%; }
+/* F035 frames, measured at 390px and 1440px. */
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="coastal"][data-preview-size="mobile"] { aspect-ratio: 39 / 38; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="coastal"][data-preview-size="desktop"] { aspect-ratio: 50 / 21; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="riviera"][data-preview-size="mobile"] { aspect-ratio: 33 / 38; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="riviera"][data-preview-size="desktop"] { aspect-ratio: 12 / 17; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="velvet"][data-preview-size="mobile"] { aspect-ratio: 83 / 100; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="velvet"][data-preview-size="desktop"] { aspect-ratio: 37 / 50; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="black-tie"][data-preview-size="mobile"] { aspect-ratio: 33 / 34; }
+.photo-framing-viewport[data-page="saveTheDate"][data-theme="black-tie"][data-preview-size="desktop"] { aspect-ratio: 57 / 25; }
 .photo-framing-viewport[data-page="details"][data-preview-size="mobile"] { aspect-ratio: 39 / 21; }
 .photo-framing-viewport[data-page="details"][data-preview-size="desktop"] { aspect-ratio: 124 / 33; }
 .photo-framing-viewport[data-page="details"][data-theme="romantic"] { border-radius: 999px 999px 0 0; }

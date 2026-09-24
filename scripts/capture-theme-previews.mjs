@@ -5,7 +5,7 @@ import { chromium } from "@playwright/test";
 import sharp from "sharp";
 
 const base = process.argv[2] ?? "http://127.0.0.1:3000";
-const allThemes = ["minimal", "romantic", "bold", "terracotta", "heather", "alcantara", "countryside", "evening-gold"];
+const allThemes = ["minimal", "romantic", "bold", "terracotta", "heather", "coastal", "riviera", "alcantara", "countryside", "velvet", "black-tie", "evening-gold"];
 const themes = process.argv.length > 3 ? process.argv.slice(3) : allThemes;
 const outDir = "public/media/themes";
 

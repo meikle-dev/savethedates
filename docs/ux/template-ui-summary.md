@@ -4,7 +4,7 @@
 
 SaveTheDates allows couples to create a simple, beautiful wedding website for their guests.
 
-At launch, couples will be able to choose from **three professionally designed themes**. F034 adds five more (eight in total); see [Additional themes (F034)](#additional-themes-f034).
+At launch, couples will be able to choose from **three professionally designed themes**. F034 adds five more and F035 four more (twelve in total); see [Additional themes (F034)](#additional-themes-f034) and [F035 themes](#f035-themes-coastal-riviera-velvet-black-tie).
 
 All themes provide the same core functionality:
 
@@ -379,3 +379,21 @@ Every card stays opaque, so the desktop card never covers a backdrop's decorated
 - Controls: choices and submit are **pills** (`border-radius: 999px`); submit is plum with white text.
 
 **Choice fills:** choices keep light fills in the style of `#fffefa`, except inside Evening Gold's scoped ivory card.
+
+
+## F035 themes: Coastal, Riviera, Velvet, Black Tie
+
+Palettes, swatches and type are in [theme-list.md](designs/themes/theme-list.md). These themes use the markup and CSS approach from F034, and their CSS is at the end of `wedding-themes.css`. Their botanicals are the supplied 768×1152 transparent WebPs, which have the same 2:3 shape as the SVGs, in every botanical slot. Riviera uses lemon blossom as its primary graphic (footer, Details divider, RSVP card, first fallback sprig) and citrus sprig as its secondary one (announcement sprig, second fallback sprig, RSVP intro).
+
+**Picker order:** minimal, romantic, bold, terracotta, heather, coastal, riviera, alcantara, countryside, velvet, black-tie, evening-gold.
+
+| Theme | Save the Date hero | Details | RSVP (phone / desktop ≥901px) |
+|---|---|---|---|
+| Coastal | Sea-glass gradient column; the full-width photo (520px tall, 440px up to 900px wide, 380px on phones) ends in a scalloped wave mask; centred text; sea holly sprig. | Scalloped photo band on sea glass | Sea-glass gradient / `coastal-rsvp-seaglass.webp` left, content from 28%. Card has a 4px accent top border. |
+| Riviera | Linen weave with a scalloped cabana awning at the top; text on the left; photo on the right in a 12px diagonal-striped frame. On phones it becomes a centred column. | Photo over a 12px awning stripe; linen content | Linen with awning and citrus intro sprig / `riviera-rsvp-linen.webp` left, content from 36%. Card has a striped top edge. |
+| Velvet | Claret velvet cover; photo on the left with a double gold hairline; ivory text on the right with gold kicker, `em` and rule. On phones it becomes a centred column. The rose sprig is hidden on claret. | Velvet band, photo inset 20px with a gold hairline | Blush gradient / `velvet-rsvp-claret.webp` left, content from 38%. Card has a gold border and inner outline. |
+| Black Tie | Ivory card inside a black 24px / ivory 8px / black 1px letterpress border (12/5/1px on phones); centred landscape photo, text and orchid below. | Black band, photo inset 18px; square outlined icons | 10px black top border / `black-tie-rsvp-letterpress.webp` left, content from 30%. Card has a black double rule. |
+
+Photo-framing editor shapes (in `globals.css`, measured at 390/1440px): Coastal 39/38 and 50/21; Riviera 33/38 and 12/17; Velvet 83/100 and 37/50; Black Tie 33/34 and 57/25. Details frames use the shared shapes.
+
+**Contrast (computed):** Coastal text/surface 13.02, muted 6.02, accent/paper 6.41. Riviera text 13.37, muted 6.06, accent/tint 7.56. Velvet text 15.78, muted 7.14; ivory on claret `#4A141C` 13.78, gold on claret 7.82, blush location `#E6D3CD` on claret 10.34. Black Tie text 17.65, muted 7.35. White on each accent is at least 8.08.

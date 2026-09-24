@@ -14,7 +14,14 @@ for (const theme of themeIds) {
     await expect(decoration).toHaveAttribute("aria-hidden", "true");
     await expect(decoration).toHaveCSS("pointer-events", "none");
     // Alcantara deliberately has no illustration: stitching and cognac rules replace it.
-    const asset = { minimal: "minimal-olive", romantic: "romantic-rose", bold: "bold-laurel", terracotta: "mediterranean-citrus", heather: "meadow-wildflower", alcantara: null, countryside: "autumn-dahlia", "evening-gold": "winter-hellebore" }[theme];
+    // F035 themes use supplied 768×1152 WebP botanicals instead of 240×360 SVGs (same 2:3 shape).
+    const svg = (name: string) => ({ path: `/assets/wedding/flowers/${name}.svg`, width: 240, height: 360 });
+    const webp = (name: string) => ({ path: `/assets/wedding/high-fid-graphics/${name}.webp`, width: 768, height: 1152 });
+    const asset = {
+      minimal: svg("minimal-olive"), romantic: svg("romantic-rose"), bold: svg("bold-laurel"), terracotta: svg("mediterranean-citrus"), heather: svg("meadow-wildflower"),
+      coastal: webp("coastal-sea-holly"), riviera: webp("riviera-lemon-blossom"), alcantara: null, countryside: svg("autumn-dahlia"),
+      velvet: webp("velvet-claret-rose"), "black-tie": webp("black-tie-ivory-orchid"), "evening-gold": svg("winter-hellebore"),
+    }[theme];
     if (asset) {
       const artwork = await decoration.evaluate(async element => {
         const source = getComputedStyle(element).backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1];
@@ -24,7 +31,7 @@ for (const theme of themeIds) {
         await image.decode();
         return { path: new URL(source).pathname, width: image.naturalWidth, height: image.naturalHeight };
       });
-      expect(artwork).toEqual({ path: `/assets/wedding/flowers/${asset}.svg`, width: 240, height: 360 });
+      expect(artwork).toEqual(asset);
     } else await expect(decoration).toBeHidden();
     await expect(page.locator(".wedding-photo img")).toHaveJSProperty("naturalWidth", 1400);
     await expect(page.locator(".wedding-photo img")).toHaveCSS("object-position", "46% 52%");

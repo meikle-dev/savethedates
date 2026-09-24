@@ -60,6 +60,15 @@
 .theme-terracotta .phone-preview { transform: rotate(-5deg); }
 .theme-heather .theme-visual { background: #e6dee8; }
 .theme-heather .phone-preview { transform: rotate(4deg); }
+.theme-coastal .theme-visual { background: #d3e0dc; }
+.theme-coastal .phone-preview { transform: rotate(-4deg); }
+.theme-riviera .theme-visual { background: #f1e4bd; }
+.theme-riviera .phone-preview { transform: rotate(3deg); }
+.theme-velvet .theme-visual { background: #5a1822; }
+.theme-velvet .phone-preview { transform: rotate(-3deg); box-shadow: 0 0 0 2px #d9b77c, 8px 20px 35px #0006; }
+.theme-velvet .theme-number { color: #faf5f1; }
+.theme-black-tie .theme-visual { background: #e2dfd8; }
+.theme-black-tie .phone-preview { transform: rotate(4deg); }
 .theme-number { position: absolute; top: 20px; left: 20px; font: italic 17px Georgia, serif; }
 .theme-caption { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
 .theme-caption h3 { font: 24px Georgia, serif; letter-spacing: -.6px; }

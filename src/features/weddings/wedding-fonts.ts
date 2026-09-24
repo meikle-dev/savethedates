@@ -18,6 +18,7 @@ const themeFonts: Record<WeddingTheme, readonly { variable: string }[]> = {
   minimal: [], romantic: [], bold: [],
   alcantara: [jost], countryside: [caslon, workSans], "evening-gold": [bodoni, manrope],
   terracotta: [gloock, dmSans], heather: [garamond, figtree],
+  coastal: [manrope], riviera: [garamond, dmSans], velvet: [workSans], "black-tie": [bodoni, jost],
 };
 
 /** Font variable classes for one theme; the shared serif is always available. */
