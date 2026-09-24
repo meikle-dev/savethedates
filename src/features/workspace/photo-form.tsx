@@ -35,7 +35,7 @@ export function PhotoForm({ published, photo, photoFraming, theme }: { published
     const file = event.currentTarget.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      setFileError("Choose a photo up to 5 MiB.");
+      setFileError("That photo is over 5 MB. Choose a smaller one.");
       event.currentTarget.value = "";
       photoButton.current?.focus();
       return;
@@ -51,7 +51,7 @@ export function PhotoForm({ published, photo, photoFraming, theme }: { published
     </div>}
     <form action={photoAction} className="mt-6" aria-busy={photoPending}>
       <input ref={photoInput} id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" tabIndex={-1} aria-label="Photo file" aria-describedby="photo-help" onChange={photoSelected} />
-      <p id="photo-help" className="field-help">JPEG, PNG or WebP, up to 5 MiB and 25 megapixels. Still photos only.</p>
+      <p id="photo-help" className="field-help">A JPEG, PNG or WebP photo up to about 5 MB. Still photos only.</p>
       {fileError && <p role="alert" className="form-error mt-4">{fileError}</p>}
       <div className="mt-5 flex flex-wrap items-center gap-4">
         <button ref={photoButton} type="button" className="button button-primary" onClick={choosePhoto} disabled={photoPending}>{photoPending ? "Uploading photo…" : photoPresent ? "Change photo" : "Choose photo"}</button>

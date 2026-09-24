@@ -195,7 +195,7 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
     await openSection("Design");
     await page.getByLabel("Photo file").setInputFiles({ name: "oversized.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(7 * 1024 * 1024) });
-    await expect(page.getByRole("alert").filter({ hasText: "up to 5 MiB" })).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: "over 5 MB" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Change photo" })).toBeFocused();
     await page.getByRole("button", { name: "Remove photo" }).click();
     await expect(page.getByRole("status").filter({ hasText: "photo has been removed" })).toBeVisible();

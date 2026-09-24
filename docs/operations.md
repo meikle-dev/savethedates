@@ -23,6 +23,31 @@ Build the existing Dockerfile's `production` target from the reviewed commit; ta
 
 The image excludes `.env*`; set all six values at runtime. Never copy the generated local `.env.docker` to a hosted environment. Local fixture keys and Stripe placeholders are unusable for real Checkout. Use `/` for a basic HTTP 200 liveness probe; it deliberately does not test database, email or billing connectivity.
 
+## Memory and photo uploads
+
+Photo decoding is the main memory risk on a small host (F037: Render Starter, 512 MB, 0.5 CPU). Each server instance processes one photo at a time. Up to three more uploads wait, for at most 20 seconds each. Any other upload gets "Photo uploads are busy — please try again in a moment" and nothing is saved. libvips runs with one thread and no operation cache. The production image sets `MALLOC_ARENA_MAX=2` to limit glibc fragmentation.
+
+Measured on 24 September 2026 with the production image run locally using `docker run --memory=512m --cpus=0.5` against local Supabase. Each burst was five near-simultaneous 5000×5000 uploads (three JPEG, two PNG) while a published wedding page received 10 requests per second. Each row covers three bursts on one container:
+
+| | Before F040 | After F040 |
+| --- | --- | --- |
+| Idle memory | 97 MiB | 85 MiB |
+| Peak memory per burst | 402, 447, 489 MiB (still rising; 96% of the limit) | 197, 210, 210 MiB (41%) |
+| Memory kept after the burst | 339, 442, 483 MiB | 185, 180, 189 MiB |
+| Guest page p95, no uploads | 10 ms | 11–12 ms |
+| Guest page p95, during uploads | 6.0–6.3 s | 0.38–0.60 s |
+| Upload outcome | 5 saved after 8–10 s | 4 saved one after another in 2–8.5 s; 1 busy message |
+
+For comparison, jemalloc peaked at 239 MiB with a p95 of 0.44–0.59 s during uploads and needs an extra system package. The new code without an allocator setting peaked at 296, 335 and 366 MiB, still rising. One photo alone (0.5 CPU) peaks at about 65 MiB for a 25 MP JPEG, 50 MiB for a 24 MP WebP and 38 MiB for a 25 MP PNG. Orienting a photo before resizing it would roughly double the JPEG figure, so orientation is applied after resizing.
+
+Upgrade to Render Standard (2 GB) if any of these happen:
+
+- memory is regularly above about 70% (360 MB on Starter);
+- the service restarts after running out of memory;
+- guest page response times rise at busy times.
+
+These are local Docker figures. Repeat the same check on F009 staging once the host exists.
+
 ## Database, email and payments
 
 1. Verify the target project identifier and environment before any database write. Capture a recoverable database backup and separate Storage backup before upgrading an existing environment. On a new staging project, apply all committed `supabase/migrations/` in order using the pinned repository CLI. For a deliberately linked project, inspect `npx supabase migration list`, then `npx supabase db push --dry-run`, review the pending SQL, and only then run `npx supabase db push`. Do not run local reset, test fixtures or local environment generation against production.
