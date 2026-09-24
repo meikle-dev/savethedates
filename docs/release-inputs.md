@@ -4,24 +4,24 @@ Fill in the non-secret decisions and identifiers below when they are available. 
 
 ## 1. Production ownership and hosting
 
-- [ ] Production host/provider: `
+- [x] Production host/provider: `Render (Hobby workspace; production on a Starter web service, deployed from the GHCR image) — approved 24 September 2026, see F037`
 - [ ] Hosting account/project identifier: `
-- [ ] Deployment region: `
+- [x] Deployment region: `Frankfurt (EU Central)`
 - [ ] Production domain: `
 - [ ] DNS access available: `yes / no`
-- [ ] TLS/HTTPS will be managed by: `
+- [x] TLS/HTTPS will be managed by: `Render (automatic certificates for custom domains)`
 - [ ] Monthly spending limit or approval: `
-- [ ] Staging host/domain, if separate: `
+- [x] Staging host/domain, if separate: `Separate Render service on the free instance, using its onrender.com address; password-protected (F041)`
 - [ ] Person authorised to approve deployment: `
 
-The host must run the existing Docker production image, support HTTPS, environment secrets, health checks, logs, restarts, and a rollback to the previous image. Proposed host: [F037](backlog.md#f037---choose-the-production-host); error tracking and analytics: F038 and F039 in the backlog.
+The host must run the existing Docker production image, support HTTPS, environment secrets, health checks, logs, restarts, and a rollback to the previous image. Proposed host: [F037](backlog.md#f037---choose-the-production-host). Step-by-step setup: [F041](backlog.md#f041---production-setup-guide). Error tracking and analytics: F038 and F039.
 
 ## 2. Supabase production project
 
 - [ ] Managed Supabase project reference: `
 - [ ] Supabase organisation/project owner: `
 - [ ] Production project is separate from local and staging: `yes / no`
-- [ ] Database region: `
+- [x] Database region: `Central EU (Frankfurt), to sit next to the app; production on Supabase Pro, staging on Free`
 - [ ] Supabase plan supports the expected usage: `yes / no / review needed`
 - [ ] Database backup/PITR plan selected: `
 - [ ] Storage backup destination selected: `
@@ -82,8 +82,8 @@ These choices are required before implementing and testing export/deletion. The 
 
 - [ ] Incident contact name: `
 - [ ] Incident contact email/phone: `
-- [ ] Monitoring/alert destination: `
-- [ ] Log retention period: `
+- [x] Monitoring/alert destination: `rmeikle55@gmail.com (Sentry and Render alerts)`
+- [x] Log retention period: `30 days`
 - [ ] Recovery point objective (maximum acceptable data loss): `
 - [ ] Recovery time objective (maximum acceptable outage): `
 - [ ] Backup restore drill owner: `

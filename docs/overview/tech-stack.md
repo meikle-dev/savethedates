@@ -193,7 +193,7 @@ Docker support is required for portable local running and deployment. Package th
 
 Use the Supabase CLI's Docker-based local stack for database, authentication, and storage development when those features are introduced. Keep these services separate from the application container. Prefer managed Supabase in production rather than taking on database hosting operations.
 
-Choose a container-capable application host during release preparation. Vercel is an optional source-based hosting alternative; it is not the required Docker image deployment path. Avoid provider-specific dependencies and unnecessary orchestration.
+Production host (F037, approved 24 September 2026): Render in Frankfurt. CI publishes the tested production image to GHCR, and Render deploys it by commit tag. Production runs on a Starter instance and staging on the free instance. Managed Supabase projects are in the same region. Error tracking uses Sentry (EU region, F038) and analytics uses PostHog EU Cloud in cookieless mode (F039). These are the approved vendor SDKs; avoid other provider-specific dependencies and unnecessary orchestration.
 
 The canonical setup and running guide is the root `run-app-instructions.md`, initially empty and populated with verified commands during implementation. See [architecture.md](architecture.md) for the delivery requirements.
 

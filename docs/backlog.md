@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F035 (Coastal, Riviera, Velvet, Black Tie) is Done. F036 (WebP botanicals replace the SVGs) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket. F037 (production host), F038 (error tracking and AI-queryable logs) and F039 (visitor analytics) are Planned pending owner decisions; F037-F038 gate F009. F040 (photo-upload memory limits for a 512 MB host) is Ready and also gates F009.
+Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F035 (Coastal, Riviera, Velvet, Black Tie) is Done. F036 (WebP botanicals replace the SVGs) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket. F037 (production host: Render, Frankfurt) is Done. F038 (error tracking and AI-queryable logs), F040 (photo-upload memory limits) and F041 (production setup guide) are Ready. F039 (visitor analytics) becomes Ready after F038. F038, F040 and F041 gate F009.
 
 ## Status and handoff rules
 
@@ -825,7 +825,7 @@ Excluded: parallax, scroll-triggered effects, animated page-load heroes, animati
 
 ## F037 - Choose the production host
 
-**Status:** Planned (awaiting owner approval)
+**Status:** Done (24 September 2026)
 **Priority / lead:** P1, unblocks F009 provisioning / Product Manager decision; no application change.
 **Purpose:** Record the production host so F009 staging, F038 and F039 can proceed.
 **Depends on:** None.
@@ -837,7 +837,13 @@ Excluded: parallax, scroll-triggered effects, animated page-load heroes, animati
   - health check on `/`, restarts and zero-downtime deploys;
   - rollback to a retained earlier image digest.
 - Create the managed Supabase project in the same region (eu-central-1) so database round trips stay short.
-- Run staging and production as separate services, and confirm current plan pricing when provisioning.
+- Run staging and production as separate services.
+- **Plans and cost (checked 24 September 2026):**
+  - **Render:** Hobby workspace ($0: one member, 2 custom domains, 5 GB bandwidth, then $0.15/GB). Production on a Starter instance, $7/mo (512 MB, 0.5 CPU, always on). Staging on the free instance, which sleeps when idle; that's fine for testing. Render's $25 Pro workspace isn't needed.
+  - **Supabase:** production on Pro, $25/mo (daily backups kept 7 days; the project never pauses). Staging on Free.
+  - **Monitoring and email:** Sentry, PostHog and Resend all stay on free plans.
+  - **Launch total:** about $32/mo, plus the domain and Stripe's per-sale fee.
+- **Capacity:** one Starter instance comfortably serves expected guest traffic. The memory risk from photo uploads is handled by F040. Upgrade to Standard ($25/mo, 2 GB) if memory regularly runs above about 70% or the service restarts from running out of memory.
 
 Alternatives considered:
 
@@ -845,12 +851,13 @@ Alternatives considered:
 - **Vercel** is rejected: it abandons the Docker image path, and its Hobby plan excludes commercial use.
 - **Cloud Run/AWS and a self-managed VPS** add more operations than this service needs.
 
-**Owner decision:** Approve Render in Frankfurt with Supabase in eu-central-1, or name another host or region.
+**Owner decision:** Approved on 24 September 2026: Render in Frankfurt with Supabase in the same region. The owner is based in Northern Ireland and serves UK and Ireland customers. Frankfurt adds only about 20–30 ms of latency for them, and it is in the EU, which UK GDPR recognises as adequate.
+**Handoff:** Recorded in `release-inputs.md` sections 1–2 and `tech-stack.md` Hosting; F009 depends on it. `git diff --check` passed. Blockers: none. Next: F040, then F038.
 **Done when:** The decision is recorded in `release-inputs.md` section 1 and `tech-stack.md` Hosting; F009 references it; `git diff --check` passes.
 
 ## F038 - Error tracking and AI-queryable logs
 
-**Status:** Planned (awaiting owner decisions)
+**Status:** Ready
 **Priority / lead:** P1, release gate for F009 monitoring / Software Engineer. Independent security and privacy review is required: this adds a third-party processor and touches secret-bearing URLs and owner/guest data.
 **Purpose:** When something breaks in production, the owner is alerted and can find out what failed, since when and for whom. They can do this by asking Claude through MCP, as well as in dashboards.
 **Depends on:** F037 (host). Implementation and local verification can happen before the host exists; hosted alert and retention checks happen on F009 staging.
@@ -862,7 +869,7 @@ Alternatives considered:
   - server, Server Action and Route Handler errors through `instrumentation.ts` `onRequestError`;
   - browser errors.
 - Events are tagged with the commit (release) and environment. Email alerts go to the incident contact for new, regressed and spiking issues.
-- A small structured logger writes JSON to stdout, the host-side fallback. It also forwards warnings, errors and key operational events to Sentry Logs, so logs are queryable next to errors through the Sentry MCP server. Operational events include a rejected webhook, a checkout attempt conflict and an SMTP/auth failure.
+- A small structured logger writes JSON to stdout, the host-side fallback. It also forwards warnings, errors and key operational events to Sentry Logs, so logs are queryable next to errors through the Sentry MCP server. The logging standard below defines how it is built and where it is called.
 - Supabase's own Postgres/Auth/Storage/API logs stay in Supabase, read through the Supabase MCP server.
 
 **Scope:**
@@ -876,6 +883,42 @@ Alternatives considered:
 - **Runtime configuration.** Keep one image for all environments: no `NEXT_PUBLIC_*` build-time keys. Client configuration comes from a no-store runtime source, for example a small dynamic config script or route. Static pages such as `/examples` must not freeze empty values at build time; a test proves a prebuilt image picks up keys at runtime. Nothing is sent when the configuration is unset (local, CI, tests).
 - **Source maps.** Build hidden source maps with debug IDs inside Docker, without a token. CI copies the maps out of the build stage and uploads them with `sentry-cli` using a CI-only `SENTRY_AUTH_TOKEN`. The maps are removed before the final image. Confirm that the pinned SDK version supports this repository's Next.js/Turbopack standalone build.
 - **Request ID.** Each request gets an ID that links the log line, the Sentry event and any user-visible error reference.
+
+**Logging standard:** logs must be clean, consistent and easy to follow. Reading one request ID should tell the story of that request.
+
+- **One logger.** A single module, for example `src/lib/logger.ts`, is the only way server code logs. An ESLint `no-console` rule enforces this everywhere except the logger itself.
+- **Event names.**
+  - Every log line has a stable event name in the form `area.action.outcome`, for example `rsvp.submit.accepted`, `payment.webhook.rejected` or `photo.upload.failed`.
+  - Names come from one typed list, so they can't drift, and messages are never free text.
+  - The list is documented in `docs/operations.md`.
+- **Fields.**
+  - Every line carries: timestamp, level, event, request ID, environment, release and route template.
+  - Extra fields come from a typed allow-list: `ownerId`, `weddingId`, `stripeEventId`, `eventType`, `reason`, `durationMs` and `count`.
+  - Arbitrary objects, form data, names, emails and URLs with query strings can't be passed.
+  - Everything goes through the scrubber.
+- **Levels.**
+  - `error`: needs attention and triggers alerts.
+  - `warn`: an expected but notable failure, such as a rejection, a rate limit or a bad webhook signature.
+  - `info`: a key business event.
+  - `debug`: local only.
+- **Output.** Production writes one JSON line per event. Local development prints readable one-line output.
+- **Clean call sites.**
+  - A small helper, such as `withLogging("area.action", fn)`, wraps each Server Action and Route Handler. It records the outcome, the duration and any unexpected error once.
+  - Action code only adds a line at meaningful decision points, such as `reason: "rsvp_closed"`.
+  - Each failure is logged once, where it is handled. No log-and-rethrow chains and no duplicate lines.
+  - Unexpected errors reach Sentry through `onRequestError` and the existing `error.tsx` boundaries.
+- **Where to log.** Required events at each place:
+
+  | Area | Where | Events |
+  | --- | --- | --- |
+  | Account | `src/features/account/actions.ts`, `src/app/auth/confirm/route.ts` | signup requested; email confirmed; confirm link invalid or expired; sign-in failed (reason only, never the email); recovery requested; sign-out failed |
+  | Workspace | `src/features/workspace/actions.ts`, `details-actions.ts`, `theme-action.ts`, `photo-framing-action.ts` | save succeeded or failed per section; ownership check denied |
+  | Photos | `src/features/workspace/publication-actions.ts`; `src/app/[weddingSlug]/photo`, `src/app/dashboard/photo` and `src/app/preview-photo` route handlers | upload accepted, or rejected with a reason (size, type, pixels, busy per F040); processing duration; storage upload or read failure |
+  | Publication | `src/features/workspace/publication-actions.ts` | published; unpublished; publish blocked with no entitlement |
+  | Payments | `src/features/payments/payment-actions.ts`, `src/app/api/stripe/webhook/route.ts` | checkout created, reused or conflicted; Stripe API failure; webhook received (type and ID); signature rejected; duplicate ignored; entitlement granted or revoked (refund, dispute); processing failure |
+  | RSVP | `src/features/workspace/rsvp-actions.ts`, the `/s/[secret]/…` routes | submission accepted, or rejected with a reason (closed, rate limited, capacity, invalid link); shared link rotated; owner correction or removal |
+
+  New server features follow the same pattern. The event list and the "Where to log" table are kept up to date with the code.
 - **Documentation.** Document the new optional runtime variables in `run-app-instructions.md` and `operations.md`, for example `SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `APP_RELEASE`. Add a "Monitoring and AI-assisted investigation" runbook to `operations.md`:
   - alert routing and least-privilege, read-only MCP setup for Sentry and Supabase;
   - example investigation prompts and correlation by request ID;
@@ -883,7 +926,7 @@ Alternatives considered:
 - **Approvals.** Record Sentry in `tech-stack.md`/`architecture.md` as an approved vendor SDK. The privacy notice (an F009 blocker) lists Sentry as an EU processor and states log retention. Confirm the vendor's DPA and international transfer terms are in place.
 - **Deferred:** tracing/OpenTelemetry, session replay, third-party uptime probes beyond the host health check.
 
-**Owner decisions needed before Ready:** Approve a Sentry EU account (free tier to start) and who owns it; the incident alert email; log retention (proposal: 30 days).
+**Owner decisions (24 September 2026):** Sentry EU account on the free plan, owned by the owner; alert email `rmeikle55@gmail.com`; log retention 30 days.
 **Done when:**
 
 - With a staging Sentry project, each of the following appears with release, environment, request ID and scrubbed data:
@@ -891,6 +934,11 @@ Alternatives considered:
   - a browser error with a resolved source map;
   - a rejected Stripe webhook log.
 - Unit tests cover the scrubber for `/s/<secret>`, `?share=`, `?q=`, `/auth/confirm`, headers, bodies and messages containing values.
+- Logging:
+  - every event in the "Where to log" table is emitted at its call site;
+  - unit tests cover the logger (field allow-list, levels, JSON shape) and `withLogging` (logs once on success and failure, no duplicates);
+  - `npm.cmd run lint` passes with the `no-console` rule;
+  - a local walkthrough of one guest RSVP and one test checkout shows a readable request-ID trail from start to finish.
 - A Playwright journey intercepts outgoing Sentry payloads and asserts they contain no secrets or form values. The journey covers the shared-link RSVP with `?share=`, auth confirmation and the checkout return. With configuration unset, no third-party requests are made.
 - The runtime-config test passes against the production image.
 - `npm.cmd run check` passes, and client bundle size before and after is recorded.
@@ -902,7 +950,7 @@ Alternatives considered:
 
 ## F039 - Privacy-friendly visitor and funnel analytics
 
-**Status:** Planned (awaiting owner decisions)
+**Status:** Planned (decisions resolved; becomes Ready when F038 is Done)
 **Priority / lead:** P2, wanted for launch but not a release blocker / Software Engineer with SEO & Growth input. Independent privacy review is required.
 **Purpose:** The owner can see visitors, pages, referrers and campaigns, countries/cities, devices, clicks, and where people drop out between first visit and a published, paid wedding.
 **Depends on:** F038 (shared scrubber and runtime configuration).
@@ -929,6 +977,7 @@ Alternatives considered:
   - `purchase_completed {amount, currency}`, sent server-side from the verified Stripe webhook;
   - `checkout_expired`, from the `checkout.session.expired` webhook;
   - `wedding_published`, `guest_page_viewed`, `rsvp_submitted`.
+- **One tracking helper.** All events go through one typed `track(event, properties)` helper for the client and one for the server. Event names and properties come from a single typed list, and nothing calls PostHog directly.
 - **Identity.** Server-side events use the owner's Supabase user UUID as the distinct ID. Never email, names or personal properties.
 - **Attribution.** Carry first-touch `utm_source/medium/campaign` and the referrer domain from the landing URL through the signup URL. Attach them to `signup_completed` server-side, then copy them to `purchase_completed`. Never store them in the browser.
 - **Scrubbing.** All URLs, `$current_url`, `$referrer` and `$initial_referrer` pass through the F038 scrubber. Wedding paths are recorded only without query strings, so `?share=` never leaves the app. Slugs, which usually contain the couple's names, are visible only to the operator.
@@ -936,11 +985,7 @@ Alternatives considered:
 - **Search launch steps**, added to F009 and `release-inputs.md`: verify the domain in Google Search Console by DNS, submit `/sitemap.xml`, inspect the homepage as indexable, and confirm examples show as excluded by noindex.
 - **Deferred:** session replay, heatmaps, per-couple analytics shown in the dashboard, and an `/ingest` proxy.
 
-**Owner decisions needed before Ready:**
-
-- Approve a PostHog EU account (free tier to start) and who owns it.
-- Accept that wedding slugs appear in the operator's analytics.
-- Analytics retention (proposal: the PostHog default).
+**Owner decisions (24 September 2026):** PostHog EU Cloud on the free plan, owned by the owner. Wedding slugs may appear in the operator's analytics. Analytics retention is the PostHog default.
 
 **Done when:**
 
@@ -994,12 +1039,152 @@ Alternatives considered:
   - every upload either succeeds or gets the friendly busy message.
 - `npm.cmd run check` passes and the operations notes are updated. The same check is repeated on F009 staging.
 
+## F041 - Production setup guide
+
+**Status:** Ready (product update 3 and Stripe activation wait on owner-approved legal text)
+**Priority / lead:** P1, release gate for F009 / Owner for the setup steps; Software Engineer for the product updates.
+**Purpose:** One checklist of everything needed to run SaveTheDates in production.
+**Depends on:** F037 (host approved). Step 6 takes effect once F038/F039 are built.
+**Rules:**
+
+- Record non-secret values in `docs/release-inputs.md`.
+- Enter secrets only in Render's environment settings or GitHub Actions secrets, never in Git, docs or chat.
+- Staging and production always use separate projects, keys and webhooks.
+
+**Cost at launch:**
+
+| Item | Cost |
+| --- | --- |
+| Render production (Starter) | $7/mo |
+| Supabase production (Pro) | $25/mo |
+| Staging (Render free instance, Supabase Free) | $0 |
+| Sentry, PostHog, Resend (free plans) | $0 |
+| Domain | about £5–15/yr |
+| Stripe | per-sale fee only |
+
+### Owner setup steps
+
+**1. Domain**
+
+1. Buy the domain from a registrar that lets you edit DNS.
+2. Production address: `https://<domain>` is `APP_ORIGIN`, and `www` redirects to it. Staging uses its free `onrender.com` address.
+
+**2. Supabase**
+
+1. Create an organisation with two projects in the Central EU (Frankfurt) region:
+   - `savethedates-production` on Pro;
+   - `savethedates-staging` on Free.
+
+   Store each database password in a password manager.
+2. In each project, open **Authentication** and set:
+   - **Sign in / Providers → Email:** enabled, Confirm email on, Secure email change on, minimum password length 12, email OTP expiry 3600 seconds.
+   - **URL Configuration:** Site URL = that environment's `APP_ORIGIN`. Redirect URL = `APP_ORIGIN/auth/confirm`.
+   - **Email Templates:**
+     - Confirm signup: subject "Confirm your SaveTheDates account", body from `supabase/templates/confirmation.html`.
+     - Reset password: subject "Reset your SaveTheDates password", body from `supabase/templates/recovery.html`.
+3. Give the engineer access to both projects. The engineer applies the migrations using the procedure in `docs/operations.md`: staging first, then production. The migrations also create the photo storage bucket.
+4. Record the project refs, region and plans in `release-inputs.md` section 2.
+
+**3. Email (Resend)**
+
+1. Create a Resend account and add the domain. Add the SPF, DKIM and DMARC DNS records it shows, then wait until it says Verified.
+2. Create two API keys: `staging` and `production`.
+3. In each Supabase project, open **Authentication → SMTP** and set:
+   - host `smtp.resend.com`, port `465`, username `resend`;
+   - password: that environment's API key;
+   - sender: `SaveTheDates <hello@<domain>>`.
+4. Record the sender details in `release-inputs.md` section 3.
+
+**4. Stripe**
+
+1. Complete account activation: business details, bank account, statement descriptor, support email and website address. Do this once the product updates below are live, because Stripe reviews the website.
+2. Under **Settings → Branding**, set the name, logo and colour for Checkout.
+3. Add the webhook endpoints:
+   - **Test mode:** `https://<staging-origin>/api/stripe/webhook`.
+   - **Live mode:** `https://<domain>/api/stripe/webhook`.
+
+   Select these events for both: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `refund.created`, `charge.dispute.created`.
+4. Keys:
+   - Staging: test-mode secret key and the test endpoint's signing secret.
+   - Production: live-mode secret key and the live endpoint's signing secret.
+5. No product or price setup is needed; the app sets £29 at Checkout.
+6. Record the details in `release-inputs.md` section 4.
+
+**5. Render**
+
+1. Create an account (Hobby workspace) and add a payment card.
+2. On GitHub, create a token with `read:packages`. In Render, add it under **Settings → Registry Credentials**.
+3. Create two web services from the existing image `ghcr.io/<owner>/<repo>`:
+
+   | Setting | Staging | Production |
+   | --- | --- | --- |
+   | Name | `savethedates-staging` | `savethedates-production` |
+   | Region | Frankfurt | Frankfurt |
+   | Instance | Free | Starter |
+   | Port | 3000 | 3000 |
+   | Health check path | `/` | `/` |
+
+4. Set these environment variables on each service, using that environment's values: `APP_ORIGIN`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, plus the staging variables from the product updates.
+5. On production, add the custom domains `<domain>` and `www.<domain>`. Create the DNS records Render shows and wait for the certificate to be issued.
+6. In notification settings, send deploy failures and service failures to the incident email.
+7. Record the host details in `release-inputs.md` section 1.
+
+**6. Monitoring (after F038/F039)**
+
+1. **Sentry:**
+   - Sign up with the EU data region and create a Next.js project.
+   - Put the DSN in Render as `SENTRY_DSN`.
+   - Put an auth token in GitHub Actions secrets as `SENTRY_AUTH_TOKEN`.
+   - Point alert emails at the incident email.
+2. **PostHog:**
+   - Sign up on EU Cloud.
+   - In project settings, turn on cookieless tracking and "Discard client IP data".
+   - Put the project API key in Render.
+3. **Claude:** connect the Sentry, PostHog and Supabase connectors with read-only access.
+
+**7. Search**
+
+1. In Google Search Console, add the domain, verify it with the DNS TXT record, and submit `https://<domain>/sitemap.xml`.
+
+**8. Launch**
+
+1. Follow "Verification and promotion" in `docs/operations.md` on staging, then on production.
+2. Record the results in F009.
+
+### Product updates (Software Engineer)
+
+1. **CI publishes the image.** After all checks pass on the default branch, CI pushes the production image to GHCR, tagged with the commit SHA (`packages: write`). Render deploys that tag. Rollback redeploys the previous tag from Render's deploy history.
+2. **Staging is protected.** When `APP_ENV=staging`:
+   - every response requires HTTP basic auth (`STAGING_USERNAME`/`STAGING_PASSWORD`);
+   - every response is `noindex`;
+   - `robots.txt` disallows everything.
+
+   Production leaves `APP_ENV` unset. The Stripe webhook route is exempt from basic auth, because it is authenticated by its signature.
+3. **Legal and contact pages.** Add Terms, Privacy and Refund pages using owner-approved text, plus a support email. Link them in the site footer and next to sign-up and checkout. Stripe activation requires these.
+4. **Documentation.** Document `APP_ENV`, the staging variables and the Render specifics (registry, health check, rollback, notifications) in `docs/operations.md` and `run-app-instructions.md`.
+
+### Open owner decisions
+
+These are already listed in `release-inputs.md` sections 5–6:
+
+- policy text (terms, privacy, refunds);
+- retention and deletion rules;
+- incident contact;
+- a backup method for uploaded photos, because Supabase backups exclude Storage.
+
+**Done when:**
+
+- Steps 1–7 are complete and recorded in `release-inputs.md`.
+- The product updates have shipped with `npm.cmd run check` passing.
+- Staging passes the full hosted journey in `docs/operations.md`.
+- The production deploy and smoke check are recorded in F009.
+
 ## F009 - Launch and operate the service
 
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F037 (host), F038 (monitoring) and F040 (upload memory limits); F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate).
+**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits) and F041 (production setup); F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate).
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Hosting selection, external provisioning, live billing and policy-dependent export/deletion remain blocked on owner decisions; do not invent retention periods or publish policies. No additional product feature or hosting purchase is authorised by this preparation.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
 **Decisions/access before release:** Production accounts/domain, live billing configuration, support contact, owner-approved terms/privacy/retention/deletion policy and site lifetime communication. Record any external review still needed; do not invent assurances.
