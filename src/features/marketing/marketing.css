@@ -34,6 +34,10 @@
 .phone-speaker { position: absolute; z-index: 1; top: 7px; left: 50%; transform: translateX(-50%); width: 58px; height: 14px; border-radius: 20px; background: #172526; }
 .phone-screen { position: absolute; inset: 26px 0 0; overflow: hidden; }
 .phone-screen img { object-fit: cover; object-position: top; }
+.phone-screen { container-type: inline-size; }
+.phone-screen .photo-example-label { top: calc(var(--photo-y) * 100cqw / 390); gap: 4px; padding: 5px 9px 5px 7px; font-size: 9px; letter-spacing: .01em; box-shadow: 0 0 0 1px #1d2a2c14, 0 3px 10px #00000038; }
+.phone-screen .photo-example-label svg { width: 11px; height: 11px; }
+.phone-screen .photo-label-below::after { content: "↓"; margin-left: 1px; }
 .hero-phone-back { position: absolute; left: 35px; top: 30px; transform: rotate(-12deg); }
 .hero-phone-front { position: absolute; left: 190px; top: 0; transform: rotate(6deg); }
 .hero-phone-front .phone-preview { width: 244px; height: 458px; }
@@ -144,6 +148,8 @@
   .marketing-themes { gap: 30px 14px; }
   .theme-visual { height: 250px; padding-top: 24px; }
   .theme-visual .phone-preview { width: 130px; height: 250px; border-width: 4px; border-radius: 20px; }
+  .theme-visual .photo-example-label { gap: 3px; padding: 4px 7px 4px 5px; font-size: 7.5px; }
+  .theme-visual .photo-example-label svg { width: 9px; height: 9px; }
   .theme-number { top: 12px; left: 12px; font-size: 14px; }
   .theme-caption { margin-top: 14px; }
   .theme-caption h3 { font-size: 20px; }

@@ -35,6 +35,9 @@
 .wedding-hero > .wedding-photo { grid-area: 1 / 1; min-height: 800px; }
 .wedding-photo img { object-fit: cover; object-position: center; }
 .photo-fallback { background: var(--theme-tint); color: var(--theme-accent); }
+.photo-example-label { position: absolute; z-index: 2; top: 50%; left: 50%; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px 10px 14px; border-radius: 999px; background: #fffffff0; color: #1d2a2c; font: 600 13px/1 Arial, Helvetica, sans-serif; letter-spacing: .02em; white-space: nowrap; box-shadow: 0 0 0 1px #1d2a2c14, 0 8px 24px #0000002e; pointer-events: none; }
+.photo-example-label svg { width: 17px; height: 17px; flex: none; }
+.announcement-shell[data-theme="minimal"] .photo-example-label { top: 72px; }
 .botanical-art { display: block; flex-shrink: 0; pointer-events: none; width: 70px; height: 105px; background: var(--botanical-art) center / contain no-repeat; }
 .photo-fallback > .botanical-art { position: absolute; width: 52%; max-width: 360px; height: 88%; left: -5%; bottom: -8%; transform: rotate(-12deg); opacity: .8; }
 .photo-fallback > .botanical-art + .botanical-art { left: auto; right: -5%; top: -8%; bottom: auto; transform: rotate(168deg); }
@@ -120,6 +123,8 @@
 .details-shell[data-theme="bold"] .details-divider { justify-content: flex-start; }
 .details-shell[data-theme="bold"] .wedding-icon { color: #133f3e; background: #e5edac; border-radius: 3px; }
 @media (min-width: 760px) {
+  .photo-example-label { gap: 9px; padding: 12px 22px 12px 17px; font-size: 14px; }
+  .photo-example-label svg { width: 18px; height: 18px; }
   .details-content { padding: 44px 48px 40px; }
   .details-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 48px; }
   .details-card { grid-template-columns: 56px minmax(0, 1fr); gap: 20px; padding-block: 30px; }

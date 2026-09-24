@@ -6,5 +6,5 @@ export function generateStaticParams() { return themes.map(({ id }) => ({ theme:
 export default async function ExamplePage({ params }: { params: Promise<{ theme: string }> }) {
   const { theme } = await params;
   if (!isWeddingTheme(theme)) notFound();
-  return <SaveTheDate wedding={exampleWedding(theme)} homeHref={`/examples/${theme}`} detailsHref={`/examples/${theme}/details`} />;
+  return <SaveTheDate wedding={exampleWedding(theme)} homeHref={`/examples/${theme}`} detailsHref={`/examples/${theme}/details`} photoLabel="Your photo here" />;
 }

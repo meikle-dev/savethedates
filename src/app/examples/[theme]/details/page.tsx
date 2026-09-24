@@ -6,5 +6,5 @@ export default async function ExampleDetailsPage({ params }: { params: Promise<{
   const { theme } = await params;
   if (!isWeddingTheme(theme)) notFound();
   const wedding = exampleWedding(theme);
-  return <WeddingDetailsPageView details={exampleDetails(theme)} image={wedding.image} photoFraming={wedding.photoFraming} homeHref={`/examples/${theme}`} detailsHref={`/examples/${theme}/details`} />;
+  return <WeddingDetailsPageView details={exampleDetails(theme)} image={wedding.image} photoFraming={wedding.photoFraming} homeHref={`/examples/${theme}`} detailsHref={`/examples/${theme}/details`} photoLabel="Your photo here" />;
 }

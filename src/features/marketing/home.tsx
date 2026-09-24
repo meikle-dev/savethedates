@@ -35,7 +35,7 @@ export function MarketingHome({ isAuthenticated = false }: { isAuthenticated?: b
         <section id="themes" className="theme-showcase" aria-labelledby="themes-title"><div className="marketing-width">
           <div className="section-intro"><p className="marketing-kicker">TWELVE STYLES. ALL YOU.</p><h2 id="themes-title">Find your kind of beautiful.</h2><p>Same thoughtful features. Twelve different ways to tell your story.</p></div>
           <div className="marketing-themes">{themes.map((theme, index) => <Link className={`marketing-theme theme-${theme.id}`} href={`/examples/${theme.id}`} key={theme.id}>
-            <div className="theme-visual"><span className="theme-number">{String(index + 1).padStart(2, "0")}</span><PhonePreview theme={theme.id} /></div>
+            <div className="theme-visual"><span className="theme-number">{String(index + 1).padStart(2, "0")}</span><PhonePreview theme={theme.id} photoLabel="Your photo here" /></div>
             <div className="theme-caption"><div><h3>{theme.name}</h3><p>{theme.description}</p></div><span className="theme-arrow" aria-hidden="true">↗</span></div><span className="theme-example-link">Explore this example</span>
           </Link>)}</div><p className="example-disclosure">Examples feature fictional names and wedding details.</p>
         </div></section>

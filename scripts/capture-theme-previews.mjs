@@ -15,7 +15,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   for (const theme of themes) {
     await page.goto(new URL(`/examples/${theme}`, base).href, { waitUntil: "networkidle" });
-    await page.addStyleTag({ content: ".example-banner { display: none !important; } *, *::before, *::after { animation: none !important; transition: none !important; }" });
+    await page.addStyleTag({ content: ".example-banner, .photo-example-label { display: none !important; } *, *::before, *::after { animation: none !important; transition: none !important; }" });
     await page.evaluate(() => document.fonts.ready);
     await page.locator(".wedding-photo img").evaluate((img) => img.complete || new Promise((resolve) => img.addEventListener("load", resolve, { once: true })));
     const png = await page.screenshot();
