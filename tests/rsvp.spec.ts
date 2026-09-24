@@ -164,10 +164,11 @@ test("retired invitation parameters behave like public links on every wedding pa
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard(?:\/|$)/);
+    const liveRsvp = new RegExp(`/s/[A-Za-z0-9_-]{43}/${slug}/rsvp$`);
     await page.goto(`/${slug}/rsvp`);
-    await expect(page).toHaveURL(/\/dashboard\/preview\/rsvp$/);
+    await expect(page).toHaveURL(liveRsvp);
     await page.goto(`/${slug}/rsvp?invite=${oldTokens[0]}`);
-    await expect(page).toHaveURL(/\/dashboard\/preview\/rsvp$/);
+    await expect(page).toHaveURL(liveRsvp);
   } finally {
     await guest.close();
     await local.admin.auth.admin.deleteUser(ownerId);

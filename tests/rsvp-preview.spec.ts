@@ -90,8 +90,9 @@ test("owners can preview saved RSVP content without granting guest access or sav
     expect((await local.admin.from("weddings").update({ slug, published: true, rsvp_enabled: true }).eq("id", weddingId)).error).toBeNull();
     await page.goto(`/${slug}`);
     await page.getByRole("link", { name: "RSVP", exact: true }).click();
-    await expect(page).toHaveURL(/\/dashboard\/preview\/rsvp$/);
-    await expect(page.getByRole("button", { name: "Send RSVP" })).toBeDisabled();
+    await expect(page).toHaveURL(new RegExp(`/s/[A-Za-z0-9_-]{43}/${slug}/rsvp$`));
+    await expect(page.getByRole("button", { name: "Send RSVP" })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: "Invitation unavailable" })).toHaveCount(0);
     await guest.goto(`/${slug}/rsvp`);
     await expect(guest.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
 
