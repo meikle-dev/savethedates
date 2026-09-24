@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { themes } from "../src/features/weddings/themes";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
+
+const themeIds = themes.map(({ id }) => id);
 
 const local = localSupabase();
 
@@ -111,7 +114,7 @@ test("owner edits and previews Details while guests see only enabled published c
     await expect(guestPage.getByText("A shuttle leaves the station at 12:45pm.")).toBeVisible();
     await expect(guestPage.getByText("Please check your invitation.")).toBeVisible();
     await expect(guestPage.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-    for (const theme of ["minimal", "romantic", "bold"]) {
+    for (const theme of themeIds) {
       expect((await local.admin.from("weddings").update({ theme }).eq("owner_id", ownerId)).error).toBeNull();
       await guestPage.reload();
       await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);

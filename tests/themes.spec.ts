@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { themes } from "../src/features/weddings/themes";
 import { readFile } from "node:fs/promises";
 import sharp from "sharp";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
+
+const themeIds = themes.map(({ id }) => id);
 
 const local = localSupabase();
 test("theme preview is private and applying preserves the live wedding", async ({ page, browser, baseURL }) => {
@@ -44,7 +47,7 @@ test("theme preview is private and applying preserves the live wedding", async (
     await page.getByRole("link", { name: "Back to workspace" }).click();
     await openWorkspaceSection(page, "Design");
     await expect(currentTheme).toContainText("Modern Minimal");
-    for (const [id, name] of [["romantic", "Warm & Romantic"], ["bold", "Modern & Bold"], ["minimal", "Modern Minimal"]]) {
+    for (const { id, name } of [...themes.slice(1), themes[0]]) {
       await currentTheme.getByRole("link", { name: /Change theme/ }).click();
       await page.getByRole("radio", { name: new RegExp(name) }).check();
       await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", id);
@@ -69,7 +72,7 @@ test("theme preview is private and applying preserves the live wedding", async (
     const row = await local.admin.from("weddings").select("id").eq("owner_id", ownerId).single();
     const path = `${row.data!.id}/${crypto.randomUUID()}.webp`;
     await guestPage.route(`**/${slug}/photo`, (route) => route.fulfill({ contentType: "image/jpeg", body: photo }));
-    for (const id of ["minimal", "romantic", "bold"]) {
+    for (const id of themeIds) {
       expect((await local.admin.from("weddings").update({ theme: id, photo_path: path }).eq("owner_id", ownerId)).error).toBeNull();
       await guestPage.reload();
       await expect(guestPage.locator(".wedding-photo img")).toBeVisible();
@@ -77,7 +80,7 @@ test("theme preview is private and applying preserves the live wedding", async (
     }
     await guestPage.unroute(`**/${slug}/photo`);
     await guestPage.route(`**/${slug}/photo`, (route) => route.abort());
-    for (const id of ["minimal", "romantic", "bold"]) {
+    for (const id of themeIds) {
       expect((await local.admin.from("weddings").update({ theme: id, first_name: "Alexandria".repeat(8), second_name: "Montgomery".repeat(8), message: "A long personal message. ".repeat(20).trim() }).eq("owner_id", ownerId)).error).toBeNull();
       await guestPage.reload();
       await expect(guestPage.locator(".wedding-photo img")).toHaveCount(0);

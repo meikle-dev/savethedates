@@ -1,6 +1,9 @@
 import { expect, test, type Page, type Response } from "@playwright/test";
+import { themes } from "../src/features/weddings/themes";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
+
+const themeIds = themes.map(({ id }) => id);
 
 const local = localSupabase();
 
@@ -93,7 +96,7 @@ test("one shared link collects separate named responses and can be replaced", as
     await jordan.getByLabel("Remove this response from the list and totals").check();
     await jordan.getByRole("button", { name: "Remove response" }).click();
     await expect(responseList.getByText("Jordan Lee")).toHaveCount(0);
-    for (const theme of ["minimal", "romantic", "bold"]) {
+    for (const theme of themeIds) {
       expect((await local.admin.from("weddings").update({ theme }).eq("id", wedding.data!.id)).error).toBeNull();
       await guestPage.goto(shareUrl);
       await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);

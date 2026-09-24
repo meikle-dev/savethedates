@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { themes } from "../src/features/weddings/themes";
 
 test("marketing leads to signup and accurately explains price, visibility and RSVP", async ({ page }) => {
   const response = await page.goto("/");
@@ -33,7 +34,7 @@ test("marketing leads to signup and accurately explains price, visibility and RS
 });
 
 test("all public examples use fictional content, working Details and noindex", async ({ page }) => {
-  for (const [theme, name] of [["minimal", "Modern Minimal"], ["romantic", "Warm & Romantic"], ["bold", "Modern & Bold"]]) {
+  for (const { id: theme, name } of themes) {
     await page.goto("/#themes");
     await page.getByRole("link", { name: new RegExp(`${name}.*Explore this example`) }).click();
     await expect(page).toHaveURL(new RegExp(`/examples/${theme}$`));

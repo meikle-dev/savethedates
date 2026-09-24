@@ -1,0 +1,185 @@
+/* F034 themes. Shared markup and tokens from wedding.css; composition per docs/ux/template-ui-summary.md. */
+.wedding-shell[data-theme="alcantara"] {
+  --botanical-art: none;
+  --theme-accent: #8b5e3c; --theme-surface: #f7f2ec; --theme-text: #2e2420;
+  --theme-muted: #6e5a4c; --theme-line: #dccfc0; --theme-tint: #efe8df; --theme-radius: 2px;
+  --theme-body: var(--font-jost), Arial, sans-serif;
+  --suede: radial-gradient(#8b5e3c0f 1px, transparent 1.2px) 0 0 / 3px 3px, radial-gradient(#2e24200a 1px, transparent 1.2px) 1px 2px / 5px 5px, #efe8df;
+}
+.wedding-shell[data-theme="countryside"] {
+  --botanical-art: url("/assets/wedding/flowers/autumn-dahlia.svg");
+  --theme-accent: #3b4431; --theme-surface: #f6f1e6; --theme-text: #262a20;
+  --theme-muted: #5a5b49; --theme-line: #d5cbb5; --theme-tint: #e3d9c4; --theme-radius: 0;
+  --theme-heading: var(--font-caslon), Georgia, serif; --theme-body: var(--font-work-sans), Arial, sans-serif;
+  --herringbone: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M0 12 6 6M0 6 6 0M6 0l6 6M6 6l6 6' fill='none' stroke='%233b4431' stroke-opacity='.08'/%3E%3C/svg%3E"), #ede6d6;
+  --windowpane: repeating-linear-gradient(90deg, #a5562e59 0 1px, transparent 1px 56px), repeating-linear-gradient(0deg, #b8913a40 0 1px, transparent 1px 56px), #3b4431;
+  --check-rule: repeating-linear-gradient(90deg, #a5562e 0 1px, transparent 1px 7px) center / 100% 7px, linear-gradient(#3b4431 0 0) center / 100% 1px no-repeat;
+}
+.wedding-shell[data-theme="evening-gold"] {
+  --botanical-art: url("/assets/wedding/flowers/winter-hellebore.svg");
+  --theme-accent: #c9a96a; --theme-surface: #1c2533; --theme-text: #f2ede3;
+  --theme-muted: #aeb6c4; --theme-line: #3b4558; --theme-tint: #253043; --theme-radius: 0;
+  --theme-heading: var(--font-bodoni), Didot, Georgia, serif; --theme-body: var(--font-manrope), Arial, sans-serif;
+  --silk: linear-gradient(115deg, transparent 35%, #ffffff0a 50%, transparent 65%), #141b26;
+  box-shadow: 0 14px 65px #141b2640;
+}
+.wedding-shell[data-theme="terracotta"] {
+  --botanical-art: url("/assets/wedding/flowers/mediterranean-citrus.svg");
+  --theme-accent: #a34c30; --theme-surface: #fbf6f0; --theme-text: #3a2a22;
+  --theme-muted: #6e574b; --theme-line: #e6d5c5; --theme-tint: #f1e1d3; --theme-radius: 6px;
+  --theme-heading: var(--font-gloock), Georgia, serif; --theme-body: var(--font-dm-sans), Arial, sans-serif;
+  --limewash: radial-gradient(ellipse at 20% 25%, #ffffff8c, transparent 55%), radial-gradient(ellipse at 85% 75%, #eadccd99, transparent 60%), #f5ede4;
+}
+.wedding-shell[data-theme="heather"] {
+  --botanical-art: url("/assets/wedding/flowers/meadow-wildflower.svg");
+  --theme-accent: #6b4e71; --theme-surface: #faf8fb; --theme-text: #2a2630;
+  --theme-muted: #59606b; --theme-line: #ddd5e0; --theme-tint: #e6dee8; --theme-radius: 14px;
+  --theme-heading: var(--font-garamond), Georgia, serif; --theme-body: var(--font-figtree), Arial, sans-serif;
+  --mist: linear-gradient(#faf8fb, #eee8f1);
+  --hills: radial-gradient(38% 62% at 18% 100%, #c9bcd3 0 58%, #c9bcd300 72%), radial-gradient(34% 48% at 72% 100%, #d5cadd 0 55%, #d5cadd00 72%), radial-gradient(52% 88% at 48% 100%, #e3dbe8 0 50%, #e3dbe800 74%), radial-gradient(30% 70% at 95% 100%, #ddd3e3 0 50%, #ddd3e300 72%);
+}
+/* Caslon Display and Gloock have no italic; avoid synthesised slants. */
+.wedding-shell:is([data-theme="countryside"], [data-theme="terracotta"]) :is(h1 em, .wedding-message, .wedding-signature) { font-style: normal; }
+.announcement-shell:is([data-theme="alcantara"], [data-theme="countryside"], [data-theme="evening-gold"], [data-theme="terracotta"], [data-theme="heather"]) :is(.wedding-kicker, h1 em) { color: var(--theme-accent); }
+.announcement-shell:is([data-theme="countryside"], [data-theme="terracotta"]) :is(.announcement-rule, .wedding-location, .wedding-message) { margin-left: 0; }
+.announcement-shell:is([data-theme="countryside"], [data-theme="terracotta"]) h1 { margin-inline: 0; }
+
+/* Alcantara: tone-on-tone tailoring. Photo left, text inside a stitched suede panel. */
+.announcement-shell[data-theme="alcantara"] .wedding-hero { grid-template-columns: 1.15fr 1fr; background: var(--suede); }
+.announcement-shell[data-theme="alcantara"] .wedding-photo { grid-area: 1 / 1; min-height: 780px; }
+.announcement-shell[data-theme="alcantara"] .wedding-announcement { grid-area: 1 / 2; align-self: stretch; display: flex; flex-direction: column; justify-content: center; margin: 40px; padding: 64px 36px; background: var(--theme-surface); border: 1px solid #b89a7e; outline: 1px dashed #8b5e3c99; outline-offset: -12px; }
+.announcement-shell[data-theme="alcantara"] h1 { font-size: clamp(76px, 7.6vw, 118px); }
+.announcement-shell[data-theme="alcantara"] .announcement-rule { width: 64px; background: var(--theme-accent); opacity: 1; }
+.wedding-shell[data-theme="alcantara"] :is(.wedding-footer, .photo-fallback) { background: var(--suede); }
+.wedding-shell[data-theme="alcantara"] :is(.wedding-footer, .photo-fallback) > .botanical-art { display: none; }
+.wedding-shell[data-theme="alcantara"] .photo-fallback::before { content: ""; position: absolute; inset: 24px; border: 1px dashed #8b5e3c80; }
+.wedding-shell[data-theme="alcantara"] .wedding-seal { color: var(--theme-accent); border-color: var(--theme-accent); outline: 1px dashed var(--theme-accent); }
+.wedding-shell[data-theme="alcantara"] :is(.details-divider, .rsvp-card-art) .botanical-art { width: 7px; height: 7px; background: var(--theme-accent); transform: rotate(45deg); }
+.wedding-shell[data-theme="alcantara"] :is(.details-divider, .rsvp-card-art)::before, .wedding-shell[data-theme="alcantara"] :is(.details-divider, .rsvp-card-art)::after { width: 48px; background: #b89a7e; }
+.wedding-shell[data-theme="alcantara"] .rsvp-card-art { height: 12px; }
+.wedding-shell[data-theme="alcantara"] .wedding-icon { background: transparent; box-shadow: inset 0 0 0 1px #b89a7e; }
+.details-shell[data-theme="alcantara"] .details-photo { background: var(--suede); }
+.details-shell[data-theme="alcantara"] .details-photo > .wedding-photo { inset: 24px 24px 0; }
+.rsvp-shell[data-theme="alcantara"] .rsvp-main { background: var(--suede); }
+.rsvp-shell[data-theme="alcantara"] .rsvp-card { border-color: #b89a7e; outline: 1px dashed #8b5e3c80; outline-offset: -9px; box-shadow: 0 20px 55px #2e24201f; }
+
+/* Countryside: a cream estate card overlapping the photo on loden windowpane check. */
+.announcement-shell[data-theme="countryside"] .wedding-hero { grid-template-columns: .9fr .25fr 1.1fr; background: var(--windowpane); }
+.announcement-shell[data-theme="countryside"] .wedding-photo { grid-area: 1 / 2 / 2 / 4; min-height: 720px; margin: 48px 48px 48px 0; box-shadow: 0 0 0 1px #b8913a99; }
+.announcement-shell[data-theme="countryside"] .wedding-announcement { grid-area: 1 / 1 / 2 / 3; z-index: 2; align-self: center; text-align: left; margin-left: 48px; padding: 60px 48px; background: #f6f1e6; box-shadow: 0 0 0 6px #f6f1e6, 0 0 0 7px #a5562e, 0 24px 60px #0f140c59; }
+.announcement-shell[data-theme="countryside"] h1 { font-size: clamp(64px, 6.6vw, 100px); line-height: .9; letter-spacing: -.03em; }
+.announcement-shell[data-theme="countryside"] :is(.wedding-kicker, h1 em) { color: #a5562e; }
+.announcement-shell[data-theme="countryside"] .announcement-rule { width: 80px; height: 7px; background: var(--check-rule); opacity: 1; }
+.announcement-shell[data-theme="countryside"] .wedding-date { font-size: 22px; }
+.wedding-shell[data-theme="countryside"] :is(.wedding-footer, .photo-fallback) { background: var(--herringbone); }
+.wedding-shell[data-theme="countryside"] .wedding-footer { border-top: 3px solid #3b4431; }
+.wedding-shell[data-theme="countryside"] .wedding-seal { background: #3b4431; color: #f6f1e6; border-color: #a5562e; outline-color: #a5562e; }
+.wedding-shell[data-theme="countryside"] :is(.details-divider, .rsvp-card-art)::before, .wedding-shell[data-theme="countryside"] :is(.details-divider, .rsvp-card-art)::after { height: 7px; background: var(--check-rule); }
+.wedding-shell[data-theme="countryside"] .wedding-icon { border-radius: 0; background: #3b4431; color: #f6f1e6; }
+.details-shell[data-theme="countryside"] .details-photo { background: var(--windowpane); }
+.details-shell[data-theme="countryside"] .details-photo > .wedding-photo { inset: 18px 18px 0; box-shadow: 0 0 0 1px #b8913a99; }
+.details-shell[data-theme="countryside"] .details-heading { text-align: left; }
+.details-shell[data-theme="countryside"] .details-divider { justify-content: flex-start; }
+.details-shell[data-theme="countryside"] .details-divider::before { display: none; }
+.rsvp-shell[data-theme="countryside"] .rsvp-main { background: var(--herringbone); border-top: 10px solid #3b4431; }
+.rsvp-shell[data-theme="countryside"] .rsvp-intro { text-align: left; }
+.rsvp-shell[data-theme="countryside"] .rsvp-ornament { justify-content: flex-start; color: #a5562e; }
+.rsvp-shell[data-theme="countryside"] .rsvp-ornament::before { display: none; }
+.rsvp-shell[data-theme="countryside"] .rsvp-invitation-context { margin-left: 0; }
+.rsvp-shell[data-theme="countryside"] .rsvp-card { background: #f6f1e6; border-color: #3b4431; box-shadow: 6px 6px 0 #3b443126; }
+.rsvp-shell[data-theme="countryside"] .rsvp-submit { color: #f6f1e6; }
+
+/* Evening Gold: the dark theme. A centred portrait medallion; gold only for hairlines and accents. */
+.wedding-shell[data-theme="evening-gold"] .wedding-header { border-color: #c9a96a40; }
+.announcement-shell[data-theme="evening-gold"] .wedding-hero { display: flex; flex-direction: column; align-items: center; padding: 64px 40px 80px; background: var(--silk); }
+.announcement-shell[data-theme="evening-gold"] .wedding-photo { flex: none; width: 340px; height: 440px; min-height: 0; border-radius: 50%; outline: 1px solid #c9a96a; outline-offset: 10px; }
+.announcement-shell[data-theme="evening-gold"] .wedding-announcement { align-self: stretch; padding: 52px 28px 0; }
+.announcement-shell[data-theme="evening-gold"] h1 { font-size: clamp(72px, 8vw, 116px); letter-spacing: -.04em; }
+.announcement-shell[data-theme="evening-gold"] .announcement-rule { width: 64px; background: var(--theme-accent); opacity: 1; }
+.announcement-shell[data-theme="evening-gold"] .wedding-location { color: var(--theme-muted); }
+.wedding-shell[data-theme="evening-gold"] .wedding-footer { border-color: #c9a96a66; }
+.wedding-shell[data-theme="evening-gold"] .wedding-seal { color: var(--theme-accent); border-color: var(--theme-accent); outline-color: var(--theme-accent); }
+.wedding-shell[data-theme="evening-gold"] .wedding-icon { background: transparent; box-shadow: inset 0 0 0 1px var(--theme-accent); }
+.wedding-shell[data-theme="evening-gold"] :is(.details-divider, .rsvp-ornament)::before, .wedding-shell[data-theme="evening-gold"] :is(.details-divider, .rsvp-ornament)::after { background: #c9a96a66; }
+.details-shell[data-theme="evening-gold"] .details-photo { background: #141b26; }
+.details-shell[data-theme="evening-gold"] .details-photo > .wedding-photo { inset: 20px 20px 0; outline: 1px solid #c9a96a99; outline-offset: -10px; }
+.details-shell[data-theme="evening-gold"] .details-heading h1 em { color: var(--theme-accent); }
+.rsvp-shell[data-theme="evening-gold"] .rsvp-main { background: var(--silk); }
+/* An ivory place card with its own scoped tokens keeps focus rings and form errors readable. */
+.rsvp-shell[data-theme="evening-gold"] .rsvp-card { --theme-text: #1c2533; --theme-accent: #7a5c24; --theme-muted: #4f5a6b; --theme-line: #d9cdb4; --theme-tint: #efe6d2; color: var(--theme-text); background: #f7f3ea; border-color: #c9a96a; outline: 1px solid #c9a96a; outline-offset: -8px; box-shadow: 0 24px 70px #0006; }
+.rsvp-shell[data-theme="evening-gold"] .rsvp-choice { background: #fffdf8; }
+.rsvp-shell[data-theme="evening-gold"] .rsvp-submit { background: #c9a96a; color: #141b26; border: 1px solid #7a5c24; }
+
+/* Terracotta: an arched doorway standing across a clay and limewash wall. */
+.announcement-shell[data-theme="terracotta"] .wedding-hero { grid-template-columns: 1fr 1.05fr; gap: 64px; padding: 56px 56px 0; background: linear-gradient(90deg, #b4583a 0 34%, transparent 34%), var(--limewash); }
+.announcement-shell[data-theme="terracotta"] .wedding-photo { grid-area: 1 / 1; align-self: end; min-height: 720px; border-radius: 999px 999px 0 0; box-shadow: 0 0 0 14px #f5ede4; }
+.announcement-shell[data-theme="terracotta"] .wedding-announcement { grid-area: 1 / 2; text-align: left; padding: 64px 0 80px; }
+.announcement-shell[data-theme="terracotta"] h1 { font-size: clamp(76px, 8.2vw, 120px); line-height: .88; letter-spacing: -.035em; }
+.announcement-shell[data-theme="terracotta"] .announcement-rule { width: 56px; background: var(--theme-accent); opacity: 1; }
+.announcement-shell[data-theme="terracotta"] .announcement-sprig { display: block; width: 60px; height: 90px; margin: 28px 0 0; transform: rotate(-8deg); }
+.wedding-shell[data-theme="terracotta"] .wedding-footer { background: var(--limewash); }
+.wedding-shell[data-theme="terracotta"] .wedding-seal { background: var(--theme-accent); color: var(--theme-surface); border-color: var(--theme-line); outline-color: var(--theme-line); }
+.wedding-shell[data-theme="terracotta"] .wedding-icon { border-radius: 999px 999px 4px 4px; }
+.details-shell[data-theme="terracotta"] .details-photo { border-bottom: 10px solid #b4583a; }
+.details-shell[data-theme="terracotta"] .details-content { background: var(--limewash); }
+.rsvp-shell[data-theme="terracotta"] .rsvp-main { background: var(--limewash); }
+.rsvp-shell[data-theme="terracotta"] .rsvp-ornament { display: none; }
+.rsvp-shell[data-theme="terracotta"] .rsvp-intro-art { display: flex; justify-content: center; margin-bottom: 18px; }
+.rsvp-shell[data-theme="terracotta"] .rsvp-intro-art .botanical-art { width: 48px; height: 72px; transform: rotate(-12deg); }
+.rsvp-shell[data-theme="terracotta"] .rsvp-card { padding-top: 96px; border-radius: 50% 50% 8px 8px / 200px 200px 8px 8px; box-shadow: 0 20px 55px #3a2a221f; }
+
+/* Heather: a wide photograph dissolving into moorland mist and soft hills. */
+.announcement-shell[data-theme="heather"] .wedding-hero { display: flex; flex-direction: column; background: var(--mist); }
+.announcement-shell[data-theme="heather"] .wedding-hero::after, .rsvp-shell[data-theme="heather"] .rsvp-main::after { content: ""; position: absolute; z-index: -1; inset: auto 0 0; height: 150px; background: var(--hills); pointer-events: none; }
+.announcement-shell[data-theme="heather"] .wedding-photo { flex: none; height: 500px; min-height: 0; margin: 32px 32px 0; border-radius: 14px 14px 0 0; mask-image: linear-gradient(#000 78%, transparent); }
+.announcement-shell[data-theme="heather"] .wedding-announcement { padding: 12px 28px 130px; }
+.announcement-shell[data-theme="heather"] .announcement-sprig { display: block; width: 48px; height: 72px; margin: 22px auto 0; transform: rotate(10deg); }
+.wedding-shell[data-theme="heather"] .wedding-footer { background: #f2eff3; }
+.wedding-shell[data-theme="heather"] .wedding-seal { background: var(--theme-tint); border-color: var(--theme-accent); outline-color: var(--theme-accent); }
+.wedding-shell[data-theme="heather"] .wedding-icon { border-radius: 14px; }
+.details-shell[data-theme="heather"] .details-photo > .wedding-photo { mask-image: linear-gradient(#000 70%, transparent); }
+.rsvp-shell[data-theme="heather"] .rsvp-main { background: var(--mist); padding-bottom: 140px; }
+.rsvp-shell[data-theme="heather"] .rsvp-card { border-radius: 16px; box-shadow: 0 18px 50px #6b4e711a; }
+.rsvp-shell[data-theme="heather"] :is(.rsvp-choice, .rsvp-submit) { border-radius: 999px; }
+.rsvp-shell[data-theme="heather"] .rsvp-choice { padding-inline: 22px; }
+
+/* Desktop RSVP backdrops: requested only here; content sits clear of each decorated edge. */
+@media (min-width: 901px) {
+  .rsvp-shell[data-theme="alcantara"] .rsvp-main { background: #efe8df url("/assets/wedding/backgrounds/alcantara-rsvp-suede.webp") left center / cover no-repeat; padding: 80px 64px 96px 30%; }
+  .rsvp-shell[data-theme="countryside"] .rsvp-main { background: #ede6d6 url("/assets/wedding/backgrounds/countryside-rsvp-tweed.webp") left center / cover no-repeat; padding: 72px 56px 88px 47%; }
+  .rsvp-shell[data-theme="evening-gold"] .rsvp-main { background: #141b26 url("/assets/wedding/backgrounds/evening-gold-rsvp-silk.webp") right bottom / cover no-repeat; padding: 80px 44% 96px 64px; }
+  .rsvp-shell[data-theme="terracotta"] .rsvp-main { background: #f5ede4 url("/assets/wedding/backgrounds/terracotta-rsvp-limewash.webp") left center / cover no-repeat; padding: 72px 56px 88px 28%; }
+  .rsvp-shell[data-theme="heather"] .rsvp-main { background: #f2eff3 url("/assets/wedding/backgrounds/heather-rsvp-moorland.webp") center bottom / cover no-repeat; padding: 64px 48px 300px; }
+  .rsvp-shell[data-theme="heather"] .rsvp-main::after { display: none; }
+}
+@media (max-width: 900px) {
+  .announcement-shell[data-theme="alcantara"] .wedding-photo, .announcement-shell[data-theme="terracotta"] .wedding-photo { min-height: 660px; }
+  .announcement-shell[data-theme="countryside"] .wedding-photo { margin: 28px 28px 28px 0; }
+  .announcement-shell[data-theme="countryside"] .wedding-announcement { margin-left: 28px; padding: 48px 32px; }
+  .announcement-shell[data-theme="evening-gold"] .wedding-photo { width: 300px; height: 390px; }
+  .announcement-shell[data-theme="terracotta"] .wedding-hero { gap: 40px; padding: 40px 40px 0; }
+  .announcement-shell[data-theme="heather"] .wedding-photo { height: 420px; }
+}
+@media (max-width: 620px) {
+  .announcement-shell:is([data-theme="alcantara"], [data-theme="countryside"]) .wedding-hero { display: flex; flex-direction: column; }
+  .announcement-shell[data-theme="alcantara"] .wedding-photo { height: 400px; min-height: 0; }
+  .announcement-shell[data-theme="alcantara"] .wedding-announcement { margin: 18px; padding: 44px 22px; }
+  .announcement-shell[data-theme="alcantara"] h1 { font-size: clamp(72px, 21vw, 110px); }
+  .announcement-shell[data-theme="countryside"] .wedding-photo { height: 380px; min-height: 0; margin: 18px 18px 0; }
+  .announcement-shell[data-theme="countryside"] .wedding-announcement { margin: -72px 18px 28px; padding: 40px 24px; }
+  .announcement-shell[data-theme="countryside"] h1 { font-size: clamp(56px, 17vw, 88px); }
+  .announcement-shell[data-theme="evening-gold"] .wedding-hero { padding: 36px 20px 56px; }
+  .announcement-shell[data-theme="evening-gold"] .wedding-photo { width: min(260px, 70vw); height: auto; aspect-ratio: 3 / 4; outline-offset: 8px; }
+  .announcement-shell[data-theme="evening-gold"] .wedding-announcement { padding: 44px 4px 0; }
+  .announcement-shell[data-theme="evening-gold"] h1 { font-size: clamp(66px, 20vw, 100px); }
+  .announcement-shell[data-theme="terracotta"] .wedding-hero { display: flex; flex-direction: column; gap: 0; padding: 28px 20px 0; background: linear-gradient(#b4583a 0 180px, transparent 180px), var(--limewash); }
+  .announcement-shell[data-theme="terracotta"] .wedding-photo { align-self: center; width: min(320px, 100%); height: 400px; min-height: 0; box-shadow: 0 0 0 10px #f5ede4; }
+  .announcement-shell[data-theme="terracotta"] .wedding-announcement { text-align: center; padding: 44px 8px 64px; }
+  .announcement-shell[data-theme="terracotta"] :is(h1, .announcement-rule, .wedding-location, .wedding-message, .announcement-sprig) { margin-inline: auto; }
+  .announcement-shell[data-theme="terracotta"] h1 { font-size: clamp(66px, 20vw, 104px); }
+  .announcement-shell[data-theme="heather"] .wedding-hero::after, .rsvp-shell[data-theme="heather"] .rsvp-main::after { height: 110px; }
+  .announcement-shell[data-theme="heather"] .wedding-photo { height: 340px; margin: 16px 16px 0; }
+  .announcement-shell[data-theme="heather"] .wedding-announcement { padding: 8px 22px 110px; }
+  .rsvp-shell[data-theme="terracotta"] .rsvp-card { padding-top: 84px; border-radius: 50% 50% 8px 8px / 160px 160px 8px 8px; }
+  .rsvp-shell[data-theme="heather"] .rsvp-main { padding-bottom: 120px; }
+}

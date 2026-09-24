@@ -42,13 +42,24 @@
 .section-intro { text-align: center; }
 .marketing h2 { font: 400 clamp(32px, 3.5vw, 44px)/1.15 Georgia, serif; letter-spacing: -1.3px; margin-top: 12px; }
 .section-intro > p:last-child:not(.marketing-kicker) { margin-top: 16px; line-height: 1.7; font-size: 14px; color: #52616a; }
-.marketing-themes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 38px; }
+.marketing-themes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 40px 24px; margin-top: 38px; }
 .theme-visual { position: relative; display: flex; justify-content: center; padding-top: 30px; height: 312px; overflow: hidden; border-radius: 6px; background: #e4e8df; }
 .theme-visual .phone-preview { transform: rotate(-5deg); width: 180px; height: 340px; border-width: 5px; border-radius: 27px; }
 .theme-romantic .theme-visual { background: #edddd7; }
 .theme-romantic .phone-preview { transform: rotate(4deg); }
 .theme-bold .theme-visual { background: #c9d9d9; }
 .theme-bold .phone-preview { transform: rotate(-4deg); }
+.theme-alcantara .theme-visual { background: #e4d9cc; }
+.theme-alcantara .phone-preview { transform: rotate(3deg); }
+.theme-countryside .theme-visual { background: #d9d6c3; }
+.theme-countryside .phone-preview { transform: rotate(-3deg); }
+.theme-evening-gold .theme-visual { background: #1c2533; }
+.theme-evening-gold .phone-preview { transform: rotate(5deg); box-shadow: 0 0 0 2px #c9a96a, 8px 20px 35px #0006; }
+.theme-evening-gold .theme-number { color: #f2ede3; }
+.theme-terracotta .theme-visual { background: #efd6c6; }
+.theme-terracotta .phone-preview { transform: rotate(-5deg); }
+.theme-heather .theme-visual { background: #e6dee8; }
+.theme-heather .phone-preview { transform: rotate(4deg); }
 .theme-number { position: absolute; top: 20px; left: 20px; font: italic 17px Georgia, serif; }
 .theme-caption { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
 .theme-caption h3 { font: 24px Georgia, serif; letter-spacing: -.6px; }
@@ -91,6 +102,7 @@
   .hero-features { flex-wrap: wrap; gap: 12px; }
   .marketing-footer { flex-wrap: wrap; }
   .pricing-action { flex-wrap: wrap; }
+  .marketing-themes { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 640px; margin-inline: auto; }
 }
 @media (max-width: 760px) {
   .marketing-width { width: calc(100% - 40px); }
@@ -120,10 +132,13 @@
   .hero-art .hero-phone-front .phone-preview { width: 187px; height: 356px; }
   .hero-art-caption { left: 12px; bottom: 0; font-size: 19px; }
   .theme-showcase { padding-block: 48px; }
-  .marketing-themes { grid-template-columns: 1fr; gap: 34px; max-width: 440px; margin-inline: auto; }
-  .theme-visual { height: 290px; }
-  .theme-caption { margin-top: 18px; }
-  .theme-caption h3 { font-size: 25px; }
+  .marketing-themes { gap: 30px 14px; }
+  .theme-visual { height: 250px; padding-top: 24px; }
+  .theme-visual .phone-preview { width: 130px; height: 250px; border-width: 4px; border-radius: 20px; }
+  .theme-number { top: 12px; left: 12px; font-size: 14px; }
+  .theme-caption { margin-top: 14px; }
+  .theme-caption h3 { font-size: 20px; }
+  .theme-arrow { display: none; }
   .marketing-how { padding-block: 48px; }
   .marketing-steps { grid-template-columns: 1fr; gap: 28px; }
   .marketing-steps li { padding: 0 0 28px; }

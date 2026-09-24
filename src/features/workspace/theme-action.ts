@@ -7,7 +7,7 @@ import { isWeddingTheme } from "@/features/weddings/themes";
 
 export async function applyTheme(_: FormState, form: FormData): Promise<FormState> {
   const theme = form.get("theme");
-  if (!isWeddingTheme(theme)) return { message: "Choose one of the three available themes." };
+  if (!isWeddingTheme(theme)) return { message: "Choose one of the available themes." };
   try {
     const client = await createClient();
     const { data: { user } } = await client.auth.getUser();

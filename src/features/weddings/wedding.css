@@ -1,9 +1,10 @@
-/* Guest-only presentation: shared content, three distinct compositions. */
+/* Guest-only presentation: shared content, distinct compositions (F034 themes in wedding-themes.css). */
 .wedding-shell {
   --botanical-art: url("/assets/wedding/flowers/minimal-olive.svg");
   --theme-accent: #526044; --theme-surface: #f5f1e8; --theme-text: #272b22;
   --theme-muted: #626555; --theme-line: #d6d4c7; --theme-tint: #e5e6d8;
-  --theme-radius: 2px; --theme-heading: var(--wedding-serif), Georgia, serif;
+  --theme-radius: 2px; --theme-heading: var(--wedding-serif), Georgia, serif; --theme-body: Arial, Helvetica, sans-serif;
+  font-family: var(--theme-body);
   color: var(--theme-text); background: var(--theme-surface); overflow-wrap: anywhere;
   max-width: 1240px; margin: 24px auto; min-height: 90svh;
   border: 1px solid var(--theme-line); box-shadow: 0 14px 65px #34321f12;

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import sharp from "sharp";
 import { localSupabase } from "../helpers/local-supabase";
 import { reservedSlugs } from "../../src/features/workspace/publication-validation";
+import { themes } from "../../src/features/weddings/themes";
 
 const local = localSupabase();
 const owners = [local.anonymous(), local.anonymous()];
@@ -91,7 +92,7 @@ it("validates themes and keeps changes isolated without altering wedding content
     const denied = await caller.from("weddings").update({ theme: "bold" }).eq("id", id).select("id");
     expect(denied.data ?? []).toEqual([]);
   }
-  for (const theme of ["romantic", "bold", "minimal"]) {
+  for (const theme of [...themes.slice(1).map(({ id }) => id), "minimal"]) {
     const updated = await owner.from("weddings").update({ theme }).eq("id", id).select("*").single();
     expect(updated.error).toBeNull();
     expect(updated.data).toEqual({ ...before.data, theme, updated_at: updated.data!.updated_at });
@@ -104,6 +105,7 @@ it("validates, isolates and narrowly publishes per-theme photo framing, then res
   const framing = {
     minimal: { saveTheDate: { x: 22, y: 78, zoom: 1.25 }, details: { x: 66, y: 35, zoom: 1.5 } },
     romantic: { saveTheDate: { x: 10, y: 90, zoom: 2 } },
+    "evening-gold": { details: { x: 30, y: 40, zoom: 1.2 } },
   };
   expect((await owner.from("weddings").update({ photo_framing: framing }).eq("id", id)).error).toBeNull();
   for (const invalid of [
@@ -111,6 +113,7 @@ it("validates, isolates and narrowly publishes per-theme photo framing, then res
     { minimal: { saveTheDate: { x: 50, y: 50, zoom: 3 } } },
     { minimal: { saveTheDate: { x: 50, y: 50, zoom: 1, rotate: 5 } } },
     { unknown: {} },
+    { "evening_gold": {} },
   ]) expect((await owner.from("weddings").update({ photo_framing: invalid }).eq("id", id)).error).not.toBeNull();
   const denied = await owners[1].from("weddings").update({ photo_framing: {} }).eq("id", id).select("id");
   expect(denied.data ?? []).toEqual([]);

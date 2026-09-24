@@ -1,11 +1,12 @@
 // Regenerates the marketing phone images from the real fictional examples.
-// Usage: npm run marketing:previews [-- http://127.0.0.1:3000]  (app must be running)
+// Usage: npm run marketing:previews [-- http://127.0.0.1:3000 [theme ...]]  (app must be running)
 import { mkdir } from "node:fs/promises";
 import { chromium } from "@playwright/test";
 import sharp from "sharp";
 
 const base = process.argv[2] ?? "http://127.0.0.1:3000";
-const themes = ["minimal", "romantic", "bold"];
+const allThemes = ["minimal", "romantic", "bold", "terracotta", "heather", "alcantara", "countryside", "evening-gold"];
+const themes = process.argv.length > 3 ? process.argv.slice(3) : allThemes;
 const outDir = "public/media/themes";
 
 await mkdir(outDir, { recursive: true });

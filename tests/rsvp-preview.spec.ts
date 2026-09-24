@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { themes } from "../src/features/weddings/themes";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
+
+const themeIds = themes.map(({ id }) => id);
 
 const local = localSupabase();
 
@@ -54,7 +57,7 @@ test("owners can preview saved RSVP content without granting guest access or sav
     await page.getByRole("button", { name: "Apply theme", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("Theme saved");
 
-    for (const theme of ["minimal", "romantic", "bold"]) {
+    for (const theme of themeIds) {
       await page.goto(`/dashboard/preview?theme=${theme}`);
       await page.getByRole("link", { name: "RSVP", exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));

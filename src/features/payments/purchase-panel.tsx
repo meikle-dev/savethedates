@@ -16,7 +16,7 @@ export function PurchasePanel({ entitlement, checkout }: { entitlement: Entitlem
       <h3 className="text-lg font-medium">One wedding site</h3>
       <p className="editorial text-3xl">£29 <span className="font-sans text-sm text-[var(--muted)]">once</span></p>
     </div>
-    <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">Includes all three themes, one photo, Wedding Details and RSVP. A new purchase keeps your site online until six months after the wedding date. The expiry date is fixed when you start checkout.</p>
+    <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">Includes all eight themes, one photo, Wedding Details and RSVP. A new purchase keeps your site online until six months after the wedding date. The expiry date is fixed when you start checkout.</p>
     {entitlement.active ? <p className="form-notice mt-4" role="status">Payment confirmed. You can publish and republish{expiry ? ` until ${expiry}` : ""}.</p> : <>
       {checkout === "success" && <p className="form-notice mt-4" role="status">Checkout completed. We’ll enable publishing as soon as Stripe confirms the payment.</p>}
       {checkout === "cancelled" && <p className="form-notice mt-4" role="status">Checkout was cancelled. Your private draft is unchanged.</p>}

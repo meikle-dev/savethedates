@@ -1,19 +1,11 @@
-import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import type { WeddingTheme } from "./themes";
 import { WeddingNavigation } from "./wedding-navigation";
 import { BotanicalArt } from "./wedding-art";
-
-const weddingFont = localFont({
-  src: [
-    { path: "../../../public/fonts/cormorant-garamond-latin-regular.woff2", weight: "400", style: "normal" },
-    { path: "../../../public/fonts/cormorant-garamond-latin-italic.woff2", weight: "400", style: "italic" },
-  ],
-  variable: "--wedding-serif", display: "swap", fallback: ["Georgia"],
-});
+import { weddingFontClasses } from "./wedding-fonts";
 
 export function WeddingFrame({ theme = "minimal", className = "", children }: { theme?: WeddingTheme; className?: string; children: ReactNode }) {
-  return <div data-theme={theme} className={`${weddingFont.variable} wedding-shell ${className}`}>{children}</div>;
+  return <div data-theme={theme} className={`${weddingFontClasses(theme)} wedding-shell ${className}`}>{children}</div>;
 }
 
 export function WeddingHeader({ names, ...navigation }: { names: readonly [string, string] } & Parameters<typeof WeddingNavigation>[0]) {

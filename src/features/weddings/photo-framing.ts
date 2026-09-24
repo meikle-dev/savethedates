@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { WeddingTheme } from "./themes";
+import { themes, type WeddingTheme } from "./themes";
 
 export const photoPages = ["saveTheDate", "details"] as const;
 export type PhotoPage = typeof photoPages[number];
@@ -15,11 +15,9 @@ const themePhotoFramingSchema = z.object({
   details: photoFrameSchema.optional(),
 }).strict();
 
-export const photoFramingSchema = z.object({
-  minimal: themePhotoFramingSchema.optional(),
-  romantic: themePhotoFramingSchema.optional(),
-  bold: themePhotoFramingSchema.optional(),
-}).strict();
+export const photoFramingSchema = z.object(
+  Object.fromEntries(themes.map(({ id }) => [id, themePhotoFramingSchema.optional()])) as Record<WeddingTheme, z.ZodOptional<typeof themePhotoFramingSchema>>,
+).strict();
 
 export type PhotoFrame = z.infer<typeof photoFrameSchema>;
 export type PhotoFraming = z.infer<typeof photoFramingSchema>;

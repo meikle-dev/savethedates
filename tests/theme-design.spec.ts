@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
+import { themes } from "../src/features/weddings/themes";
 import sharp from "sharp";
 
-for (const theme of ["minimal", "romantic", "bold"]) {
+const themeIds = themes.map(({ id }) => id);
+
+for (const theme of themeIds) {
   test(`${theme} guest design stays readable across sizes and image failures`, async ({ page }) => {
     test.setTimeout(60_000);
     await page.goto(`/examples/${theme}`);
@@ -10,16 +13,19 @@ for (const theme of ["minimal", "romantic", "bold"]) {
     const decoration = page.locator(".wedding-footer > .botanical-art");
     await expect(decoration).toHaveAttribute("aria-hidden", "true");
     await expect(decoration).toHaveCSS("pointer-events", "none");
-    const artwork = await decoration.evaluate(async element => {
-      const source = getComputedStyle(element).backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1];
-      if (!source) throw new Error("Theme artwork is missing");
-      const image = new Image();
-      image.src = source;
-      await image.decode();
-      return { path: new URL(source).pathname, width: image.naturalWidth, height: image.naturalHeight };
-    });
-    const asset = { minimal: "minimal-olive", romantic: "romantic-rose", bold: "bold-laurel" }[theme];
-    expect(artwork).toEqual({ path: `/assets/wedding/flowers/${asset}.svg`, width: 240, height: 360 });
+    // Alcantara deliberately has no illustration: stitching and cognac rules replace it.
+    const asset = { minimal: "minimal-olive", romantic: "romantic-rose", bold: "bold-laurel", terracotta: "mediterranean-citrus", heather: "meadow-wildflower", alcantara: null, countryside: "autumn-dahlia", "evening-gold": "winter-hellebore" }[theme];
+    if (asset) {
+      const artwork = await decoration.evaluate(async element => {
+        const source = getComputedStyle(element).backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1];
+        if (!source) throw new Error("Theme artwork is missing");
+        const image = new Image();
+        image.src = source;
+        await image.decode();
+        return { path: new URL(source).pathname, width: image.naturalWidth, height: image.naturalHeight };
+      });
+      expect(artwork).toEqual({ path: `/assets/wedding/flowers/${asset}.svg`, width: 240, height: 360 });
+    } else await expect(decoration).toBeHidden();
     await expect(page.locator(".wedding-photo img")).toHaveJSProperty("naturalWidth", 1400);
     await expect(page.locator(".wedding-photo img")).toHaveCSS("object-position", "46% 52%");
     await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();

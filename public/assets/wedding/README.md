@@ -37,6 +37,20 @@ Keep each source below 6 KB uncompressed and the combined set below 15 KB. Paths
 
 Verification evidence and actual file sizes are recorded in the F018 backlog handoff. Public shared decoration belongs here; customer uploads remain in private storage.
 
+## Additional themes (F034)
+
+F034 uses the five supplied botanicals and backdrops (added 23 September 2026). Their provenance was not recorded when they were supplied; record it here before public launch. Assignments:
+
+| Theme | Botanical (`flowers/`) | Desktop RSVP backdrop (`backgrounds/`, 1440×960 WebP) |
+| --- | --- | --- |
+| Terracotta | `mediterranean-citrus.svg` | `terracotta-rsvp-limewash.webp` (108,840 bytes): clay arch on the left edge, limewash centre |
+| Heather | `meadow-wildflower.svg` | `heather-rsvp-moorland.webp` (28,408 bytes): lilac mist with moorland hills along the bottom |
+| Alcantara | None by design; stitched outlines and cognac diamonds fill the slots | `alcantara-rsvp-suede.webp` (110,822 bytes): suede folds on the left edge |
+| Countryside | `autumn-dahlia.svg` | `countryside-rsvp-tweed.webp` (94,760 bytes): tweed and leather folds on the left edge |
+| Evening Gold | `winter-hellebore.svg` | `evening-gold-rsvp-silk.webp` (32,418 bytes): navy silk and gold ribbon on the right edge |
+
+`coastal-grasses.svg` is currently unused. As before, backdrops load only at widths of at least 901px, and forms stay opaque and clear of each decorated edge.
+
 ## RSVP background photograph (F019)
 
 `romantic-rsvp-floral.webp` is an original AI-generated, text-free decorative still life created for this project on 22 September 2026. It depicts blush roses, small white flowers, sage foliage and burgundy fabric along the left edge of blank ivory paper. The supplied RSVP reference informed the composition; its pixels and UI were not copied. The source PNG was generated with the built-in image generation tool, then resized with Sharp to 1440×960 WebP at quality 76 (56,706 bytes). No external stock licence or attribution is required for project use; no exclusivity claim is made. The source generation is retained in the local Codex generated-image directory, while the optimised WebP is the shipped asset.
