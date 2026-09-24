@@ -14,7 +14,7 @@ Fill in the non-secret decisions and identifiers below when they are available. 
 - [ ] Staging host/domain, if separate: `
 - [ ] Person authorised to approve deployment: `
 
-The host must run the existing Docker production image, support HTTPS, environment secrets, health checks, logs, restarts, and a rollback to the previous image.
+The host must run the existing Docker production image, support HTTPS, environment secrets, health checks, logs, restarts, and a rollback to the previous image. Proposed host: [F037](backlog.md#f037---choose-the-production-host); error tracking and analytics: F038 and F039 in the backlog.
 
 ## 2. Supabase production project
 

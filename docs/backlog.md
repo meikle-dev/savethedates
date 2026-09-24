@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F035 (Coastal, Riviera, Velvet, Black Tie) is Done. F036 (WebP botanicals replace the SVGs) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket.
+Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F035 (Coastal, Riviera, Velvet, Black Tie) is Done. F036 (WebP botanicals replace the SVGs) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket. F037 (production host), F038 (error tracking and AI-queryable logs) and F039 (visitor analytics) are Planned pending owner decisions; F037-F038 gate F009. F040 (photo-upload memory limits for a 512 MB host) is Ready and also gates F009.
 
 ## Status and handoff rules
 
@@ -823,12 +823,183 @@ Excluded: parallax, scroll-triggered effects, animated page-load heroes, animati
 
 **Done when:** The role file exists and is concise. AGENTS.md lists it as manual-only. Neither the default work request nor any other role invokes it automatically, and ideas it produces do not change backlog status without Product Manager triage. `git diff --check` passes.
 
+## F037 - Choose the production host
+
+**Status:** Planned (awaiting owner approval)
+**Priority / lead:** P1, unblocks F009 provisioning / Product Manager decision; no application change.
+**Purpose:** Record the production host so F009 staging, F038 and F039 can proceed.
+**Depends on:** None.
+**References:** `docs/release-inputs.md` section 1, `docs/operations.md`, `docs/overview/tech-stack.md` (Hosting).
+**Recommendation (24 September 2026):**
+
+- Host on a **Render web service in Frankfurt**. CI pushes the existing `production` image to GHCR, and Render deploys it by digest. This meets every host requirement in `release-inputs.md`:
+  - HTTPS and secret environment variables;
+  - health check on `/`, restarts and zero-downtime deploys;
+  - rollback to a retained earlier image digest.
+- Create the managed Supabase project in the same region (eu-central-1) so database round trips stay short.
+- Run staging and production as separate services, and confirm current plan pricing when provisioning.
+
+Alternatives considered:
+
+- **Fly.io London** is the fallback if UK-only hosting becomes a requirement. It needs more hands-on operations.
+- **Vercel** is rejected: it abandons the Docker image path, and its Hobby plan excludes commercial use.
+- **Cloud Run/AWS and a self-managed VPS** add more operations than this service needs.
+
+**Owner decision:** Approve Render in Frankfurt with Supabase in eu-central-1, or name another host or region.
+**Done when:** The decision is recorded in `release-inputs.md` section 1 and `tech-stack.md` Hosting; F009 references it; `git diff --check` passes.
+
+## F038 - Error tracking and AI-queryable logs
+
+**Status:** Planned (awaiting owner decisions)
+**Priority / lead:** P1, release gate for F009 monitoring / Software Engineer. Independent security and privacy review is required: this adds a third-party processor and touches secret-bearing URLs and owner/guest data.
+**Purpose:** When something breaks in production, the owner is alerted and can find out what failed, since when and for whom. They can do this by asking Claude through MCP, as well as in dashboards.
+**Depends on:** F037 (host). Implementation and local verification can happen before the host exists; hosted alert and retention checks happen on F009 staging.
+**References:** `docs/operations.md` (Monitoring; runtime configuration; identical image per environment), `docs/overview/architecture.md`, `next.config.ts` (`output: "standalone"`), `src/app/layout.tsx`, `src/features/weddings/invitation-context.ts` (`?share=`), `node_modules/next/dist/docs/01-app/02-guides/instrumentation.md`. The app currently has no logging, error capture, instrumentation file or CSP.
+
+**Decision (proposed):**
+
+- **Sentry, EU data region, via `@sentry/nextjs`.** It captures:
+  - server, Server Action and Route Handler errors through `instrumentation.ts` `onRequestError`;
+  - browser errors.
+- Events are tagged with the commit (release) and environment. Email alerts go to the incident contact for new, regressed and spiking issues.
+- A small structured logger writes JSON to stdout, the host-side fallback. It also forwards warnings, errors and key operational events to Sentry Logs, so logs are queryable next to errors through the Sentry MCP server. Operational events include a rejected webhook, a checkout attempt conflict and an SMTP/auth failure.
+- Supabase's own Postgres/Auth/Storage/API logs stay in Supabase, read through the Supabase MCP server.
+
+**Scope:**
+
+- **Scrubber.** One shared, unit-tested scrubber is applied in Sentry's `beforeSend`, `beforeSendLog` and breadcrumb hooks, and in the logger. It:
+  - rewrites `/s/<secret>/…` to `/s/[secret]/…`;
+  - removes query strings from all recorded URLs, including request URLs, Referer, and fetch/span breadcrumbs, because Supabase REST filters contain slugs and names. This covers `?share=`, `/dashboard/guests?q=`, and `/auth/confirm` `token_hash`/`type`;
+  - drops `Authorization`/`Cookie` headers, Supabase JWTs, request and form bodies, and Server Action payloads;
+  - scrubs exception messages, because Postgres errors can echo values.
+- **Sentry settings.** `sendDefaultPii: false`; user is the owner UUID only. Console breadcrumbs off. `tracesSampleRate: 0` at launch. No Replay.
+- **Runtime configuration.** Keep one image for all environments: no `NEXT_PUBLIC_*` build-time keys. Client configuration comes from a no-store runtime source, for example a small dynamic config script or route. Static pages such as `/examples` must not freeze empty values at build time; a test proves a prebuilt image picks up keys at runtime. Nothing is sent when the configuration is unset (local, CI, tests).
+- **Source maps.** Build hidden source maps with debug IDs inside Docker, without a token. CI copies the maps out of the build stage and uploads them with `sentry-cli` using a CI-only `SENTRY_AUTH_TOKEN`. The maps are removed before the final image. Confirm that the pinned SDK version supports this repository's Next.js/Turbopack standalone build.
+- **Request ID.** Each request gets an ID that links the log line, the Sentry event and any user-visible error reference.
+- **Documentation.** Document the new optional runtime variables in `run-app-instructions.md` and `operations.md`, for example `SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `APP_RELEASE`. Add a "Monitoring and AI-assisted investigation" runbook to `operations.md`:
+  - alert routing and least-privilege, read-only MCP setup for Sentry and Supabase;
+  - example investigation prompts and correlation by request ID;
+  - a rule that production data seen through MCP stays within the investigation.
+- **Approvals.** Record Sentry in `tech-stack.md`/`architecture.md` as an approved vendor SDK. The privacy notice (an F009 blocker) lists Sentry as an EU processor and states log retention. Confirm the vendor's DPA and international transfer terms are in place.
+- **Deferred:** tracing/OpenTelemetry, session replay, third-party uptime probes beyond the host health check.
+
+**Owner decisions needed before Ready:** Approve a Sentry EU account (free tier to start) and who owns it; the incident alert email; log retention (proposal: 30 days).
+**Done when:**
+
+- With a staging Sentry project, each of the following appears with release, environment, request ID and scrubbed data:
+  - a deliberately thrown Server Action error;
+  - a browser error with a resolved source map;
+  - a rejected Stripe webhook log.
+- Unit tests cover the scrubber for `/s/<secret>`, `?share=`, `?q=`, `/auth/confirm`, headers, bodies and messages containing values.
+- A Playwright journey intercepts outgoing Sentry payloads and asserts they contain no secrets or form values. The journey covers the shared-link RSVP with `?share=`, auth confirmation and the checkout return. With configuration unset, no third-party requests are made.
+- The runtime-config test passes against the production image.
+- `npm.cmd run check` passes, and client bundle size before and after is recorded.
+- The runbook exists. These three MCP queries work against staging:
+  - "latest unresolved Sentry issues in production";
+  - "logs for request ID X";
+  - "Supabase auth errors in the last hour".
+- Independent review passes. Alert delivery and retention on the real host are verified in F009 staging.
+
+## F039 - Privacy-friendly visitor and funnel analytics
+
+**Status:** Planned (awaiting owner decisions)
+**Priority / lead:** P2, wanted for launch but not a release blocker / Software Engineer with SEO & Growth input. Independent privacy review is required.
+**Purpose:** The owner can see visitors, pages, referrers and campaigns, countries/cities, devices, clicks, and where people drop out between first visit and a published, paid wedding.
+**Depends on:** F038 (shared scrubber and runtime configuration).
+**References:** F038, `docs/overview/architecture.md` (F008 indexation), `src/app/layout.tsx`, `node_modules/next/dist/docs/01-app/02-guides/analytics.md`.
+
+**Decision (proposed):**
+
+- **PostHog Cloud EU with `cookieless_mode: "always"`.** Nothing is stored on the device, so no consent banner is needed; cookieless mode is compatible with PECR as amended by the Data (Use and Access) Act 2025.
+- UK GDPR still applies to the hashing of IP and User-Agent. Record a legitimate-interest note, enable client-IP discarding after GeoIP, and confirm the DPA and transfer terms.
+- It provides web analytics (visitors, pageviews, referrers/UTM, country/city, device), Web Vitals on marketing pages, funnels, and an official EU MCP server for AI questions.
+- Cookieless mode counts unique visitors per day, not across days. That is acceptable.
+- Send directly to PostHog's EU host: no `/ingest` proxy. A rewrite would forward Supabase session cookies, and every visitor would geolocate to the server. A carefully built proxy can be reconsidered later if ad-blocker loss proves material.
+
+**Scope:**
+
+- **Loading.** Load analytics by dynamic import when the browser is idle after load. It must never block rendering or hydration.
+  - Turn off replay, surveys, heatmaps, the toolbar, feature-flag/remote-config calls and remote extensions.
+  - Load it only when runtime configuration is present.
+- **Autocapture** runs on marketing pages only. Dashboard and wedding pages send explicit named events, so response tables, guest names and form text are never captured.
+- **Every event** carries `site_area: marketing | owner | wedding`, so guest traffic doesn't swamp acquisition figures.
+- **Named events:**
+  - `example_viewed {theme}`, `cta_clicked {location, target}`, `signup_started`, `signup_completed`;
+  - `wedding_created`, `checkout_started`;
+  - `purchase_completed {amount, currency}`, sent server-side from the verified Stripe webhook;
+  - `checkout_expired`, from the `checkout.session.expired` webhook;
+  - `wedding_published`, `guest_page_viewed`, `rsvp_submitted`.
+- **Identity.** Server-side events use the owner's Supabase user UUID as the distinct ID. Never email, names or personal properties.
+- **Attribution.** Carry first-touch `utm_source/medium/campaign` and the referrer domain from the landing URL through the signup URL. Attach them to `signup_completed` server-side, then copy them to `purchase_completed`. Never store them in the browser.
+- **Scrubbing.** All URLs, `$current_url`, `$referrer` and `$initial_referrer` pass through the F038 scrubber. Wedding paths are recorded only without query strings, so `?share=` never leaves the app. Slugs, which usually contain the couple's names, are visible only to the operator.
+- **Documentation.** Add PostHog's host to any future CSP. Record PostHog in `tech-stack.md`/`architecture.md`. The privacy notice lists PostHog as an EU processor and describes cookieless analytics. Add PostHog MCP setup and example prompts to the F038 runbook.
+- **Search launch steps**, added to F009 and `release-inputs.md`: verify the domain in Google Search Console by DNS, submit `/sitemap.xml`, inspect the homepage as indexable, and confirm examples show as excluded by noindex.
+- **Deferred:** session replay, heatmaps, per-couple analytics shown in the dashboard, and an `/ingest` proxy.
+
+**Owner decisions needed before Ready:**
+
+- Approve a PostHog EU account (free tier to start) and who owns it.
+- Accept that wedding slugs appear in the operator's analytics.
+- Analytics retention (proposal: the PostHog default).
+
+**Done when:**
+
+- On staging, a marketing pageview with country, UTM attribution carried to `signup_completed` and `purchase_completed`, and each named event appear with scrubbed URLs.
+- A Playwright journey intercepts PostHog payloads during a `?share=` guest visit, RSVP, auth confirmation and the checkout return. It asserts:
+  - no secrets, query strings or form values are sent;
+  - dashboard and wedding pages send no autocapture events;
+  - no requests are made when configuration is unset.
+- Homepage first-load JavaScript stays within an agreed budget.
+- Mobile Lighthouse LCP, CLS and INP on the homepage don't regress against a pre-F039 baseline, allowing a performance-score drop of 5 or less. Record both figures.
+- No visual change at mobile or desktop widths.
+- `npm.cmd run check` passes.
+- A PostHog MCP question ("visitors by country this week") works against staging.
+- Independent review passes.
+
+## F040 - Keep photo uploads within a small server's memory
+
+**Status:** Ready
+**Priority / lead:** P1, release gate for F009 / Software Engineer. No separate independent review: validation and storage behaviour are unchanged. It is covered by the F009 release review.
+**Purpose:** The proposed launch host (F037: Render Starter, 512 MB RAM, 0.5 CPU) must not crash or slow guest pages when several couples upload large photos at the same moment. Guest traffic is light, so photo decoding is the main memory risk.
+**Depends on:** None. It doesn't depend on the host. Verify again on F009 staging once the host exists.
+**References:** `src/features/workspace/photo.ts` (`preparePhoto`), `src/features/workspace/publication-actions.ts` (the call at line 57), `src/features/workspace/publication.test.ts`, `Dockerfile` (`node:24.11.0-bookworm-slim`, glibc), `next.config.ts` (`serverActions.bodySizeLimit: "6mb"`), and sharp's documentation on `concurrency`, `cache` and memory allocation on glibc.
+**Current behaviour:**
+
+- `preparePhoto` buffers a file of up to 5 MiB, then decodes up to 25 megapixels, which is roughly 75–100 MB of raw pixels. It then resizes the photo to 2000 px WebP.
+- Nothing limits simultaneous uploads.
+- sharp's libvips thread count defaults to the detected CPU count, which inside a container can be the host machine's count. Its operation cache is on.
+- glibc's allocator can keep memory high after bursts.
+- The Next.js server itself uses roughly 150–250 MB. Two or three simultaneous uploads could therefore exceed 512 MB and restart the server, so guests would briefly see errors.
+
+**Scope:**
+
+- **One upload at a time.** Process at most one photo per server instance:
+  - call `sharp.concurrency(1)` and `sharp.cache(false)` once at module load;
+  - wrap `preparePhoto` in a small in-process queue (a semaphore) with a short waiting-queue cap, for example 3.
+- **When the queue is full or a wait exceeds about 20 s**, return a friendly "Photo uploads are busy — please try again in a moment" message through the existing form state. Save nothing, leave the current photo and draft unchanged, and don't leak partial storage objects.
+- **Decode memory.** Make sure the pipeline uses sharp's shrink-on-load for JPEG and WebP. Check whether the order of `rotate()` and `resize()` prevents it, and prefer the order that keeps peak memory lowest. Output must be unchanged: correct orientation, 2000 px maximum, metadata stripped, WebP at quality 85. Set `fastShrinkOnLoad: false` so fine patterns such as lace, pinstripes and fabric are resampled at full quality, without faint ripple (moiré) artefacts.
+- **Allocator.** Following sharp's guidance for glibc, reduce fragmentation in the production image, for example with `ENV MALLOC_ARENA_MAX=2` or jemalloc. Keep whichever measures better.
+- **Documentation.** Record in `docs/operations.md` the measured memory profile, and when to upgrade to Standard (2 GB): memory regularly above about 70%, restarts from running out of memory, or guest page latency rising at peak.
+- **Deferred:** resizing photos in the browser before upload. Revisit only if the measurements or mobile upload times justify it. The server stays the authority on validation either way.
+
+**Done when:**
+
+- Unit tests prove that:
+  - a second concurrent `preparePhoto` call waits until the first finishes;
+  - a full queue returns the friendly error without calling sharp;
+  - a queue place is always released (`try/finally`) when processing throws, rejects or times out, so one failed upload can't block later uploads;
+  - the existing validation and output tests in `publication.test.ts` still pass.- The production image is run with `docker run --memory=512m --cpus=0.5` against local Supabase. Five near-simultaneous 25 MP uploads are sent while a published wedding page is under steady load (for example about 10 requests per second with a simple HTTP load tool). The result:
+  - the container isn't killed or restarted;
+  - peak memory and guest-page p95 latency before and during the uploads are recorded, before and after the change;
+  - every upload either succeeds or gets the friendly busy message.
+- `npm.cmd run check` passes and the operations notes are updated. The same check is repeated on F009 staging.
+
 ## F009 - Launch and operate the service
 
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate).
+**Depends on:** F008; F037 (host), F038 (monitoring) and F040 (upload memory limits); F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate).
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Hosting selection, external provisioning, live billing and policy-dependent export/deletion remain blocked on owner decisions; do not invent retention periods or publish policies. No additional product feature or hosting purchase is authorised by this preparation.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
 **Decisions/access before release:** Production accounts/domain, live billing configuration, support contact, owner-approved terms/privacy/retention/deletion policy and site lifetime communication. Record any external review still needed; do not invent assurances.
