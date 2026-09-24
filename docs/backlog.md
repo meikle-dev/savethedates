@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F035 (Coastal, Riviera, Velvet, Black Tie) is Done. F036 (WebP botanicals replace the SVGs) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket. F037 (production host: Render, Frankfurt) is Done. F038 (error tracking and AI-queryable logs), F040 (photo-upload memory limits) and F041 (production setup guide) are Ready. F039 (visitor analytics) becomes Ready after F038. F038, F040 and F041 gate F009.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F031 and F034-F037 are Done. The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Next: F040**, then F038 and the eligible launch tickets. F033 is Ready but follows launch work; F032 awaits UX confirmation and F039 is optional. F042-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -804,7 +804,7 @@ Excluded: parallax, scroll-triggered effects, animated page-load heroes, animati
 
 - Only `opacity`/`transform` are animated. Each animation lasts 250ms or less and never delays interaction or navigation. Content and focus are available immediately, with no layout shift and no animation on first load.
 - `prefers-reduced-motion: reduce` turns off transitions and view-transition animations everywhere. Browsers without View Transitions support work normally.
-- All three wedding themes use the same motion behaviour. Previews and noindex/private headers are unchanged.
+- All twelve wedding themes use the same motion behaviour. Previews and noindex/private headers are unchanged.
 - Browser checks cover reduced-motion (emulated), navigation still working with transitions, and absence of overflow. Visual inspection is done at mobile and desktop widths. `npm.cmd run check` passes, with no significant increase in client bundle size (record before/after). Motion guidance is recorded in `docs/overview/site-ui.md`.
 
 ## F033 - Manually invoked Innovation role
@@ -1025,6 +1025,7 @@ Alternatives considered:
 - **Decode memory.** Make sure the pipeline uses sharp's shrink-on-load for JPEG and WebP. Check whether the order of `rotate()` and `resize()` prevents it, and prefer the order that keeps peak memory lowest. Output must be unchanged: correct orientation, 2000 px maximum, metadata stripped, WebP at quality 85. Set `fastShrinkOnLoad: false` so fine patterns such as lace, pinstripes and fabric are resampled at full quality, without faint ripple (moiré) artefacts.
 - **Allocator.** Following sharp's guidance for glibc, reduce fragmentation in the production image, for example with `ENV MALLOC_ARENA_MAX=2` or jemalloc. Keep whichever measures better.
 - **Documentation.** Record in `docs/operations.md` the measured memory profile, and when to upgrade to Standard (2 GB): memory regularly above about 70%, restarts from running out of memory, or guest page latency rising at peak.
+- **Upload guidance (24 September walkthrough):** Use plain language for the size limit without changing or understating the actual 5 MiB cap; keep the 25-megapixel rejection explicit when relevant. Do not silently relax server validation.
 - **Deferred:** resizing photos in the browser before upload. Revisit only if the measurements or mobile upload times justify it. The server stays the authority on validation either way.
 
 **Done when:**
@@ -1033,7 +1034,8 @@ Alternatives considered:
   - a second concurrent `preparePhoto` call waits until the first finishes;
   - a full queue returns the friendly error without calling sharp;
   - a queue place is always released (`try/finally`) when processing throws, rejects or times out, so one failed upload can't block later uploads;
-  - the existing validation and output tests in `publication.test.ts` still pass.- The production image is run with `docker run --memory=512m --cpus=0.5` against local Supabase. Five near-simultaneous 25 MP uploads are sent while a published wedding page is under steady load (for example about 10 requests per second with a simple HTTP load tool). The result:
+  - the existing validation and output tests in `publication.test.ts` still pass.
+- The production image is run with `docker run --memory=512m --cpus=0.5` against local Supabase. Five near-simultaneous 25 MP uploads are sent while a published wedding page is under steady load (for example about 10 requests per second with a simple HTTP load tool). The result:
   - the container isn't killed or restarted;
   - peak memory and guest-page p95 latency before and during the uploads are recorded, before and after the change;
   - every upload either succeeds or gets the friendly busy message.
@@ -1041,10 +1043,10 @@ Alternatives considered:
 
 ## F041 - Production setup guide
 
-**Status:** Ready (product update 3 and Stripe activation wait on owner-approved legal text)
+**Status:** Planned (owner accounts/access and policy inputs outstanding; CI/image and staging-protection scope is prepared and can be split for implementation if needed)
 **Priority / lead:** P1, release gate for F009 / Owner for the setup steps; Software Engineer for the product updates.
 **Purpose:** One checklist of everything needed to run SaveTheDates in production.
-**Depends on:** F037 (host approved). Step 6 takes effect once F038/F039 are built.
+**Depends on:** F037 (Done), F038/F040 for final staging verification, and completed F042-F048 for the final hosted journey. F039 analytics is optional and never gates F041/F009. Independent CI/image and staging-protection preparation has no dependency on those UI features.
 **Rules:**
 
 - Record non-secret values in `docs/release-inputs.md`.
@@ -1129,18 +1131,18 @@ Alternatives considered:
 6. In notification settings, send deploy failures and service failures to the incident email.
 7. Record the host details in `release-inputs.md` section 1.
 
-**6. Monitoring (after F038/F039)**
+**6. Monitoring (F038 required; F039 optional)**
 
 1. **Sentry:**
    - Sign up with the EU data region and create a Next.js project.
    - Put the DSN in Render as `SENTRY_DSN`.
    - Put an auth token in GitHub Actions secrets as `SENTRY_AUTH_TOKEN`.
    - Point alert emails at the incident email.
-2. **PostHog:**
+2. **PostHog (only if optional F039 is delivered):**
    - Sign up on EU Cloud.
    - In project settings, turn on cookieless tracking and "Discard client IP data".
    - Put the project API key in Render.
-3. **Claude:** connect the Sentry, PostHog and Supabase connectors with read-only access.
+3. **Claude:** connect the approved Sentry and Supabase connectors with read-only access; PostHog only if F039 is delivered.
 
 **7. Search**
 
@@ -1160,7 +1162,7 @@ Alternatives considered:
    - `robots.txt` disallows everything.
 
    Production leaves `APP_ENV` unset. The Stripe webhook route is exempt from basic auth, because it is authenticated by its signature.
-3. **Legal and contact pages.** Add Terms, Privacy and Refund pages using owner-approved text, plus a support email. Link them in the site footer and next to sign-up and checkout. Stripe activation requires these.
+3. **Legal and contact pages (blocked on owner text).** Add Terms, Privacy and Refund pages using owner-approved text, plus visible Contact/support details. Link them in the site footer and next to sign-up and checkout. Verify current provider activation requirements during setup; this is an existing project launch requirement, not a legal-compliance conclusion. Do not publish placeholder policies.
 4. **Documentation.** Document `APP_ENV`, the staging variables and the Render specifics (registry, health check, rollback, notifications) in `docs/operations.md` and `run-app-instructions.md`.
 
 ### Open owner decisions
@@ -1174,18 +1176,431 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 **Done when:**
 
-- Steps 1–7 are complete and recorded in `release-inputs.md`.
+- Required setup inputs and steps 1–6 are complete and recorded in `release-inputs.md`; optional F039/PostHog work is excluded. Configure production securely without opening paid customer access. Step 7 Search Console submission and step 8 production promotion belong to F009 once the live domain is ready.
 - The product updates have shipped with `npm.cmd run check` passing.
 - Staging passes the full hosted journey in `docs/operations.md`.
-- The production deploy and smoke check are recorded in F009.
+- Hand off the reviewed image/configuration and staging evidence to F049/F009. F041 does not depend on F009 being Done; final release review, deployment and production smoke belong solely to F009.
+
+## 24 September walkthrough assessment
+
+**Source:** [Full walkthrough](reports/2026-09-24-ux-walkthrough-and-launch-readiness.md), reviewed against commit `76a23c0`. Product Manager triage with separate engineering, UX and independent release assessments. This is planning and source inspection, not a new browser/security audit or release approval. The original report is preserved.
+
+**Assessment:** Accept the sharing, onboarding and readiness problems. Keep one shared bearer link and one named response per person (F026/F031). Improve the presentation without auto-enabling Details or RSVP, exposing secrets, or adding household/dietary data. No new service or parallel implementation of existing capabilities is needed. Report observations and proposed solutions are distinct; not every recommendation becomes a feature.
+
+**Owner decisions (24 September, after triage):**
+
+1. **One reply per person is confirmed.** Each guest fills in the RSVP themselves. Household, plus-one and party-size replies stay in F010.
+2. **All guest pages move under the wedding's existing long RSVP secret, with the names first:** `/<names>/<secret>`, `/<names>/<secret>/details` and `/<names>/<secret>/rsvp`. Guests click these links rather than type them, so the long secret is kept.
+   - The secret alone makes each wedding's URL unique, so the names part needs no uniqueness rule, no reservation and no payment step. This replaces the reservation design previously in F043.
+   - Putting the names first makes a shared link read as the couple's own address.
+   - A link can't be disguised as `/names` alone: messaging apps show the real URL, and a names-only redirect would bypass the secret. Instead, a pre-written share message (F042) and a preview card showing names and date (F047) make the shared link friendly.
+   - It also removes the second, general URL, and with it the RSVP dead end. It is possible now because F031 retired individual invitations, which was F015's objection to a single wedding-wide code. F015's other objection still applies: the code must stay unguessable, so a short six-digit code is not used.
+3. **Preview cards may show the couple's names and wedding date, but not their photo or location.**
+
+**Corrections supported by the current source:**
+
+- Expired/too-short purchases are already rejected by `begin_checkout_attempt` in `supabase/migrations/20260923000100_six_month_entitlements.sql`, with coverage in `tests/integration/payments.test.ts`. A near-cutoff date is already rejected at `payments.test.ts:167-168`. Past-date wording is F046. This is not a new payment defect.
+- F007 records owner confirmation of a real Stripe test-mode flow on 19 September. That does not verify the future managed staging environment; F041/F009 still require it. The report's blanket claim that only fixtures have ever been used is too strong.
+- Details already reports hidden/live status after save (`details-actions.ts`). Overview already shows RSVP state and live-site/copy actions (`dashboard/(workspace)/page.tsx`). Improve prominence and Publish readiness rather than duplicate these features.
+- Design's swatches are decorative; the preview already has named previous/next controls and accessible theme choices (`preview-toolbar.tsx`). F050 addresses browsing and mobile height.
+- Workspace section titles already exist; example pages share a separate example title. F047 targets the actual missing distinctions. Publish currently has a relative anchor and no copy button; the relative input with Copy full link is in RSVP.
+- Account and Publish forms already validate on the server. B5 concerns presentation and error discoverability, not missing validation. The RSVP deadline really is UTC; changing its label alone would misstate the cutoff.
+- A walkthrough does not prove tenant isolation, legal compliance, or provider activation requirements. Self-service deletion plus RSVP CSV is not a complete data policy. Owner-approved policy and provider requirements remain F041/F048/F009 inputs; no new legal conclusion is adopted here.
+
+**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032 and F050 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment.
+
+**Paid-launch gate:** F038, F040-F049, F054 (security review) and existing F009 gates must be Done with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
+
+| Report finding | Disposition |
+| --- | --- |
+| B1; Basics next step/date copy; Details visibility/save reach | F046 |
+| B2/B4; RSVP off/deadline; one reply each; thank-you continuation; guest RSVP CTA | F044 |
+| Two-link confusion; general-URL RSVP dead end; URL choice before payment | F043: one `/<names>/<secret>` guest URL whose names part is not unique and can be chosen at any time |
+| B3; publish success/share; plural-link marketing copy | F042 |
+| B5 sign-up; confirmation/resend; password visibility | F045 |
+| B5 Publish (consent and URL errors) | F043 (names field) and F042 (Publish panel) |
+| Expired-date purchase concern | Existing guard and integration test retained; past-date wording is F046 |
+| B6; missing icon; unhelpful 404; link previews | F047: preview card with names and date, no photo (owner approved) |
+| Sign-up/checkout/footer legal/support links | Existing F041; approved policy input, no placeholder pages |
+| Data retention/export/deletion; guest CSV | F048; print and optional catering export remain F010 |
+| Theme gallery/preview height; example RSVP and theme navigation | F050, Deferred |
+| Overview duplicate previews, mobile density, optional theme checklist; framing scroll; repeated address guidance | F010, Deferred; no new tracking fields or dashboard redesign |
+| Household/plus-one/dietary/note fields; editable decorative lines | Owner confirmed one reply per person (24 September); these are F010, Deferred |
+| Calendar downloads and QR codes | F010, Deferred; sharing works without them |
+| Upload-limit wording | F040: simplify help without misstating its actual byte/pixel limits |
+| Motion; analytics; Innovation role | Existing F032/F039/F033; not launch blockers |
+| Evening Gold contrast, tap targets, keyboard/screen reader, Safari/iPhone and Firefox | F049; core accessibility moved before launch |
+| Hosting/Supabase/email/Stripe/staging/CI; monitoring; upload memory | Existing F041/F038/F040, no duplicate infrastructure tickets |
+| Storage backups/restore, asset rights, business identity, support, release review/deploy | Existing F009/F041 and `release-inputs.md`; owner/provider/legal verification where appropriate |
+
+**Planning verification (24 September):** Engineering, UX and release reviewers inspected source and existing evidence. Independent final documentation review found no Blocking/Important findings. `git diff --check` passed. An inline Python link/heading check passed for all seven introduced local links/anchors, 50 unique feature IDs and all nine new ticket statuses. A broader scan checked 36 existing/local links and found one pre-existing missing file, `docs/ux/designs/dashboard-redesign.png`; that unrelated reference is unchanged. No application changes, browser rerun, application tests, provider verification or deployment were performed. Exact next step: implement F040 using its existing acceptance criteria; keep F009 blocked on its outstanding external inputs.
+
+## F042 - One clear guest link and a useful publishing handoff
+
+**Status:** Ready (build after F043)
+**Priority / lead:** P1, paid-launch gate / UX then Software Engineer; independent security review required.
+**Purpose:** Couples can confidently share one working link after publication.
+**Depends on:** F043 (single guest URL); F026, F027, F031 (Done).
+**References:** Report B3, sections 3.7, 4 and 5; `publication-form.tsx`, `rsvp-manager.tsx`, `copy-link-button.tsx`, `src/app/dashboard/(workspace)/page.tsx`, `src/features/weddings/invitation-context.ts`, `src/features/marketing/home.tsx`.
+**Scope/decision:**
+
+- Call the F043 URL **Your guest link**. After F043 it is the only link a couple shares.
+- Make it primary in Publish's live/success panel and in the Overview.
+- Offer a pre-written share message the couple can edit before sending, for example: "Save the date! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Details and RSVP here: <guest link>".
+  - It's built from the saved names, date and location, and isn't stored.
+  - Actions: native Share (message and link) where supported, **Share on WhatsApp** through WhatsApp's own `wa.me` share link, Copy message and Copy link.
+- Keep RSVP settings and link replacement in the RSVP section, and show the same current link wherever it appears.
+- Explain that anyone holding the guest link can view the site and reply.
+- QR codes are deferred.
+
+**Done when:**
+
+- Displayed, selected/copied and shared URLs are the same absolute URL using the configured application origin, never an untrusted request Host. Mobile text can be read/copied without page overflow; Copy gives accessible success/error feedback.
+- Publication success and later visits show the same usable panel. Draft, unpublished, expired and revoked states do not offer an apparently live link. Closed RSVP remains shareable with explicit closed status; publishing never opens RSVP implicitly.
+- Native Share and WhatsApp sharing are user initiated. Unsupported browsers keep the Copy actions. Cancelling isn't reported as a failure or a success. The shared message contains the full absolute guest link. Only the destination the couple chooses receives the link: no shortener, QR, analytics or other third-party service does.
+- The workspace presents only the guest link; no second "general" URL remains. Replacing the link refreshes every owner display. Metadata, logs and analytics never receive the secret through this feature.
+- Homepage wording consistently describes one private guest link. Owner/guest browser checks cover these states at mobile/desktop widths, relevant isolation tests and `npm.cmd run check` pass, and independent review closes.
+
+## F043 - One secret guest URL for every wedding page
+
+**Status:** Ready
+**Priority / lead:** P1, paid-launch gate / Software Engineer; independent security and database review required.
+**Purpose:** Each wedding has one link that opens all three pages and accepts replies. Couples choose its readable names part freely, before or after paying, with no uniqueness check or reservation.
+**Depends on:** F026, F031 (Done). Owner decision of 24 September; this replaces the earlier reservation design.
+**References:** `src/app/[weddingSlug]/` (landing, details, rsvp, photo), `src/app/s/[shareSecret]/[weddingSlug]/rsvp/page.tsx`, `src/features/weddings/invitation-context.ts`, `published.ts`, `src/features/workspace/publication-form.tsx`, `publication-actions.ts`, `publication-validation.ts`, `rsvp-manager.tsx`, `src/proxy.ts`, `supabase/migrations/20260918000200_publication.sql` (slug uniqueness and lock), `20260923000200_shared_rsvp.sql` (secret), `docs/overview/architecture.md` (Routes and publication), `run-app-instructions.md` (route table), `src/features/marketing/home.tsx`, `tests/publication.spec.ts`, `tests/rsvp.spec.ts`, `tests/integration/`.
+**Decisions:**
+
+- **Routes and lookup.**
+  - Guest routes become `/<names>/<secret>`, `/<names>/<secret>/details` and `/<names>/<secret>/rsvp`, with the photo under the same path.
+  - Lookup is by secret only. `<names>` is decorative: when it differs from the saved value, redirect to the current one, so renaming never breaks a shared link.
+  - A names part on its own (`/<names>`) is not a guest route and returns the generic 404.
+- **The secret.** Keep each wedding's existing `rsvp_share_secret` unchanged: 43 URL-safe characters (256-bit), unique, created with the wedding and readable only by its owner. Never replace it with a short code (F015).
+- **The names part.**
+  - Suggested from the couple's names.
+  - Editable at any time, before payment and after publishing.
+  - There is no uniqueness check and no lock after publication. Drop the database unique constraint and the first-publication lock on this column.
+  - Keep the existing format rules and reserved-names list (database check plus `publication-validation.ts`). Because the names part is now the first path segment, a reserved name would be routed to the application's own pages (for example `/account/<secret>` matches `/account/[screen]`).
+  - Add `s`, `contact` and `refunds` to the list. Add a test that fails when any top-level `src/app` route is missing from it.
+  - Before any new top-level route is added, check that no wedding already uses that name.
+- **Remove name-based access.**
+  - Remove the anonymous lookup-by-names functions (`published_wedding(slug)`, `published_wedding_details(slug)`, and the slug half of `shared_guest_rsvp`), so names alone never reveal a wedding.
+  - Retire the `/<slug>` routes, the `/s/…` RSVP route, the `?share=` context, the public RSVP-entry page and its owner redirect. Update the `src/proxy.ts` matcher to the new routes.
+  - No production customers exist, so old links need no redirects.
+  - Give the development demo routes (`/demo` and variants), currently served by `[weddingSlug]`, their own development-only routes.
+- **Before payment.** Publish shows the couple's future guest link, marked "works once published". Publishing still needs payment and explicit consent. Checkout, entitlement, expiry and £29 pricing are unchanged.
+- **Replacing the link.** The existing "Replace shared link" now changes the URL of every page. Its warning must say that all previously shared links stop working, including Save the Date.
+- **Marketing copy.** Update the homepage promise ("Your own wedding URL"), the FAQ ("anyone with your wedding URL…", "Your wedding URL stays the same") and the product-overview examples to describe one private guest link.
+- **Headers.** Every guest page keeps noindex, private/no-store and no-referrer. The secret never appears in logs, analytics, canonical or Open Graph URLs.
+
+**Done when:**
+
+- All three pages and the photo are reachable only through a valid secret for a published, entitled wedding. Unknown or replaced secrets, unpublished and expired weddings all return the same non-revealing 404. No anonymous route or database function returns a wedding by names alone.
+- Two weddings can use identical names parts; each link shows only its own wedding. An outdated or altered names part redirects to the current one without revealing anything more. Reserved names are rejected, and the test comparing the reserved list with the top-level routes passes.
+- Couples can set and edit the names part before payment and after publishing. Format errors are styled, field-associated messages shown together with any consent error, with no browser pop-up masking another.
+- Replacing the link invalidates the old URL for every page and the photo, and the warning says so.
+- RSVP submission, capacity limits, closing dates, entitlement checks and owner isolation are unchanged. Existing publication, RSVP, isolation and payment tests are updated and pass. The migration applies cleanly to existing local data.
+- `architecture.md`, the `run-app-instructions.md` route table and the marketing copy are updated. Browser checks run at mobile and desktop widths. `npm.cmd run check`, `npm.cmd run test:integration` and the affected Playwright suites pass, and independent security and database review closes.
+
+## F044 - Make RSVP readiness and completion clear
+
+**Status:** Ready
+**Priority / lead:** P1, paid-launch gate / Software Engineer with UX; independent review of guest data projection and access boundaries required.
+**Purpose:** Couples know whether guests can reply, and guests know the deadline and what to do after replying.
+**Depends on:** F043 (guest routes move); F026, F031 (Done).
+**References:** Report B2/B4, sections 3.6 and 4; `rsvp-manager.tsx`, `rsvp-actions.ts`, `src/features/weddings/rsvp-page.tsx`, `save-the-date.tsx`, `published.ts`, `tests/rsvp.spec.ts`.
+**Scope/decision:** Preserve RSVP off by default and the current UTC closing contract. Add explicit Publish/Overview readiness wording and correct the pre-publication link promise. Show the formatted closing date and timezone on the RSVP card when one is set, with an understandable owner explanation of the actual cutoff. Keep one named yes/no response per person (owner confirmed, 24 September); add one-reply-each guidance. After success replace all pre-submit instructions, offer Details only when visible and a deliberate Reply for someone else action. Add a themed RSVP action in the Save the Date page body while replies are open. Do not add notes, dietary fields, party size or calendar downloads.
+**Done when:**
+
+- Draft, disabled, open, closed-by-date and expired states give accurate messages before and after publishing; no absent-link instructions. Publish warns that guests cannot reply without silently enabling RSVP or forbidding intentional announcement-only publication.
+- Guest/owner deadline copy matches database enforcement, including summer/winter dates and the exact UTC boundary; no date means no invented deadline. Only necessary public fields are projected, never the secret or responses.
+- Success heading/body agree and are announced accessibly. Reply for someone else clears local name/answer state and starts a separate insert only on deliberate submission; it never grants edit/read access to a previous guest response.
+- Guest CTA/Details links stay within the guest URL and disappear when unavailable; owner previews/examples cannot submit. Open/closed/success/validation cases work across all twelve themes at mobile/desktop widths. Relevant tests, `npm.cmd run check` and review pass.
+
+## F045 - Clear account confirmation and consistent auth errors
+
+**Status:** Ready
+**Priority / lead:** P1, paid-launch gate / Software Engineer; independent auth review required.
+**Purpose:** A new couple understands the next email step without submitting sign-up repeatedly.
+**Depends on:** F002 (Done). F041 supplies real sender/support configuration and legal links separately.
+**References:** Report B5 and 3.1; `src/features/account/auth-form.tsx`, `actions.ts`, `validation.ts`, `src/app/account/[screen]/page.tsx`, `tests/account.spec.ts`.
+**Scope:** Replace successful sign-up with a clear inbox state, showing the submitted email snapshot and Change email/Sign in actions. Offer confirmation resend through the existing Supabase Auth flow with server/provider-enforced throttling and friendly retry messaging. Include an accessible Show/Hide password control. Apply the existing styled field errors to auth flows; preserve server validation and browser autofill.
+**Done when:**
+
+- Success removes the active Create account form and clears the password. Change email returns to an editable form. The displayed address is the submitted value, not later mutable input; no email/password is added to URL parameters or telemetry.
+- Existing-account and new-account outcomes remain non-enumerating. Resend uses the approved callback origin, obeys backend rate limits, does not resend on render/reload, and handles expired confirmation, failure and retry safely. Copy does not claim email delivery or invent a production sender.
+- Invalid email/password errors are styled, linked to fields, announced and focusable; password toggling preserves the value and announces state. Legal links come from F041, not placeholder policy text.
+- Relevant account/recovery tests and `npm.cmd run check` pass; inspect mobile/desktop and keyboard use; independent auth review closes. Real inbox delivery remains F041/F049 evidence.
+
+## F046 - Clear progress and save controls in the workspace
+
+**Status:** Ready
+**Priority / lead:** P1, paid-launch gate / UX then Software Engineer.
+**Purpose:** Couples can finish setup and understand what a save makes visible.
+**Depends on:** F013, F017, F027 (Done).
+**References:** Report B1, 3.2 and 3.5; `draft-form.tsx`, `validation.ts`, `details-form.tsx`, `details-actions.ts`, `photo-framing-editor.tsx`.
+**Scope:** Fix the duplicated framing label; distinguish a missing date from an invalid date and warn non-destructively about past dates. After first save offer Next: choose your style. Place the explicit Details visibility control/status by the save action and retain the existing accurate success message. Make that save action reachable on phones with one sticky save area, using the existing atomic form submission. Keep flexible text times and add examples. Do not auto-publish Details, add autosave/per-group persistence or change date eligibility.
+**Done when:**
+
+- Empty/invalid/past dates give distinct, accurate guidance; first-save navigation occurs only after successful persistence and retains the success state. Editing existing Basics does not repeatedly force onboarding.
+- Photo buttons use unambiguous labels. Details save/hidden/live status is clear before and after submission; existing stored visibility is preserved unless explicitly changed.
+- At 320px, mobile with the keyboard open, and desktop, the sticky action does not cover fields, errors or focus targets. Failed saves retain all entered values and errors; successful saves use the existing single submission and server ownership enforcement.
+- Targeted workspace/form E2E checks and `npm.cmd run check` pass; inspect keyboard and mobile/desktop layouts. No separate independent review unless implementation changes data/security architecture.
+
+## F047 - Distinguishable pages and safe site identity
+
+**Status:** Ready
+**Priority / lead:** P1, paid-launch gate / Software Engineer; independent metadata/privacy review required.
+**Purpose:** Browser tabs and shared links identify the right page without exposing private data.
+**Depends on:** F043 (guest routes move); F008, F031, F035 (Done).
+**References:** Report B6 and sections 4–5; `src/app/layout.tsx`, account/example/wedding/preview routes, `src/app/not-found.tsx`, `src/features/marketing/metadata.ts`.
+**Scope/decision:** Give account screens, owner previews, wedding page types and each fictional theme example distinct titles; preserve existing workspace titles. On a valid guest URL for a published wedding, titles may use the couple's names, which the link holder can already see. Invalid, replaced, unpublished and expired links use generic titles. Add a local brand favicon/app icon and useful home/sign-in recovery links to 404. Never put the secret in canonical, Open Graph or image URLs.
+
+Add a link-preview card for valid guest URLs of published weddings (owner approved, 24 September):
+
+- `og:title` is the couple's names with "Save the Date", and `og:description` is the wedding date.
+- The image is a static, pre-made card per theme, with no names, photo or secret in it or its URL.
+- Omit `og:url` and the canonical link.
+- Never show the couple's photo or location.
+- Invalid, replaced, unpublished and expired links get generic metadata.
+- Messaging apps may keep a preview after a site is unpublished; the Publish wording must not promise otherwise.
+
+**Done when:**
+
+- Tabs distinguish Save the Date, Details, RSVP, auth modes and example themes. Protected/unavailable pages disclose no couple/draft information through head tags; no metadata lookup bypasses publication, entitlement or ownership checks.
+- Private routes remain noindex, private/no-store as applicable and out of sitemaps. No per-wedding image endpoint, canonical URL containing the secret or third-party image fetch is introduced. A manual check confirms that a WhatsApp preview, and one preview fetched by an app's servers (for example Slack), show only the names, date and theme card. Homepage marketing metadata is preserved.
+- The favicon works on normal/error/account/wedding pages. A 404 provides usable recovery without confirming whether a hidden wedding exists.
+- Rendered-head assertions cover valid, invalid and replaced secrets, and expired and draft cases. Mobile/desktop 404 inspection, `npm.cmd run check` and independent privacy review pass.
+
+## F048 - Deliver the approved customer data lifecycle
+
+**Status:** Planned (owner policy decisions outstanding)
+**Priority / lead:** P1, paid-launch gate / Product Manager with owner, then Software Engineer; independent security/database review required.
+**Purpose:** Deliver and verify the export, deletion and retention process already required by F009.
+**Depends on:** Existing owner/response/storage/payment features (Done); decisions in `release-inputs.md` section 5. Hosted restore evidence stays in F009.
+**References:** Report 3.8/6.1; `docs/operations.md` Recovery and data handling, `docs/release-inputs.md`, `src/features/workspace/guest-responses.tsx`, `supabase/migrations/`.
+**Before Ready:** Owner approves scope, delivery/identity checks, retention by data category, payment-record exceptions, backup/log treatment and whether the process is self-service or support-assisted. Record the policy in release inputs; do not infer legal periods or treat a catering CSV as a complete data-rights export.
+**Done when:**
+
+- The approved process exports only the verified owner's agreed content, photos and response data; it excludes credentials, bearer secrets and other tenants. Any CSV neutralises spreadsheet formula injection and correctly quotes names/newlines; download/access lifetime follows policy.
+- Deletion/expiry handling covers Auth, wedding/details, shared secrets/responses, original/current/orphaned Storage objects, payment/event records, logs and backups according to the approved exceptions. Publication and sessions cease when required; expiry alone is not described as deletion.
+- Failure and retry tests cover partial database/Storage deletion, repeat requests and retained ledger consistency. Recovery instructions reapply deletions after restore without resurrecting access or revoked entitlements.
+- An end-to-end fictional customer export/deletion test, cross-owner denial checks, relevant integration tests, `npm.cmd run check` and independent review pass. Documentation states who executes the process and how completion is evidenced; F009 verifies its hosted operation and restore implications.
+
+## F049 - Verify the launch journey on real devices and assistive technology
+
+**Status:** Planned (requires completed launch changes and managed staging access)
+**Priority / lead:** P1, paid-launch gate / Reviewer with UX and Software Engineer.
+**Purpose:** Close the walkthrough's browser/accessibility evidence gaps before charging customers.
+**Depends on:** F038, F040-F048 and staging readiness in F041; no dependency on production deployment or F009 completion.
+**References:** Report limitations, 3.8, 5 and 6; `docs/operations.md` Verification and promotion, `run-app-instructions.md`, `tests/`.
+**Scope:** Record a compact evidence matrix in F009's handoff or a linked test report: device/OS/browser/assistive technology, build digest, journey/state, result and finding. Automated desktop WebKit/emulation is supplementary, not a substitute for an actual iPhone Safari pass. No unsupported claim about the audience's device mix is needed.
+**Done when:**
+
+- On an actual iPhone/Safari and desktop Firefox, a disposable account completes confirmation/recovery, setup/date entry, photo upload from Photos, framing, Checkout in Stripe test mode, publish, share/copy, guest navigation/RSVP and owner response review. Also check 320px/390px/desktop layout, zoom, long content and error/closed/unpublished states. Record device access as a blocker if unavailable.
+- Verify keyboard-only navigation and a real screen reader through signup, workspace, publish, guest form/errors/success. Measure text/control contrast in all twelve themes, specifically Evening Gold; inspect focus visibility, logical order, status announcements and touch targets including Correct or remove.
+- Exercise the local production-container suite using documented local commands. Hosted staging checks use the manual disposable-data procedure; never point destructive local fixture suites at managed staging/production. Verify real inbox delivery and hosted Stripe test Checkout/refund/webhook behavior separately from fixture results.
+- All Blocking/Important findings are fixed and retested before sign-off, with minor deferrals justified. Record exact commands/results, screenshots or evidence locations and anything untested. Independent release review and production smoke remain F009; this ticket does not approve a deployment.
+
+## F050 - Browse themes and examples comfortably on phones
+
+**Status:** Deferred
+**Priority / lead:** P2, post-launch / UX then Software Engineer.
+**Purpose:** Compare designs visually and see all three guest page types before choosing.
+**Depends on:** F035 (Done); schedule after launch.
+**References:** Report 3.4/5; `preview-toolbar.tsx`, `src/app/dashboard/(workspace)/design/page.tsx`, `src/app/examples/[theme]/`, `src/features/marketing/phone-preview.tsx`.
+**Scope when promoted:** Reuse the existing thumbnail assets and named controls for visual browsing; compact mobile preview/example headers while retaining saved-vs-candidate state, explicit Apply, keyboard access and all twelve themes. Add a clearly fictional, non-submitting RSVP example and previous/next navigation across example pages. Do not add another picker implementation or stored theme-review checklist flag.
+**Done when promoted:** UX confirms the compact layout against current screens; all three page examples and theme navigation work at mobile/desktop widths, previews cannot create responses or mutate themes, and relevant visual/accessibility checks and `npm.cmd run check` pass. No implementation authorised by this Deferred entry.
+
+## F051 - Full SEO audit and search-visibility report
+
+**Status:** Ready
+**Priority / lead:** P2 / SEO & Growth, with the Software Engineer for technical checks. Report only; no application changes.
+**Purpose:** Find out what stops SaveTheDates appearing in Google for the searches UK and Irish couples make, and produce a prioritised fix list.
+**Depends on:** None to start. Checks that need the live domain wait for F041/F009: Search Console, real indexing, and field Core Web Vitals.
+**References:** `.agents/seo-growth.md` (Launch Review checklist), F008, `src/app/page.tsx`, `src/features/marketing/`, `src/app/layout.tsx`, `src/app/robots.ts`, `src/app/sitemap.ts`, `src/app/examples/`, F041 step 7, F039, F043 (new guest routes).
+**Scope:**
+
+- **Technical.**
+  - Crawling and indexing: indexable pages, robots rules, sitemap, canonical URLs.
+  - Page content: titles, meta descriptions, headings and semantic HTML, image alt text and sizes, Open Graph.
+  - Structured data: for example organisation, price and FAQ. Check Google's current eligibility rules rather than assuming them.
+  - Links and performance: internal links, mobile usability, and Core Web Vitals (lab figures now, field data after launch).
+  - Confirm that no wedding, owner or account page can be indexed, including F043's new guest routes.
+- **Keywords and intent.** Research what UK and Irish couples search for, such as "wedding website", "digital save the date", "online RSVP" and "wedding website builder UK". Record volume and difficulty, and who ranks today. Name the tool and the date for every figure; invent nothing.
+- **Content and structure.**
+  - Is one indexed homepage enough?
+  - Should the fictional theme examples become indexable template pages?
+  - Would focused pages or guides (for example digital save the dates, online RSVP) earn traffic without being thin or duplicated?
+- **Competitors.** Which services rank for the main searches, and what their pages offer. Do not copy their content.
+- **Links from other sites.** Sensible sources such as wedding directories, venue and supplier partnerships, and UK/Irish wedding blogs. Suggestions only.
+- **After launch.** What to watch in Search Console each month (setup is already F041 step 7).
+
+**Output:** `docs/reports/<date>-seo-audit.md`. It records findings with evidence, severity and effort, then a prioritised action list split into before launch, first three months, and later.
+**Rules:**
+
+- Customer wedding pages stay noindex.
+- No low-value programmatic pages.
+- No claims the product can't back up.
+- No application or content changes in this ticket.
+
+**Done when:**
+
+- The report checks every Launch Review item in `seo-growth.md`, with evidence (tools, commands, URLs, dates). Anything that can't be checked before the live domain is listed with when it will be.
+- It includes a sourced, dated keyword list, a competitor summary, and recommendations ranked by expected benefit and effort.
+- Its technical checklist is reusable as F009's existing "SEO launch checks" step. The broader recommendations don't gate launch unless the owner says so.
+- The Product Manager's triage is recorded in the backlog: accepted items become tickets, and rejected items are recorded with the reason.
+
+## F052 - Cost-effective advertising strategy report
+
+**Status:** Ready
+**Priority / lead:** P2 / Product Manager with SEO & Growth input; the owner decides. Report only.
+**Purpose:** A realistic, low-cost promotion plan showing which channels can win a customer for less than a sale is worth.
+**Depends on:** None to research. It is best done after F053, so the recommendations point at a homepage that converts. Actually running ads needs launch (F009) and a way to measure results (F039 or an approved alternative).
+**References:** `docs/overview/product-overview.md`, `docs/release-inputs.md` (price, business identity), F039, F053.
+**Scope:**
+
+- **Unit economics first.**
+  - Work out the most we can pay to win one customer. Start from £29 per sale, minus Stripe fees and a share of running costs, using current fees with sources.
+  - Show break-even cost per click and per sale at a few realistic conversion rates.
+- **Channels to compare.**
+  - Paid: Google Search Ads (high-intent searches), Meta (Instagram and Facebook, including whatever audience options exist today for engaged couples), TikTok and Pinterest.
+  - Low-cost or free: wedding forums and Facebook groups; venue, photographer and planner partnerships; wedding fairs; creator partnerships; our own social content.
+  - Referral: for example a subtle "Made with SaveTheDates" credit on guest pages, since each wedding reaches its whole guest list. Whether to add it is the owner's decision; guest pages stay noindex either way.
+- **For each channel:**
+  - likely cost range (sourced and dated, and labelled as estimates);
+  - targeting options;
+  - creative needed;
+  - time to results;
+  - effort for a one-person business;
+  - risks.
+- **A starter test plan.**
+  - Two or three small fixed monthly budgets (for example £100, £250 and £500), using one or two channels.
+  - What to measure, and clear rules for when to stop or continue.
+- **Tracking and privacy.**
+  - Ad platform pixels usually set cookies, which need consent under UK PECR. F039's analytics are cookieless.
+  - Recommend how to measure results, for example tagged links plus server-side purchase events.
+  - Say what consent banner would be needed if pixels were used. No decision is made in this ticket.
+- **Compliance.** The UK advertising code (ASA/CAP) requires true, substantiated claims, and Irish rules should be checked too. No fake reviews or testimonials.
+- **Timing.** Engagement season (for example Christmas to Valentine's Day) and when couples usually send save the dates.
+
+**Output:** `docs/reports/<date>-advertising-strategy.md`, with a recommended plan and budget options.
+**Rules:**
+
+- Create no accounts, spend nothing and publish no ads; all of those need the owner.
+- Every cost cites a source and date or is labelled as an assumption.
+
+**Done when:** the report covers unit economics, the channel comparison, a recommended starter plan with budgets and success measures, tracking and consent requirements, compliance notes, and sources. The owner has decided what to try, and the Product Manager has turned accepted items (for example landing pages, tracking or a referral credit) into tickets.
+
+## F053 - Homepage effectiveness review report
+
+**Status:** Ready
+**Priority / lead:** P2, recommended before launch and before any advertising / UX/UI Designer with SEO & Growth. Report only.
+**Purpose:** Establish whether the homepage quickly shows couples what they get, why it's worth £29 and how to start, and how to make it more attractive, easier to follow and more attention-grabbing.
+**Depends on:** None. Check its wording against the planned one-guest-link model (F042/F043), so recommendations match the product being launched.
+**References:** `src/app/page.tsx`, `src/features/marketing/home.tsx`, `marketing.css`, `phone-preview.tsx`, `docs/overview/site-ui.md`, `docs/ux/site-ui-design.png`, [walkthrough report](reports/2026-09-24-ux-walkthrough-and-launch-readiness.md) section 5, F032, F050.
+**Scope:** Review at 390px and 1440px.
+
+- **First impression (five-second test).** Is it clear what this is, who it's for, what it costs and what to do next?
+- **Features and what you get.** Are all of these clearly shown and easy to understand?
+  - the three pages (Save the Date, Details, RSVP);
+  - twelve themes and the private guest link;
+  - the response list;
+  - the one-off £29 price and how long the site stays online.
+
+  Is anything missing, such as showing the Details and RSVP pages rather than only Save the Date, what guests experience, or the couple's dashboard?
+- **Structure and flow.** Section order, scannability, length, repetition, and where the calls to action sit and what they say. Check whether the FAQ answers the likely objections: privacy, who can see the site, making changes, what happens after the wedding, and refunds.
+- **Visual appeal and attention.** The hero's impact, imagery, hierarchy, contrast, and motion (coordinate with F032).
+- **Trust.** What reassures couples without fake reviews: real examples, clear pricing, a support contact, and the legal pages from F041.
+- **Basics.** Mobile usability, accessibility and how quickly the page feels.
+- **Competitors.** Compare three to five competitor homepages: what they lead with and how they explain value. Do not copy them.
+- **Optional audience feedback.** Short feedback from three to five people in the target audience, arranged by the owner. Record the questions and answers.
+
+**Output:** `docs/reports/<date>-homepage-review.md`. It includes screenshots, findings by severity, and ranked recommendations with suggested copy and layout clearly marked as proposals. It also lists anything needing an owner decision.
+**Rules:**
+
+- Report only.
+- No claims about features that aren't built.
+- Recommendations fit the approved visual direction in `site-ui.md`.
+
+**Done when:** the report covers every area above, with recommendations ranked by impact and effort. The Product Manager's triage is recorded, and accepted changes become an implementation ticket.
+
+## F054 - Full security review before paid launch
+
+**Status:** Planned (runs against the launch candidate once F038, F040 and F042-F048 are implemented and staging exists in F041; code-only areas can start earlier)
+**Priority / lead:** P1, paid-launch gate / Reviewer (independent of whoever built the features), with the Software Engineer fixing findings. The owner decides on any external penetration test.
+**Purpose:** Confirm, with evidence, that customer and guest data can't leak or be reached by the wrong person before we take money. Fix anything serious first.
+**Depends on:** F043 (guest link model), F047 (metadata), F048 (deletion/export) and F038 (logging) in their final form; staging from F041.
+**References:** `AGENTS.md` (engineering guardrails), `docs/overview/architecture.md`, `docs/operations.md`, `supabase/migrations/`, `src/lib/supabase/`, `src/proxy.ts`, `src/app/api/stripe/webhook/route.ts`, `src/features/`, `tests/integration/`, `.github/workflows/ci.yml`, `Dockerfile`.
+**Scope:**
+
+- **Data map and threats.** List every kind of personal data: the owner's email, the couple's names, date, location, photo and details, guest names and replies, and payment references. Record where each is stored, who can read it, and what an attacker would want.
+- **Access control.**
+  - Row-level security on every table, and database functions that bypass it (for example checking they set their search path).
+  - Storage bucket rules.
+  - Anonymous functions return only the intended fields.
+  - Every server action checks ownership, and IDs sent from the browser are never trusted.
+  - The service-role key is used only on the server.
+  - Cross-owner and anonymous denial is tested for every table, function and photo.
+- **The guest link secret (F043).**
+  - How it's generated and compared.
+  - No leakage through Referer headers, logs, analytics, error pages, redirects, preview metadata or cached responses.
+  - Replacing the link really invalidates every page and the photo.
+  - Rate limits make guessing links, spamming RSVPs and repeated form submissions impractical.
+- **Accounts.**
+  - Supabase Auth settings: email confirmation, password rules, leaked-password protection if the plan offers it, rate limits and link expiry.
+  - Session cookie flags, and sign-out.
+  - Account enumeration, the recovery flow, and redirect allow-lists (no open redirects).
+- **User input.**
+  - Cross-site scripting through names, messages, Details text and FAQs.
+  - Dangerous link types such as `javascript:` in directions and travel links.
+  - Spreadsheet formula injection in any CSV export (F048).
+  - Photo uploads: real type checking, size and pixel limits, no SVG, and metadata removed, especially GPS location.
+- **Payments.** Webhook signature checks, idempotency, the server-set price, and entitlement revoked on refund or dispute.
+- **HTTP headers and caching.**
+  - A Content Security Policy (there is none today), HSTS, and framing protection against clickjacking.
+  - Referrer and permissions policies.
+  - No-store on private pages, with nothing private cached by the host or a CDN.
+- **Secrets and environments.**
+  - No secrets in the Git history or images. `.env` files are ignored.
+  - Least-privilege CI and host tokens.
+  - Staging is password-protected and separate from production.
+- **Dependencies.**
+  - `npm audit` and a dependency scanner, a pinned lockfile, and an up-to-date Docker base image.
+  - GitHub Actions pinned.
+  - A recommendation for automated dependency updates.
+- **Monitoring and logs.** F038's scrubber keeps personal data and secrets out of Sentry and the logs. Unusual activity (for example spikes in failed sign-ins or RSVPs) can be noticed.
+- **Data lifecycle.** F048's deletion really removes database rows and Storage objects, backups and expiry behave as documented, and nothing is resurrected after a restore.
+- **Other services.** Record what data goes to Supabase, Stripe, Resend, Sentry, PostHog (if used) and Render. The contract and legal review stays with F041/F048.
+- **Incident response.** `operations.md` has a short breach runbook: who to contact, how to contain a leak, rotating keys and guest links, and the UK GDPR duty to consider reporting to the ICO within 72 hours.
+
+**Method:**
+
+- Code and configuration review, plus automated tools: dependency audit, a secret scanner over the full Git history, a security-header check, and Supabase's security advisor.
+- Manual attempts to break access boundaries, locally and on staging, using disposable fictional accounts only.
+- Never test against production data, and never probe third-party providers beyond our own configuration.
+
+**Output:** `docs/reports/<date>-security-review.md`.
+
+- Scope, method and tool versions.
+- Findings rated Critical, High, Medium or Low, each with evidence, reproduction steps (without real secrets) and the recommended fix.
+- Retest results.
+- A reusable checklist for future releases.
+- A recommendation on whether an external penetration test is worth it before or after launch, with a rough cost. The owner decides.
+
+**Done when:**
+
+- The review is done by someone other than the implementer, and every area above is covered or explicitly marked not applicable with a reason.
+- All Critical and High findings are fixed and retested before paid launch. Medium findings have an owner-accepted plan with dates. Low findings are recorded.
+- Added regression tests cover every fixed access-control or leakage issue, and `npm.cmd run check` and `npm.cmd run test:integration` pass.
+- The breach runbook exists in `operations.md`. F009's release review references this report.
 
 ## F009 - Launch and operate the service
 
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits) and F041 (production setup); F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate).
-**Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Hosting selection, external provisioning, live billing and policy-dependent export/deletion remain blocked on owner decisions; do not invent retention periods or publish policies. No additional product feature or hosting purchase is authorised by this preparation.
+**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F049 and F054 (security review) under the 24 September paid-launch gate; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
+**Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Render/Frankfurt is approved in F037; external accounts/access, live billing and policy-dependent data handling in F048 remain blocked on owner inputs. Do not invent retention periods or publish policies. No hosting purchase or deployment is authorised by this assessment.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
 **Decisions/access before release:** Production accounts/domain, live billing configuration, support contact, owner-approved terms/privacy/retention/deletion policy and site lifetime communication. Record any external review still needed; do not invent assurances.
 **Done when:**
@@ -1194,18 +1609,19 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Data export/deletion and site expiry follow the agreed policy; uploads/RSVP data and backups are accounted for. Production auth email delivery/recovery works; extra notification emails are optional, not a new automatic scope requirement.
 - CI and staging checks pass for account creation, setup, purchase, publication, guest Details/RSVP, and owner responses, including security boundaries and failure cases.
 - Independent release review and SEO launch checks pass; unresolved blockers are explicit. Actual production release and a smoke check are recorded before this feature is Done.
+- F049 provides actual-device/browser and core accessibility evidence for the final build. Every shipped supplied botanical/backdrop, including unused public assets, has source and commercial permission recorded or is removed/replaced with approved material; naming a supplier alone is not rights evidence.
 
 **Handoff (21 September 2026):**
 
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: source and licence record for the F034 botanicals and RSVP backdrops supplied on 23 September 2026 and the F035 and F036 WebP botanicals and backdrops supplied on 24 September 2026 (see `public/assets/wedding/README.md`); owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. F013-F024 are Done and the F021-F022 dispositions are recorded. F023 is not an additional release gate.
+- Current blockers (updated 24 September): missing source/commercial permission for the F034-F036 supplied botanicals/backdrops (`public/assets/wedding/README.md`); host/domain and managed-service accounts/access (Render/Frankfurt selection is already Done in F037); live billing/release authority; support/incident ownership and approved terms/privacy/retention/deletion rules including payment records, logs and backups. F048 owns the unfinished approved data process. F041 owns setup/policy pages; F049 owns the browser/accessibility evidence. Recovery objectives, Storage backup/restore and rollback drills, final independent release review and actual production release remain outstanding. Next: follow the 24 September queue, starting F040 while external inputs are pending; then complete hosted verification and recovery before an authorised release. F009 stays In Progress. F023, F032/F033, F039, F050 and F010 enhancements are not additional release gates.
 
 ## F010 - Post-launch extensions
 
 **Status:** Deferred
 **Purpose:** Keep possible enhancements visible without expanding the MVP.
-**Description:** Shared couple accounts, multiple weddings per account, custom domains, password-protected sites, more themes, galleries, meal choices, plus-ones, custom RSVP questions, imports/exports beyond required data rights, and optional notification emails.
+**Description:** Shared couple accounts, multiple weddings per account, custom domains, password-protected sites, more themes, galleries, meal choices, plus-ones, custom RSVP questions, imports/exports beyond required data rights, and optional notification emails. From the 24 September walkthrough: household submission, optional notes/dietary data, catering CSV/print beyond F048, calendar download, locally generated QR sharing, preview cards showing the couple's photo (names/date cards are F047), editable decorative copy, optional theme checklist and minor Overview/framing/address-layout refinements. F050 owns visual theme/example browsing; do not duplicate it here. Promoting household/notes/dietary fields requires explicit scope, guest-count semantics, limits, owner correction and retention/export decisions. Adding the photo to preview cards requires owner approval of photo data that messaging services may receive and cache.
 **Depends on:** F009
 **Done when:** Customer evidence justifies promoting a specific capability into its own scoped feature; this holding entry does not authorise implementation.

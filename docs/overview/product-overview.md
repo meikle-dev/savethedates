@@ -6,11 +6,13 @@ SaveTheDates is a simple service that allows couples to create a personalised we
 
 The goal is to give couples an easy way to share the key information guests need before the wedding without relying on paper invitations, long message threads, or repeated questions.
 
-Each wedding receives its own URL, for example:
+Each wedding receives one private guest link, for example:
 
 ```text
-savethedates.co.uk/chloeandross
+savethedates.co.uk/chloeandross/<guest-secret>
 ```
+
+The long secret makes every link unique and unguessable. Guests open the link rather than type it. The couple chooses the readable names part at the start, which doesn't need to be unique and can be changed at any time.
 
 The guest-facing experience is intentionally simple and is built around three core features.
 
@@ -21,7 +23,7 @@ The guest-facing experience is intentionally simple and is built around three co
 Example:
 
 ```text
-savethedates.co.uk/chloeandross
+savethedates.co.uk/chloeandross/<guest-secret>
 ```
 
 This is the main page guests see when the couple first shares their wedding website.
@@ -46,7 +48,7 @@ This should be the **first feature built** and forms the foundation of every wed
 Example:
 
 ```text
-savethedates.co.uk/chloeandross/details
+savethedates.co.uk/chloeandross/<guest-secret>/details
 ```
 
 The Details page provides guests with practical information about the wedding.
@@ -76,7 +78,7 @@ The couple should be able to publish only the information relevant to their wedd
 Example:
 
 ```text
-savethedates.co.uk/s/<private-secret>/chloeandross/rsvp
+savethedates.co.uk/chloeandross/<guest-secret>/rsvp
 ```
 
 The RSVP feature allows guests to respond to their invitation online.
@@ -160,3 +162,16 @@ The product should avoid becoming a full wedding-planning platform unless custom
 The main value proposition is simple:
 
 > Give couples an easy way to create a beautiful wedding website where guests can save the date, find the information they need, and RSVP.
+
+## 24 September walkthrough decisions (pending implementation)
+
+Delivery status and acceptance criteria are in [F042-F050](../backlog.md#24-september-walkthrough-assessment).
+
+- **One guest link.** Every guest page sits under the wedding's secret, with the names first: `/<names>/<guest-secret>`, `/details` and `/rsvp` (F043). There is no second, general URL. The workspace calls this link **Your guest link** (F042).
+- **What the link allows.** Anyone holding it can view the published site and reply. It does not verify identity, and it doesn't let anyone read other guests' answers. Replacing the link stops every previously shared copy from working.
+- **The names part.** It is decorative. It isn't unique, can be chosen before paying and can be changed later; an outdated names part redirects to the current one.
+- **One reply per person.** Confirmed by the owner on 24 September: each guest fills in the RSVP themselves, with clear guidance and a deliberate way to reply for another person. Household counts, notes and dietary questions remain deferred, and the clarity fixes collect no extra personal data.
+- **Owner choices stay explicit.** Details visibility and RSVP acceptance are both off initially.
+- **Sharing.** Couples get an editable, pre-written share message with WhatsApp and native share buttons (F042). Link previews show the couple's names and date, never the photo or location (F047).
+- **Deferred.** Calendar downloads, QR codes and photos in link previews.
+- **Data rights.** Customer data export and deletion are the approved lifecycle in F048, separate from optional catering exports.

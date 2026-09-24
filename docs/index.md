@@ -6,6 +6,7 @@ Read only what the current task needs. [Backlog](backlog.md) holds current state
 | --- | --- |
 | What is the product? | [Product overview](overview/product-overview.md) |
 | What should be built next? | [Backlog](backlog.md), including F013-F022 from the [21 September review](notes/21-09-2026.md) |
+| How was the full walkthrough assessed? | [24 September triage and tickets F042-F050](backlog.md#24-september-walkthrough-assessment), with the unchanged [source report](reports/2026-09-24-ux-walkthrough-and-launch-readiness.md) |
 | How do I run it? | [Running instructions](../run-app-instructions.md) (includes local Supabase/Auth setup) |
 | How do I release and operate it? | [Release and operations](operations.md) (preparation; hosted release pending) |
 | What must be provided before launch? | [Production release inputs](release-inputs.md) |

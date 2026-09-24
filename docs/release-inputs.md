@@ -78,6 +78,8 @@ The webhook endpoint is `${APP_ORIGIN}/api/stripe/webhook`. Required events are 
 
 These choices are required before implementing and testing export/deletion. The app currently preserves private drafts and responses after site expiry; expiry removes public access but does not delete data.
 
+[F048](backlog.md#f048---deliver-the-approved-customer-data-lifecycle) owns delivery of this approved process. Specify whether export/deletion is self-service or support-assisted, how ownership is verified, and which data is included or retained by exception. RSVP CSV alone is not a full customer export. F041 owns policy/contact pages; no placeholder legal text should be published. The walkthrough's legal/provider statements are recommendations to verify, not a compliance assessment.
+
 ## 6. Operations and release approval
 
 - [ ] Incident contact name: `
@@ -94,6 +96,8 @@ These choices are required before implementing and testing export/deletion. The 
 - [ ] Final production launch approval: `pending`
 
 The [21 September review follow-up](backlog.md#21-september-review-follow-up) is also a release gate: F013-F020 must be completed or explicitly deferred by the owner, and F021-F022 need recorded decision dispositions. Release inputs alone do not close those tickets.
+
+The [24 September assessment](backlog.md#24-september-walkthrough-assessment) adds F042-F049 to the paid-launch gate. F049 needs actual iPhone Safari access, desktop Firefox and screen-reader/keyboard evidence; record the tester and device availability before scheduling it. F041 completes setup/staging preparation, while F009 owns independent release review, production promotion and smoke verification. Optional analytics, QR codes, calendar downloads, household RSVP and personalised social previews do not block this agreed small release scope.
 
 ## When these are ready
 

@@ -42,6 +42,8 @@ Add focused design/security/operations documents only as their features need the
 
 ## Routes and publication
 
+**Pending F043 (owner decision, 24 September 2026):** guest routes will move to `/<names>/<secret>` (plus `/details`, `/rsvp` and the photo), with lookup by secret only. The names part will lose its uniqueness constraint and post-publication lock, but keep its reserved-names list, and the name-based anonymous lookups will be removed. Until F043 ships, the rules below describe the implemented system; F043 replaces them in this section.
+
 Guest routes are `/[weddingSlug]`, `/[weddingSlug]/details`, and `/[weddingSlug]/rsvp`. Marketing uses explicit static routes; owner management uses `/dashboard`. Workspace sections (`/dashboard`, `/dashboard/{basics,design,details,rsvp,guests,publish}`) share the `(workspace)` route-group layout. Full-page previews under `/dashboard/preview` stay outside that layout. The layout and every page call the request-cached `loadWorkspace()` in `src/features/workspace/workspace-data.ts`. It verifies the Supabase user and reads only that owner's RLS-scoped rows, so each page enforces access itself and does not depend on the layout. Workspace server actions revalidate `/dashboard` as a layout, which refreshes every section and preview.
 
 Validate and normalise slugs, enforce uniqueness in the database, and reserve application routes before allowing customer choices. Start with immutable slugs after publication to avoid breaking shared links. Publishing must invalidate stale public data; unpublished pages and assets must not remain exposed through a previous public cache. Decide storage delivery accordingly before accepting real uploads.
