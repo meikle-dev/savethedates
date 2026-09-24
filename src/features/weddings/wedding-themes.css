@@ -1,4 +1,4 @@
-/* F034 and F035 themes. Shared markup and tokens from wedding.css; composition per docs/ux/template-ui-summary.md. */
+/* F034 and F035 themes. Shared markup and tokens from wedding.css; composition per docs/ux/template-ui-summary.md. Botanicals are WebP files in high-fid-graphics/. */
 .wedding-shell[data-theme="alcantara"] {
   --botanical-art: none;
   --theme-accent: #8b5e3c; --theme-surface: #f7f2ec; --theme-text: #2e2420;
@@ -7,7 +7,7 @@
   --suede: radial-gradient(#8b5e3c0f 1px, transparent 1.2px) 0 0 / 3px 3px, radial-gradient(#2e24200a 1px, transparent 1.2px) 1px 2px / 5px 5px, #efe8df;
 }
 .wedding-shell[data-theme="countryside"] {
-  --botanical-art: url("/assets/wedding/flowers/autumn-dahlia.svg");
+  --botanical-art: url("/assets/wedding/high-fid-graphics/autumn-dahlia.webp");
   --theme-accent: #3b4431; --theme-surface: #f6f1e6; --theme-text: #262a20;
   --theme-muted: #5a5b49; --theme-line: #d5cbb5; --theme-tint: #e3d9c4; --theme-radius: 0;
   --theme-heading: var(--font-caslon), Georgia, serif; --theme-body: var(--font-work-sans), Arial, sans-serif;
@@ -16,7 +16,7 @@
   --check-rule: repeating-linear-gradient(90deg, #a5562e 0 1px, transparent 1px 7px) center / 100% 7px, linear-gradient(#3b4431 0 0) center / 100% 1px no-repeat;
 }
 .wedding-shell[data-theme="evening-gold"] {
-  --botanical-art: url("/assets/wedding/flowers/winter-hellebore.svg");
+  --botanical-art: url("/assets/wedding/high-fid-graphics/winter-hellebore.webp");
   --theme-accent: #c9a96a; --theme-surface: #1c2533; --theme-text: #f2ede3;
   --theme-muted: #aeb6c4; --theme-line: #3b4558; --theme-tint: #253043; --theme-radius: 0;
   --theme-heading: var(--font-bodoni), Didot, Georgia, serif; --theme-body: var(--font-manrope), Arial, sans-serif;
@@ -24,14 +24,14 @@
   box-shadow: 0 14px 65px #141b2640;
 }
 .wedding-shell[data-theme="terracotta"] {
-  --botanical-art: url("/assets/wedding/flowers/mediterranean-citrus.svg");
+  --botanical-art: url("/assets/wedding/high-fid-graphics/mediterranean-citrus.webp");
   --theme-accent: #a34c30; --theme-surface: #fbf6f0; --theme-text: #3a2a22;
   --theme-muted: #6e574b; --theme-line: #e6d5c5; --theme-tint: #f1e1d3; --theme-radius: 6px;
   --theme-heading: var(--font-gloock), Georgia, serif; --theme-body: var(--font-dm-sans), Arial, sans-serif;
   --limewash: radial-gradient(ellipse at 20% 25%, #ffffff8c, transparent 55%), radial-gradient(ellipse at 85% 75%, #eadccd99, transparent 60%), #f5ede4;
 }
 .wedding-shell[data-theme="heather"] {
-  --botanical-art: url("/assets/wedding/flowers/meadow-wildflower.svg");
+  --botanical-art: url("/assets/wedding/high-fid-graphics/meadow-wildflower.webp");
   --theme-accent: #6b4e71; --theme-surface: #faf8fb; --theme-text: #2a2630;
   --theme-muted: #59606b; --theme-line: #ddd5e0; --theme-tint: #e6dee8; --theme-radius: 14px;
   --theme-heading: var(--font-garamond), Georgia, serif; --theme-body: var(--font-figtree), Arial, sans-serif;
@@ -184,7 +184,7 @@
   .rsvp-shell[data-theme="heather"] .rsvp-main { padding-bottom: 120px; }
 }
 
-/* F035 themes: raster (WebP) botanicals from high-fid-graphics/; composition per docs/ux/template-ui-summary.md. */
+/* F035 themes: composition per docs/ux/template-ui-summary.md. */
 .wedding-shell[data-theme="coastal"] {
   --botanical-art: url("/assets/wedding/high-fid-graphics/coastal-sea-holly.webp");
   --theme-accent: #2f5563; --theme-surface: #f5f7f4; --theme-text: #1f2e33;

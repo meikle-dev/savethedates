@@ -1,6 +1,6 @@
 # Product backlog
 
-Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F035 (Coastal, Riviera, Velvet, Black Tie) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket.
+Ordered by recommended implementation sequence. F001-F008 and F011-F031 are complete. **Current: F009** remains In Progress with external release blockers. F034 (five additional themes) is Done. F035 (Coastal, Riviera, Velvet, Black Tie) is Done. F036 (WebP botanicals replace the SVGs) is Done. F032 awaits UX confirmation; F033 is the next Ready ticket.
 
 ## Status and handoff rules
 
@@ -772,6 +772,19 @@ No export, sorting controls, bulk actions or new stored data.
   - The ivory orchid is faint on Black Tie's ivory RSVP card, which is decorative only.
 - Deploy the migration before the application. Blockers: none for F035 (asset provenance tracked on F009). Next: resume F009 or prepare F033.
 
+## F036 - Replace the SVG botanicals with supplied WebPs
+
+**Status:** Done (24 September 2026)
+**Priority / lead:** P2 / Software Engineer; no independent review required (static asset swap, no data, auth or architecture change)
+**Purpose:** Replace the remaining vector botanicals with the owner-supplied high-fidelity transparent WebPs, as F035 already uses.
+**Depends on:** F018, F034, F035 (Done)
+**Scope:** Owner request of 24 September 2026. Minimal, Romantic, Bold, Terracotta, Heather, Countryside and Evening Gold switch `--botanical-art` to the same-named 768×1152 WebP in `public/assets/wedding/high-fid-graphics/`. The shape stays 2:3, so every placement is unchanged: Save the Date, Details, RSVP, footers, dividers, photo fallbacks, owner previews and `/examples`. All eight `flowers/*.svg` files are deleted. `coastal-grasses.webp` stays an unassigned spare, as its SVG was. Alcantara stays unillustrated.
+**Handoff:** URLs changed in `wedding.css` and `wedding-themes.css`. `tests/theme-design.spec.ts` now expects the WebP for every illustrated theme. Asset README (inventory, size notes), `template-ui-summary.md` and `theme-list.md` are updated.
+- Passed: `npm.cmd run build`; `npm.cmd run lint`; `npm.cmd run typecheck`; `npm.cmd test` (33/33); `git diff --check`. Against that production build on port 3101, `E2E_BASE_URL=http://127.0.0.1:3101 npx.cmd playwright test tests/theme-design.spec.ts` passed 24/24 on desktop and mobile (artwork decode and dimensions, overflow 320–1440px, failed-photo fallbacks).
+- Inspected at 390px and 1440px for the seven changed themes: the footer, Details divider and failed-photo fallback. All were crisp and transparent, including on Evening Gold's navy.
+- Not run: visual check of the owner RSVP preview (the local dev server on 3200 was returning 500s from a crashed worker that predates this change, and sign-in did not complete against the standalone build). The RSVP page uses the same `BotanicalArt` component and variable. Also not run: Safari/Firefox, hosted CI.
+- Page weight: each guest page now loads one 134–230 KB botanical instead of a 2.5–4.9 KB SVG. Optional resized derivatives are noted in the asset README. Provenance for the replacement WebPs is added to the F009 blockers. Blockers: none. Next: resume F009 or prepare F033.
+
 ## F032 - Subtle, fast motion across the site
 
 **Status:** Planned
@@ -831,7 +844,7 @@ Excluded: parallax, scroll-triggered effects, animated page-load heroes, animati
 - Added `docs/operations.md` with runtime configuration, migration/promotion/rollback, SMTP/Stripe setup, monitoring/support, recovery drills and policy-dependent data handling. Added `npm run test:release` and expanded production-container CI from publication/marketing to account recovery, themes, Details, RSVP and payment checks. Running instructions include the exact local production sequence and corrected homepage/sitemap documentation. No application UI, schema or customer-data behaviour changed.
 - Passed `npm.cmd run check` (lint, typecheck, 22 unit tests, production build); `npm.cmd run test:integration` (16/16); `docker build --target production -t save-the-dates:f009 .`; `npm.cmd run smoke -- http://127.0.0.1:3000`; `$env:E2E_BASE_URL='http://127.0.0.1:3000'; $env:E2E_PRODUCTION='1'; npm.cmd run test:release` (22/22 desktop/mobile against production container and local Supabase, with explicit Stripe fixture keys); `git diff --check`. Temporary verification container stopped/removed and existing development app restarted. Generated `next-env.d.ts` build churn restored. Persistence, hosted CI, managed staging/production, external SMTP/Checkout, restore/rollback drills and real-host SEO/performance were not run; local tests do not establish those results.
 - Independent reviewer `review_f009_prep` found no Blocking or Important findings within preparation. Its Minor command-example finding was addressed with the full port-3000 PowerShell sequence. Full hosted release review remains outstanding.
-- Blockers: source and licence record for the F034 botanicals and RSVP backdrops supplied on 23 September 2026 and the F035 WebP botanicals and backdrops supplied on 24 September 2026 (see `public/assets/wedding/README.md`); owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. F013-F024 are Done and the F021-F022 dispositions are recorded. F023 is not an additional release gate.
+- Blockers: source and licence record for the F034 botanicals and RSVP backdrops supplied on 23 September 2026 and the F035 and F036 WebP botanicals and backdrops supplied on 24 September 2026 (see `public/assets/wedding/README.md`); owner selection/access for production host/domain and managed Supabase; live billing/release authority; support contact and approved terms/privacy/retention/deletion rules, including payment records and backups. Requested these decisions during this session; none supplied yet. Export/deletion implementation, hosted configuration, recovery objectives/drills and actual release remain unfinished. Next: resolve these inputs, implement the approved data-handling process, configure staging and exercise the hosted journey/recovery before release review and authorised production deployment. F009 remains In Progress; do not start F010. F013-F024 are Done and the F021-F022 dispositions are recorded. F023 is not an additional release gate.
 
 ## F010 - Post-launch extensions
 

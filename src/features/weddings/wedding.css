@@ -1,6 +1,6 @@
 /* Guest-only presentation: shared content, distinct compositions (F034 themes in wedding-themes.css). */
 .wedding-shell {
-  --botanical-art: url("/assets/wedding/flowers/minimal-olive.svg");
+  --botanical-art: url("/assets/wedding/high-fid-graphics/minimal-olive.webp");
   --theme-accent: #526044; --theme-surface: #f5f1e8; --theme-text: #272b22;
   --theme-muted: #626555; --theme-line: #d6d4c7; --theme-tint: #e5e6d8;
   --theme-radius: 2px; --theme-heading: var(--wedding-serif), Georgia, serif; --theme-body: Arial, Helvetica, sans-serif;
@@ -13,12 +13,12 @@
 .wedding-shell a:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; }
 .wedding-shell button:focus-visible { outline: 2px solid var(--theme-accent); outline-offset: 5px; }
 .wedding-shell[data-theme="romantic"] {
-  --botanical-art: url("/assets/wedding/flowers/romantic-rose.svg");
+  --botanical-art: url("/assets/wedding/high-fid-graphics/romantic-rose.webp");
   --theme-accent: #7c3446; --theme-surface: #fff4eb; --theme-text: #582b39;
   --theme-muted: #79565b; --theme-line: #e3c9c5; --theme-tint: #f1d8cf; --theme-radius: 5px;
 }
 .wedding-shell[data-theme="bold"] {
-  --botanical-art: url("/assets/wedding/flowers/bold-laurel.svg");
+  --botanical-art: url("/assets/wedding/high-fid-graphics/bold-laurel.webp");
   --theme-accent: #164b49; --theme-surface: #f1f3e9; --theme-text: #133c3b;
   --theme-muted: #48615a; --theme-line: #c6d2c7; --theme-tint: #dce8b3; --theme-radius: 0;
 }

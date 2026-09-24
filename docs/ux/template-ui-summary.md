@@ -164,7 +164,7 @@ Layouts grow for long content without clipping. No animation is used. Shared tok
 
 ## Botanical artwork (F018)
 
-Each theme uses one original vector composition: slender sage/olive stems for Minimal, a blush garden rose with buds and muted foliage for Romantic, and broad teal/sage leaves for Bold. Transparent SVGs live in `public/assets/wedding/flowers/` and RSVP backdrops in `public/assets/wedding/backgrounds/`; the `public/assets/wedding/` README records provenance, palettes and the reuse inventory. The illustration is selected by the enclosing theme so previews, published pages and full marketing examples stay consistent.
+Each theme uses one botanical composition: slender olive stems for Minimal, a blush garden rose with buds and foliage for Romantic, and broad teal/sage laurel leaves for Bold. Since 24 September 2026 every botanical is a supplied 768×1152 (2:3) transparent WebP in `public/assets/wedding/high-fid-graphics/`, replacing the original F018 SVGs. RSVP backdrops live in `public/assets/wedding/backgrounds/`; the `public/assets/wedding/` README records provenance, palettes and the reuse inventory. The illustration is selected by the enclosing theme so previews, published pages and full marketing examples stay consistent.
 
 Footer illustrations occupy reserved space beside the signature (100×150px desktop, 58×87px phone). The Romantic announcement uses a small floral accent, and Details uses a 36×54px divider. F019 places one small theme illustration inside the RSVP invitation panel above its content. Missing and failed photographs use two opposing botanical edges on the theme tint, inset/reduced on mobile, with the existing Minimal text backing. Decoration never intercepts input and is hidden from assistive technology. No customer text is drawn into an asset.
 
@@ -198,13 +198,13 @@ Five guest themes join the original three. Palettes, type pairs and graphics dir
 | id | accent | surface | text | muted | line | tint | radius | `--botanical-art` |
 |---|---|---|---|---|---|---|---|---|
 | alcantara | `#8B5E3C` | `#F7F2EC` | `#2E2420` | `#6E5A4C` | `#DCCFC0` | `#EFE8DF` | 2px | `none` (see below) |
-| countryside | `#3B4431` | `#F6F1E6` | `#262A20` | `#5A5B49` | `#D5CBB5` | `#E3D9C4` | 0 | autumn-dahlia.svg |
-| evening-gold | `#C9A96A` | `#1C2533` | `#F2EDE3` | `#AEB6C4` | `#3B4558` | `#253043` | 0 | winter-hellebore.svg |
-| terracotta | `#A34C30` | `#FBF6F0` | `#3A2A22` | `#6E574B` | `#E6D5C5` | `#F1E1D3` | 6px | mediterranean-citrus.svg |
-| heather | `#6B4E71` | `#FAF8FB` | `#2A2630` | `#59606B` | `#DDD5E0` | `#E6DEE8` | 14px | meadow-wildflower.svg |
+| countryside | `#3B4431` | `#F6F1E6` | `#262A20` | `#5A5B49` | `#D5CBB5` | `#E3D9C4` | 0 | autumn-dahlia.webp |
+| evening-gold | `#C9A96A` | `#1C2533` | `#F2EDE3` | `#AEB6C4` | `#3B4558` | `#253043` | 0 | winter-hellebore.webp |
+| terracotta | `#A34C30` | `#FBF6F0` | `#3A2A22` | `#6E574B` | `#E6D5C5` | `#F1E1D3` | 6px | mediterranean-citrus.webp |
+| heather | `#6B4E71` | `#FAF8FB` | `#2A2630` | `#59606B` | `#DDD5E0` | `#E6DEE8` | 14px | meadow-wildflower.webp |
 
 - Terracotta's text accent is darkened from clay `#B4583A` to `#A34C30`, because clay reaches only 4.44:1 on surface. Clay `#B4583A` remains for colour blocks, arch surrounds and the swatch. Heather slate `#8A95A0` (2.89:1) is for lines, hills and ornaments only; slate-toned muted text is `#59606B`.
-- `coastal-grasses.svg` is unassigned and kept as a spare. Alcantara follows its "no illustration" direction.
+- `coastal-grasses.webp` is unassigned and kept as a spare. Alcantara follows its "no illustration" direction.
 
 | id | name | swatch [s0, s1, s2] | description |
 |---|---|---|---|
@@ -383,7 +383,7 @@ Every card stays opaque, so the desktop card never covers a backdrop's decorated
 
 ## F035 themes: Coastal, Riviera, Velvet, Black Tie
 
-Palettes, swatches and type are in [theme-list.md](designs/themes/theme-list.md). These themes use the markup and CSS approach from F034, and their CSS is at the end of `wedding-themes.css`. Their botanicals are the supplied 768×1152 transparent WebPs, which have the same 2:3 shape as the SVGs, in every botanical slot. Riviera uses lemon blossom as its primary graphic (footer, Details divider, RSVP card, first fallback sprig) and citrus sprig as its secondary one (announcement sprig, second fallback sprig, RSVP intro).
+Palettes, swatches and type are in [theme-list.md](designs/themes/theme-list.md). These themes use the markup and CSS approach from F034, and their CSS is at the end of `wedding-themes.css`. Their botanicals are the supplied 768×1152 transparent WebPs, in every botanical slot, as all illustrated themes now do. Riviera uses lemon blossom as its primary graphic (footer, Details divider, RSVP card, first fallback sprig) and citrus sprig as its secondary one (announcement sprig, second fallback sprig, RSVP intro).
 
 **Picker order:** minimal, romantic, bold, terracotta, heather, coastal, riviera, alcantara, countryside, velvet, black-tie, evening-gold.
 

@@ -41,6 +41,6 @@ Direction for the graphics agent:
 - **Velvet:** A claret velvet cover with ivory type and gold hairlines. Gold (`#D9B77C`) is used only on claret. Type: Cormorant Garamond with Work Sans.
 - **Black Tie:** A formal letterpress invitation: a black grosgrain double-rule border, ivory paper and centred type. Type: Bodoni Moda with Jost.
 
-Coastal, Riviera, Velvet and Black Tie use the supplied high-fidelity WebP botanicals in `public/assets/wedding/high-fid-graphics/` instead of SVGs. All four reuse fonts that are already self-hosted.
+Every illustrated theme uses a supplied high-fidelity transparent WebP botanical from `public/assets/wedding/high-fid-graphics/`; the earlier SVGs were retired on 24 September 2026. All four reuse fonts that are already self-hosted.
 
 Every accent passes 4.5:1 with white button text (Coastal 8.08, Riviera 9.02, Velvet 9.99, Black Tie 18.42). Evening Gold is the exception on purpose: its gold passes against navy text instead. The Detail colours are decorative only and shouldn't be used for body text. If Countryside's swatch looks too close to Modern Minimal's in the selector, swap its dark half to the bracken `#A5562E`.
