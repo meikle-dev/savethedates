@@ -1249,6 +1249,14 @@ These are already listed in `release-inputs.md` sections 5–6:
 - incident contact;
 - a backup method for uploaded photos, because Supabase backups exclude Storage.
 
+**Owner setup progress (25 September 2026):**
+
+- **Step 5 Render, staging done.** `savethedates-staging` (`srv-darbpap7lnhs73cp2t50`, Frankfurt, Free) runs image tag `5ae28ff…` at `https://savethedates-staging.onrender.com`. Set on it: health check `/api/health`, `PORT=3000`, `APP_ORIGIN`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT=staging`, `APP_ENV=staging`, `STAGING_USERNAME`, `STAGING_PASSWORD`. The owner holds the password. A registry credential (classic `read:packages` token, no expiry) is in place. Failure notifications go to the owner's email, which is the workspace default. The deploy hook is stored as the GitHub secret `RENDER_STAGING_DEPLOY_HOOK`.
+- **Production service not created:** the Render workspace has no payment card. Custom domains and DNS records follow once it exists.
+- **Step 6 Sentry done.** Org `meikle`, project `savethedates`, EU (Germany) region. IP storage is off, and the default scrubbers are on. Allowed domains are the staging host, `savethedates.co.uk` and `www.savethedates.co.uk`. Three issue alerts email the owner: new issue, regression, and more than 10 events in an hour. GitHub has the secret `SENTRY_AUTH_TOKEN` and the variables `SENTRY_ORG=meikle` and `SENTRY_PROJECT=savethedates`. The org started on a 14-day Business trial (ends about 9 October 2026). Afterwards, confirm it dropped to the free Developer plan, and record the error and log retention against the 30-day decision.
+- **Outstanding:** Supabase projects (step 2) and Stripe (step 4) don't exist yet, so the Supabase and Stripe variables are unset on staging. The homepage still loads, but sign-up, the dashboard and checkout won't work until they're set. The next `main` push should run the deploy hook and the Sentry source-map upload for the first time; check both steps in the run.
+- **Next:** create the two Supabase projects (step 2), then set the Supabase variables on staging.
+
 **Done when:**
 
 - Required setup inputs and steps 1–6 are complete and recorded in `release-inputs.md`; optional F039/PostHog work is excluded. Configure production securely without opening paid customer access. Step 7 Search Console submission and step 8 production promotion belong to F009 once the live domain is ready.
@@ -1258,7 +1266,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 ## F056 - Publish the tested image and protect staging
 
-**Status:** In Progress (built, locally verified and independently reviewed; waits only for its first GitHub Actions run on `main`)
+**Status:** Done (25 September 2026; CI run #66 published the image, and hosted staging verified)
 **Priority / lead:** P1, release gate via F041 / Software Engineer; independent review required (access control and CI permissions).
 **Purpose:** Deliver F041 product updates 1, 2 and 4, which need no owner input, so the owner's Render setup can use a published image and a private staging site.
 **Depends on:** F037, F038 (image, runtime configuration; code Done). Split from F041 on 25 September 2026 as that entry allowed.
@@ -1283,8 +1291,10 @@ These are already listed in `release-inputs.md` sections 5–6:
 - The workflow parses (js-yaml), and `git diff --check` passed. Temporary containers and images were removed. Generated `next-env.d.ts` churn was restored.
 - Independent review: no Blocking findings. Both Important findings were fixed and re-checked by the reviewer. The `/media/themes/` prefix had opened the guest routes (names "media", secret "themes"), including a server action; only the twelve exact theme files are open now. Publishing had been keyed to GitHub's default branch, which is a stale `master`; `main` is now named explicitly. Minor points fixed: publish concurrency, the pinned `download-artifact`, `/_next/image` docs plus `localPatterns`, the classic-token wording and the cancelled-run comment.
 - **First `main` push (commit `cb673ce`, run #63) failed:** `verify` failed at `npm run check` (`eslint . --max-warnings 0`) on an unrelated unused import (`todayUtc`) in `src/app/dashboard/preview/page.tsx`, left over from prior work and not caught by local checks run before that push. `publish-image` needs `verify` and did not run, so no image was published; nothing in this feature's own code executed, since the lint step fails before any Docker build/test step. Fixed and re-verified locally in commit `1db3f6f` (`npm.cmd run check` passed: lint, typecheck, 85 tests, build) and pushed to `main`.
-- Not yet run: GitHub Actions on the corrected commit, a real GHCR push, the Render deploy hook, hosted staging.
-- **Next:** confirm the CI run for `1db3f6f` passes, including the staging-mode step and `publish-image`, and that `ghcr.io/meikle-dev/savethedates:<sha>` and its digest appear in the run summary. Record the run here, then mark F056 Done. The owner's Render setup (F041 step 5) can then use that image. Optionally, set GitHub's default branch to `main`.
+- `1db3f6f` (run #65) failed; the next push, `5ae28ff` (Application checks run #66), passed. `publish-image` pushed `ghcr.io/meikle-dev/savethedates:5ae28ffcf9955ec7fc5ba20948c8dd2680e0e070`, digest `sha256:803540079a3b75d1d94eefadca3ec2bf834abfdc78d6c2e809cf787903fade10`. Render staging pulled this image through the registry credential, and its deploy events show the same digest.
+- Hosted staging, checked with curl on 25 September 2026: `/` without a login returned 401 with the Basic challenge and `X-Robots-Tag: noindex, nofollow`; a wrong password returned 401; the correct login returned 200; `/api/health` returned 200 with no login; `robots.txt` returned `Disallow: /`.
+- Not yet exercised: the `RENDER_STAGING_DEPLOY_HOOK` step, because the secret was added after run #66. The next `main` push will run it.
+- **Next:** none for F056. Watch the deploy-hook and Sentry source-map steps on the next `main` push (F041). Optionally, set GitHub's default branch to `main`.
 
 ## F057 - Fast, reliable browser checks in CI
 

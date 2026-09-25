@@ -5,13 +5,13 @@ Fill in the non-secret decisions and identifiers below when they are available. 
 ## 1. Production ownership and hosting
 
 - [x] Production host/provider: `Render (Hobby workspace; production on a Starter web service, deployed from the GHCR image) — approved 24 September 2026, see F037`
-- [ ] Hosting account/project identifier: `
+- [ ] Hosting account/project identifier: `Staging: savethedates-staging (srv-darbpap7lnhs73cp2t50). Production: not created yet (Render needs a payment card)`
 - [x] Deployment region: `Frankfurt (EU Central)`
 - [x] Production domain: `savethedates.co.uk` (owner, 25 September 2026). Canonical origin `https://savethedates.co.uk` (`APP_ORIGIN`); `www.savethedates.co.uk` redirects to it with a 301.
 - [ ] DNS access available: `yes / no`
 - [x] TLS/HTTPS will be managed by: `Render (automatic certificates for custom domains)`
 - [ ] Monthly spending limit or approval: `
-- [x] Staging host/domain, if separate: `Separate Render service on the free instance, using its onrender.com address; password-protected (F041)`
+- [x] Staging host/domain, if separate: `https://savethedates-staging.onrender.com` (Render free instance, password-protected; created 25 September 2026)
 - [ ] Person authorised to approve deployment: `
 
 The host must run the existing Docker production image, support HTTPS, environment secrets, health checks, logs, restarts, and a rollback to the previous image. Proposed host: [F037](backlog.md#f037---choose-the-production-host). Step-by-step setup: [F041](backlog.md#f041---production-setup-guide). Error tracking and analytics: F038 and F039.
@@ -97,7 +97,7 @@ These choices are required before implementing and testing export/deletion. The 
 - [ ] Incident contact email/phone: `
 - [x] Monitoring/alert destination: `rmeikle55@gmail.com (Sentry and Render alerts)`
 - [x] Log retention period: `30 days`
-- [ ] Sentry project created and values set: `deferred by owner on 25 September 2026`. To do during F041 step 6; see `operations.md` → "Set up Sentry (once)"
+- [ ] Sentry project created and values set: `org meikle, project savethedates, EU (Germany); set on staging and in GitHub on 25 September 2026. Production Render service still to be created and configured. Retention still to be checked after the trial ends (about 9 October 2026)`
 - [ ] Recovery point objective (maximum acceptable data loss): `
 - [ ] Recovery time objective (maximum acceptable outage): `
 - [ ] Backup restore drill owner: `

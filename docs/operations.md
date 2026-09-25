@@ -168,7 +168,7 @@ New server features follow the same pattern: add the event names to `src/lib/log
 
 ### Set up Sentry (once)
 
-**Status: to do later.** The owner deferred this on 25 September 2026. Until it's done, Sentry is off in every environment and logs go only to host stdout. Complete it during F041 setup, before the F038 staging checks. The values to set are `SENTRY_DSN` and `SENTRY_ENVIRONMENT` on each Render service, and `SENTRY_AUTH_TOKEN` (secret), `SENTRY_ORG` and `SENTRY_PROJECT` (variables) in GitHub. `APP_RELEASE` needs no action because CI builds it in.
+**Status:** done for staging and GitHub on 25 September 2026 (org `meikle`, project `savethedates`). Set `SENTRY_DSN` and `SENTRY_ENVIRONMENT=production` when the production service is created. Step 7 retention is still to be checked. The values to set are `SENTRY_DSN` and `SENTRY_ENVIRONMENT` on each Render service, and `SENTRY_AUTH_TOKEN` (secret), `SENTRY_ORG` and `SENTRY_PROJECT` (variables) in GitHub. `APP_RELEASE` needs no action because CI builds it in.
 
 1. Create a Sentry account in the **EU (Germany) data region**, owned by the owner, on the free plan.
 2. Create one project, platform Next.js. Staging and production share it and are told apart by `SENTRY_ENVIRONMENT`.
