@@ -20,11 +20,8 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
   const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
   const params = await searchParams;
   const candidate = isWeddingTheme(params.theme) ? params.theme : data.theme;
-  // Show the RSVP action as guests would see it once live: RSVP on and the closing date not passed. It opens the
-  // preview RSVP page, which never submits.
-  const replyOpen = data.rsvp_enabled && !(data.rsvp_closes_on && todayUtc() > data.rsvp_closes_on);
   return <>
     <PreviewToolbar label="Save the Date" path="/dashboard/preview" backHref="/dashboard" theme={candidate} savedTheme={data.theme} published={data.published && !!entitlement?.active} />
-    <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} homeHref={`/dashboard/preview?theme=${candidate}`} detailsHref={data.details_enabled ? `/dashboard/preview/details?theme=${candidate}` : undefined} rsvpHref={`/dashboard/preview/rsvp?theme=${candidate}`} reply={replyOpen ? { href: `/dashboard/preview/rsvp?theme=${candidate}`, closesOn: data.rsvp_closes_on } : undefined} />
+    <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} homeHref={`/dashboard/preview?theme=${candidate}`} detailsHref={data.details_enabled ? `/dashboard/preview/details?theme=${candidate}` : undefined} rsvpHref={`/dashboard/preview/rsvp?theme=${candidate}`} />
   </>;
 }
