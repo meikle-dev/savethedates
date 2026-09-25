@@ -6,6 +6,17 @@ sharp.concurrency(1);
 sharp.cache(false);
 
 export const photoBusyMessage = "Photo uploads are busy — please try again in a moment.";
+
+/** An expected refusal whose message is shown to the owner; `reason` is logged. */
+export class PhotoRejectedError extends Error {
+  name = "PhotoRejectedError";
+  reason: "size" | "type" | "pixels" | "unreadable" | "busy";
+  constructor(message: string, reason: PhotoRejectedError["reason"]) {
+    super(message);
+    this.reason = reason;
+  }
+}
+
 const maxWaiting = 3;
 const maxWaitMs = 20_000;
 
@@ -26,7 +37,7 @@ function acquirePhotoSlot(): Promise<() => void> {
     processing = true;
     return Promise.resolve(release);
   }
-  if (waiting.length >= maxWaiting) return Promise.reject(new Error(photoBusyMessage));
+  if (waiting.length >= maxWaiting) return Promise.reject(new PhotoRejectedError(photoBusyMessage, "busy"));
   return new Promise((resolve, reject) => {
     const grant = () => {
       clearTimeout(timer);
@@ -34,16 +45,15 @@ function acquirePhotoSlot(): Promise<() => void> {
     };
     const timer = setTimeout(() => {
       waiting.splice(waiting.indexOf(grant), 1);
-      reject(new Error(photoBusyMessage));
+      reject(new PhotoRejectedError(photoBusyMessage, "busy"));
     }, maxWaitMs);
     waiting.push(grant);
   });
 }
 
 export async function preparePhoto(file: File) {
-  if (!file.size || file.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-    throw new Error("Choose a JPEG, PNG or WebP photo up to about 5 MB.");
-  }
+  const invalid = !file.size || file.size > 5 * 1024 * 1024 ? "size" : !["image/jpeg", "image/png", "image/webp"].includes(file.type) ? "type" : null;
+  if (invalid) throw new PhotoRejectedError("Choose a JPEG, PNG or WebP photo up to about 5 MB.", invalid);
   const release = await acquirePhotoSlot();
   try {
     return await convertPhoto(Buffer.from(await file.arrayBuffer()));
@@ -63,7 +73,8 @@ async function convertPhoto(input: Buffer) {
     // mode; without it a 24 MP WebP peaks at ~210 MB instead of ~50 MB, so WebP keeps fast shrink-on-load.
     const fastShrinkOnLoad = metadata.format === "webp";
     return await photo.resize(2000, 2000, { fit: "inside", withoutEnlargement: true, fastShrinkOnLoad }).webp({ quality: 85 }).toBuffer();
-  } catch {
-    throw new Error("We couldn’t read that photo. Choose a still JPEG, PNG or WebP under 25 megapixels.");
+  } catch (error) {
+    const reason = error instanceof Error && error.message.includes("pixel limit") ? "pixels" : "unreadable";
+    throw new PhotoRejectedError("We couldn’t read that photo. Choose a still JPEG, PNG or WebP under 25 megapixels.", reason);
   }
 }

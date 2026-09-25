@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037 and F040 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Next: F038**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F042-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037 and F040 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F043**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F042-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -867,7 +867,7 @@ Alternatives considered:
 
 ## F038 - Error tracking and AI-queryable logs
 
-**Status:** Ready
+**Status:** In Progress (code built and reviewed 24 September 2026; Sentry setup deferred by the owner on 25 September 2026, so the staging checks wait for F041 step 6)
 **Priority / lead:** P1, release gate for F009 monitoring / Software Engineer. Independent security and privacy review is required: this adds a third-party processor and touches secret-bearing URLs and owner/guest data.
 **Purpose:** When something breaks in production, the owner is alerted and can find out what failed, since when and for whom. They can do this by asking Claude through MCP, as well as in dashboards.
 **Depends on:** F037 (host). Implementation and local verification can happen before the host exists; hosted alert and retention checks happen on F009 staging.
@@ -957,6 +957,44 @@ Alternatives considered:
   - "logs for request ID X";
   - "Supabase auth errors in the last hour".
 - Independent review passes. Alert delivery and retention on the real host are verified in F009 staging.
+
+**Handoff (24 September 2026):**
+
+- **Built:**
+  - `@sentry/nextjs` 10.75.3, EU, without `withSentryConfig`. `src/instrumentation.ts` and `src/instrumentation-client.ts` start it only when `SENTRY_DSN` is set; the browser reads its config from the no-store `/api/runtime-config` and has no `NEXT_PUBLIC_*` keys.
+  - One scrubber (`src/lib/monitoring/scrub.ts`) and one logger (`src/lib/logger.ts`: typed events, field allow-list, `withLogging`). ESLint `no-console` enforces the single logger.
+  - `src/proxy.ts` gives every request except `/_next/static` and `/_next/image` a fresh `X-Request-Id`, never taken from the client. Error pages show a reference that links to it.
+  - Every "Where to log" event is logged at its call site.
+  - Browser DOM/click breadcrumbs and session tracking are off, and no trace headers are added to outgoing requests.
+  - Hidden source maps are built in Docker and exported from a `sourcemaps` stage. CI uploads them with `sentry-cli` only when `SENTRY_AUTH_TOKEN` exists. The final image has no maps.
+  - The runbook and runtime variables are in `operations.md` and `run-app-instructions.md`. Sentry is recorded in `tech-stack.md` and `architecture.md`.
+- **Checks (engineer, after review fixes):**
+  - `npm run check`: passed (lint, typecheck, 64 unit tests, build).
+  - `npm run test:integration`: 21 passed (before the review fixes, which didn't touch integration code).
+  - `npx playwright test`: 84 passed.
+  - `npm run test:monitoring`: 2 passed in dev and 2 passed against the rebuilt production image with a fake DSN (the runtime-config test).
+  - `E2E_PRODUCTION=1 npm run test:release` against the image: 30 passed (before the review fixes).
+  - Production `docker build`: passed, with 0 app `.map` files.
+  - `git diff --check`: clean.
+  - Local walkthrough on the image: readable request-ID trails for checkout reuse, webhook received → entitlement granted, duplicate webhook, publish, RSVP accepted and a rejected RSVP link. Stripe was simulated with locally signed webhooks because there were no test keys or Stripe CLI.
+  - Not run: `npm run test:persistence`, and CI on GitHub.
+- **Bundle size (gzip):** `/examples/minimal` first load went from 180.1 to 183.9 KiB. All client JS went from 341.7 to 422.1 KiB; most of the increase is the 70.8 KiB Sentry chunk, which loads only when `SENTRY_DSN` is set.
+- **Independent review:**
+  - The first pass failed. B1: guest names could reach Sentry through click-breadcrumb `aria-label`s. I1: session tracking sent a request on every page view. There were also six minor findings.
+  - All were fixed with tests, and the new tests fail when the old settings are put back.
+  - The re-review passed with conditions. It compared headers on the proxied paths against the pre-F038 image and found no regressions; `?share=` responses are now `no-store`. A signed Stripe webhook still verifies.
+  - Its one remaining minor note is a cached `X-Request-Id` on public responses; it's now covered by a runbook line.
+- **Outstanding (why this stays In Progress):**
+  - It needs a Sentry EU project (owner account, free plan) and staging.
+  - On staging:
+    - a thrown Server Action error, a browser error with a resolved source map and a rejected-webhook log must arrive with release, environment and request ID;
+    - the three MCP queries must work;
+    - alert email delivery and 30-day retention must be confirmed;
+    - a real Stripe test checkout walkthrough is still needed.
+  - The Sentry DPA/transfer terms and the privacy notice entry belong to F009.
+- **Risks:** Next.js's own stderr error output isn't scrubbed (documented). Browser errors before the SDK loads are missed. Every full page load makes one extra no-store config request.
+- **Deferred (owner, 25 September 2026):** creating the Sentry project and setting its values is a later to-do, tracked in F041 step 6 and `operations.md` → "Set up Sentry (once)". `APP_RELEASE` needs no action; CI builds it in.
+- **Next:** after F041 step 6 and staging exist, run the staging checks above and mark F038 Done. Meanwhile continue with F043.
 
 ## F039 - Privacy-friendly visitor and funnel analytics
 
@@ -1158,11 +1196,12 @@ Alternatives considered:
 
 **6. Monitoring (F038 required; F039 optional)**
 
-1. **Sentry:**
+1. **Sentry (to do later; deferred by the owner on 25 September 2026).** Follow "Set up Sentry (once)" in `docs/operations.md`. In short:
    - Sign up with the EU data region and create a Next.js project.
-   - Put the DSN in Render as `SENTRY_DSN`.
-   - Put an auth token in GitHub Actions secrets as `SENTRY_AUTH_TOKEN`.
+   - On each Render service, set `SENTRY_DSN` and `SENTRY_ENVIRONMENT` (`staging` or `production`).
+   - In GitHub, add the secret `SENTRY_AUTH_TOKEN` and the variables `SENTRY_ORG` and `SENTRY_PROJECT`.
    - Point alert emails at the incident email.
+   - Then run the F038 staging checks.
 2. **PostHog (only if optional F039 is delivered):**
    - Sign up on EU Cloud.
    - In project settings, turn on cookieless tracking and "Discard client IP data".

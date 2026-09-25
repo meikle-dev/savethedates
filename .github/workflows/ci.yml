@@ -21,6 +21,7 @@ jobs:
       - run: npm run test:persistence
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - run: npm run test:monitoring
       - run: docker compose up --build -d --wait
       - name: Development container smoke
         run: |
@@ -31,7 +32,7 @@ jobs:
         run: E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
       - run: docker compose down
         if: always()
-      - run: docker build --target production -t save-the-dates:ci .
+      - run: docker build --target production --build-arg APP_RELEASE=${{ github.sha }} -t save-the-dates:ci .
       - name: Production container smoke
         run: |
           docker run -d --name wedding-smoke --add-host host.docker.internal:host-gateway --env-file .env.docker -p 127.0.0.1:3000:3000 save-the-dates:ci
@@ -40,6 +41,24 @@ jobs:
           E2E_BASE_URL=http://127.0.0.1:3000 E2E_PRODUCTION=1 npm run test:release
       - run: docker rm -f wedding-smoke
         if: always()
+      - name: Production container monitoring (runtime Sentry configuration, scrubbed payloads)
+        run: |
+          docker run -d --name wedding-monitoring --add-host host.docker.internal:host-gateway --env-file .env.docker -e SENTRY_DSN=http://e2epublickey@host.docker.internal:3199/1 -e SENTRY_ENVIRONMENT=ci -p 127.0.0.1:3000:3000 save-the-dates:ci
+          curl --retry 30 --retry-all-errors --retry-delay 2 --fail --silent --show-error http://127.0.0.1:3000 > /dev/null
+          E2E_BASE_URL=http://127.0.0.1:3000 E2E_SENTRY_DSN=http://e2epublickey@host.docker.internal:3199/1 npm run test:monitoring
+      - run: docker rm -f wedding-monitoring
+        if: always()
+      # Source maps are built inside Docker without a token; only this step holds SENTRY_AUTH_TOKEN.
+      - name: Upload source maps to Sentry
+        if: github.event_name == 'push'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        run: |
+          if [ -z "$SENTRY_AUTH_TOKEN" ]; then echo "SENTRY_AUTH_TOKEN is not set; skipping source map upload."; exit 0; fi
+          docker build --target sourcemaps --output type=local,dest=sourcemaps .
+          npx --yes @sentry/cli@2.58.6 sourcemaps upload --release ${{ github.sha }} sourcemaps
       - run: npm run db:stop
         if: always()
       - uses: actions/upload-artifact@v4

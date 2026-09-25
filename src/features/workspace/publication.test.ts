@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
 import { slugSchema, reservedSlugs } from "./publication-validation";
-import { preparePhoto } from "./photo";
+import { PhotoRejectedError, preparePhoto } from "./photo";
 
 describe("publication input", () => {
   it("normalises URLs and rejects reserved or invalid paths", () => {
@@ -28,5 +28,13 @@ describe("publication input", () => {
     for (const file of [new File([new Uint8Array(5 * 1024 * 1024 + 1)], "big.jpg", { type: "image/jpeg" }), new File(["<svg/>"], "fake.jpg", { type: "image/jpeg" }), new File(["bad"], "bad.png", { type: "image/png" }), new File(["x"], "a.svg", { type: "image/svg+xml" })]) await expect(preparePhoto(file)).rejects.toThrow();
     const huge = await sharp({ create: { width: 5100, height: 5000, channels: 3, background: "white" } }).png().toBuffer();
     await expect(preparePhoto(new File([new Uint8Array(huge)], "large.png", { type: "image/png" }))).rejects.toThrow("25 megapixels");
+  });
+  it("gives each photo rejection a reason for the logs", async () => {
+    const reason = (file: File) => preparePhoto(file).then(() => null, (error: PhotoRejectedError) => error.reason);
+    expect(await reason(new File([new Uint8Array(5 * 1024 * 1024 + 1)], "big.jpg", { type: "image/jpeg" }))).toBe("size");
+    expect(await reason(new File(["x"], "a.svg", { type: "image/svg+xml" }))).toBe("type");
+    expect(await reason(new File(["bad"], "bad.png", { type: "image/png" }))).toBe("unreadable");
+    const huge = await sharp({ create: { width: 5100, height: 5000, channels: 3, background: "white" } }).png().toBuffer();
+    expect(await reason(new File([new Uint8Array(huge)], "large.png", { type: "image/png" }))).toBe("pixels");
   });
 });

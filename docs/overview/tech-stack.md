@@ -195,6 +195,10 @@ Use the Supabase CLI's Docker-based local stack for database, authentication, an
 
 Production host (F037, approved 24 September 2026): Render in Frankfurt. CI publishes the tested production image to GHCR, and Render deploys it by commit tag. Production runs on a Starter instance and staging on the free instance. Managed Supabase projects are in the same region. Error tracking uses Sentry (EU region, F038) and analytics uses PostHog EU Cloud in cookieless mode (F039). These are the approved vendor SDKs; avoid other provider-specific dependencies and unnecessary orchestration.
 
+### Error tracking and logs (F038)
+
+Sentry, EU data region, through `@sentry/nextjs` pinned to an exact version (10.75.3). It is an approved vendor SDK and a third-party processor. The app does not use `withSentryConfig`. Next.js 16 Turbopack emits debug IDs and source maps itself (`turbopack.debugIds`, `productionBrowserSourceMaps`), and the SDK reads its configuration at runtime, so builds need no Sentry token and make no Sentry requests. SDK 10.75.3 states Turbopack support for Next.js 15.4.1 and later; F038 verified server and browser events from this repository's standalone production image against a local fake ingest. Server code logs only through `src/lib/logger.ts`. Details are in [operations](../operations.md#logging-standard).
+
 The canonical setup and running guide is the root `run-app-instructions.md`, initially empty and populated with verified commands during implementation. See [architecture.md](architecture.md) for the delivery requirements.
 
 References: [Next.js self-hosting](https://nextjs.org/docs/app/guides/self-hosting), [Supabase local development](https://supabase.com/docs/guides/local-development).

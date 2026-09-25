@@ -86,6 +86,7 @@ These choices are required before implementing and testing export/deletion. The 
 - [ ] Incident contact email/phone: `
 - [x] Monitoring/alert destination: `rmeikle55@gmail.com (Sentry and Render alerts)`
 - [x] Log retention period: `30 days`
+- [ ] Sentry project created and values set: `deferred by owner on 25 September 2026`. To do during F041 step 6; see `operations.md` → "Set up Sentry (once)"
 - [ ] Recovery point objective (maximum acceptable data loss): `
 - [ ] Recovery time objective (maximum acceptable outage): `
 - [ ] Backup restore drill owner: `

@@ -9,6 +9,7 @@ Read only what the current task needs. [Backlog](backlog.md) holds current state
 | How was the full walkthrough assessed? | [24 September triage and tickets F042-F050](backlog.md#24-september-walkthrough-assessment), with the unchanged [source report](reports/2026-09-24-ux-walkthrough-and-launch-readiness.md) |
 | How do I run it? | [Running instructions](../run-app-instructions.md) (includes local Supabase/Auth setup) |
 | How do I release and operate it? | [Release and operations](operations.md) (preparation; hosted release pending) |
+| How do I log, monitor and investigate errors? | [Logging standard](operations.md#logging-standard), [Monitoring and AI-assisted investigation](operations.md#monitoring-and-ai-assisted-investigation) |
 | What must be provided before launch? | [Production release inputs](release-inputs.md) |
 | Which technologies? | [Stack](overview/tech-stack.md) |
 | How is it structured and secured? | [Architecture](overview/architecture.md) |

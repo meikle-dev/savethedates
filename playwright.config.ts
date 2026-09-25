@@ -7,6 +7,8 @@ if (existsSync(".env.local")) loadEnvFile(".env.local");
 export default defineConfig({
   testDir: "./tests",
   testMatch: "**/*.spec.ts",
+  // Needs a server with a fake Sentry DSN: npm run test:monitoring (playwright.monitoring.config.ts).
+  testIgnore: "**/monitoring.spec.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

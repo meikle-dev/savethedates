@@ -16,6 +16,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:monitoring": "playwright test --config playwright.monitoring.config.ts",
     "test:release": "playwright test tests/account.spec.ts tests/dashboard.spec.ts tests/publication.spec.ts tests/themes.spec.ts tests/details.spec.ts tests/rsvp.spec.ts tests/payments.spec.ts tests/marketing.spec.ts",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "smoke": "node scripts/smoke.mjs",
@@ -28,6 +29,7 @@
     "test:persistence": "node scripts/verify-persistence.mjs"
   },
   "dependencies": {
+    "@sentry/nextjs": "10.75.3",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.116.0",
     "next": "16.3.5",

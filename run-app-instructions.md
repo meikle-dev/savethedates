@@ -9,7 +9,7 @@ Run commands from the repository root. This is one Next.js application with loca
 - Windows PowerShell: use `npm.cmd` and `npx.cmd` wherever the commands below say `npm` and `npx` if script execution policy blocks their `.ps1` wrappers. No policy change is needed.
 - Supabase local development: Docker Desktop plus the project-scoped CLI (`npm run db:start`). The CLI starts PostgreSQL, Auth, API, Studio, and the local Mailpit mailbox; no hosted Supabase account is required.
 - Stripe Checkout development: a Stripe account in test mode and the Stripe CLI are required only for a real hosted-checkout walkthrough. Automated tests use locally signed webhook fixtures and do not charge or contact Stripe.
-- Ports: 3000 for local development, 3100 for the automated browser server, 3001 for the production smoke example.
+- Ports: 3000 for local development, 3100 for the automated browser server, 3001 for the production smoke example, 3199 for the fake Sentry ingest used by `npm run test:monitoring`.
 
 ## Docker development
 
@@ -108,11 +108,43 @@ npm run test:integration
 npm run test:persistence
 npx playwright install chromium
 npm run test:e2e
+npm run test:monitoring
 ```
 
 `check` runs lint, route generation/TypeScript, Vitest, and the production build, in that order. The browser suite starts/stops its own development server on port 3100; leave that port free. Run the build and browser suite sequentially so generated Next.js files are not rebuilt during browser checks. On Linux CI, use `npx playwright install --with-deps chromium` for browser system dependencies. Tests use Chromium at desktop and mobile viewport sizes; they do not establish Safari compatibility.
 
 Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Browser screenshots and failure traces are under ignored `test-results/`; `npx playwright show-report` opens the HTML report. CI also checks database isolation, application-container connectivity, and browser checks through the development container. Locally, run those browser checks with `E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e` after Compose is up.
+
+## Error tracking and logs (optional)
+
+The app logs through `src/lib/logger.ts`. `npm run dev` prints one readable line per event, and the production image prints one JSON line. Every line has a `requestId`, which is also returned in the `X-Request-Id` response header. The logging standard, event list and investigation runbook are in [Release and operations](docs/operations.md#logging-standard).
+
+Sentry is off unless these runtime variables are set. Leave them unset locally; then nothing is sent anywhere and the browser never downloads the Sentry SDK.
+
+| Variable | Purpose |
+| --- | --- |
+| `SENTRY_DSN` | Sentry project DSN. Unset turns Sentry off |
+| `SENTRY_ENVIRONMENT` | Label such as `staging` or `production`; defaults to `local` |
+| `APP_RELEASE` | Commit SHA; defaults to `unreleased`. `docker build --build-arg APP_RELEASE=<sha>` builds it into the image |
+
+`npm run test:monitoring` checks what Sentry would receive, without contacting Sentry. It starts the development server on port 3100 with a fake DSN that points at a local ingest on port 3199. It then runs a shared-link RSVP with `?share=`, an auth confirmation, a checkout return and a rejected webhook, and asserts the captured payloads contain no secrets or form values. It needs local Supabase. `npm run test:e2e` includes a check that, with the variables unset, pages load no SDK and contact no other origin.
+
+To run the same check against a production container (PowerShell, local Supabase running, `.env.docker` generated):
+
+```powershell
+docker build --target production --build-arg APP_RELEASE=local-check -t save-the-dates:monitoring .
+docker run -d --name wedding-monitoring --add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ORIGIN=http://127.0.0.1:3001 -e STRIPE_SECRET_KEY=sk_test_local_webhook_verification_only -e STRIPE_WEBHOOK_SECRET=whsec_local_webhook_test_secret -e SENTRY_DSN=http://e2epublickey@host.docker.internal:3199/1 -e SENTRY_ENVIRONMENT=container-check -p 127.0.0.1:3001:3000 save-the-dates:monitoring
+$env:E2E_BASE_URL='http://127.0.0.1:3001'
+$env:E2E_SENTRY_DSN='http://e2epublickey@host.docker.internal:3199/1'
+npm.cmd run test:monitoring
+Remove-Item Env:E2E_BASE_URL, Env:E2E_SENTRY_DSN
+docker logs wedding-monitoring
+docker rm -f wedding-monitoring
+```
+
+Its first test proves the prebuilt image, including the prerendered `/examples/minimal`, uses the DSN, environment and release given at runtime. `docker logs` shows the JSON log lines.
+
+Source maps are built with debug IDs inside the Docker build and removed from the production image. To inspect them locally, run `docker build --target sourcemaps --output type=local,dest=sourcemaps .` (the `sourcemaps/` folder is ignored by Git). CI uploads them to Sentry only when the `SENTRY_AUTH_TOKEN` secret exists.
 
 ## Homepage theme previews
 
