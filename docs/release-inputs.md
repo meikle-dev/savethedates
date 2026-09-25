@@ -18,9 +18,9 @@ The host must run the existing Docker production image, support HTTPS, environme
 
 ## 2. Supabase production project
 
-- [ ] Managed Supabase project reference: `
-- [ ] Supabase organisation/project owner: `
-- [ ] Production project is separate from local and staging: `yes / no`
+- [ ] Managed Supabase project reference: `Staging only: onrblnlwrnbdvyeasqdt (savethedates-staging, Frankfurt, Free). Production not created — Pro is paid and deferred by the owner (26 September 2026)`
+- [x] Supabase organisation/project owner: `Ross (owner)`
+- [ ] Production project is separate from local and staging: `n/a — no production project yet`
 - [x] Database region: `Central EU (Frankfurt), to sit next to the app; production on Supabase Pro, staging on Free`
 - [ ] Supabase plan supports the expected usage: `yes / no / review needed`
 - [ ] Database backup/PITR plan selected: `
@@ -31,21 +31,21 @@ Needed securely at deployment time: project URL, publishable key, and service-ro
 
 ## 3. Authentication and email
 
-- [ ] Production `APP_ORIGIN` (exact HTTPS origin): `
-- [ ] Auth email sender name: `
-- [ ] Auth email sender address: `
-- [ ] Sending domain configured and verified: `yes / no`
-- [ ] SMTP provider: `
-- [ ] SMTP credentials available securely: `yes / no`
-- [ ] Signup confirmation tested in a real inbox: `yes / no`
-- [ ] Password recovery tested in a real inbox: `yes / no`
+- [ ] Production `APP_ORIGIN` (exact HTTPS origin): `Staging only for now: https://savethedates-staging.onrender.com`
+- [x] Auth email sender name: `SaveTheDates`
+- [x] Auth email sender address: `hello@savethedates.co.uk`
+- [x] Sending domain configured and verified: `yes (Resend, verified 26 September 2026; SPF/DKIM/DMARC added in GoDaddy)`
+- [x] SMTP provider: `Resend`
+- [x] SMTP credentials available securely: `yes — staging API key set as the staging Supabase project's SMTP password. No production key yet`
+- [ ] Signup confirmation tested in a real inbox: `no — SMTP is configured but not yet exercised`
+- [ ] Password recovery tested in a real inbox: `no — not yet exercised`
 - [ ] Support contact shown to customers: `
-Google sign-in (F055) was deferred by the owner on 25 September 2026 and is not needed for launch. Fill in the next four items only when resuming it.
+Google sign-in (F055) was reopened for staging by the owner on 26 September 2026 (code was already built; see F055). Not yet published or needed for launch.
 
-- [ ] Google Cloud project and OAuth client owner (F055): `
-- [ ] Google OAuth clients created for staging and production: `yes / no`
-- [ ] Google consent screen name: `brand verification (free; shows "SaveTheDates") / Supabase custom domain (paid add-on) / accept "<ref>.supabase.co"`
-- [ ] Google sign-in tested on staging with disposable Google accounts: `yes / no`. Record each result in the F055 handoff:
+- [x] Google Cloud project and OAuth client owner (F055): `Ross (owner); Cloud project "SaveTheDates" (project ID savethedates)`
+- [ ] Google OAuth clients created for staging and production: `staging only (client "SaveTheDates staging"); no production client`
+- [ ] Google consent screen name: `Testing mode, not published — Google now requires Homepage and Privacy Policy URLs to publish externally, which don't exist yet (blocked on F041 legal pages). Only rmeikle55@gmail.com is added as a test user`
+- [ ] Google sign-in tested on staging with disposable Google accounts: `no — configured but not yet exercised (only the owner's own test-user account can sign in while unpublished)`. Record each result in the F055 handoff:
   - a new Google user creates an account and reaches Basics; signing in again returns to the same wedding;
   - a confirmed email/password user signs in with Google (same email) and reaches their existing wedding, and their password still works;
   - pre-account takeover: sign up with email/password but leave it unconfirmed, then sign in with Google using that address. The old password and old confirmation link must then be rejected;
@@ -56,16 +56,16 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` and `${APP_ORIGI
 
 ## 4. Stripe billing
 
-- [ ] Stripe account/business owner: `
+- [x] Stripe account/business owner: `Ross (owner). Reused the existing "Equimarket sandbox" account, renamed to SaveTheDates (Account Name field — Stripe had no separate Branding display name), rather than a new account`
 - [ ] Production price confirmed: `GBP 29 one-off / other: `
 - [x] Site lifetime confirmed (F022): `6 months after wedding date, fixed when checkout begins, for checkout attempts created after the F024 change is deployed. Purchases and checkout attempts already created retain their frozen 12-month expiry.`
 - [ ] Refund policy approved: `
-- [ ] Production Stripe account is separate from test account: `yes / no`
-- [ ] Webhook endpoint domain: `
-- [ ] Live Checkout activation authorised: `yes / no`
-- [ ] Live secret key available securely: `yes / no`
-- [ ] Live webhook signing secret available securely: `yes / no`
-- [ ] Test-mode staging checkout verified: `yes / no`
+- [ ] Production Stripe account is separate from test account: `n/a — still one account, live mode not activated`
+- [x] Webhook endpoint domain: `Staging (test mode) only: https://savethedates-staging.onrender.com/api/stripe/webhook. No live-mode endpoint yet`
+- [ ] Live Checkout activation authorised: `no — deferred until there's a reviewable production site`
+- [ ] Live secret key available securely: `n/a — not created`
+- [ ] Live webhook signing secret available securely: `n/a — not created`
+- [ ] Test-mode staging checkout verified: `no — keys and webhook are set on staging Render, but a real test Checkout hasn't been run yet`
 - [ ] Refund/dispute handling verified: `yes / no`
 
 The webhook endpoint is `${APP_ORIGIN}/api/stripe/webhook`. Required events are documented in [operations.md](operations.md).
