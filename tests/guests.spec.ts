@@ -41,6 +41,9 @@ function guests(page: Page) {
 }
 
 test("guest responses are paginated, filtered, searched and corrected per owner", async ({ page, browser, baseURL }) => {
+  // A long, data-heavy journey (312 responses, paging, search, corrections). It takes 20–26 s on CI, too close to the
+  // default 30 s budget when other browser tests share the runner.
+  test.slow();
   const owner = await createOwner("guests-a");
   const other = await createOwner("guests-b");
   const contexts: { close: () => Promise<void> }[] = [];
