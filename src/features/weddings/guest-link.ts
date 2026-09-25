@@ -20,6 +20,11 @@ export function guestHrefs(names: string, secret: string): GuestHrefs {
   return { home, details: `${home}/details`, rsvp: `${home}/rsvp` };
 }
 
+/** The absolute guest link couples see, copy and share, always on the configured application origin (APP_ORIGIN). */
+export function guestUrl(origin: string, names: string, secret: string) {
+  return new URL(guestHrefs(names, secret).home, origin).href;
+}
+
 const namePart = (name: string) => name.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase()
   .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 

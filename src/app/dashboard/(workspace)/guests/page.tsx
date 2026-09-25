@@ -32,7 +32,7 @@ export default async function Guests({ searchParams }: { searchParams: Promise<R
 
   let body: React.ReactNode;
   if (totals.total === 0) {
-    body = <EmptyState title="No responses yet">Share your RSVP link from the <Link href="/dashboard/rsvp" className="text-link">RSVP section</Link> and replies will appear here.</EmptyState>;
+    body = <EmptyState title="No responses yet">Share your guest link from <Link href="/dashboard/publish" className="text-link">Publish</Link> and replies will appear here.</EmptyState>;
   } else if (count === 0) {
     body = <EmptyState title="No matches">{query.q ? <>No {query.filter === "all" ? "" : `${filterLabels[query.filter].toLowerCase()} `}responses match “{query.q}”.</> : <>No responses are {filterLabels[query.filter].toLowerCase()} yet.</>} <Link href={reset} className="text-link">Show all responses</Link></EmptyState>;
   } else if (pagination.outOfRange) {

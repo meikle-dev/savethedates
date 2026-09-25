@@ -5,7 +5,7 @@ import { z } from "zod";
 import { errorReason, identify, log, withLogging } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 import { publicClient } from "@/lib/supabase/public";
-import { currentNames, guestHrefs, guestPagesRoute } from "@/features/weddings/guest-link";
+import { guestPagesRoute } from "@/features/weddings/guest-link";
 import {
   closeDateSchema,
   guestSecretSchema,
@@ -19,7 +19,7 @@ async function ownerWorkspace() {
   const { data: { user } } = await client.auth.getUser();
   if (!user) denyWorkspace("no_session", "Your session has ended. Sign in again, then retry.");
   identify({ ownerId: user.id });
-  const { data, error } = await client.from("weddings").select("id, slug, first_name, second_name, published").eq("owner_id", user.id).single();
+  const { data, error } = await client.from("weddings").select("id").eq("owner_id", user.id).single();
   if (error || !data) denyWorkspace("no_wedding", "Save your wedding details first, then retry.");
   identify({ weddingId: data.id });
   return { client, wedding: data };
@@ -44,7 +44,7 @@ export async function saveRsvpSettings(_: RsvpState, form: FormData): Promise<Rs
       }
       refreshRsvp();
       log.info("workspace.save.succeeded", { section: "rsvp_settings" });
-      return { success: true, message: enabled ? "RSVP is enabled. Share your one private RSVP link below." : "RSVP is closed. Existing responses remain in your workspace." };
+      return { success: true, message: enabled ? "RSVPs are on. Guests can reply through your guest link while your site is published." : "RSVP is closed. Existing responses remain in your workspace." };
     } catch (error) {
       if (!(error instanceof WorkspaceAccessError)) log.error("workspace.save.failed", { section: "rsvp_settings", reason: errorReason(error) });
       return { message: error instanceof Error ? error.message : "We couldn’t save your RSVP settings." };
@@ -64,7 +64,8 @@ export async function rotateSharedRsvp(_: RsvpState, form: FormData): Promise<Rs
       }
       refreshRsvp();
       log.info("rsvp.link.rotated");
-      return { success: true, message: "Guest link replaced. Every link you shared before, including your Save the Date, no longer works.", shareUrl: guestHrefs(currentNames(wedding), data).rsvp };
+      // The refreshed pages show the new link everywhere; the secret is not returned or logged here.
+      return { success: true, message: "Guest link replaced. Every link you shared before, including your Save the Date, no longer works." };
     } catch (error) {
       if (!(error instanceof WorkspaceAccessError)) log.error("rsvp.link.failed", { reason: errorReason(error) });
       return { message: "We couldn’t replace your guest link. Please retry." };

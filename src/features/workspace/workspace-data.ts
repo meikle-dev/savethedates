@@ -3,10 +3,14 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { appOrigin } from "@/lib/supabase/config";
+import { currentNames, guestUrl } from "@/features/weddings/guest-link";
 import type { Entitlement } from "@/features/payments/purchase-panel";
 import type { SharedResponse } from "@/features/weddings/rsvp";
 import { filteredCount, guestPagination, namePattern, type GuestQuery } from "./guest-list";
-import { collectResponses } from "./workspace-summary";
+import type { GuestLinkShare } from "./guest-link-panel";
+import { shareMessage } from "./share-message";
+import { collectResponses, rsvpAvailability, todayUtc } from "./workspace-summary";
 
 const weddingColumns = "id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on, rsvp_share_secret";
 
@@ -31,6 +35,23 @@ export async function requireWedding() {
   const workspace = await loadWorkspace();
   if (!workspace.wedding) redirect("/dashboard/basics");
   return { ...workspace, wedding: workspace.wedding };
+}
+
+type ShareableWedding = { slug: string | null; first_name: string; second_name: string; wedding_date: string; location: string; rsvp_enabled: boolean; rsvp_closes_on: string | null; rsvp_share_secret: string };
+
+/** The absolute guest link on the configured origin; shown by the RSVP section in every state. */
+export function currentGuestUrl(wedding: ShareableWedding) {
+  return guestUrl(appOrigin(), currentNames(wedding), wedding.rsvp_share_secret);
+}
+
+/** F042: the live guest link with its suggested (never stored) message. Null unless the site is live, so drafts,
+ * unpublished and expired sites are never offered a link that looks shareable. */
+export function guestLinkShare(wedding: ShareableWedding, live: boolean): GuestLinkShare | null {
+  if (!live) return null;
+  const url = currentGuestUrl(wedding);
+  const availability = rsvpAvailability(wedding.rsvp_enabled, wedding.rsvp_closes_on, todayUtc(), live);
+  const message = shareMessage({ firstName: wedding.first_name, secondName: wedding.second_name, date: wedding.wedding_date, location: wedding.location, url, rsvpOpen: availability === "open" });
+  return { url, message, availability, closesOn: wedding.rsvp_closes_on };
 }
 
 type ResponseCounts = { total: number; attending: number };

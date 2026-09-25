@@ -41,13 +41,19 @@ test("one shared link collects separate named responses and can be replaced", as
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await openSection(page, "RSVP");
     const section = page.getByRole("region", { name: "RSVP", exact: true });
-    await expect(section.getByRole("heading", { name: "One link for all guests" })).toBeVisible();
-    const shareUrl = await section.getByLabel("Your shared RSVP link").inputValue();
-    expect(shareUrl).toMatch(new RegExp(`^/${slug}/[A-Za-z0-9_-]{43}/rsvp$`));
-    const oldHome = shareUrl.replace(/\/rsvp$/, "");
-    await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseURL!).origin });
-    await section.getByRole("button", { name: "Copy full link" }).click();
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(new URL(shareUrl, baseURL).href);
+    await expect(section.getByRole("heading", { name: "Your guest link" })).toBeVisible();
+    // The RSVP section shows the same absolute guest link as Publish and the Overview.
+    const origin = new URL(baseURL!).origin;
+    const displayedLink = section.locator("#rsvp-guest-link");
+    const oldHome = (await displayedLink.textContent())!;
+    expect(oldHome.startsWith(`${origin}/${slug}/`)).toBe(true);
+    expect(oldHome.slice(`${origin}/${slug}/`.length)).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    const shareUrl = `${oldHome}/rsvp`;
+    await expect(section.getByRole("link", { name: /Open RSVP page/ })).toHaveAttribute("href", shareUrl);
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin });
+    await section.getByRole("button", { name: "Copy link" }).click();
+    await expect(section.getByRole("status").filter({ hasText: "Link copied." })).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(oldHome);
     await page.screenshot({ path: test.info().outputPath("shared-rsvp-workspace.png"), fullPage: true });
 
     expectPrivate(await guestPage.goto(shareUrl));
@@ -117,11 +123,24 @@ test("one shared link collects separate named responses and can be replaced", as
     await expect(guestPage.getByRole("heading", { name: "RSVP is closed" })).toBeVisible();
     await expect(updated.getByText("Every link you shared before stops working, including your Save the Date.")).toBeVisible();
     await updated.getByLabel("Replace my guest link and stop every previously shared link from working").check();
-    await updated.getByRole("button", { name: "Replace shared link" }).click();
+    await updated.getByRole("button", { name: "Replace guest link" }).click();
     await expect(updated.getByRole("status").filter({ hasText: "including your Save the Date, no longer works" })).toBeVisible();
-    const replacement = await updated.getByLabel("Your shared RSVP link").inputValue();
-    expect(replacement).not.toBe(shareUrl);
-    expect(replacement).toMatch(new RegExp(`^/${slug}/[A-Za-z0-9_-]{43}/rsvp$`));
+    await expect(displayedLink).not.toHaveText(oldHome);
+    const newHome = (await displayedLink.textContent())!;
+    expect(newHome.slice(`${origin}/${slug}/`.length)).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    const replacement = `${newHome}/rsvp`;
+    // Replacing refreshes every owner display of the link, including the suggested share message.
+    for (const [name, heading] of [["Overview", "Alex & Morgan"], ["Publish", "Share your site"]]) {
+      await openSection(page, name);
+      await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+      await page.screenshot({ path: test.info().outputPath(`replaced-${name.toLowerCase()}.png`), fullPage: true });
+      const panel = page.locator("#guest-link");
+      await expect(panel.getByText(newHome, { exact: true })).toBeVisible();
+      await expect(panel.getByText("RSVPs off", { exact: true })).toBeVisible();
+      expect(await panel.getByLabel("Message to send").inputValue()).toContain(newHome);
+      expect(new URL((await panel.getByRole("link", { name: /Share on WhatsApp/ }).getAttribute("href"))!).searchParams.get("text")).toContain(newHome);
+      await expect(page.getByText(oldHome)).toHaveCount(0);
+    }
     // Every page under the old link now gives the same 404 as an unknown link.
     await guestPage.reload();
     await expect(guestPage.getByRole("heading", { name: "Page not found" })).toBeVisible();

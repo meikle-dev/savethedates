@@ -49,7 +49,8 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByLabel("Names in your guest link").fill(slug);
     await page.getByRole("button", { name: "Save link names" }).click();
     await expect(page.getByRole("status").filter({ hasText: "guest link names are saved" })).toBeVisible();
-    await expect(page.getByText(home, { exact: true })).toBeVisible();
+    await expect(page.getByText(new URL(home, baseURL).href, { exact: true })).toBeVisible();
+    await expect(page.locator("#guest-link")).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("payment-required.png"), fullPage: true });
     await page.goto("/dashboard/publish?checkout=cancelled");
     await expect(page.getByText("Checkout was cancelled", { exact: false })).toBeVisible();
@@ -98,12 +99,16 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByRole("checkbox", { name: /I understand that anyone with our guest link/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
     await expect(page.getByText("Your site is live for anyone with your guest link.")).toBeVisible();
+    await expect(page.locator("#guest-link").getByText(new URL(home, baseURL).href, { exact: true })).toBeVisible();
     expect((await guest.request.get(home)).status()).toBe(200);
 
     expect((await local.admin.from("stripe_payments").update({ expires_at: "2026-01-01T00:00:00Z" }).eq("payment_intent_id", paymentIntent)).error).toBeNull();
     await page.reload();
     await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
     await expect(page.getByText("The previous site period ended", { exact: false })).toBeVisible();
+    // Expired: no share panel or share actions, only the future link marked as not working.
+    await expect(page.locator("#guest-link")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Share on WhatsApp/ })).toHaveCount(0);
     await openWorkspaceSection(page, "Basics");
     await page.locator('[name="location"]').fill("Bristol");
     await page.getByRole("button", { name: "Save private draft" }).click();
@@ -128,6 +133,9 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await openWorkspaceSection(page, "Publish");
     await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
     await expect(page.getByText("This purchase was refunded", { exact: false })).toBeVisible();
+    // Revoked: no share panel or share actions.
+    await expect(page.locator("#guest-link")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^(Share|Copy)/ })).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("payment-refunded.png"), fullPage: true });
     expect((await guest.request.get(home)).status()).toBe(404);
   } finally {

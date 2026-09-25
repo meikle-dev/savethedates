@@ -17,5 +17,4 @@ export type RsvpState = {
   success?: boolean;
   message?: string;
   errors?: Record<string, string[] | undefined>;
-  shareUrl?: string;
 };

@@ -79,6 +79,13 @@
 .ws-responses strong { min-width: 0; margin-right: auto; font-weight: 600; overflow-wrap: anywhere; }
 .ws-responses time { color: var(--muted); font-size: 0.8125rem; }
 
+/* Guest link and sharing (F042). The full link wraps instead of scrolling, and one tap selects all of it. */
+.guest-link-url { margin-top: 1rem; padding: 0.85rem 1rem; border: 1px solid var(--line); border-radius: 10px; background: white; font-size: 0.875rem; line-height: 1.55; overflow-wrap: anywhere; -webkit-user-select: all; user-select: all; }
+.guest-link-url[data-pending] { border-style: dashed; background: transparent; color: var(--muted); -webkit-user-select: text; user-select: text; }
+.guest-share-message { resize: vertical; line-height: 1.5; }
+.guest-share-actions { display: grid; gap: 0.625rem; margin-top: 1rem; }
+#guest-link-title:focus { outline: none; }
+
 .ws-actions { display: grid; gap: 0.5rem; margin-top: 1rem; }
 .ws-actions .button { justify-content: flex-start; width: 100%; }
 .ws-empty { margin-top: 0.75rem; color: var(--muted); font-size: 0.875rem; line-height: 1.6; }
@@ -88,6 +95,7 @@
   .ws-stat { grid-template-columns: minmax(0, 1fr); }
   .ws-stat-icon { grid-row: auto; margin-bottom: 0.5rem; }
   .ws-panel { padding: 1.75rem; }
+  .guest-share-actions { display: flex; flex-wrap: wrap; }
   .ws-main { padding-inline: 1.5rem; }
   .ws-top { padding-inline: 1.5rem; }
   .ws-nav-bar { padding-inline: 1.5rem; }

@@ -15,6 +15,12 @@ export async function workspaceLink(page: Page, name: string) {
   return nav.getByRole("link", { name, exact: true });
 }
 
+/** Opens a section and waits until it is the current page, so later checks never run against the previous section. */
 export async function openWorkspaceSection(page: Page, name: string) {
-  await (await workspaceLink(page, name)).click();
+  const link = await workspaceLink(page, name);
+  const href = await link.getAttribute("href");
+  await link.click();
+  await expect(page).toHaveURL((url) => url.pathname === href);
+  // The phone section list closes after choosing, so match the link by CSS, which includes hidden elements.
+  await expect(page.getByRole("navigation", { name: "Workspace sections" }).locator(`a[href="${href}"]`)).toHaveAttribute("aria-current", "page");
 }

@@ -7,35 +7,37 @@ import { rotateSharedRsvp, saveRsvpSettings } from "./rsvp-actions";
 import { CopyLinkButton } from "./copy-link-button";
 import { Icon } from "./workspace-icons";
 
-export function RsvpManager({ enabled, closesOn, rsvpHref, live }: { enabled: boolean; closesOn: string | null; rsvpHref: string; live: boolean }) {
+// The RSVP section shows the same current guest link as Publish and the Overview. It keeps RSVP settings and link
+// replacement; replacing refreshes every workspace page, so this display comes from the page's props alone.
+export function RsvpManager({ enabled, closesOn, guestUrl, live }: { enabled: boolean; closesOn: string | null; guestUrl: string; live: boolean }) {
   const [settings, settingsAction, settingsPending] = useActionState<RsvpState, FormData>(saveRsvpSettings, {});
   const [rotated, rotateAction, rotatePending] = useActionState<RsvpState, FormData>(rotateSharedRsvp, {});
-  const shareUrl = rotated.shareUrl ?? rsvpHref;
 
   return <div className="ws-stack">
-    <section className="ws-panel" aria-labelledby="shared-rsvp-title">
-      <h2 id="shared-rsvp-title">One link for all guests</h2>
-      <p className="ws-panel-intro">Share this same private link with everyone. Guests enter their own names; only you can see responses. They should contact you if plans change.</p>
-      <div className="mt-5">
-        <label htmlFor="shared-rsvp-url" className="field-label">Your shared RSVP link</label>
-        <input id="shared-rsvp-url" className="field-input font-mono text-xs" value={shareUrl} readOnly onFocus={(event) => event.currentTarget.select()} />
-        <div className="mt-3 flex flex-wrap gap-3">
-          <CopyLinkButton href={shareUrl} label="Copy full link" className="button button-secondary" failure="We couldn’t copy the link. Select it above and copy it manually."><Icon name="link" /></CopyLinkButton>
-          <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="button button-secondary"><Icon name="external" />Open RSVP page<span className="sr-only"> (opens in a new tab)</span></a>
-        </div>
-        {!live && <p className="field-help">Works once your site is published.</p>}
-      </div>
-      <form action={rotateAction} className="mt-5 border-t border-[var(--line)] pt-5"><p className="text-sm leading-relaxed">Replacing gives your Save the Date, Details and RSVP pages a new private address. Every link you shared before stops working, including your Save the Date.</p><label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_rotate" value="yes" required /><span>Replace my guest link and stop every previously shared link from working</span></label><button className="button button-secondary mt-3" disabled={rotatePending}>{rotatePending ? "Replacing…" : "Replace shared link"}</button>{rotated.message && <p className={rotated.success ? "form-notice" : "form-error"} role={rotated.success ? "status" : "alert"}>{rotated.message}</p>}</form>
+    <section className="ws-panel" aria-labelledby="rsvp-link-title">
+      <h2 id="rsvp-link-title">Your guest link</h2>
+      <p className="ws-panel-intro">Share this one link with everyone. Guests enter their own names; only you can see responses. They should contact you if plans change.</p>
+      <p id="rsvp-guest-link" className="guest-link-url font-mono" data-pending={live ? undefined : ""} translate="no">{guestUrl}</p>
+      {live
+        ? <>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <CopyLinkButton value={guestUrl} label="Copy link" className="button button-secondary" failure="We couldn’t copy the link. Select it above and copy it manually."><Icon name="link" /></CopyLinkButton>
+            <a href={`${guestUrl}/rsvp`} target="_blank" rel="noopener noreferrer" className="button button-secondary"><Icon name="external" />Open RSVP page<span className="sr-only"> (opens in a new tab)</span></a>
+          </div>
+          <p className="field-help">For a ready-made message and WhatsApp sharing, open <Link href="/dashboard/publish" className="text-link">Publish</Link>.</p>
+        </>
+        : <p className="field-help"><span className="badge"><Icon name="lock" />Works once published</span></p>}
+      <form action={rotateAction} className="mt-5 border-t border-[var(--line)] pt-5"><p className="text-sm leading-relaxed">Replacing gives your Save the Date, Details and RSVP pages a new private address. Every link you shared before stops working, including your Save the Date.</p><label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_rotate" value="yes" required /><span>Replace my guest link and stop every previously shared link from working</span></label><button className="button button-secondary mt-3" disabled={rotatePending}>{rotatePending ? "Replacing…" : "Replace guest link"}</button>{rotated.message && <p className={rotated.success ? "form-notice" : "form-error"} role={rotated.success ? "status" : "alert"}>{rotated.message}</p>}</form>
     </section>
     <section className="ws-panel" aria-labelledby="rsvp-settings-title">
       <h2 id="rsvp-settings-title">RSVP settings</h2>
       <form action={settingsAction} noValidate className="mt-5">
-        <label className="details-toggle"><input name="rsvp_enabled" type="checkbox" defaultChecked={enabled} /><span><strong>Accept RSVPs</strong><span className="mt-1 block text-sm text-[var(--muted)]">Anyone with your shared private link can respond. Closing RSVP keeps saved responses.</span></span></label>
+        <label className="details-toggle"><input name="rsvp_enabled" type="checkbox" defaultChecked={enabled} /><span><strong>Accept RSVPs</strong><span className="mt-1 block text-sm text-[var(--muted)]">Anyone with your guest link can respond. Closing RSVP keeps saved responses.</span></span></label>
         <div className="mt-5 max-w-sm"><label htmlFor="rsvp_closes_on" className="field-label">Closing date <span className="font-normal text-[var(--muted)]">(optional)</span></label><input id="rsvp_closes_on" name="rsvp_closes_on" type="date" defaultValue={closesOn ?? ""} min="1900-01-01" max="2199-12-31" className="field-input" aria-invalid={!!settings.errors?.rsvp_closes_on} aria-describedby="rsvp-close-help" /><p id="rsvp-close-help" className={settings.errors?.rsvp_closes_on ? "field-error" : "field-help"}>{settings.errors?.rsvp_closes_on?.[0] ?? "Responses stay open through 23:59 UTC on this date."}</p></div>
         {settings.message && <p className={`mt-5 ${settings.success ? "form-notice" : "form-error"}`} role={settings.success ? "status" : "alert"}>{settings.message}</p>}
         <button className="button button-primary mt-5" disabled={settingsPending}>{settingsPending ? "Saving…" : "Save RSVP settings"}</button>
       </form>
     </section>
-    <div><Link href="/dashboard/preview/rsvp" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview RSVP page</Link><p className="field-help">Preview your saved names and wedding style. Your shared link above opens the live guest page once published.</p></div>
+    <div><Link href="/dashboard/preview/rsvp" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview RSVP page</Link><p className="field-help">Preview your saved names and wedding style. Your guest link above opens the live pages once published.</p></div>
   </div>;
 }

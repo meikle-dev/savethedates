@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040 and F043 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. F043 is Done (25 September). **Next: F042**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F042-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042 and F043 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. F043 and F042 are Done (25 September). **Next: F044**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F044-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -1301,7 +1301,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 ## F042 - One clear guest link and a useful publishing handoff
 
-**Status:** Ready (build after F043)
+**Status:** Done (25 September 2026)
 **Priority / lead:** P1, paid-launch gate / UX then Software Engineer; independent security review required.
 **Purpose:** Couples can confidently share one working link after publication.
 **Depends on:** F043 (single guest URL); F026, F027, F031 (Done).
@@ -1324,6 +1324,35 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Native Share and WhatsApp sharing are user initiated. Unsupported browsers keep the Copy actions. Cancelling isn't reported as a failure or a success. The shared message contains the full absolute guest link. Only the destination the couple chooses receives the link: no shortener, QR, analytics or other third-party service does.
 - The workspace presents only the guest link; no second "general" URL remains. Replacing the link refreshes every owner display. Metadata, logs and analytics never receive the secret through this feature.
 - Homepage wording consistently describes one private guest link. Owner/guest browser checks cover these states at mobile/desktop widths, relevant isolation tests and `npm.cmd run check` pass, and independent review closes.
+
+**Handoff (25 September 2026):** Done. Independent security review: **approve with fixes**, no Blocking findings; all five findings resolved.
+
+- **Built.**
+  - `src/features/workspace/guest-link-panel.tsx` is the one live panel, used by Publish and the Overview. It holds the absolute link, Live and RSVP badges, Open your site, the RSVP status, the "anyone with the link" warning, the editable message and Share / Share on WhatsApp / Copy message / Copy link.
+  - `share-message.ts` (with tests) holds `shareMessage`, `withGuestLink` (re-adds the full link if it was edited out), `whatsAppHref` (safe for unpaired surrogates) and `rsvpShareStatus`.
+  - `guestUrl()` in `guest-link.ts` builds the link. `workspace-data.ts` adds `currentGuestUrl` and `guestLinkShare`, which return the absolute link on `appOrigin()` (APP_ORIGIN, never the request Host) and return null unless the site is live.
+  - `copy-link-button.tsx` copies the exact value and exports `copyText`.
+  - Publish: the panel leads when live. The success notice sits in the panel, focus moves to its heading, and a later names save retires the notice. A draft shows the future link in a dashed box marked "Works once published".
+  - Overview: the panel follows the figures. The "Copy RSVP link" and "Open live site" quick actions are removed.
+  - RSVP: shows the same absolute link, with Copy link and Open RSVP page only while live. The button is renamed "Replace guest link". `rotateSharedRsvp` no longer returns the new URL; the refreshed pages show it.
+  - Wording updated on the Guests empty state and the example FAQ. The homepage already matched after F043.
+- **UX decisions.** Recorded in [site-ui.md: Guest link and sharing](overview/site-ui.md#guest-link-and-sharing-f042-25-september-2026). The docs also updated are `run-app-instructions.md` and `operations.md` (the APP_ORIGIN row).
+- **Review findings and resolutions.**
+  1. (Important) `openWorkspaceSection` did not wait for navigation, so the Publish checks ran against the Overview. The helper in `tests/helpers/workspace.ts` now waits for the section's URL and its `aria-current` link. The Publish checks in `dashboard.spec.ts` and `rsvp.spec.ts` also assert the "Share your site" heading. Re-inspected `publish-closed.png` and `replaced-publish.png`: both show the real Publish page, with the closed status and the new link respectively. No app change was needed.
+  2. (Minor) Request Host: a new `dashboard.spec.ts` test signs in through `http://localhost:3100` while APP_ORIGIN is `http://127.0.0.1:3100`. On Overview, Publish and RSVP the displayed, message and copied link all use `127.0.0.1:3100`.
+  3. (Minor) `whatsAppHref` replaced unpaired surrogates with U+FFFD before encoding. A unit test covers it.
+  4. (Minor) Formatting slips in `guest-link.ts` and `workspace-icons.tsx` restored.
+  5. (Minor) A later "Save link names" now retires the "published" notice. `publication.spec.ts` asserts it.
+- **Checks after the last change (25 September).**
+  - `npm.cmd run check` passed: lint, typecheck, Vitest 16 files/73 tests, build.
+  - `npx.cmd vitest run src/features/workspace/share-message.test.ts` passed: 6 tests.
+  - `npx.cmd playwright test tests/dashboard.spec.ts tests/rsvp.spec.ts tests/publication.spec.ts tests/payments.spec.ts` passed: 16 tests at desktop and mobile widths.
+  - Because the navigation helper is shared, `npx.cmd playwright test tests/account.spec.ts tests/details.spec.ts tests/motion.spec.ts tests/rsvp-preview.spec.ts tests/themes.spec.ts` was also run: 22 passed.
+  - `git diff --check` is clean.
+- **Checks before the review fixes.** Full `npm.cmd run test:e2e` passed 84/84. `npm.cmd run test:integration` passed 6 files/21 tests; it was not re-run because the fixes touched no data code. `npm.cmd run test:monitoring` passed 2 tests. Screenshots were inspected at 390px and 1440px: Publish live, draft and RSVP-closed; Overview live and RSVP-closed; Publish after replacement. Expired and refunded states are asserted in `payments.spec.ts` and `dashboard.spec.ts`.
+- **Not run.** The production-container `test:release` (it belongs to F041/F009). A real-device share sheet or WhatsApp: native Share is covered by a stubbed `navigator.share` for success, cancel and failure. The stale Docker development container on port 3000 was not rebuilt; the browser checks use their own server on port 3100.
+- **Deviations.** An expired site's Publish page still shows the future link marked "Works once published" next to the "period ended" alert (F043 behaviour). QR codes are deferred as planned.
+- **Next step.** F044.
 
 ## F043 - One secret guest URL for every wedding page
 

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection, workspaceLink } from "./helpers/workspace";
+import { formatWeddingDate } from "../src/features/weddings/wedding";
 
 const local = localSupabase();
 const sections = [
@@ -162,7 +163,20 @@ test("section navigation fits phones, tablets and desktops", async ({ page }) =>
   }
 });
 
-test("overview summarises the owner's own wedding and every section is reachable", async ({ page }) => {
+test("overview summarises the owner's own wedding and every section is reachable", async ({ page, baseURL }) => {
+  // A controllable native share sheet: "abort" behaves like the couple closing it, "fail" like a device error.
+  await page.addInitScript(() => {
+    const record = window as unknown as { shared: string[]; shareMode: string; shareCalls: number };
+    record.shared = [];
+    record.shareMode = "ok";
+    record.shareCalls = 0;
+    Object.defineProperty(Navigator.prototype, "share", { configurable: true, value: async (data: { text: string }) => {
+      record.shareCalls += 1;
+      if (record.shareMode === "abort") throw new DOMException("Share canceled", "AbortError");
+      if (record.shareMode === "fail") throw new DOMException("Not allowed", "NotAllowedError");
+      record.shared.push(data.text);
+    } });
+  });
   const email = `dashboard-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
   const other = await local.admin.auth.admin.createUser({ email: `dashboard-other-${crypto.randomUUID()}@example.test`, password, email_confirm: true });
@@ -199,8 +213,10 @@ test("overview summarises the owner's own wedding and every section is reachable
     await expect(checklist).toContainText("2 of 6 complete");
     await expect(checklist.getByRole("link", { name: /Open RSVPs \(done\)/ })).toHaveAttribute("href", "/dashboard/rsvp");
     await expect(checklist.getByRole("link", { name: /Purchase your site \(to do\)/ })).toHaveAttribute("href", "/dashboard/publish");
-    // The shared link only works once the site is live, so it is not offered on a draft.
-    await expect(overview.getByRole("button", { name: "Copy RSVP link" })).toHaveCount(0);
+    // The guest link only works once the site is live, so a draft offers no share panel or actions.
+    await expect(page.locator("#guest-link")).toHaveCount(0);
+    await expect(overview.getByRole("button", { name: /^(Share|Copy)/ })).toHaveCount(0);
+    await expect(overview.getByRole("link", { name: /Share on WhatsApp/ })).toHaveCount(0);
 
     const current = page.getByRole("navigation", { name: "Workspace sections" }).locator("a[aria-current='page']");
     for (const [name, path] of sections) {
@@ -223,13 +239,104 @@ test("overview summarises the owner's own wedding and every section is reachable
     await expect(page).toHaveURL(/\/dashboard$/);
     await page.reload();
     await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Published");
-    await expect(overview.getByRole("article", { name: "Site status" }).getByRole("link", { name: "Your guest link" })).toHaveAttribute("href", `/${slug}/${wedding.data!.rsvp_share_secret}`);
-    await expect(overview.getByRole("button", { name: "Copy RSVP link" })).toBeVisible();
+    await expect(overview.getByRole("article", { name: "Site status" }).getByRole("link", { name: "Share your guest link" })).toHaveAttribute("href", "#guest-link");
     await expect(overview.getByRole("article", { name: /RSVPs · open/ })).toContainText("3 responses");
     await expect(overview.getByRole("region", { name: "Setup checklist" })).toHaveCount(0);
-    await page.screenshot({ path: test.info().outputPath("dashboard-overview.png"), fullPage: true });
+    // F042: the live Overview leads with the same absolute guest link and share actions as Publish.
+    const guestLink = `${new URL(baseURL!).origin}/${slug}/${wedding.data!.rsvp_share_secret}`;
+    const panel = page.locator("#guest-link");
+    await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
+    await expect(panel.getByText("RSVPs open", { exact: true })).toBeVisible();
+    const message = `Save the date! Alex & Morgan are getting married on ${formatWeddingDate(daysFromToday(120))} at Bath. Details and RSVP here: ${guestLink}`;
+    await expect(panel.getByLabel("Message to send")).toHaveValue(message);
+    const share = panel.getByRole("button", { name: "Share", exact: true });
+    const feedback = panel.locator("[role=status], [role=alert]");
+    // Closing the share sheet is reported as neither success nor failure.
+    await page.evaluate(() => { (window as unknown as { shareMode: string }).shareMode = "abort"; });
+    await share.click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { shareCalls: number }).shareCalls)).toBe(1);
+    await expect(feedback).toHaveText([""]);
+    await page.evaluate(() => { (window as unknown as { shareMode: string }).shareMode = "fail"; });
+    await share.click();
+    await expect(panel.getByRole("alert")).toHaveText("Sharing didn’t work on this device. Use Copy message instead.");
+    await page.evaluate(() => { (window as unknown as { shareMode: string }).shareMode = "ok"; });
+    await share.click();
+    await expect(panel.getByRole("alert")).toHaveCount(0);
+    expect(await page.evaluate(() => (window as unknown as { shared: string[] }).shared)).toEqual([message]);
+    await expect(panel.getByRole("link", { name: /Share on WhatsApp/ })).toHaveClass(/button-secondary/);
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({ path: test.info().outputPath(`dashboard-overview-live-${width}.png`), fullPage: true });
+    }
+
+    // A past closing date keeps the link shareable, with the closed status stated explicitly.
+    expect((await local.admin.from("weddings").update({ rsvp_closes_on: daysFromToday(-2) }).eq("id", wedding.data!.id)).error).toBeNull();
+    await page.reload();
+    await expect(panel.getByText("RSVPs closed", { exact: true })).toBeVisible();
+    await expect(panel).toContainText(`RSVPs closed on ${formatWeddingDate(daysFromToday(-2))}. Guests can still view your site but can’t reply.`);
+    await expect(panel.getByLabel("Message to send")).toHaveValue(message.replace("Details and RSVP here", "Find out more"));
+    await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({ path: test.info().outputPath(`dashboard-overview-closed-${width}.png`), fullPage: true });
+    }
+    await openWorkspaceSection(page, "Publish");
+    await expect(page.getByRole("heading", { level: 1, name: "Share your site" })).toBeVisible();
+    await expect(panel.getByText("RSVPs closed", { exact: true })).toBeVisible();
+    await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
+    await page.screenshot({ path: test.info().outputPath("publish-closed.png"), fullPage: true });
+
+    // Expired access: the site is no longer live, so no panel or link is offered.
+    expect((await local.admin.from("stripe_payments").update({ expires_at: new Date(Date.now() - 60_000).toISOString() }).eq("wedding_id", wedding.data!.id)).error).toBeNull();
+    await page.goto("/dashboard");
+    await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Private draft");
+    await expect(panel).toHaveCount(0);
+    await expect(page.getByText(guestLink)).toHaveCount(0);
   } finally {
     await local.admin.auth.admin.deleteUser(ownerId);
     await local.admin.auth.admin.deleteUser(other.data.user!.id);
+  }
+});
+
+test("the guest link uses the configured origin, not the request host", async ({ browser, baseURL }) => {
+  // The app is configured for 127.0.0.1; the owner reaches it through a different host name for the same server.
+  const configured = new URL(baseURL!);
+  test.skip(configured.hostname !== "127.0.0.1", "Needs a local server configured for 127.0.0.1");
+  const otherHost = `${configured.protocol}//localhost:${configured.port}`;
+  const email = `dashboard-host-${crypto.randomUUID()}@example.test`;
+  const password = crypto.randomUUID();
+  const created = await local.admin.auth.admin.createUser({ email, password, email_confirm: true });
+  expect(created.error).toBeNull();
+  const ownerId = created.data.user!.id;
+  const slug = `host-${crypto.randomUUID()}`;
+  const context = await browser.newContext({ baseURL: otherHost });
+  const page = await context.newPage();
+  try {
+    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: daysFromToday(90), location: "Bath", slug }).select("id, rsvp_share_secret").single();
+    expect(wedding.error).toBeNull();
+    expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
+    expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
+    const guestLink = `${configured.origin}/${slug}/${wedding.data!.rsvp_share_secret}`;
+
+    await signIn(page, email, password);
+    await expect(page).toHaveURL(`${otherHost}/dashboard`);
+    await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: otherHost });
+    for (const path of ["/dashboard", "/dashboard/publish"]) {
+      await page.goto(path);
+      const panel = page.locator("#guest-link");
+      await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
+      expect(await panel.getByLabel("Message to send").inputValue()).toContain(guestLink);
+      await panel.getByRole("button", { name: "Copy link" }).click();
+      await expect(panel.getByRole("status").filter({ hasText: "Link copied." })).toBeVisible();
+      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(guestLink);
+      expect(await page.content()).not.toContain(`localhost:${configured.port}/${slug}`);
+    }
+    await page.goto("/dashboard/rsvp");
+    await expect(page.locator("#rsvp-guest-link")).toHaveText(guestLink);
+  } finally {
+    await context.close();
+    await local.admin.auth.admin.deleteUser(ownerId);
   }
 });

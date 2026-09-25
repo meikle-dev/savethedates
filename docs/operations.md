@@ -14,7 +14,7 @@ Build the existing Dockerfile's `production` target from the reviewed commit; ta
 
 | Runtime variable | Production value |
 | --- | --- |
-| `APP_ORIGIN` | Exact public HTTPS origin, without path or trailing slash; used for auth, checkout returns and search metadata |
+| `APP_ORIGIN` | Exact public HTTPS origin, without path or trailing slash; used for auth, checkout returns, search metadata and the guest links couples copy and share |
 | `SUPABASE_URL` | Chosen managed project's HTTPS API URL |
 | `SUPABASE_PUBLISHABLE_KEY` | Publishable key for that same project |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same project's server-only service-role key, used by the verified webhook |
