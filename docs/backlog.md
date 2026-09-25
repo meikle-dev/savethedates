@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F045 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F046**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F046-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F047**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F047-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
 
 ## Status and handoff rules
 
@@ -1458,7 +1458,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 ## F046 - Clear progress and save controls in the workspace
 
-**Status:** Ready
+**Status:** Done (25 September 2026)
 **Priority / lead:** P1, paid-launch gate / UX then Software Engineer.
 **Purpose:** Couples can finish setup and understand what a save makes visible.
 **Depends on:** F013, F017, F027 (Done).
@@ -1470,6 +1470,8 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Photo buttons use unambiguous labels. Details save/hidden/live status is clear before and after submission; existing stored visibility is preserved unless explicitly changed.
 - At 320px, mobile with the keyboard open, and desktop, the sticky action does not cover fields, errors or focus targets. Failed saves retain all entered values and errors; successful saves use the existing single submission and server ownership enforcement.
 - Targeted workspace/form E2E checks and `npm.cmd run check` pass; inspect keyboard and mobile/desktop layouts. No separate independent review unless implementation changes data/security architecture.
+
+**Handoff:** Basics now distinguishes missing and invalid dates, gives a nonblocking past-date note, and offers Design only after a successful first save. Details places its saved visibility and single show/hide control with the save action; phones keep that action at the bottom, with a short-viewport flow fallback. Time examples and photo-framing button labels are clearer. No schema, ownership or security architecture changed. UX decisions are in `docs/overview/site-ui.md`; targeted browser coverage is in `tests/dashboard.spec.ts` and `tests/details.spec.ts`. `npm.cmd run check` passed (lint, typecheck, 77 unit tests, production build); with `E2E_BASE_URL=http://127.0.0.1:3000`, `npx.cmd playwright test tests/dashboard.spec.ts tests/details.spec.ts --grep 'Basics explains|owner edits and previews Details' --reporter=line` passed 4/4 desktop/mobile. Inspected Basics and Details screenshots at mobile/desktop, including 320px and a 320×500 short viewport; no horizontal overflow or covered focused field in those checks. The development app was recreated after stale Next.js CSS output and remains running. No independent review was required. Real on-screen keyboard and device/browser checks remain F049. Blockers: None. Next: F047.
 
 ## F047 - Distinguishable pages and safe site identity
 

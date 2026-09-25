@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { saveDraft } from "./actions";
 import type { Draft } from "./validation";
@@ -13,9 +14,13 @@ const fields = [
 ] as const;
 
 export function DraftForm({ initial, published = false }: { initial: Draft; published?: boolean }) {
+  const [firstSave] = useState(() => !initial.first_name);
   const [values, setValues] = useState(initial);
   const [state, action, pending] = useActionState<FormState, FormData>(saveDraft, {});
   const [dirty, setDirty] = useState(false);
+  const today = new Date().toISOString().slice(0, 10);
+  const date = values.wedding_date;
+  const pastDate = !!today && /^\d{4}-\d{2}-\d{2}$/.test(date) && !Number.isNaN(Date.parse(`${date}T12:00:00Z`)) && date < today;
   function change(name: keyof Draft, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
     setDirty(true);
@@ -24,8 +29,9 @@ export function DraftForm({ initial, published = false }: { initial: Draft; publ
     <div className="grid gap-x-6 gap-y-6 md:grid-cols-2">
       {fields.map((field) => <div key={field.name}>
         <label htmlFor={field.name} className="field-label">{field.label} <span className="font-normal text-[var(--muted)]">(required)</span></label>
-        <input className="field-input" id={field.name} name={field.name} type={"type" in field ? field.type : "text"} maxLength={"max" in field ? field.max : undefined} min={field.name === "wedding_date" ? "1900-01-01" : undefined} max={field.name === "wedding_date" ? "2199-12-31" : undefined} autoComplete={field.autoComplete} required value={values[field.name]} onChange={(event) => change(field.name, event.target.value)} aria-invalid={!!state.errors?.[field.name]} aria-describedby={state.errors?.[field.name] ? `${field.name}-error` : undefined} />
+        <input className="field-input" id={field.name} name={field.name} type={"type" in field ? field.type : "text"} maxLength={"max" in field ? field.max : undefined} min={field.name === "wedding_date" ? "1900-01-01" : undefined} max={field.name === "wedding_date" ? "2199-12-31" : undefined} autoComplete={field.autoComplete} required value={values[field.name]} onChange={(event) => change(field.name, event.target.value)} aria-invalid={!!state.errors?.[field.name]} aria-describedby={[state.errors?.[field.name] && `${field.name}-error`, field.name === "wedding_date" && pastDate && "wedding_date-warning"].filter(Boolean).join(" ") || undefined} />
         {state.errors?.[field.name] && <p id={`${field.name}-error`} className="field-error">{state.errors[field.name]?.[0]}</p>}
+        {field.name === "wedding_date" && pastDate && <p id="wedding_date-warning" className="field-help">This date has passed. Check it before you share your site.</p>}
       </div>)}
     </div>
     <div className="mt-6">
@@ -34,6 +40,7 @@ export function DraftForm({ initial, published = false }: { initial: Draft; publ
       <p id="message-help" className={state.errors?.message ? "field-error" : "field-help"}>{state.errors?.message?.[0] ?? `${values.message.length} / 500 characters. A short welcome for your guests.`}</p>
     </div>
     {state.message && !(state.success && dirty) && <p className={`mt-6 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
+    {firstSave && state.success && !dirty && <Link href="/dashboard/design" className="button button-secondary mt-4">Next: choose your style <span aria-hidden="true">→</span></Link>}
     <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
       <button className="button button-primary sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live changes" : "Save private draft"}</button>
       {dirty && <p className="text-sm text-[var(--muted)]">You have unsaved changes.</p>}

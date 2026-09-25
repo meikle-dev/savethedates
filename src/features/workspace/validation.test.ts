@@ -9,6 +9,11 @@ describe("draft validation", () => {
   it.each(["2027-02-29", "2027-02-30", "2027-13-01", "1899-01-01", "", "tomorrow"])("rejects invalid date %s", (wedding_date) => {
     expect(draftSchema.safeParse({ ...valid, wedding_date }).success).toBe(false);
   });
+  it("explains a missing date separately and permits a past date with a warning in the form", () => {
+    expect(draftSchema.safeParse({ ...valid, wedding_date: "" }).error?.flatten().fieldErrors.wedding_date).toContain("Choose your wedding date.");
+    expect(draftSchema.safeParse({ ...valid, wedding_date: "2027-02-29" }).error?.flatten().fieldErrors.wedding_date).toContain("Choose a valid date between 1900 and 2199.");
+    expect(draftSchema.safeParse({ ...valid, wedding_date: "2020-01-01" }).success).toBe(true);
+  });
   it("rejects missing names and overlong content", () => {
     for (const invalid of [{ first_name: " " }, { second_name: "x".repeat(81) }, { location: "" }, { message: "x".repeat(501) }]) {
       expect(draftSchema.safeParse({ ...valid, ...invalid }).success).toBe(false);

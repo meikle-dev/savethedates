@@ -49,6 +49,57 @@ test("sections require an owner and a saved wedding", async ({ page }) => {
   }
 });
 
+test("Basics explains date errors, saves a first wedding, and treats later edits as edits", async ({ page }) => {
+  const email = `dashboard-basics-${crypto.randomUUID()}@example.test`;
+  const password = crypto.randomUUID();
+  const created = await local.admin.auth.admin.createUser({ email, password, email_confirm: true });
+  expect(created.error).toBeNull();
+  const ownerId = created.data.user!.id;
+  const date = page.getByLabel("Wedding date");
+  const next = page.getByRole("link", { name: "Next: choose your style" });
+  try {
+    await signIn(page, email, password);
+    await expect(page).toHaveURL(/\/dashboard\/basics$/);
+    await page.getByLabel("Your name").fill("Alex");
+    await page.getByLabel("Your partner’s name").fill("Morgan");
+    await page.getByLabel("Wedding location").fill("Bath");
+
+    await page.getByRole("button", { name: "Save private draft" }).click();
+    await expect(page.locator("#wedding_date-error")).toHaveText("Choose your wedding date.");
+    await expect(next).toHaveCount(0);
+    expect((await local.admin.from("weddings").select("id").eq("owner_id", ownerId)).data).toHaveLength(0);
+
+    await date.fill("1800-01-01");
+    await page.getByRole("button", { name: "Save private draft" }).click();
+    await expect(page.locator("#wedding_date-error")).toHaveText("Choose a valid date between 1900 and 2199.");
+    await expect(next).toHaveCount(0);
+    await expect(page.getByLabel("Your name")).toHaveValue("Alex");
+
+    const futureDate = daysFromToday(120);
+    await date.fill(futureDate);
+    await page.getByRole("button", { name: "Save private draft" }).click();
+    await expect(page.getByText("Your private draft has been saved.", { exact: true })).toBeVisible();
+    await expect(next).toHaveAttribute("href", "/dashboard/design");
+    await expect(page).toHaveURL(/\/dashboard\/basics$/);
+    await expect.poll(async () => (await local.admin.from("weddings").select("wedding_date").eq("owner_id", ownerId).single()).data?.wedding_date).toBe(futureDate);
+    if (test.info().project.name === "mobile") await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.screenshot({ path: test.info().outputPath("basics-first-save.png"), fullPage: test.info().project.name === "desktop" });
+
+    await page.reload();
+    await expect(next).toHaveCount(0);
+    await expect(date).toHaveValue(futureDate);
+    const pastDate = daysFromToday(-30);
+    await date.fill(pastDate);
+    await expect(page.getByText("This date has passed. Check it before you share your site.")).toBeVisible();
+    await page.getByRole("button", { name: "Save private draft" }).click();
+    await expect(page.getByText("Your private draft has been saved.", { exact: true })).toBeVisible();
+    await expect(next).toHaveCount(0);
+    await expect.poll(async () => (await local.admin.from("weddings").select("wedding_date").eq("owner_id", ownerId).single()).data?.wedding_date).toBe(pastDate);
+  } finally {
+    await local.admin.auth.admin.deleteUser(ownerId);
+  }
+});
+
 test("section navigation fits phones, tablets and desktops", async ({ page }) => {
   const email = `dashboard-nav-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();

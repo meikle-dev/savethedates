@@ -40,6 +40,10 @@ export function DetailsForm({ initial, published }: { initial: WeddingDetails; p
   const [values, setValues] = useState(state.values ?? initial);
   const [dirty, setDirty] = useState(false);
   const [appliedState, setAppliedState] = useState(state);
+  const savedVisible = state.success && state.values ? state.values.details_enabled : initial.details_enabled;
+  const savedVisibility = savedVisible
+    ? published ? "Saved Details are visible on your live site." : "Saved Details will appear when you publish."
+    : "Saved Details are hidden from guests.";
   if (appliedState !== state) {
     setAppliedState(state);
     if (state.values) setValues(state.values);
@@ -62,19 +66,13 @@ export function DetailsForm({ initial, published }: { initial: WeddingDetails; p
     const form = new FormData(event.currentTarget);
     startTransition(() => action(form));
   }
-  return <form onSubmit={submit} className="mt-7" noValidate>
+  return <form onSubmit={submit} className="details-form mt-7" noValidate>
     <input type="hidden" name="faqs" value={JSON.stringify(values.faqs)} />
-    <label className="details-toggle">
-      <input name="details_enabled" type="checkbox" checked={values.details_enabled} aria-invalid={!!state.errors?.details_enabled} aria-describedby={state.errors?.details_enabled ? "details-enabled-help details-enabled-error" : "details-enabled-help"} onChange={(event) => { setValues((current) => ({ ...current, details_enabled: event.target.checked })); setDirty(true); }} />
-      <span><strong>Show Details page</strong><span id="details-enabled-help" className="mt-1 block text-sm text-[var(--muted)]">Guests can open it only when your wedding site is published. Turning this off keeps your saved information private.</span></span>
-    </label>
-    {state.errors?.details_enabled && <p id="details-enabled-error" className="field-error" role="alert">{state.errors.details_enabled[0]}</p>}
-
     <fieldset className="details-editor-group">
       <legend>Ceremony</legend>
       <p className="field-help mt-2 mb-5">You can enter any venue, including a private home or rural location. Add a shared pin link if useful, and explain how to arrive in Travel and transport below.</p>
       <div className="grid gap-5 md:grid-cols-2">
-        <TextField name="ceremony_time" label="Time" value={values.ceremony_time} error={state.errors?.ceremony_time} onChange={change} />
+        <TextField name="ceremony_time" label="Time" value={values.ceremony_time} error={state.errors?.ceremony_time} onChange={change} help="For example, 2:30 pm." />
         <TextField name="ceremony_venue" label="Venue" value={values.ceremony_venue} error={state.errors?.ceremony_venue} onChange={change} />
         <TextField name="ceremony_address" label="Address" value={values.ceremony_address} error={state.errors?.ceremony_address} onChange={change} help="Include the town and postcode when available. Check the entrance guests should use." />
         <TextField name="ceremony_url" label="Directions link" value={values.ceremony_url} error={state.values?.ceremony_url === values.ceremony_url ? state.errors?.ceremony_url : undefined} onChange={change} url help="Paste a map link or the venue’s directions. Check the destination and entrance before saving." checkLabel="Check ceremony directions" />
@@ -85,7 +83,7 @@ export function DetailsForm({ initial, published }: { initial: WeddingDetails; p
       <legend>Reception</legend>
       <p className="field-help mt-2 mb-5">You can enter any venue, including a private home or rural location. Add a shared pin link if useful, and explain how to arrive in Travel and transport below.</p>
       <div className="grid gap-5 md:grid-cols-2">
-        <TextField name="reception_time" label="Time" value={values.reception_time} error={state.errors?.reception_time} onChange={change} />
+        <TextField name="reception_time" label="Time" value={values.reception_time} error={state.errors?.reception_time} onChange={change} help="For example, from 6 pm." />
         <TextField name="reception_venue" label="Venue" value={values.reception_venue} error={state.errors?.reception_venue} onChange={change} />
         <TextField name="reception_address" label="Address" value={values.reception_address} error={state.errors?.reception_address} onChange={change} help="Include the town and postcode when available. Check the entrance guests should use." />
         <TextField name="reception_url" label="Directions link" value={values.reception_url} error={state.values?.reception_url === values.reception_url ? state.errors?.reception_url : undefined} onChange={change} url help="Paste a map link or the venue’s directions. Check the destination and entrance before saving." checkLabel="Check reception directions" />
@@ -124,10 +122,19 @@ export function DetailsForm({ initial, published }: { initial: WeddingDetails; p
     </fieldset>
 
     {state.message && !(state.success && dirty) && <p className={`mt-6 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
-    <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center">
-      <button className="button button-primary sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live Details" : "Save Details"}</button>
-      <Link href="/dashboard/preview/details" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview saved Details</Link>
-      {dirty && <p className="text-sm text-[var(--muted)]">You have unsaved Details changes.</p>}
+    <div className="details-save-area mt-7">
+      <label className="details-toggle">
+        <input name="details_enabled" type="checkbox" checked={values.details_enabled} aria-invalid={!!state.errors?.details_enabled} aria-describedby={state.errors?.details_enabled ? "details-enabled-help details-enabled-error" : "details-enabled-help"} onChange={(event) => { setValues((current) => ({ ...current, details_enabled: event.target.checked })); setDirty(true); }} />
+        <span><strong>Show Details page</strong><span id="details-enabled-help" className="mt-1 block text-sm text-[var(--muted)]">Guests can open it only when your wedding site is published. Turning this off keeps your saved information private.</span></span>
+      </label>
+      {state.errors?.details_enabled && <p id="details-enabled-error" className="field-error" role="alert">{state.errors.details_enabled[0]}</p>}
+      <p className="details-saved-status mt-2 text-sm" role="status">{savedVisibility}</p>
+      {values.details_enabled !== savedVisible && <p className="field-help">Save to apply this visibility change.</p>}
+      <div className="details-save-action mt-3">
+        <button className="button button-primary sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live Details" : "Save Details"}</button>
+        {dirty && <p className="text-sm text-[var(--muted)]">You have unsaved Details changes.</p>}
+      </div>
     </div>
+    <Link href="/dashboard/preview/details" prefetch={false} className="button button-secondary mt-5"><Icon name="eye" />Preview saved Details</Link>
   </form>;
 }

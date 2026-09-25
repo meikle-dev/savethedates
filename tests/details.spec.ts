@@ -36,12 +36,18 @@ test("owner edits and previews Details while guests see only enabled published c
     await expect(page).toHaveURL(/\/dashboard\/details$/);
     const section = page.getByRole("region", { name: "Wedding Details" });
     await expect(section).toBeVisible();
+    const saveArea = section.locator(".details-save-area");
+    await expect(saveArea).toHaveCount(1);
+    await expect(saveArea.getByLabel("Show Details page")).not.toBeChecked();
+    await expect(saveArea).toContainText("Saved Details are hidden from guests.");
+    await expect(saveArea.getByRole("button", { name: "Save live Details" })).toBeVisible();
     await section.getByRole("link", { name: "Preview saved Details" }).click();
     await expect(page.getByText("No details have been saved yet.")).toBeVisible();
     await expect(page.getByText("hidden from guests")).toBeVisible();
     await page.getByRole("link", { name: "Back to workspace" }).click();
 
     await section.getByLabel("Show Details page").check();
+    await expect(saveArea).toContainText("Save to apply this visibility change.");
     let directionRequests = 0;
     await page.context().route("https://example.test/**", (route) => {
       directionRequests += 1;
@@ -63,8 +69,26 @@ test("owner edits and previews Details while guests see only enabled published c
     await section.getByRole("button", { name: "Save live Details" }).click();
     await expect(section.getByText(/Please check the highlighted fields/)).toBeVisible();
     await expect(section.getByLabel("Show Details page")).toBeChecked();
+    await expect(saveArea).toContainText("Saved Details are hidden from guests.");
     await expect(section.getByText("You have unsaved Details changes.")).toBeVisible();
     await expect(section.getByLabel("Travel and transport")).toHaveValue("A shuttle leaves the station at 12:45pm.");
+    if (test.info().project.name === "mobile") {
+      const originalViewport = page.viewportSize()!;
+      await page.setViewportSize({ width: 320, height: 700 });
+      await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await expect(saveArea.getByRole("button", { name: "Save live Details" })).toBeInViewport();
+      expect(await saveArea.evaluate((element) => getComputedStyle(element).position)).toBe("fixed");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.setViewportSize({ width: 320, height: 500 }); // A short phone viewport approximates an open keyboard.
+      expect(await saveArea.evaluate((element) => getComputedStyle(element).position)).toBe("static");
+      await section.getByLabel("Answer 1").focus();
+      await expect(section.getByLabel("Answer 1")).toBeFocused();
+      const answerBox = (await section.getByLabel("Answer 1").boundingBox())!;
+      const saveBox = (await saveArea.boundingBox())!;
+      expect(answerBox.y + answerBox.height).toBeLessThanOrEqual(Math.min(saveBox.y, 500) + 1);
+      await page.setViewportSize(originalViewport);
+    }
     await section.locator('input[name="ceremony_url"]').fill("https://example.test/ceremony");
     const checkLink = section.getByRole("link", { name: "Check ceremony directions (opens in a new tab)" });
     await expect(checkLink).toHaveAttribute("target", "_blank");
@@ -86,13 +110,16 @@ test("owner edits and previews Details while guests see only enabled published c
     await expect(section.getByText("You have unsaved Details changes.")).toBeVisible();
     await section.getByLabel("Answer 1").fill("Please check your invitation.");
     await section.getByRole("button", { name: "Save live Details" }).click();
-    await expect(section.getByRole("status")).toContainText("shown on your live site");
+    await expect(section.getByText("Your Details page is saved and shown on your live site.")).toBeVisible();
+    await expect(saveArea).toContainText("Saved Details are visible on your live site.");
     await expect(section.getByLabel("Show Details page")).toBeChecked();
     await expect(section.getByText("You have unsaved Details changes.")).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("details-workspace.png"), fullPage: true });
     if (test.info().project.name === "mobile") {
       await page.setViewportSize({ width: 320, height: 700 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await page.screenshot({ path: test.info().outputPath("details-save-320.png") });
       await section.locator("fieldset", { has: page.getByText("Ceremony", { exact: true }) }).screenshot({ path: test.info().outputPath("details-ceremony-320.png") });
     }
 
@@ -128,7 +155,7 @@ test("owner edits and previews Details while guests see only enabled published c
     await manualSection.locator('input[name="ceremony_url"]').clear();
     await expect(manualSection.getByRole("link", { name: "Check ceremony directions (opens in a new tab)" })).toHaveCount(0);
     await manualSection.getByRole("button", { name: "Save live Details" }).click();
-    await expect(manualSection.getByRole("status")).toContainText("shown on your live site");
+    await expect(manualSection.getByText("Your Details page is saved and shown on your live site.")).toBeVisible();
     await manualSection.getByRole("link", { name: "Preview saved Details" }).click();
     await expect(page.getByText("The Old Hall, Bath BA1 1AA")).toBeVisible();
     await expect(page.getByRole("link", { name: "Directions to the ceremony" })).toHaveCount(0);
@@ -143,7 +170,8 @@ test("owner edits and previews Details while guests see only enabled published c
     await expect(updatedSection.getByLabel("Show Details page")).toBeChecked();
     await updatedSection.getByLabel("Show Details page").uncheck();
     await updatedSection.getByRole("button", { name: "Save live Details" }).click();
-    await expect(updatedSection.getByRole("status")).toContainText("hidden from guests");
+    await expect(updatedSection.getByText("Your Details page is saved and hidden from guests.")).toBeVisible();
+    await expect(updatedSection.locator(".details-save-area")).toContainText("Saved Details are hidden from guests.");
     await expect(updatedSection.getByLabel("Show Details page")).not.toBeChecked();
     await page.reload();
     await expect(page.getByRole("region", { name: "Wedding Details" }).getByLabel("Show Details page")).not.toBeChecked();

@@ -103,9 +103,9 @@ export function PhotoFramingEditor({ theme, framing, published }: { theme: Weddi
         </label>)}
       </div>
       <div className="mt-6 flex flex-wrap gap-3">
-        <button type="submit" className="button button-primary" disabled={pending}>{pending ? "Saving framing…" : `Save ${pageLabels[page]} framing`}</button>
-        <button type="button" className="button button-quiet" disabled={pending} onClick={() => change(defaultPhotoFrame(page))}>Reset</button>
-        <button type="button" className="button button-quiet" disabled={pending} onClick={() => change(saved.current[page])}>Cancel</button>
+        <button type="submit" className="button button-primary" disabled={pending}>{pending ? "Saving framing…" : `Save framing for ${pageLabels[page]}`}</button>
+        <button type="button" className="button button-quiet" disabled={pending} onClick={() => change(defaultPhotoFrame(page))}>Reset to default crop</button>
+        <button type="button" className="button button-quiet" disabled={pending} onClick={() => change(saved.current[page])}>Revert to saved crop</button>
       </div>
       {state.message && (!state.success || state.page === page) && <p className={`mt-4 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
     </form>
