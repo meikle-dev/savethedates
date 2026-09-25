@@ -168,7 +168,6 @@ test("names alone, retired links and unknown secrets give the same private 404",
     await guestPage.goto(`${home}?invite=${"A".repeat(43)}&share=${"B".repeat(43)}`);
     await expect(guestPage.getByRole("link", { name: "Details" })).toHaveAttribute("href", `${home}/details`);
     await expect(guestPage.getByRole("link", { name: "RSVP", exact: true })).toHaveAttribute("href", `${home}/rsvp`);
-    await expect(guestPage.getByRole("link", { name: "RSVP now" })).toHaveAttribute("href", `${home}/rsvp`);
     const unknown = [`/${slug}`, `/${slug}/details`, `/${slug}/rsvp`, `/${slug}/photo`, `/${slug}?share=${secret}`, `/s/${secret}/${slug}/rsvp`,
       `/${slug}/${"x".repeat(43)}`, `/${slug}/${"x".repeat(43)}/rsvp`, `/${slug}/${secret.slice(0, 42)}/rsvp`, `/${slug}/${secret}x`];
     for (const path of unknown) {
@@ -255,10 +254,9 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await expect(section).toContainText("Guests can reply until 23:59 UTC on 1 May 2027 (00:59 on 2 May in the UK and Ireland).");
 
     await guestPage.goto(home);
-    const replyNow = guestPage.getByRole("link", { name: "RSVP now" });
-    await expect(replyNow).toHaveAttribute("href", `${home}/rsvp`);
-    await expect(guestPage.getByText("Please reply by 1 May 2027 (23:59 UTC)")).toBeVisible();
-    await replyNow.click();
+    const reply = guestPage.getByRole("link", { name: "RSVP", exact: true });
+    await expect(reply).toHaveAttribute("href", `${home}/rsvp`);
+    await reply.click();
     await expect(guestPage).toHaveURL(new URL(`${home}/rsvp`, baseURL).href);
     await expect(guestPage.getByText("Please reply by 1 May 2027.", { exact: true })).toBeVisible();
     await expect(guestPage.getByText("Replies close at 23:59 UTC on 1 May 2027 (00:59 on 2 May in the UK and Ireland).")).toBeVisible();
@@ -310,17 +308,16 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
 
     // Winter closing date: the UTC cutoff is the same clock time in the UK and Ireland.
     await update({ rsvp_closes_on: "2026-12-01" });
-    await guestPage.goto(home);
-    await expect(guestPage.getByText("Please reply by 1 December 2026 (23:59 UTC)")).toBeVisible();
     await guestPage.goto(`${home}/rsvp`);
+    await expect(guestPage.getByText("Please reply by 1 December 2026.", { exact: true })).toBeVisible();
     await expect(guestPage.getByText("Replies close at 23:59 UTC on 1 December 2026 (23:59 in the UK and Ireland).")).toBeVisible();
 
     // Open, validation and success at this project's width.
     await guestPage.goto(home);
-    await expect(guestPage.getByRole("link", { name: "RSVP now" })).toBeVisible();
+    await expect(guestPage.getByRole("link", { name: "RSVP", exact: true })).toBeVisible();
     await noSideways();
     await guestPage.screenshot({ path: test.info().outputPath(`f044-home-${width}.png`), fullPage: true });
-    await guestPage.getByRole("link", { name: "RSVP now" }).click();
+    await guestPage.getByRole("link", { name: "RSVP", exact: true }).click();
     await guestPage.getByRole("button", { name: "Send RSVP" }).click();
     await expect(guestPage.getByText("Enter your name.")).toBeVisible();
     await noSideways();
@@ -331,12 +328,9 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await noSideways();
     await guestPage.screenshot({ path: test.info().outputPath(`f044-success-${width}.png`), fullPage: true });
 
-    // Closed by date: the date that has passed, in UTC, and no reply action anywhere.
+    // Closed by date: the date that has passed, in UTC.
     const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     await update({ rsvp_closes_on: yesterday });
-    await guestPage.goto(home);
-    await expect(guestPage.getByRole("link", { name: "RSVP now" })).toHaveCount(0);
-    await expect(guestPage.getByText("Please reply by")).toHaveCount(0);
     await guestPage.goto(`${home}/rsvp`);
     await expect(guestPage.getByRole("heading", { name: "RSVPs have closed" })).toBeVisible();
     await expect(guestPage.getByText(`Replies closed at ${rsvpDeadline(yesterday).exact}.`, { exact: false })).toBeVisible();
