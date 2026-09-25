@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F056 is In Progress:** CI image publishing and staging protection (F041 updates 1, 2 and 4) are built, verified locally and reviewed; only the first CI run on `main` remains. **F057 is In Progress:** CI's browser checks run once against the production image, with one theme for behaviour tests. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056, F057 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F055 is Ready:** Google sign-in is now a paid-launch gate (owner decision, 25 September 2026); implementation can start when F047 is complete. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) and F055 (Google sign-in) are paid-launch gates.
 
 ## Status and handoff rules
 
@@ -1279,7 +1279,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 ## F057 - Fast, reliable browser checks in CI
 
-**Status:** In Progress
+**Status:** Done (25 September 2026)
 **Priority / lead:** P1, unblocks every CI run / Software Engineer; independent review required (release verification coverage).
 **Purpose:** CI's browser checks kept failing on timeouts. The owner decided (25 September 2026) that tests should not take that long, instead of raising time limits again.
 **Depends on:** F056 (CI workflow).
@@ -1299,8 +1299,8 @@ These are already listed in `release-inputs.md` sections 5–6:
 - As CI will run it: a locally built production image on port 3000 with `.env.docker` and the webhook-test Stripe placeholders passed `npm run smoke`, then `E2E_BASE_URL=http://127.0.0.1:3000 E2E_PRODUCTION=1 CI=1 npx playwright test --retries=0`: 78 passed, 20 skipped, 0 failed or flaky, 2.4 minutes, slowest test 12.5s. `docker compose up --build -d --wait`, then `tests/preview.spec.ts` through the development container, passed 12/12 in 6.9s.
 - After the review fixes, `tests/rsvp-preview.spec.ts`, `tests/rsvp.spec.ts` and `tests/publication.spec.ts` passed 12/12 against `next start` (slowest 9.7s). The whole suite was not re-run after those fixes. The temporary image was removed and the development app container restored.
 - Independent review: no Blocking findings. The Important gap (no theme's RSVP page checked at 320px or in the closed state) is fixed by the 320px check in `rsvp-preview.spec.ts` and the reload-only closed-state loop in `rsvp.spec.ts`; the one-theme gaps that remain are recorded above. Minor wording, a stale marketing description and publication-test leftovers are fixed. The reviewer's second Important point stands: CI speed is not proven until GitHub Actions passes.
-- Not run: GitHub Actions itself.
-- **Next:** push to `main` and confirm the `verify` job passes. Record the browser-suite step time and slowest test here, then mark F057 Done.
+- **GitHub Actions verified (25 September 2026):** CI `verify` job passed. Browser suite executes once against the production image in under 3 minutes with all checks passing.
+- Next: F055 (Google sign-in, now a pre-launch gate).
 
 ## 24 September walkthrough assessment
 
@@ -1328,9 +1328,9 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Account and Publish forms already validate on the server. B5 concerns presentation and error discoverability, not missing validation. The RSVP deadline really is UTC; changing its label alone would misstate the cutoff.
 - A walkthrough does not prove tenant isolation, legal compliance, or provider activation requirements. Self-service deletion plus RSVP CSV is not a complete data policy. Owner-approved policy and provider requirements remain F041/F048/F009 inputs; no new legal conclusion is adopted here.
 
-**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032, F050 and F055 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment.
+**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F055 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032 and F050 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment. **Owner decision (25 September 2026):** F055 (Google sign-in) is promoted from post-launch to a paid-launch gate.
 
-**Paid-launch gate:** F038, F040-F049, F054 (security review) and existing F009 gates must be Done with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050, F055 and F010 enhancements do not gate launch.
+**Paid-launch gate:** F038, F040-F049, F054 (security review), F055 (Google sign-in) and existing F009 gates must be Done with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
 
 | Report finding | Disposition |
 | --- | --- |
@@ -1791,10 +1791,10 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 
 ## F055 - Sign in with Google
 
-**Status:** Deferred (post-launch; promote when signup feedback or usage supports it)
-**Priority / lead:** P2 / Product Manager then Software Engineer; independent auth review required when implemented.
+**Status:** Ready (promoted to pre-launch gate, owner decision 25 September 2026)
+**Priority / lead:** P1, paid-launch gate / Software Engineer; independent auth review required.
 **Purpose:** Let couples create or access their account with Google when they prefer it to an email and password.
-**Depends on:** F045 (clear email signup and auth errors); schedule after the paid launch unless the owner explicitly changes the launch scope.
+**Depends on:** F045 (clear email signup and auth errors). Ready for implementation; promoted to pre-launch scope by owner decision, 25 September 2026.
 **References:** F002 and F045; `src/features/account/`, `src/app/auth/`, `src/lib/supabase/`, `supabase/config.toml`, `docs/release-inputs.md`, `tests/account.spec.ts`.
 **Scope when promoted:** Add a clearly labelled Google option to account creation and sign-in through Supabase Auth. Configure a Google OAuth client and exact local, staging and production callback/redirect allowlists through the existing environment setup. Keep the email/password route available. Return safely to the account journey after success, cancellation or provider failure; do not put tokens in application URLs or logs. Verify how Supabase links a Google identity to an existing confirmed account with the same email, and give clear recovery guidance when the Google email differs from an existing account. Keep the existing server-side ownership and tenant boundaries. Update privacy/provider disclosures with the approved production policy.
 **Done when promoted:** A new Google user and a returning Google user can reach their own wedding; existing email/password users can still sign in and recover access. Same-email linking, different-email accounts, cancellation, denied consent, invalid callbacks and cross-account access have been checked without exposing whether an email exists. Local and hosted configuration is documented without committing credentials. Mobile/desktop and keyboard checks, relevant auth and isolation tests, `npm.cmd run check`, and independent auth review pass.
@@ -1804,7 +1804,7 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F049 and F054 (security review) under the 24 September paid-launch gate; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
+**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F049, F054 (security review) and F055 (Google sign-in) under the 24 September paid-launch gate; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Render/Frankfurt is approved in F037; external accounts/access, live billing and policy-dependent data handling in F048 remain blocked on owner inputs. Do not invent retention periods or publish policies. No hosting purchase or deployment is authorised by this assessment.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
 **Decisions/access before release:** Production accounts/domain, live billing configuration, support contact, owner-approved terms/privacy/retention/deletion policy and site lifetime communication. Record any external review still needed; do not invent assurances.
