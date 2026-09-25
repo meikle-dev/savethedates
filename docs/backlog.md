@@ -2007,6 +2007,16 @@ Record items 1–3 in `release-inputs.md` section 3.
 - Current blockers (updated 24 September): missing source/commercial permission for the F034-F036 supplied botanicals/backdrops (`public/assets/wedding/README.md`); host/domain and managed-service accounts/access (Render/Frankfurt selection is already Done in F037); live billing/release authority; support/incident ownership and approved terms/privacy/retention/deletion rules including payment records, logs and backups. F048 owns the unfinished approved data process. F041 owns setup/policy pages; F049 owns the browser/accessibility evidence. Recovery objectives, Storage backup/restore and rollback drills, final independent release review and actual production release remain outstanding. Next: follow the 24 September queue (F040 Done; F038 next) while external inputs are pending; then complete hosted verification and recovery before an authorised release. F009 stays In Progress. F023, F032/F033, F039, F050 and F010 enhancements are not additional release gates.
 - Carried from F040: on staging, repeat the photo-memory check. Send five near-simultaneous 25 MP uploads while a published page receives about 10 req/s, then record peak memory, guest p95 and whether the service restarted. Compare against `docs/operations.md` (Memory and photo uploads).
 
+## F060 - Wedding invitations with RSVP
+
+**Status:** Deferred
+**Priority / lead:** Post-launch / Product Manager to scope, then Software Engineer.
+**Purpose:** Let couples send a separate wedding invitation, sent closer to the day, that carries the RSVP — matching how Save the Date, Details and RSVP work in real weddings rather than bundling RSVP into the Save the Date notification.
+**Context:** [save-the-date.tsx](../src/features/weddings/save-the-date.tsx) briefly linked directly to RSVP from the Save the Date page (added 25 September 2026); the owner reviewed and removed it the same day, since a Save the Date is a notify-only announcement and RSVP belongs with an invitation instead. This entry captures that follow-up as a real feature rather than leaving it undocumented.
+**Depends on:** F006, F026 (RSVP, Done); schedule after launch (F009).
+**Open decisions before Ready:** Is an invitation a fourth guest page type, a variant of the existing RSVP page, or a timed unlock of the existing RSVP link? Does it need its own content (ceremony/reception specifics, formal wording) distinct from Details? Does publishing an invitation change when/whether the RSVP link becomes reachable from Save the Date or Details? Any new owner controls (send date, reminder) needed, or is manual sharing of the link sufficient as today?
+**Done when promoted:** Acceptance criteria defined by Product Manager once the above decisions are resolved; must preserve tenant isolation and the private-link model, keep the three themes equivalent, and not reintroduce an RSVP link on the Save the Date page.
+
 ## F010 - Post-launch extensions
 
 **Status:** Deferred
