@@ -87,8 +87,12 @@ test("couples write, preview and share an optional invitation that follows their
     await expect(card.getByText(/^Kindly reply by /)).toBeVisible();
     await expect(card.getByRole("link", { name: /Reply online/ })).toHaveAttribute("href", `${home}/rsvp`);
     // The action is a link styled as a light-text button: its keyboard focus ring must use the theme accent, not white.
-    await card.getByRole("link", { name: /Reply online/ }).focus();
-    expect(await card.getByRole("link", { name: /Reply online/ }).evaluate((link) => getComputedStyle(link).outlineColor)).not.toBe("rgb(255, 255, 255)");
+    // Reach it by keyboard: after a mouse click, Chromium doesn't treat programmatic focus as :focus-visible.
+    const reply = card.getByRole("link", { name: /Reply online/ });
+    await reply.focus();
+    await guestPage.keyboard.press("Shift+Tab");
+    await guestPage.keyboard.press("Tab");
+    expect(await reply.evaluate((link) => [link.matches(":focus-visible"), getComputedStyle(link).outlineColor])).toEqual([true, expect.not.stringMatching(/^rgb\(255, 255, 255\)$/)]);
     await expect(guestPage.getByRole("link", { name: "Travel, accommodation and more" })).toHaveCount(0);
     expect(await fitsWidth(guestPage)).toBe(true);
 
