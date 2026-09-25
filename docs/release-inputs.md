@@ -45,7 +45,7 @@ Google sign-in (F055) was reopened for staging by the owner on 26 September 2026
 - [x] Google Cloud project and OAuth client owner (F055): `Ross (owner); Cloud project "SaveTheDates" (project ID savethedates)`
 - [ ] Google OAuth clients created for staging and production: `staging only (client "SaveTheDates staging"); no production client`
 - [ ] Google consent screen name: `Testing mode, not published. Only rmeikle55@gmail.com is added as a test user. Staging URLs to enter (temporary): Homepage https://savethedates-staging.onrender.com/, Privacy https://savethedates-staging.onrender.com/privacy, Terms https://savethedates-staging.onrender.com/terms. For production, replace them with https://savethedates.co.uk/, /privacy and /terms (see F041, "To update later")`
-- [ ] Google sign-in tested on staging with disposable Google accounts: `no — configured but not yet exercised (only the owner's own test-user account can sign in while unpublished)`. Record each result in the F055 handoff:
+- [ ] Google sign-in tested on staging with disposable Google accounts: `partly — the owner confirmed Google sign-in works on staging (25 September 2026); the individual checklist results below were not recorded`. Record each result in the F055 handoff:
   - a new Google user creates an account and reaches Basics; signing in again returns to the same wedding;
   - a confirmed email/password user signs in with Google (same email) and reaches their existing wedding, and their password still works;
   - pre-account takeover: sign up with email/password but leave it unconfirmed, then sign in with Google using that address. The old password and old confirmation link must then be rejected;
@@ -59,22 +59,22 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` and `${APP_ORIGI
 - [x] Stripe account/business owner: `Ross (owner). Reused the existing "Equimarket sandbox" account, renamed to SaveTheDates (Account Name field — Stripe had no separate Branding display name), rather than a new account`
 - [ ] Production price confirmed: `GBP 29 one-off / other: `
 - [x] Site lifetime confirmed (F022): `6 months after wedding date, fixed when checkout begins, for checkout attempts created after the F024 change is deployed. Purchases and checkout attempts already created retain their frozen 12-month expiry.`
-- [ ] Refund policy approved: `draft at /refunds (14-day full refund, then if the site doesn't work); awaiting owner approval`
+- [x] Refund policy approved: `/refunds (14-day full refund, then if the site doesn't work); approved by the owner, 25 September 2026`
 - [ ] Production Stripe account is separate from test account: `n/a — still one account, live mode not activated`
 - [x] Webhook endpoint domain: `Staging (test mode) only: https://savethedates-staging.onrender.com/api/stripe/webhook. No live-mode endpoint yet`
 - [ ] Live Checkout activation authorised: `no — deferred until there's a reviewable production site`
 - [ ] Live secret key available securely: `n/a — not created`
 - [ ] Live webhook signing secret available securely: `n/a — not created`
-- [ ] Test-mode staging checkout verified: `no — keys and webhook are set on staging Render, but a real test Checkout hasn't been run yet`
+- [x] Test-mode staging checkout verified: `yes — owner completed a real Stripe test Checkout on staging, 25 September 2026 (after the F061 fixes)`
 - [ ] Refund/dispute handling verified: `yes / no`
 
 The webhook endpoint is `${APP_ORIGIN}/api/stripe/webhook`. Required events are documented in [operations.md](operations.md).
 
 ## 5. Customer and legal policies
 
-- [ ] Terms of service approved: `draft at /terms (26 September 2026); awaiting owner approval`
-- [ ] Privacy notice approved: `draft at /privacy (26 September 2026), includes the Google sign-in wording; awaiting owner approval`
-- [ ] Data controller/business identity: `drafted as "Ross Meikle in the United Kingdom"; owner to confirm (or a business name)`
+- [x] Terms of service approved: `/terms, approved by the owner, 25 September 2026`
+- [x] Privacy notice approved: `/privacy, includes the Google sign-in wording; approved by the owner, 25 September 2026`
+- [x] Data controller/business identity: `Ross Meikle in the United Kingdom (approved with the legal text, 25 September 2026)`
 - [ ] Support process and response target: `
 - [ ] Site expiry wording approved: `
 - [ ] Data retention period after expiry: `
