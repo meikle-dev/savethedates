@@ -104,7 +104,8 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
 
     expect((await local.admin.from("stripe_payments").update({ expires_at: "2026-01-01T00:00:00Z" }).eq("payment_intent_id", paymentIntent)).error).toBeNull();
     await page.reload();
-    await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
+    // Expiry keeps the wedding marked published but offline; only a refund or dispute unpublishes it.
+    await expect(page.getByText("Your published site is offline because its purchase is no longer active.")).toBeVisible();
     await expect(page.getByText("The previous site period ended", { exact: false })).toBeVisible();
     // Expired: no share panel or share actions, only the future link marked as not working.
     await expect(page.locator("#guest-link")).toHaveCount(0);

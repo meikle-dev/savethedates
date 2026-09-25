@@ -1,5 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { themes } from "../src/features/weddings/themes";
+
+// Crawlers read a fresh document. After a client-side click from the indexable homepage, a slow browser can keep the
+// homepage's robots tag in the head beside the new one, so check the served HTML instead of the navigated DOM.
+async function servedRobots(page: Page, path: string) {
+  const html = await (await page.request.get(path)).text();
+  return [...html.matchAll(/<meta name="robots" content="([^"]*)"/g)].map((match) => match[1]);
+}
 
 test("marketing leads to signup and accurately explains price, visibility and RSVP", async ({ page }) => {
   const response = await page.goto("/");
@@ -27,7 +34,7 @@ test("marketing leads to signup and accurately explains price, visibility and RS
   await createLinks.first().click();
   await expect(page).toHaveURL(/\/account\/sign-up$/);
   await expect(page.getByLabel("Email address")).toBeVisible();
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  expect(await servedRobots(page, "/account/sign-up")).toEqual(["noindex, nofollow"]);
   await page.goto("/");
   await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: /Sign in/ }).click();
   await expect(page).toHaveURL(/\/account\/sign-in$/);
@@ -41,7 +48,7 @@ test("all public examples use fictional content, working Details and noindex", a
     await expect(page.getByRole("link", { name: "Create your save the date" })).toHaveAttribute("href", "/account/sign-up");
     await expect(page.getByText("Fictional wedding example")).toBeVisible();
     await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    expect(await servedRobots(page, `/examples/${theme}`)).toEqual(["noindex, nofollow"]);
     await expect(page.getByRole("img")).toHaveJSProperty("naturalWidth", 1400);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: test.info().outputPath(`${theme}-example.png`), fullPage: true });
