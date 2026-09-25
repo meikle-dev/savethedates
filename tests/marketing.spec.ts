@@ -41,6 +41,8 @@ test("marketing leads to signup and accurately explains price, visibility and RS
 });
 
 test("all public examples use fictional content, working Details and noindex", async ({ page }) => {
+  // Twelve themes, each with two full-page screenshots, against the development server.
+  test.setTimeout(120_000);
   for (const { id: theme, name } of themes) {
     await page.goto("/#themes");
     await page.getByRole("link", { name: new RegExp(`${name}.*Explore this example`) }).click();
@@ -48,7 +50,6 @@ test("all public examples use fictional content, working Details and noindex", a
     await expect(page.getByRole("link", { name: "Create your save the date" })).toHaveAttribute("href", "/account/sign-up");
     await expect(page.getByText("Fictional wedding example")).toBeVisible();
     await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
-    expect(await servedRobots(page, `/examples/${theme}`)).toEqual(["noindex, nofollow"]);
     await expect(page.getByRole("img")).toHaveJSProperty("naturalWidth", 1400);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: test.info().outputPath(`${theme}-example.png`), fullPage: true });
@@ -62,6 +63,8 @@ test("all public examples use fictional content, working Details and noindex", a
     await page.getByRole("link", { name: "All themes", exact: false }).click();
     await expect(page).toHaveURL(/\/#themes$/);
   }
+  // Fetched together once every example has compiled, so the check adds little time.
+  for (const robots of await Promise.all(themes.map(({ id }) => servedRobots(page, `/examples/${id}`)))) expect(robots).toEqual(["noindex, nofollow"]);
   expect((await page.goto("/examples/unknown"))?.status()).toBe(404);
   expect((await page.goto("/examples/minimal/rsvp"))?.status()).toBe(404);
 });

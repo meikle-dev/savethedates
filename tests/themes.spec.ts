@@ -9,7 +9,8 @@ const themeIds = themes.map(({ id }) => id);
 
 const local = localSupabase();
 test("theme preview is private and applying preserves the live wedding", async ({ page, browser, baseURL }) => {
-  test.setTimeout(90_000);
+  // Previews every theme; this took up to 1.3 minutes on the CI runner's development server.
+  test.setTimeout(150_000);
   const email = `themes-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
   const { data, error } = await local.admin.auth.admin.createUser({ email, password, email_confirm: true });
