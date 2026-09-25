@@ -2,11 +2,14 @@
 import { formatWeddingDate, rsvpDeadline } from "../weddings/wedding";
 import type { RsvpAvailability } from "./workspace-summary";
 
-type MessageInput = { firstName: string; secondName: string; date: string; location: string; url: string; rsvpOpen: boolean };
+type MessageInput = { firstName: string; secondName: string; date: string; location: string; url: string; rsvpOpen: boolean; invitation?: boolean };
 
-export function shareMessage({ firstName, secondName, date, location, url, rsvpOpen }: MessageInput) {
+// F060: while the Invitation page is on, the suggested message invites rather than announces.
+export function shareMessage({ firstName, secondName, date, location, url, rsvpOpen, invitation = false }: MessageInput) {
   const place = location.trim().replace(/[\s.]+$/, "");
-  return `Save the date! ${firstName} & ${secondName} are getting married on ${formatWeddingDate(date)}${place ? ` at ${place}` : ""}. ${rsvpOpen ? "Details and RSVP here" : "Find out more"}: ${url}`;
+  const news = `${firstName} & ${secondName} are getting married on ${formatWeddingDate(date)}${place ? ` at ${place}` : ""}.`;
+  if (invitation) return `You’re invited! ${news} ${rsvpOpen ? "Your invitation and RSVP" : "Your invitation"}: ${url}`;
+  return `Save the date! ${news} ${rsvpOpen ? "Details and RSVP here" : "Find out more"}: ${url}`;
 }
 
 const escaped = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

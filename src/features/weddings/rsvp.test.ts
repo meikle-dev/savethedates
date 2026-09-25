@@ -37,6 +37,7 @@ describe("RSVP validation", () => {
     const token = "A".repeat(43);
     expect(guestHrefs("alex-and-morgan", token)).toEqual({
       home: `/alex-and-morgan/${token}`,
+      invitation: `/alex-and-morgan/${token}/invitation`,
       details: `/alex-and-morgan/${token}/details`,
       rsvp: `/alex-and-morgan/${token}/rsvp`,
     });

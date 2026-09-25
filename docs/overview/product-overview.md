@@ -14,7 +14,7 @@ savethedates.co.uk/chloeandross/<guest-secret>
 
 The long secret makes every link unique and unguessable. Guests open the link rather than type it. The couple chooses the readable names part at the start, which doesn't need to be unique and can be changed at any time.
 
-The guest-facing experience is intentionally simple and is built around three core features.
+The guest-facing experience is intentionally simple. It's built around the Save the Date, plus three optional pages the couple switches on as they need them: Invitation (F060), Wedding Details and RSVP. Couples sending printed invitations simply leave the Invitation off.
 
 ---
 
@@ -73,6 +73,18 @@ The couple should be able to publish only the information relevant to their wedd
 
 ---
 
+## Invitation (optional, F060)
+
+Example:
+
+```text
+savethedates.co.uk/chloeandross/<guest-secret>/invitation
+```
+
+A formal invitation card in the wedding's theme. It shows the couple's names, the date with its weekday, the ceremony time, venue and address (shared with Details), and three optional lines the couple writes: an opening line, the invitation wording (a standard phrase when empty) and an afterwards line. While RSVPs are on, it asks guests to reply by the closing date and links to RSVP. It never opens RSVPs itself. The page is off until the couple switches it on; there's no scheduled sending.
+
+---
+
 ## 3. RSVP
 
 Example:
@@ -112,9 +124,11 @@ The guest journey should remain intentionally simple:
 ```text
 Save the Date
       ↓
-Wedding Details
+Invitation (optional)
       ↓
-RSVP
+Wedding Details (optional)
+      ↓
+RSVP (optional)
 ```
 
 Guests should not need to create accounts or learn how to use the platform.

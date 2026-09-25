@@ -126,9 +126,10 @@ Themes must not behave like separate products.
 
 The underlying:
 
-* Landing Page
-* Details
-* RSVP
+* Landing Page (Save the Date)
+* Invitation (optional, F060)
+* Details (optional)
+* RSVP (optional)
 
 features remain consistent across themes.
 
@@ -188,6 +189,26 @@ F019 makes the guest RSVP an editorial invitation. A small rule and heart lead i
 
 
 F025 extends this to three distinct RSVP designs chosen by the existing whole-site theme. Modern Minimal uses an olive-and-linen paper photograph, a spaced editorial heading and a fine double-rule ivory card, with its vector olive sprig above the introduction. Warm & Romantic retains its rose photograph and centred invitation. Modern & Bold uses dark sculptural foliage, a citrus heading and a split desktop layout with the introduction to the left of an offset pale response panel; its action is citrus with dark teal text. At 900px and below, both new designs return to a single column with solid colours and lightweight vector artwork; none of the three desktop raster backdrops is requested. Opaque cards protect the form if artwork fails. All invitation states use these same compositions. The private RSVP preview uses the shared preview toolbar to switch designs, distinguishes current from unapplied themes, and reuses Apply theme to persist the whole-site choice with the existing live-update notice. Preview controls never submit guest responses.
+
+## Wedding invitation (F060, 25 September 2026)
+
+The Invitation is an optional fourth guest page, off until the couple switches it on. It has no photo: it's a formal card, and it reuses each theme's RSVP surround (`rsvp-shell`, `rsvp-main`, `rsvp-card`), so every theme's backdrop, paper card, borders and botanical accents apply unchanged. A couple can change theme without touching their invitation.
+
+- **Above the card:** the theme's small ornament and a kicker, "You’re invited". There's no large heading here, because the names are the page heading.
+- **The card, centred, in reading order:**
+  - the card's botanical divider;
+  - the host line (optional), small and letter-spaced;
+  - the couple's names as the single `h1`, in the theme heading font (the largest text, wrapping cleanly for long names);
+  - the invitation wording (the saved text, or "request the pleasure of your company at their wedding"), in the heading font at reading size;
+  - a fine rule;
+  - the date with its weekday ("Monday 14 June 2027"), then the ceremony time as entered;
+  - the venue, then the address. The Basics location is used when no address is saved;
+  - the afterwards line (optional), in italics.
+- **Reply block:** shown only while RSVPs are on, below a rule. "Kindly reply by <date>" appears when a closing date is set; otherwise "Kindly reply online". Then the full-width **Reply online** action, styled like the RSVP submit, links to RSVP.
+- **Details link:** while Details is on, a quiet underlined "Travel, accommodation and more" link to it closes the card. It sits inside the card because some themes' surrounds are dark or photographic.
+- **Layout:** phones use one column with full-width actions; desktop keeps the centred card at the RSVP card's width. Themes that place the RSVP card beside a desktop backdrop (Alcantara, Countryside) do the same here. Empty optional lines are omitted without leaving gaps.
+- **Navigation:** the order is Save the date · Invitation · Details · RSVP, with each link shown only while its page is on. The Save the Date page has no reply button of its own.
+- **Examples:** marketing examples show the invitation with fictional wording, and the owner preview matches the guest page exactly.
 
 ## Additional themes (F034)
 

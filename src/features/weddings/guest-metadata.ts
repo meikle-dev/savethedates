@@ -1,10 +1,10 @@
 import "server-only";
 import type { Metadata } from "next";
 import { marketingOrigin } from "@/features/marketing/metadata";
-import { guestWedding, guestWeddingDetails } from "./published";
+import { guestWedding, guestWeddingDetails, guestWeddingInvitation } from "./published";
 import { formatWeddingDate } from "./wedding";
 
-type GuestPage = "home" | "details" | "rsvp";
+type GuestPage = "home" | "invitation" | "details" | "rsvp";
 
 const unavailable: Metadata = {
   title: "Page not found | SaveTheDates",
@@ -13,7 +13,7 @@ const unavailable: Metadata = {
 
 export async function guestMetadata(secret: string, page: GuestPage): Promise<Metadata> {
   const wedding = await guestWedding(secret);
-  if (!wedding || (page === "details" && !await guestWeddingDetails(secret))) return unavailable;
+  if (!wedding || (page === "details" && !await guestWeddingDetails(secret)) || (page === "invitation" && !await guestWeddingInvitation(secret))) return unavailable;
 
   const names = `${wedding.first_name} & ${wedding.second_name}`;
   const date = formatWeddingDate(wedding.wedding_date);
@@ -23,7 +23,7 @@ export async function guestMetadata(secret: string, page: GuestPage): Promise<Me
     height: 630,
     alt: "Save the Date invitation card",
   };
-  const pageTitle = page === "home" ? "Save the Date" : page === "details" ? "Details" : "RSVP";
+  const pageTitle = { home: "Save the Date", invitation: "Invitation", details: "Details", rsvp: "RSVP" }[page];
 
   return {
     title: `${pageTitle} · ${names} | SaveTheDates`,

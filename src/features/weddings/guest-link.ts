@@ -13,11 +13,11 @@ export const reservedNames = new Set([
   "s", "contact", "refunds", "assets", "fonts", "digital-save-the-date",
 ]);
 
-export type GuestHrefs = { home: string; details: string; rsvp: string };
+export type GuestHrefs = { home: string; invitation: string; details: string; rsvp: string };
 
 export function guestHrefs(names: string, secret: string): GuestHrefs {
   const home = `/${names}/${secret}`;
-  return { home, details: `${home}/details`, rsvp: `${home}/rsvp` };
+  return { home, invitation: `${home}/invitation`, details: `${home}/details`, rsvp: `${home}/rsvp` };
 }
 
 /** The absolute guest link couples see, copy and share, always on the configured application origin (APP_ORIGIN). */

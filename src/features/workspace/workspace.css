@@ -208,3 +208,8 @@
   .guest-controls { grid-template-columns: minmax(0, 1fr) minmax(16rem, 24rem); align-items: end; }
   .guest-search { justify-items: stretch; }
 }
+/* F060: Overview guest pages. The dot repeats the status text; colour is never the only signal. */
+.ws-page-dot { flex-shrink: 0; width: 0.6rem; height: 0.6rem; border: 1.5px solid #9aa8a6; border-radius: 50%; }
+.ws-page-dot[data-on="true"] { border-color: var(--sage); background: var(--sage); }
+.ws-page-status { margin-left: auto; color: var(--muted); font-size: 0.8125rem; text-align: right; }
+.ws-row-link > .ws-page-status + svg:last-child { margin-left: 0; }

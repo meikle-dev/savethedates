@@ -7,7 +7,7 @@ import { AttendanceBadge } from "@/features/workspace/attendance-badge";
 import { GuestLinkPanel } from "@/features/workspace/guest-link-panel";
 import { Icon } from "@/features/workspace/workspace-icons";
 import { guestLinkShare, loadLatestResponses, loadResponseTotals, loadWorkspace, rsvpReadiness } from "@/features/workspace/workspace-data";
-import { daysUntil, setupSteps, todayUtc, type RsvpAvailability } from "@/features/workspace/workspace-summary";
+import { daysUntil, guestPageStatuses, setupSteps, todayUtc, type RsvpAvailability } from "@/features/workspace/workspace-summary";
 
 export const metadata: Metadata = { title: "Overview · SaveTheDates" };
 
@@ -32,7 +32,8 @@ export default async function Overview() {
   const days = daysUntil(wedding.wedding_date, today);
   const rsvp = rsvpReadiness(wedding, live, offline);
   const availability = rsvp.availability;
-  const steps = setupSteps({ ...detailsSchema.parse(wedding), photo_path: wedding.photo_path, rsvp_enabled: wedding.rsvp_enabled }, entitlement.active, live);
+  const steps = setupSteps({ ...detailsSchema.parse(wedding), photo_path: wedding.photo_path, rsvp_enabled: wedding.rsvp_enabled, invitation_enabled: wedding.invitation_enabled }, entitlement.active, live);
+  const pages = guestPageStatuses(wedding, availability, live);
   const completed = steps.filter((step) => step.done).length;
   const setupComplete = steps.every((step) => step.done || step.optional);
   // The guest link only works while the site is live, so drafts and expired sites get no share panel.
@@ -103,12 +104,28 @@ export default async function Overview() {
             </li>)}</ul>}
         </section>
       </div>
-      <section aria-labelledby="actions-title" className="ws-panel">
-        <h2 id="actions-title">Quick actions</h2>
-        <div className="ws-actions">
-          <Link href="/dashboard/preview" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview your site</Link>
-        </div>
-      </section>
+      <div className="ws-stack">
+        <section aria-labelledby="pages-title" className="ws-panel">
+          <h2 id="pages-title">Guest pages</h2>
+          <p className="ws-panel-intro">Your guest link opens every page that’s on. Only Save the Date is required.</p>
+          <ul className="ws-checklist">
+            {pages.map((page) => <li key={page.id}>
+              <Link href={page.href} className="ws-row-link">
+                <span className="ws-page-dot" data-on={page.on} aria-hidden="true" />
+                <span>{page.label}</span>
+                <span className="ws-page-status">{page.status}</span>
+                <Icon name="chevron" className="size-4" />
+              </Link>
+            </li>)}
+          </ul>
+        </section>
+        <section aria-labelledby="actions-title" className="ws-panel">
+          <h2 id="actions-title">Quick actions</h2>
+          <div className="ws-actions">
+            <Link href="/dashboard/preview" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview your site</Link>
+          </div>
+        </section>
+      </div>
     </div>
   </section>;
 }

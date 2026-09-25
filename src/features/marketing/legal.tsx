@@ -76,7 +76,7 @@ export function TermsOfService() {
     <section aria-labelledby="about"><h2 id="about">About these terms</h2>
       <p>SaveTheDates (savethedates.co.uk) is run by {operatorName} in the United Kingdom. By creating an account you agree to these terms and to our <Link href={legalPaths.privacy}>privacy notice</Link>. You must be 18 or over. Questions: <Email />.</p></section>
     <section aria-labelledby="service"><h2 id="service">The service</h2>
-      <p>You can create an account, draft your wedding site and preview every theme for free. To publish, you pay £29 once for one wedding site. That includes Save the Date, Details and RSVP pages, one guest link and your guest replies.</p>
+      <p>You can create an account, draft your wedding site and preview every theme for free. To publish, you pay £29 once for one wedding site. That includes Save the Date, Invitation, Details and RSVP pages, one guest link and your guest replies.</p>
       <p>A paid site stays published until six months after the wedding date saved when you start checkout. Changing the date later doesn’t change that end date. After it, guests can no longer open the site, but your private draft and replies stay in your account.</p></section>
     <section aria-labelledby="content"><h2 id="content">Your content</h2>
       <p>You keep ownership of everything you add. You allow us to store it and show it to anyone who has your guest link, only to provide the service.</p>

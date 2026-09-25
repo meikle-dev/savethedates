@@ -47,10 +47,10 @@ void everyOperationHasFailure;
 /** Route templates, never concrete paths: concrete paths can contain secrets and slugs. */
 export type LogRoute =
   | "/[names]/[secret]/photo" | "/account/[screen]" | "/api/stripe/webhook" | "/auth/callback" | "/auth/confirm" | "/dashboard"
-  | "/dashboard/basics" | "/dashboard/design" | "/dashboard/details" | "/dashboard/photo" | "/dashboard/preview" | "/dashboard/publish"
+  | "/dashboard/basics" | "/dashboard/design" | "/dashboard/details" | "/dashboard/invitation" | "/dashboard/photo" | "/dashboard/preview" | "/dashboard/publish"
   | "/dashboard/guests" | "/dashboard/rsvp" | "/[names]/[secret]/rsvp";
 export type LogLevel = "debug" | "info" | "warn" | "error";
-export type WorkspaceSection = "basics" | "details" | "theme" | "photo_framing" | "rsvp_settings" | "guest_link";
+export type WorkspaceSection = "basics" | "details" | "invitation" | "theme" | "photo_framing" | "rsvp_settings" | "guest_link";
 export type LogFields = {
   ownerId?: string;
   weddingId?: string;
@@ -88,7 +88,7 @@ const shared: SharedState = ((globalThis as { __saveTheDatesLogging?: SharedStat
   failures: new WeakMap(),
 });
 const { storage, failures } = shared;
-const sections = new Set<string>(["basics", "details", "theme", "photo_framing", "rsvp_settings", "guest_link"]);
+const sections = new Set<string>(["basics", "details", "invitation", "theme", "photo_framing", "rsvp_settings", "guest_link"]);
 const code = /^[A-Za-z0-9_.:-]{1,80}$/;
 
 const isProduction = () => process.env.NODE_ENV === "production";

@@ -5,12 +5,13 @@ import { publicClient } from "@/lib/supabase/public";
 import type { WeddingTheme } from "./themes";
 import type { Wedding } from "./wedding";
 import { detailsSchema, type WeddingDetailsPage } from "./details";
+import type { InvitationPage } from "./invitation";
 import { guestHrefs, guestSecretPattern } from "./guest-link";
 import { parsePhotoFraming, type PhotoFraming } from "./photo-framing";
 
 export type WeddingContent = { first_name: string; second_name: string; wedding_date: string; location: string; message: string; photo_path: string | null; photo_framing: unknown; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean };
 // rsvp_closes_on is projected only while RSVP is enabled (null otherwise), so guests are never shown an inactive date.
-export type GuestWedding = WeddingContent & { slug: string; rsvp_open: boolean; rsvp_closes_on: string | null };
+export type GuestWedding = WeddingContent & { slug: string; rsvp_open: boolean; rsvp_closes_on: string | null; invitation_enabled: boolean };
 
 export function toWedding(row: WeddingContent, photoUrl: string): Wedding {
   return { theme: row.theme, names: [row.first_name, row.second_name], date: row.wedding_date, location: row.location, message: row.message,
@@ -31,7 +32,7 @@ export const guestWedding = cache(async (secret: string): Promise<GuestWedding |
  * Resolves a guest page. Unknown, replaced, unpublished and expired links all give the same 404; an outdated or
  * altered names part redirects to the current one so renaming never breaks a shared link.
  */
-export async function requireGuestWedding(names: string, secret: string, page: "home" | "details" | "rsvp", onRejected?: (reason: "malformed_secret" | "unknown_secret") => void) {
+export async function requireGuestWedding(names: string, secret: string, page: "home" | "invitation" | "details" | "rsvp", onRejected?: (reason: "malformed_secret" | "unknown_secret") => void) {
   const wedding = await guestWedding(secret);
   if (!wedding) {
     onRejected?.(guestSecretPattern.test(secret) ? "unknown_secret" : "malformed_secret");
@@ -54,4 +55,14 @@ export const guestWeddingDetails = cache(async (secret: string): Promise<(Weddin
     theme: data.theme as WeddingTheme,
     photoFraming: parsePhotoFraming(data.photo_framing),
   };
+});
+
+type GuestInvitationRow = Pick<InvitationPage, "invitation_host_line" | "invitation_wording" | "invitation_afterwards" | "ceremony_time" | "ceremony_venue" | "ceremony_address">;
+
+/** The invitation's saved wording and ceremony fields, or null when the page is off or the link isn't live. */
+export const guestWeddingInvitation = cache(async (secret: string): Promise<GuestInvitationRow | null> => {
+  if (!guestSecretPattern.test(secret) || !configured()) return null;
+  const { data, error } = await publicClient().rpc("guest_wedding_invitation", { requested_secret: secret }).maybeSingle<GuestInvitationRow>();
+  if (error) throw new Error("Unable to load wedding invitation.");
+  return data;
 });

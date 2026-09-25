@@ -89,6 +89,8 @@
 .marketing-steps li > span { display: inline-flex; width: 46px; height: 46px; align-items: center; justify-content: center; border: 1px solid #98b8b7; border-radius: 50%; font: italic 18px Georgia, serif; color: #d4ded4; }
 .marketing-steps h3 { margin-top: 22px; font: 25px Georgia, serif; }
 .marketing-steps p { margin: 12px auto 0; max-width: 280px; color: #d0dce0; font-size: 13px; line-height: 1.8; }
+.marketing-steps-four { grid-template-columns: repeat(4, 1fr); }
+.marketing-steps-four li { padding: 0 22px; }
 .marketing-pricing { display: grid; grid-template-columns: 1fr 1.1fr; gap: 28px 55px; padding: 40px; margin-top: 64px; border: 1px solid #79949e; border-radius: 8px; background: #0f4c5c40; scroll-margin-top: 20px; }
 .marketing-pricing h2 { font-size: 32px; }
 .marketing-pricing .price { font: 66px Georgia, serif; margin: 16px 0 10px; }

@@ -17,6 +17,11 @@ describe("share message", () => {
     expect(shareMessage({ ...base, location: " Bath, England. ", rsvpOpen: false })).toBe(`Save the date! Sarah & James are getting married on 12 June 2027 at Bath, England. Find out more: ${url}`);
   });
 
+  it("invites rather than announces while the Invitation page is on", () => {
+    expect(shareMessage({ ...base, invitation: true })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation and RSVP: ${url}`);
+    expect(shareMessage({ ...base, invitation: true, rsvpOpen: false })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation: ${url}`);
+  });
+
   it("always shares the full link, even when the couple edits it out or alters it", () => {
     expect(withGuestLink(`See you there ${url} !`, url)).toBe(`See you there ${url} !`);
     expect(withGuestLink("See you there", url)).toBe(`See you there\n${url}`);

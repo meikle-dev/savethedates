@@ -11,6 +11,7 @@ const sections = [
   ["Overview", "/dashboard"],
   ["Basics", "/dashboard/basics"],
   ["Design", "/dashboard/design"],
+  ["Invitation", "/dashboard/invitation"],
   ["Details", "/dashboard/details"],
   ["RSVP", "/dashboard/rsvp"],
   ["Guests", "/dashboard/guests"],
@@ -43,7 +44,7 @@ test("sections require an owner and a saved wedding", async ({ page }) => {
     await signIn(page, email, password);
     await expect(page).toHaveURL(/\/dashboard\/basics$/);
     await expect(page.getByRole("navigation", { name: "Workspace sections" })).toHaveCount(0);
-    for (const path of ["/dashboard/design", "/dashboard/details", "/dashboard/rsvp", "/dashboard/guests", "/dashboard/publish"]) {
+    for (const path of ["/dashboard/design", "/dashboard/invitation", "/dashboard/details", "/dashboard/rsvp", "/dashboard/guests", "/dashboard/publish"]) {
       await page.goto(path);
       await expect(page).toHaveURL(/\/dashboard\/basics$/);
     }
@@ -186,7 +187,7 @@ test("section navigation fits phones, tablets and desktops", async ({ page }) =>
     await page.setViewportSize({ width: 320, height: 740 });
     await page.screenshot({ path: test.info().outputPath("nav-320-open.png") });
 
-    // Tablets: all seven sections in one row, with no sideways scrolling or clipping.
+    // Tablets: all eight sections in one row, with no sideways scrolling or clipping.
     for (const width of [768, 1023]) {
       await page.setViewportSize({ width, height: 900 });
       await expect(toggle).toBeHidden();

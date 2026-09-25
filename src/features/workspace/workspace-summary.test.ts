@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emptyDetails } from "../weddings/details";
-import { collectResponses, daysUntil, rsvpAvailability, setupSteps, todayUtc } from "./workspace-summary";
+import { collectResponses, daysUntil, rsvpAvailability, setupSteps, todayUtc, guestPageStatuses } from "./workspace-summary";
 
 describe("workspace summary", () => {
   it("counts whole UTC days to the wedding", () => {
@@ -46,11 +46,25 @@ describe("workspace summary", () => {
   });
 
   it("derives setup progress from saved data only", () => {
-    const initial = setupSteps({ ...emptyDetails, photo_path: null, rsvp_enabled: false }, false, false);
+    const initial = setupSteps({ ...emptyDetails, photo_path: null, rsvp_enabled: false, invitation_enabled: false }, false, false);
     expect(initial.filter((step) => step.done).map((step) => step.id)).toEqual(["basics"]);
-    const hiddenDetails = setupSteps({ ...emptyDetails, ceremony_venue: "Church", photo_path: null, rsvp_enabled: false }, false, false);
+    const hiddenDetails = setupSteps({ ...emptyDetails, ceremony_venue: "Church", photo_path: null, rsvp_enabled: false, invitation_enabled: false }, false, false);
     expect(hiddenDetails.find((step) => step.id === "details")?.done).toBe(false);
-    const complete = setupSteps({ ...emptyDetails, details_enabled: true, reception_venue: "Hall", photo_path: "p.webp", rsvp_enabled: true }, true, true);
+    const complete = setupSteps({ ...emptyDetails, details_enabled: true, reception_venue: "Hall", photo_path: "p.webp", rsvp_enabled: true, invitation_enabled: true }, true, true);
     expect(complete.every((step) => step.done)).toBe(true);
+  });
+
+  it("treats the Invitation and Details pages as optional", () => {
+    const steps = setupSteps({ ...emptyDetails, photo_path: null, rsvp_enabled: true, invitation_enabled: false }, true, true);
+    expect(steps.filter((step) => step.optional).map((step) => step.id)).toEqual(["photo", "invitation", "details"]);
+    expect(steps.every((step) => step.done || step.optional)).toBe(true);
+  });
+
+  it("lists every guest page in guest order with its state", () => {
+    const summary = (invitation: boolean, details: boolean, rsvp: Parameters<typeof guestPageStatuses>[1], live: boolean) =>
+      guestPageStatuses({ invitation_enabled: invitation, details_enabled: details }, rsvp, live).map(({ id, status, on }) => [id, status, on]);
+    expect(summary(false, false, "off", false)).toEqual([["home", "Always on", true], ["invitation", "Off", false], ["details", "Off", false], ["rsvp", "Off", false]]);
+    expect(summary(true, true, "not-live", false)).toEqual([["home", "Always on", true], ["invitation", "On when published", true], ["details", "On when published", true], ["rsvp", "Opens when published", true]]);
+    expect(summary(true, false, "closed", true)).toEqual([["home", "Always on", true], ["invitation", "On", true], ["details", "Off", false], ["rsvp", "Closed", false]]);
   });
 });

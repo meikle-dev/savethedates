@@ -10,7 +10,7 @@ import { submitSharedRsvp } from "@/features/workspace/rsvp-actions";
 import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
 import { BotanicalArt } from "./wedding-art";
 
-type RsvpWedding = { first_name: string; second_name: string; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean };
+type RsvpWedding = { first_name: string; second_name: string; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean; invitation_enabled: boolean };
 type InvitationProps = { wedding: RsvpWedding; hrefs: GuestHrefs; open: boolean; closesOn: string | null; secret: string | null; focusName: boolean; onReplyAgain: () => void };
 
 // Guests reach this page only through a valid guest link (other links are 404), so it shows the form or a closed
@@ -23,7 +23,7 @@ export function RsvpPage({ wedding, hrefs, open, closesOn = null, secret }: { we
   const rsvpHref = preview || wedding.rsvp_enabled ? hrefs.rsvp : undefined;
   const names = [wedding.first_name, wedding.second_name] as const;
   return <WeddingFrame theme={wedding.theme} className="details-shell rsvp-shell">
-    <WeddingHeader names={names} homeHref={hrefs.home} detailsHref={wedding.details_enabled ? hrefs.details : undefined} rsvpHref={rsvpHref} current="rsvp" />
+    <WeddingHeader names={names} homeHref={hrefs.home} invitationHref={wedding.invitation_enabled ? hrefs.invitation : undefined} detailsHref={wedding.details_enabled ? hrefs.details : undefined} rsvpHref={rsvpHref} current="rsvp" />
     <main id="main" className="rsvp-main">
       <RsvpInvitation key={attempt} wedding={wedding} hrefs={hrefs} open={open} closesOn={closesOn} secret={secret} focusName={attempt > 0} onReplyAgain={() => setAttempt((value) => value + 1)} />
     </main>

@@ -125,7 +125,7 @@ Reading one request ID should tell the story of that request (F038).
 | `account.signout.failed` | error | Sign-out failed |
 | `account.google.failed` | error | Could not start Google sign-in (Supabase error or fault) |
 | `account.google_callback.succeeded` / `.rejected` / `.failed` | info / warn / error | Google sign-in completed / cancelled (`access_denied`), provider error, rejected or missing code / fault |
-| `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, theme, photo_framing, rsvp_settings, guest_link) / concurrent change / fault |
+| `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, invitation, theme, photo_framing, rsvp_settings, guest_link) / concurrent change / fault |
 | `workspace.ownership.denied` | warn | No session or no saved wedding for this owner |
 | `photo.upload.accepted` | info | Photo processed and stored; `durationMs` is processing time, including any wait for the processing slot |
 | `photo.upload.rejected` / `.failed` | warn / error | `reason` size, type, pixels, unreadable, busy (F040) or concurrent_change / Storage or database fault |
@@ -148,7 +148,7 @@ Reading one request ID should tell the story of that request (F038).
 | Area | Where | Events |
 | --- | --- | --- |
 | Account | `src/features/account/actions.ts`, `src/app/auth/confirm/route.ts`, `src/app/auth/callback/route.ts` | `account.*` |
-| Workspace | `src/features/workspace/actions.ts`, `details-actions.ts`, `theme-action.ts`, `photo-framing-action.ts`, `rsvp-actions.ts` (RSVP settings), `publication-actions.ts` (guest link names), `workspace-access.ts` | `workspace.save.*`, `workspace.ownership.denied` |
+| Workspace | `src/features/workspace/actions.ts`, `details-actions.ts`, `invitation-actions.ts`, `theme-action.ts`, `photo-framing-action.ts`, `rsvp-actions.ts` (RSVP settings), `publication-actions.ts` (guest link names), `workspace-access.ts` | `workspace.save.*`, `workspace.ownership.denied` |
 | Photos | `src/features/workspace/publication-actions.ts` (`changePhoto`); `src/app/[names]/[secret]/photo` and `src/app/dashboard/photo` route handlers through `src/features/weddings/photo-response.ts` | `photo.*`. The development-only `/preview-photo` fixture route is not logged |
 | Publication | `src/features/workspace/publication-actions.ts` | `publication.*` |
 | Payments | `src/features/payments/payment-actions.ts`, `src/app/api/stripe/webhook/route.ts` | `payment.*` |

@@ -260,3 +260,20 @@
   .rsvp-choices { grid-template-columns: 1fr; }
   .rsvp-choice { min-height: 58px; }
 }
+/* F060: the Invitation shares each theme's RSVP surround and card; only the card's content is styled here. */
+.invitation-card { text-align: center; }
+.invitation-card p { overflow-wrap: anywhere; }
+.invitation-host { color: var(--theme-muted); font-size: 12px; font-weight: 600; letter-spacing: .18em; line-height: 1.6; text-transform: uppercase; }
+.invitation-names { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 16px; font-family: var(--theme-heading); font-size: clamp(40px, 7vw, 64px); font-weight: 400; line-height: 1.02; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.invitation-ampersand { color: var(--theme-accent); font-size: .6em; font-style: italic; }
+.invitation-wording { max-width: 460px; margin: 18px auto 0; font-family: var(--theme-heading); font-size: clamp(19px, 2.4vw, 23px); font-style: italic; line-height: 1.35; }
+.invitation-rule { width: 64px; height: 1px; margin: 26px auto; background: var(--theme-line); }
+.invitation-date { font-family: var(--theme-heading); font-size: clamp(22px, 3vw, 28px); line-height: 1.2; }
+.invitation-time { margin-top: 8px; color: var(--theme-accent); font-size: 13px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.invitation-venue { margin-top: 18px; font-size: 17px; font-weight: 600; line-height: 1.4; }
+.invitation-place { margin-top: 4px; color: var(--theme-muted); font-size: 15px; line-height: 1.6; white-space: pre-line; }
+.invitation-afterwards { margin-top: 18px; font-family: var(--theme-heading); font-size: 19px; font-style: italic; line-height: 1.4; }
+.invitation-reply { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--theme-line); }
+.invitation-reply > p { font-size: 15px; line-height: 1.55; }
+.invitation-reply .rsvp-submit { margin-top: 16px; text-decoration: none; }
+.invitation-more { margin-top: 18px; }

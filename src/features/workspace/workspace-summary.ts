@@ -36,13 +36,30 @@ export function rsvpAvailability(enabled: boolean, closesOn: string | null, toda
 
 export type SetupStep = { id: string; label: string; done: boolean; href: string; optional?: boolean };
 
-export function setupSteps(wedding: WeddingDetails & { photo_path: string | null; rsvp_enabled: boolean }, purchased: boolean, live: boolean): SetupStep[] {
+// F060: Invitation and Details are optional pages, so their steps never hold back a finished setup.
+export function setupSteps(wedding: WeddingDetails & { photo_path: string | null; rsvp_enabled: boolean; invitation_enabled: boolean }, purchased: boolean, live: boolean): SetupStep[] {
   return [
     { id: "basics", label: "Add your names and date", done: true, href: "/dashboard/basics" },
     { id: "photo", label: "Add a photo", done: !!wedding.photo_path, href: "/dashboard/design", optional: true },
-    { id: "details", label: "Share ceremony or reception details", done: wedding.details_enabled && (hasVenue(wedding, "ceremony") || hasVenue(wedding, "reception")), href: "/dashboard/details" },
+    { id: "invitation", label: "Set up your invitation", done: wedding.invitation_enabled, href: "/dashboard/invitation", optional: true },
+    { id: "details", label: "Add ceremony or reception details", done: wedding.details_enabled && (hasVenue(wedding, "ceremony") || hasVenue(wedding, "reception")), href: "/dashboard/details", optional: true },
     { id: "rsvp", label: "Open RSVPs", done: wedding.rsvp_enabled, href: "/dashboard/rsvp" },
     { id: "purchase", label: "Purchase your site", done: purchased, href: "/dashboard/publish" },
     { id: "publish", label: "Publish your site", done: live, href: "/dashboard/publish" },
+  ];
+}
+
+export type GuestPageStatus = { id: "home" | "invitation" | "details" | "rsvp"; label: string; status: string; on: boolean; href: string };
+
+const rsvpStatus: Record<RsvpAvailability, string> = { open: "Open", "not-live": "Opens when published", closed: "Closed", off: "Off", offline: "Site offline" };
+
+/** Each guest page in guest order, with whether it's switched on, for the Overview's Guest pages card. */
+export function guestPageStatuses(wedding: { invitation_enabled: boolean; details_enabled: boolean }, rsvp: RsvpAvailability, live: boolean): GuestPageStatus[] {
+  const shown = (enabled: boolean) => enabled ? live ? "On" : "On when published" : "Off";
+  return [
+    { id: "home", label: "Save the Date", status: "Always on", on: true, href: "/dashboard/basics" },
+    { id: "invitation", label: "Invitation", status: shown(wedding.invitation_enabled), on: wedding.invitation_enabled, href: "/dashboard/invitation" },
+    { id: "details", label: "Details", status: shown(wedding.details_enabled), on: wedding.details_enabled, href: "/dashboard/details" },
+    { id: "rsvp", label: "RSVP", status: rsvpStatus[rsvp], on: rsvp === "open" || rsvp === "not-live", href: "/dashboard/rsvp" },
   ];
 }

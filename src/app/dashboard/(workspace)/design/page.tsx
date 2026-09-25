@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Design · SaveTheDates" };
 export default async function Design() {
   const { wedding, live } = await requireWedding();
   const current = themes.find((theme) => theme.id === wedding.theme)!;
-  return <WorkspacePage id="design-title" eyebrow="Design" title="Your wedding style" intro="Choose how your Save the Date, Details and RSVP pages look, and add the photo guests see first.">
+  return <WorkspacePage id="design-title" eyebrow="Design" title="Your wedding style" intro="Choose how your guest pages look, and add the photo guests see first.">
     <div className="ws-stack">
       <section aria-labelledby="theme-title" className="ws-panel">
         <h2 id="theme-title">Theme</h2>

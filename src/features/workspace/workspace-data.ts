@@ -12,7 +12,7 @@ import type { GuestLinkShare } from "./guest-link-panel";
 import { rsvpShareStatus, shareMessage } from "./share-message";
 import { collectResponses, rsvpAvailability, todayUtc } from "./workspace-summary";
 
-const weddingColumns = "id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on, rsvp_share_secret";
+const weddingColumns = "id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on, rsvp_share_secret, invitation_enabled, invitation_host_line, invitation_wording, invitation_afterwards";
 
 const noEntitlement: Entitlement = { active: false, expires_at: null, revoked_reason: null };
 
@@ -38,7 +38,7 @@ export async function requireWedding() {
   return { ...workspace, wedding: workspace.wedding };
 }
 
-type ShareableWedding = { slug: string | null; first_name: string; second_name: string; wedding_date: string; location: string; rsvp_enabled: boolean; rsvp_closes_on: string | null; rsvp_share_secret: string };
+type ShareableWedding = { slug: string | null; first_name: string; second_name: string; wedding_date: string; location: string; rsvp_enabled: boolean; rsvp_closes_on: string | null; rsvp_share_secret: string; invitation_enabled: boolean };
 
 /** The absolute guest link on the configured origin; shown by the RSVP section in every state. */
 export function currentGuestUrl(wedding: ShareableWedding) {
@@ -59,7 +59,7 @@ export function guestLinkShare(wedding: ShareableWedding, live: boolean): GuestL
   if (!live) return null;
   const url = currentGuestUrl(wedding);
   const availability = rsvpAvailability(wedding.rsvp_enabled, wedding.rsvp_closes_on, todayUtc(), live);
-  const message = shareMessage({ firstName: wedding.first_name, secondName: wedding.second_name, date: wedding.wedding_date, location: wedding.location, url, rsvpOpen: availability === "open" });
+  const message = shareMessage({ firstName: wedding.first_name, secondName: wedding.second_name, date: wedding.wedding_date, location: wedding.location, url, rsvpOpen: availability === "open", invitation: wedding.invitation_enabled });
   return { url, message, availability, closesOn: wedding.rsvp_closes_on };
 }
 

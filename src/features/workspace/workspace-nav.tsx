@@ -9,6 +9,7 @@ export const workspaceSections: { href: string; label: string; icon: IconName }[
   { href: "/dashboard", label: "Overview", icon: "overview" },
   { href: "/dashboard/basics", label: "Basics", icon: "basics" },
   { href: "/dashboard/design", label: "Design", icon: "design" },
+  { href: "/dashboard/invitation", label: "Invitation", icon: "invitation" },
   { href: "/dashboard/details", label: "Details", icon: "details" },
   { href: "/dashboard/rsvp", label: "RSVP", icon: "rsvp" },
   { href: "/dashboard/guests", label: "Guests", icon: "guests" },

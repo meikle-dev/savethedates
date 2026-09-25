@@ -2030,15 +2030,74 @@ Record items 1–3 in `release-inputs.md` section 3.
 - Current blockers (updated 24 September): missing source/commercial permission for the F034-F036 supplied botanicals/backdrops (`public/assets/wedding/README.md`); host/domain and managed-service accounts/access (Render/Frankfurt selection is already Done in F037); live billing/release authority; support/incident ownership and approved terms/privacy/retention/deletion rules including payment records, logs and backups. F048 owns the unfinished approved data process. F041 owns setup/policy pages; F049 owns the browser/accessibility evidence. Recovery objectives, Storage backup/restore and rollback drills, final independent release review and actual production release remain outstanding. Next: follow the 24 September queue (F040 Done; F038 next) while external inputs are pending; then complete hosted verification and recovery before an authorised release. F009 stays In Progress. F023, F032/F033, F039, F050 and F010 enhancements are not additional release gates.
 - Carried from F040: on staging, repeat the photo-memory check. Send five near-simultaneous 25 MP uploads while a published page receives about 10 req/s, then record peak memory, guest p95 and whether the service restarted. Compare against `docs/operations.md` (Memory and photo uploads).
 
-## F060 - Wedding invitations with RSVP
+## F060 - Wedding invitation page
 
-**Status:** Deferred
-**Priority / lead:** Post-launch / Product Manager to scope, then Software Engineer.
-**Purpose:** Let couples send a separate wedding invitation, sent closer to the day, that carries the RSVP — matching how Save the Date, Details and RSVP work in real weddings rather than bundling RSVP into the Save the Date notification.
-**Context:** [save-the-date.tsx](../src/features/weddings/save-the-date.tsx) briefly linked directly to RSVP from the Save the Date page (added 25 September 2026); the owner reviewed and removed it the same day, since a Save the Date is a notify-only announcement and RSVP belongs with an invitation instead. This entry captures that follow-up as a real feature rather than leaving it undocumented.
-**Depends on:** F006, F026 (RSVP, Done); schedule after launch (F009).
-**Open decisions before Ready:** Is an invitation a fourth guest page type, a variant of the existing RSVP page, or a timed unlock of the existing RSVP link? Does it need its own content (ceremony/reception specifics, formal wording) distinct from Details? Does publishing an invitation change when/whether the RSVP link becomes reachable from Save the Date or Details? Any new owner controls (send date, reminder) needed, or is manual sharing of the link sufficient as today?
-**Done when promoted:** Acceptance criteria defined by Product Manager once the above decisions are resolved; must preserve tenant isolation and the private-link model, keep the three themes equivalent, and not reintroduce an RSVP link on the Save the Date page.
+**Status:** Ready (owner requested, 25 September 2026: "the last missing piece of functionality"; decisions below by the Product Manager)
+**Priority / lead:** P1 / Product Manager (this entry), UX (page and workspace composition), then Software Engineer. Independent review is required: it adds a guest-readable database function, and new owner-writable columns.
+**Purpose:** Couples can send a formal wedding invitation from the same private guest link, alongside their Save the Date, Details and RSVP. Couples who send printed invitations simply leave it off, just as some leave Details off.
+**Context:** The Save the Date is a notify-only announcement. A body RSVP call to action was added and then removed on 25 September 2026, because replying belongs with an invitation. The owner wants the invitation offered as a real page, optional like Details, with the workspace and marketing updated to match.
+**Depends on:** F006, F026, F043 (Done).
+
+**Decisions:**
+
+- **A fourth, optional guest page** at `/<names>/<secret>/invitation`, not a variant of RSVP and not a timed unlock. It's **off by default**, and couples switch it on in a new **Invitation** workspace section. There's no send date or reminder: turning the page on (or sharing the link) is the send, exactly as with the other pages.
+- **Each guest page is optional apart from Save the Date:**
+  - Save the Date is always on.
+  - Invitation, Details and RSVP each have their own switch, in their own section.
+  - The Overview's new **Guest pages** card shows all four at a glance and links to each switch.
+  - The setup checklist no longer requires Details. Details and Invitation are optional steps; "Open RSVPs" is unchanged.
+- **Content:** a formal card, built from saved data plus three short optional wording fields:
+  - the couple's names, the wedding date (Basics), the ceremony time, venue and address, and the Basics location when no address is saved;
+  - **host line** (up to 160 characters), for example "Together with their families". It's omitted when empty;
+  - **invitation wording** (up to 300 characters). When it's empty, the page uses "request the pleasure of your company at their wedding";
+  - **afterwards line** (up to 160 characters), for example "followed by dinner and dancing". It's omitted when empty.
+  - There's no photo, because the page is a card.
+- **Ceremony time, venue and address are shared with Details** (the same columns). The Invitation form edits them too, labelled "Also shown on your Details page", so the two pages can't disagree. Directions links and the reception stay in Details only.
+- **Replying:**
+  - When RSVPs are on, the invitation ends with "Kindly reply by …" (the RSVP closing date, when one is set) and a **Reply online** button that opens RSVP.
+  - When RSVPs are off, there's no reply section; couples who collect replies another way aren't shown a dead end.
+  - When Details is on, a quiet link leads to it.
+- **Unchanged:**
+  - RSVP availability: RSVP settings alone decide it, and turning the invitation on never opens RSVPs.
+  - The Save the Date body gets no reply link. The site navigation keeps linking every page that's switched on, in the order Save the date · Invitation · Details · RSVP.
+- **The suggested share message** (F042) becomes "You’re invited! …" while the invitation is on, pointing guests to the invitation, and to RSVP when it's open.
+- **Owner preview** at `/dashboard/preview/invitation`, like the other previews. It works whether or not the page is switched on.
+- **Marketing examples** gain `/examples/<theme>/invitation`, with fictional content.
+- **Deferred:** scheduled sending, reminders, reply-by-post wording, a separate reception card, per-guest invitations, and a photo on the invitation.
+
+**Scope:**
+
+- **Database:** a migration adding:
+  - `invitation_enabled boolean not null default false`;
+  - `invitation_host_line`, `invitation_wording` and `invitation_afterwards`, trimmed text with the lengths above, default `''`, with a check constraint.
+
+  `guest_wedding` also returns `invitation_enabled`. A new `guest_wedding_invitation(requested_secret)` returns only the invitation fields and the shared ceremony fields, only while the wedding is published, has an active entitlement and has the invitation switched on. Execute is granted to `anon` and `authenticated`. The secret and owner identifiers are never returned.
+- **Guest page:**
+  - `src/app/[names]/[secret]/invitation/page.tsx`, following the Details route: the same 404 for unknown, replaced, unpublished, expired or switched-off pages, and the same names-part redirect;
+  - an `Invitation` view in `src/features/weddings/invitation.tsx`, reusing the RSVP card system (`rsvp-shell`, `rsvp-main`, `rsvp-card`) so all twelve themes get their backdrop and paper card;
+  - an Invitation link in `WeddingNavigation`, and the metadata title "Invitation".
+- **Workspace:**
+  - the `/dashboard/invitation` section (nav: Overview, Basics, Design, **Invitation**, Details, RSVP, Guests, Publish), with the wording fields, the shared ceremony fields, a **Show Invitation page** switch, save messages matching Details, and a preview link;
+  - the Overview **Guest pages** card and the checklist changes;
+  - the invitation preview route;
+  - the share message.
+- **Marketing:** the homepage hero, theme intro, how-it-works and FAQ; the digital save the date page ("one link, up to four pages"); the example banner navigation; and the `/examples/<theme>/invitation` pages. No new claims beyond what the product does.
+- **Docs:** `product-overview.md`, `site-ui.md` (workspace and guest pages), `template-ui-summary.md` (Invitation composition) and `architecture.md` (guest functions).
+
+**Done when:**
+
+- A couple can switch the invitation on and off, edit its wording and ceremony time, venue and address, preview it, and see it on their live site. Switching it off, unpublishing or expiry gives guests the same 404 as other unavailable pages. The navigation shows it only while it's on.
+- The shared ceremony fields stay in step between the Invitation and Details forms. Saving the invitation never switches Details on or off. A save that would leave an enabled Details page empty is refused with a clear message.
+- The reply section follows RSVP state exactly (on with a date, on without a date, off). The invitation never opens RSVPs.
+- The Overview shows each guest page's state correctly, and the checklist no longer requires Details.
+- All twelve themes render the invitation at 320, 390 and 1440 px with no overflow and readable contrast, including long names and wording. Keyboard focus and headings are correct.
+- Integration tests cover:
+  - the guest function for enabled, disabled, unpublished and unknown or wrong secrets;
+  - that no other fields or other tenants leak;
+  - owner writes to the new columns and constraint enforcement;
+  - cross-owner denial.
+- Unit tests cover the invitation schema and the share message. E2E covers the owner journey, the guest page with RSVP on and off, the preview and an example page.
+- Marketing copy is updated. `npm run check`, `npm run test:integration` and the relevant browser suites pass. Independent review passes, and the docs are current.
 
 ## F061 - Staging checkout rejected by Stripe
 

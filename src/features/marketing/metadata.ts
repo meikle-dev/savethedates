@@ -11,7 +11,7 @@ function indexedPage(path: string, title: string, description: string): Metadata
 }
 
 export function homeMetadata(): Metadata {
-  return indexedPage("/", "Digital save the date & wedding website with RSVP | SaveTheDates", "Send your save the date by WhatsApp, text or email. One link opens your wedding details and online RSVP. Twelve themes, one £29 payment, free to preview.");
+  return indexedPage("/", "Digital save the date & wedding website with RSVP | SaveTheDates", "Send your save the date by WhatsApp, text or email. One link opens your invitation, wedding details and online RSVP. Twelve themes, one £29 payment, free to preview.");
 }
 
 export function digitalSaveTheDateMetadata(): Metadata {
