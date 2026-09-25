@@ -38,10 +38,11 @@ export function PrivacyNotice() {
         <li><strong>Google sign-in:</strong> if you choose Continue with Google, Google shares your name, email address and profile picture link with us. Our sign-in provider stores these with your account; the app itself uses only your email address.</li>
         <li><strong>Your wedding site:</strong> the names, date, location, message, photo, wedding details, theme and settings you enter. Photos are re-saved when you upload them, which removes hidden data such as camera location.</li>
         <li><strong>Payment:</strong> when you pay, Stripe collects your card details. We never see or store your card number. We keep a record of the payment (amount, date and Stripe references) to know that your site is paid for and to handle refunds.</li>
+        <li><strong>Technical data:</strong> like any website, our hosting and sign-in providers record technical details such as your IP address, browser and the pages you request, to keep the service secure and working.</li>
       </ul>
       <p>We use this information to provide the service you asked for (our contract with you), and payment records also to meet tax and accounting law.</p></section>
     <section aria-labelledby="guests"><h2 id="guests">If you are a guest</h2>
-      <p>When you reply to an RSVP, we store the name you enter, whether you are attending and when you replied. Only the couple can see replies. We keep them for the couple, who decide what to do with them. Guests don’t need an account and we don’t ask for contact details.</p>
+      <p>When you reply to an RSVP, we store the name you enter, whether you are attending and when you replied. Our hosting provider also records technical details such as your IP address. Only the couple can see replies. We keep them for the couple, who decide what to do with them. Guests don’t need an account and we don’t ask for contact details.</p>
       <p>Wedding pages open for anyone who has the couple’s link. They are marked not to appear in search results, but they are not password-protected.</p></section>
     <section aria-labelledby="providers"><h2 id="providers">Who helps us run the service</h2>
       <p>We share information only with providers that run parts of the service for us, under their data processing terms:</p>
@@ -50,21 +51,20 @@ export function PrivacyNotice() {
         <li><strong>Render</strong> — hosting the website (Frankfurt, Germany).</li>
         <li><strong>Stripe</strong> — payments.</li>
         <li><strong>Resend</strong> — sending account emails (Ireland).</li>
-        <li><strong>Sentry</strong> — error reports that help us fix problems (Germany). A report identifies an account only by a random ID. We remove guest links, form contents and passwords first, and don’t send IP addresses.</li>
-        <li><strong>Google</strong> — only if you use Continue with Google.</li>
+        <li><strong>Sentry</strong> — error reports that help us fix problems (Germany). A report identifies an account only by a random ID. We remove guest links, form contents and passwords first, and Sentry is set not to store IP addresses.</li>
       </ul>
+      <p>If you use Continue with Google, Google handles your sign-in under its own privacy policy.</p>
       <p>Some of these providers may handle data outside the UK. Where they do, the transfer is protected by safeguards recognised under UK law, such as the UK International Data Transfer Addendum or the UK–US data bridge. We don’t sell your information or use it for advertising.</p></section>
     <section aria-labelledby="cookies"><h2 id="cookies">Cookies</h2>
-      <p>We use only cookies needed for the site to work: a sign-in cookie that keeps you signed in, and a short-lived cookie that protects Google sign-in. We don’t use analytics or advertising cookies. Stripe’s checkout page sets its own cookies to prevent fraud.</p></section>
+      <p>We use only cookies needed for the site to work: a sign-in cookie that keeps you signed in, and a cookie that protects Google sign-in and is removed when sign-in finishes. We don’t use analytics or advertising cookies. Stripe’s checkout page sets its own cookies to prevent fraud.</p></section>
     <section aria-labelledby="keeping"><h2 id="keeping">How long we keep it</h2>
       <ul>
         <li>Your account and wedding site stay until you ask us to delete them. When your published site period ends, guests can no longer open it, but your private draft and replies stay in your account.</li>
-        <li>When you ask us to delete your account, we delete your account, wedding site, photos and guest replies.</li>
-        <li>Payment records are kept for as long as UK tax law requires, currently up to six years.</li>
-        <li>Server logs and error reports are kept for up to 30 days.</li>
+        <li>When you ask us to delete your account, we delete your account, wedding site, photos, guest replies and our copy of your payment records. Stripe keeps its own payment records for as long as the law requires.</li>
+        <li>Server logs are kept for up to 30 days, and error reports for up to 90 days.</li>
       </ul></section>
     <section aria-labelledby="rights"><h2 id="rights">Your rights</h2>
-      <p>You can ask for a copy of your information, or ask us to correct, delete, or stop or limit using it. You can also object to how we use it. Email <Email /> from the address on your account and we will reply within one month. You can download your guest replies yourself from your workspace.</p>
+      <p>You can ask for a copy of your information, or ask us to correct, delete, or stop or limit using it. You can also object to how we use it. Email <Email /> from the address on your account and we will reply within one month.</p>
       <p>If you are unhappy with how we handle your information, please tell us first. You can also complain to the Information Commissioner’s Office at <a href="https://ico.org.uk/make-a-complaint/">ico.org.uk</a>.</p></section>
     <section aria-labelledby="security"><h2 id="security">Security and age</h2>
       <p>Connections are encrypted, and each couple can reach only their own site and replies. SaveTheDates is for adults aged 18 or over. If we change this notice, we will update the date at the top.</p></section>
@@ -99,9 +99,9 @@ export function RefundPolicy() {
     <section aria-labelledby="fourteen"><h2 id="fourteen">Within 14 days</h2>
       <p>You can cancel within 14 days of paying and get a full refund, for any reason. Email <Email /> from the address on your account.</p></section>
     <section aria-labelledby="after"><h2 id="after">After 14 days</h2>
-      <p>If your site doesn’t work as described and we can’t fix it within a reasonable time, we will give you a full or partial refund. This doesn’t affect your legal rights as a consumer.</p></section>
+      <p>If your site doesn’t work as described and we can’t fix it within a reasonable time, we will refund you. This doesn’t affect your legal rights as a consumer.</p></section>
     <section aria-labelledby="what-happens"><h2 id="what-happens">What happens next</h2>
       <p>We refund the original payment through Stripe, usually within 5 working days of agreeing. Your bank may take a few more days to show it. When a refund is made, your site is unpublished and guests can no longer open it. Your private draft and guest replies stay in your account, and you can pay again to republish.</p>
-      <p>If you dispute the payment with your bank instead, your site is also unpublished while the dispute is open.</p></section>
+      <p>If you dispute the payment with your bank instead, your site is also unpublished, and you can pay again to republish.</p></section>
   </LegalPage>;
 }

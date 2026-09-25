@@ -44,7 +44,7 @@ Google sign-in (F055) was reopened for staging by the owner on 26 September 2026
 
 - [x] Google Cloud project and OAuth client owner (F055): `Ross (owner); Cloud project "SaveTheDates" (project ID savethedates)`
 - [ ] Google OAuth clients created for staging and production: `staging only (client "SaveTheDates staging"); no production client`
-- [ ] Google consent screen name: `Testing mode, not published — Google now requires Homepage and Privacy Policy URLs to publish externally, which don't exist yet (blocked on F041 legal pages). Only rmeikle55@gmail.com is added as a test user`
+- [ ] Google consent screen name: `Testing mode, not published. Only rmeikle55@gmail.com is added as a test user. Staging URLs to enter (temporary): Homepage https://savethedates-staging.onrender.com/, Privacy https://savethedates-staging.onrender.com/privacy, Terms https://savethedates-staging.onrender.com/terms. For production, replace them with https://savethedates.co.uk/, /privacy and /terms (see F041, "To update later")`
 - [ ] Google sign-in tested on staging with disposable Google accounts: `no — configured but not yet exercised (only the owner's own test-user account can sign in while unpublished)`. Record each result in the F055 handoff:
   - a new Google user creates an account and reaches Basics; signing in again returns to the same wedding;
   - a confirmed email/password user signs in with Google (same email) and reaches their existing wedding, and their password still works;

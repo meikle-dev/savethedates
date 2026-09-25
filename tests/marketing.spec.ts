@@ -157,6 +157,8 @@ test("privacy, terms and refund pages are linked from the footer and beside sign
   for (const [name, path] of [["terms", "/terms"], ["refund policy", "/refunds"], ["privacy notice", "/privacy"]]) {
     await expect(agreement.getByRole("link", { name, exact: true })).toHaveAttribute("href", path);
   }
+  await page.goto("/account/sign-in");
+  await expect(page.getByText(/By continuing with Google you agree to our terms/)).toBeVisible();
 });
 
 test("homepage remains usable at 320px and reports local rendering measurements", async ({ page }) => {

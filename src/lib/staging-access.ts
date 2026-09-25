@@ -10,7 +10,8 @@ export type StagingAccess = "unrestricted" | "open" | "granted" | "denied" | "mi
 const minimumPasswordLength = 16;
 // Exact files only: other /media/themes/<x> paths match the guest routes (names "media", secret "themes").
 const themeImages = new Set(themes.map(({ id }) => `/media/themes/${id}.webp`));
-// Google's OAuth consent screen needs a reachable homepage and privacy policy. Exact paths only; both are public on production.
+// Google's OAuth consent screen needs a reachable homepage and privacy policy. Exact paths only; all are public on production.
+// Server actions POST to their page's path, so never add one to these pages or the marketing header/footer.
 const publicPages = new Set(["/", "/privacy", "/terms", "/refunds"]);
 
 /** Paths that answer without the staging password. Each authenticates itself or holds nothing private. */
