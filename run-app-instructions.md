@@ -193,6 +193,26 @@ To test publication in the production image against local Supabase, add `--add-h
 
 For a direct production smoke check, run `npm run build`, then `npm start -- --port 3001` in a terminal; run the same smoke command in a second terminal. Stop with Ctrl+C. Both start the standalone server; direct `npm start` first copies the public and built static assets into the standalone directory using a cross-platform Node script.
 
+## Staging access check
+
+With `APP_ENV=staging`, every response needs the staging username and password (HTTP basic auth) and is `noindex`, and `robots.txt` disallows everything. Only `/api/health`, the Stripe webhook and the twelve fictional `/media/themes/<theme>.webp` images answer without the password. Leave `APP_ENV` unset locally and in production. Setup and the reasons for the exemptions: [Staging access](docs/operations.md#staging-access).
+
+To check a production image in staging mode (PowerShell, local Supabase running, `.env.docker` generated). Port 3200 leaves the development app on 3000 running:
+
+```powershell
+docker build --target production -t save-the-dates:staging-check .
+$env:STAGING_USERNAME='team'
+$env:STAGING_PASSWORD='local-staging-password-not-secret'
+docker run -d --name wedding-staging-check --add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ENV=staging -e STAGING_USERNAME -e STAGING_PASSWORD -p 127.0.0.1:3200:3000 save-the-dates:staging-check
+# Wait until http://127.0.0.1:3200/api/health returns ok.
+npm.cmd run smoke:staging -- http://127.0.0.1:3200
+# Clean up even if the check fails.
+docker rm -f wedding-staging-check
+Remove-Item Env:STAGING_USERNAME, Env:STAGING_PASSWORD -ErrorAction SilentlyContinue
+```
+
+The check expects 401 with a password prompt and `noindex` without valid credentials, the site with them, a disallow-all `robots.txt`, an open health check and webhook (400 for its missing signature), and working optimised theme images. CI runs it against the image it publishes.
+
 ## Verification record
 
 F001 verification results and any outstanding checks are recorded in [the backlog](docs/backlog.md#f001---save-the-date-preview). Asset sources and licences are in [fixtures/README.md](fixtures/README.md).

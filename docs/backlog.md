@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F056 is In Progress:** CI image publishing and staging protection (F041 updates 1, 2 and 4) are built, verified locally and reviewed; only the first CI run on `main` remains. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
 
 ## Status and handoff rules
 
@@ -1178,7 +1178,7 @@ Alternatives considered:
 **5. Render**
 
 1. Create an account (Hobby workspace) and add a payment card.
-2. On GitHub, create a token with `read:packages`. In Render, add it under **Settings → Registry Credentials**.
+2. On GitHub, create a classic personal access token with only `read:packages`. In Render, add it under **Settings → Registry Credentials**.
 3. Create two web services from the existing image `ghcr.io/<owner>/<repo>`:
 
    | Setting | Staging | Production |
@@ -1187,12 +1187,13 @@ Alternatives considered:
    | Region | Frankfurt | Frankfurt |
    | Instance | Free | Starter |
    | Port | 3000 | 3000 |
-   | Health check path | `/` | `/` |
+   | Health check path | `/api/health` | `/api/health` |
 
-4. Set these environment variables on each service, using that environment's values: `APP_ORIGIN`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, plus the staging variables from the product updates.
+4. Set these environment variables on each service, using that environment's values: `APP_ORIGIN`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. On staging only, also set `APP_ENV=staging`, `STAGING_USERNAME` and `STAGING_PASSWORD` (a password-manager password of at least 16 characters; see `docs/operations.md`, Staging access).
 5. On production, add the custom domains `<domain>` and `www.<domain>`. Create the DNS records Render shows and wait for the certificate to be issued.
 6. In notification settings, send deploy failures and service failures to the incident email.
-7. Record the host details in `release-inputs.md` section 1.
+7. Optional: copy the staging service's deploy hook into the GitHub Actions secret `RENDER_STAGING_DEPLOY_HOOK`, so each tested image deploys to staging automatically. Production is always promoted by hand (`docs/operations.md`, Image publishing and Render).
+8. Record the host details in `release-inputs.md` section 1.
 
 **6. Monitoring (F038 required; F039 optional)**
 
@@ -1219,7 +1220,9 @@ Alternatives considered:
 
 ### Product updates (Software Engineer)
 
-1. **CI publishes the image.** After all checks pass on the default branch, CI pushes the production image to GHCR, tagged with the commit SHA (`packages: write`). Render deploys that tag. Rollback redeploys the previous tag from Render's deploy history.
+Updates 1, 2 and 4 are delivered by [F056](#f056---publish-the-tested-image-and-protect-staging). Update 3 waits for owner text.
+
+1. **CI publishes the image.** After all checks pass on `main`, CI pushes the production image to GHCR, tagged with the commit SHA (`packages: write`). Render deploys that tag. Rollback redeploys the previous tag from Render's deploy history.
 2. **Staging is protected.** When `APP_ENV=staging`:
    - every response requires HTTP basic auth (`STAGING_USERNAME`/`STAGING_PASSWORD`);
    - every response is `noindex`;
@@ -1244,6 +1247,35 @@ These are already listed in `release-inputs.md` sections 5–6:
 - The product updates have shipped with `npm.cmd run check` passing.
 - Staging passes the full hosted journey in `docs/operations.md`.
 - Hand off the reviewed image/configuration and staging evidence to F049/F009. F041 does not depend on F009 being Done; final release review, deployment and production smoke belong solely to F009.
+
+## F056 - Publish the tested image and protect staging
+
+**Status:** In Progress (built, locally verified and independently reviewed; waits only for its first GitHub Actions run on `main`)
+**Priority / lead:** P1, release gate via F041 / Software Engineer; independent review required (access control and CI permissions).
+**Purpose:** Deliver F041 product updates 1, 2 and 4, which need no owner input, so the owner's Render setup can use a published image and a private staging site.
+**Depends on:** F037, F038 (image, runtime configuration; code Done). Split from F041 on 25 September 2026 as that entry allowed.
+**References:** F041 Product updates; `.github/workflows/ci.yml`, `Dockerfile`, `src/proxy.ts`, `src/app/robots.ts`, `docs/operations.md`, `run-app-instructions.md`.
+**Scope/decisions:**
+
+- CI pushes the image it has already tested, never a rebuild, to `ghcr.io/<owner>/<repo>:<commit SHA>` only after every check passes on a push to `main` (named explicitly; GitHub's default branch is still the stale `master`). The write token lives only in a separate publish job that runs no project code. An optional `RENDER_STAGING_DEPLOY_HOOK` secret deploys that tag to staging; production promotion stays a manual owner step (F009).
+- `APP_ENV=staging` requires HTTP basic auth (`STAGING_USERNAME`, `STAGING_PASSWORD` of at least 16 characters) and sends `X-Robots-Tag: noindex` on every response, and `robots.txt` disallows everything. Missing credentials or any other `APP_ENV` value fail closed with 503. Production leaves `APP_ENV` unset.
+- Paths open without the password: the Stripe webhook (signature-authenticated) and a new `/api/health` liveness route. Render's health check can't send credentials, so `/` can't be the staging probe. Also the twelve fictional `/media/themes/<theme>.webp` files, exact paths only: Next's image optimiser fetches them internally without request headers, so gating them would break the homepage images on staging. Other `/media/themes/...` paths match the guest routes and stay gated, and `images.localPatterns` limits the optimiser to these files.
+
+**Done when:**
+
+- Unit tests cover the access decision: unset, staging with valid, wrong, malformed or missing credentials, open paths, and misconfiguration. A staging-mode production container passes a scripted check in CI and locally: 401 with a challenge and noindex, 200 with credentials, open webhook/health/theme images, optimised images loading, and robots disallowing everything. The production smoke covers `/api/health`.
+- CI's publish job is limited to `packages: write`, runs only on `main` pushes after `verify` passes, and records the pushed digest. Docs cover `APP_ENV`, the staging variables, image publishing, registry credentials, health check, deploy/rollback and notifications. `npm.cmd run check` and independent review pass.
+
+**Handoff (25 September 2026):** `src/lib/staging-access.ts` decides access and `src/proxy.ts` applies it before any application code or Supabase call. `/api/health` is the liveness route for both environments, and staging `robots.txt` disallows everything. `images.localPatterns` limits the optimiser to the theme images. `scripts/smoke-staging.mjs` (`npm run smoke:staging`) checks a staging-mode container, and `scripts/smoke.mjs` now covers `/api/health`. CI labels the image, runs the staging check, and hands the tested image to a pinned, `packages: write`-only `publish-image` job. That job runs one at a time, records the digest and can optionally deploy to staging through `RENDER_STAGING_DEPLOY_HOOK`. Docs: `docs/operations.md` (Staging access, Image publishing and Render), `run-app-instructions.md` (Staging access check), F041 steps 2, 4, 5 and 7.
+
+- `npm.cmd run check` passed: lint, typecheck, 17 files and 84 unit tests (7 new), production build. `npx.cmd playwright test tests/marketing.spec.ts tests/metadata.spec.ts --reporter=line` passed 12/12 desktop/mobile on the development server. The production image was built locally and run against local Supabase:
+  - With `APP_ENV=staging` on port 3200, `node scripts/smoke-staging.mjs http://127.0.0.1:3200` passed, and an unauthenticated `POST /media/themes/rsvp` with `Next-Action` returned 401.
+  - Without `APP_ENV` on port 3201, `node scripts/smoke.mjs http://127.0.0.1:3201` passed. The homepage had no `X-Robots-Tag` and `robots.txt` was unchanged. The optimiser returned 200 for a theme image and 400 for `/media/lake-como.webp`.
+  - A 5-character password returned 503 on `/api/health`, `/` and the webhook.
+- The workflow parses (js-yaml), and `git diff --check` passed. Temporary containers and images were removed. Generated `next-env.d.ts` churn was restored.
+- Independent review: no Blocking findings. Both Important findings were fixed and re-checked by the reviewer. The `/media/themes/` prefix had opened the guest routes (names "media", secret "themes"), including a server action; only the twelve exact theme files are open now. Publishing had been keyed to GitHub's default branch, which is a stale `master`; `main` is now named explicitly. Minor points fixed: publish concurrency, the pinned `download-artifact`, `/_next/image` docs plus `localPatterns`, the classic-token wording and the cancelled-run comment.
+- Not run: GitHub Actions itself, a real GHCR push, the Render deploy hook, hosted staging.
+- **Next:** push to `main`. Confirm the CI run passes, including the staging-mode step and `publish-image`, and that `ghcr.io/meikle-dev/savethedates:<sha>` and its digest appear in the run summary. Record the run here, then mark F056 Done. The owner's Render setup (F041 step 5) can then use that image. Optionally, set GitHub's default branch to `main`.
 
 ## 24 September walkthrough assessment
 

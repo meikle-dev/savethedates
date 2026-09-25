@@ -32,7 +32,12 @@ jobs:
         run: E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
       - run: docker compose down
         if: always()
-      - run: docker build --target production --build-arg APP_RELEASE=${{ github.sha }} -t save-the-dates:ci .
+      - name: Build production image
+        run: >-
+          docker build --target production --build-arg APP_RELEASE=${{ github.sha }}
+          --label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          --label org.opencontainers.image.revision=${{ github.sha }}
+          -t save-the-dates:ci .
       - name: Production container smoke
         run: |
           docker run -d --name wedding-smoke --add-host host.docker.internal:host-gateway --env-file .env.docker -p 127.0.0.1:3000:3000 save-the-dates:ci
@@ -48,6 +53,16 @@ jobs:
           E2E_BASE_URL=http://127.0.0.1:3000 E2E_SENTRY_DSN=http://e2epublickey@host.docker.internal:3199/1 npm run test:monitoring
       - run: docker rm -f wedding-monitoring
         if: always()
+      - name: Production container in staging mode (password, noindex, open health/webhook)
+        env:
+          STAGING_USERNAME: ci
+          STAGING_PASSWORD: ci-staging-password-not-a-secret
+        run: |
+          docker run -d --name wedding-staging --add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ENV=staging -e STAGING_USERNAME -e STAGING_PASSWORD -p 127.0.0.1:3000:3000 save-the-dates:ci
+          curl --retry 30 --retry-all-errors --retry-delay 2 --fail --silent --show-error http://127.0.0.1:3000/api/health > /dev/null
+          npm run smoke:staging
+      - run: docker rm -f wedding-staging
+        if: always()
       # Source maps are built inside Docker without a token; only this step holds SENTRY_AUTH_TOKEN.
       - name: Upload source maps to Sentry
         if: github.event_name == 'push'
@@ -61,6 +76,16 @@ jobs:
           npx --yes @sentry/cli@2.58.6 sourcemaps upload --release ${{ github.sha }} sourcemaps
       - run: npm run db:stop
         if: always()
+      # Hands the exact image tested above to publish-image; that job holds the only registry write token.
+      - name: Save tested production image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: docker save save-the-dates:ci -o production-image.tar
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: production-image
+          path: production-image.tar
+          retention-days: 1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -68,3 +93,46 @@ jobs:
           path: |
             playwright-report/
             test-results/
+
+  # Runs only after every check passes on main (the working branch; GitHub's default is still the stale master),
+  # and runs no project code or dependencies.
+  publish-image:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    # One at a time. A newer waiting run cancels an older waiting one, so an older commit never deploys to staging after a
+    # newer one; that skipped commit's image is simply never published.
+    concurrency:
+      group: publish-image
+      cancel-in-progress: false
+    steps:
+      # Pinned to a commit because this job holds the registry write token.
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: production-image
+      - name: Push to GitHub Container Registry
+        id: push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker load --input production-image.tar
+          image="ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}"
+          echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          docker tag save-the-dates:ci "$image"
+          docker push "$image"
+          digest="$(docker inspect --format '{{index .RepoDigests 0}}' "$image")"
+          docker logout ghcr.io
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+          printf 'Published `%s`\n\nDigest: `%s`\n' "$image" "$digest" >> "$GITHUB_STEP_SUMMARY"
+      # Optional: set the RENDER_STAGING_DEPLOY_HOOK secret to deploy each published image to staging.
+      # Production is promoted manually (docs/operations.md, Image publishing and Render).
+      - name: Deploy to staging
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_STAGING_DEPLOY_HOOK }}
+          IMAGE: ${{ steps.push.outputs.image }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then echo "RENDER_STAGING_DEPLOY_HOOK is not set; skipping the staging deploy."; exit 0; fi
+          curl --fail --silent --show-error --output /dev/null --get --data-urlencode "imgURL=$IMAGE" "$DEPLOY_HOOK"
+          echo "Staging deploy of $IMAGE requested."

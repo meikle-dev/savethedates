@@ -4,13 +4,13 @@ F009 is in preparation. This is an operating procedure, not evidence that a host
 
 ## Release inputs
 
-Before provisioning, record the owner's selected container host, domain, region, managed Supabase project, spending authority, support address and incident contact. Keep production separate from staging: distinct Supabase projects, Stripe test/live credentials and webhook endpoints, SMTP credentials and application origins. Store secrets in the host's secret manager, never Git or build arguments. Staging must be access-restricted at the host; the application homepage intentionally permits indexing.
+Before provisioning, record the owner's selected container host, domain, region, managed Supabase project, spending authority, support address and incident contact. Keep production separate from staging: distinct Supabase projects, Stripe test/live credentials and webhook endpoints, SMTP credentials and application origins. Store secrets in the host's secret manager, never Git or build arguments. Staging is password-protected and unindexed by the application itself ([Staging access](#staging-access)); the production homepage intentionally permits indexing.
 
 Owner-approved terms/privacy, retention periods, deletion handling (including payment records and backups), support process, and recovery objectives are still required. Export and deletion tooling is not implemented. Do not accept real customers until these gaps and the hosted release checks below are resolved.
 
 ## Container and runtime configuration
 
-Build the existing Dockerfile's `production` target from the reviewed commit; tag with that commit and retain its image digest and previous working digest. Deploy the identical image to staging and production. It runs the standalone Next.js server as `node`, listening on port 3000. Terminate HTTPS at the host proxy and preserve the public Host/Origin for Server Actions. Start with one application instance. Do not cache authenticated pages, wedding pages, photos, auth callbacks or webhooks at the proxy.
+CI builds the Dockerfile's `production` target, tests it and publishes that same image tagged with its commit ([Image publishing and Render](#image-publishing-and-render)); retain its digest and the previous working digest. Deploy the identical image to staging and production. It runs the standalone Next.js server as `node`, listening on port 3000. Terminate HTTPS at the host proxy and preserve the public Host/Origin for Server Actions. Start with one application instance. Do not cache authenticated pages, wedding pages, photos, auth callbacks or webhooks at the proxy.
 
 | Runtime variable | Production value |
 | --- | --- |
@@ -23,8 +23,33 @@ Build the existing Dockerfile's `production` target from the reviewed commit; ta
 | `SENTRY_DSN` | Optional. The Sentry EU project's DSN (Project Settings → Client Keys). If unset, nothing is sent to Sentry and the browser never loads the SDK |
 | `SENTRY_ENVIRONMENT` | Optional. `staging` or `production`. Tags Sentry events and log lines; defaults to `local` |
 | `APP_RELEASE` | Optional. The commit SHA. CI builds it into the image (`--build-arg APP_RELEASE`), so set it only to override. Defaults to `unreleased` |
+| `APP_ENV` | Staging only: `staging`. Leave unset in production. Any other value refuses every request |
+| `STAGING_USERNAME`, `STAGING_PASSWORD` | Staging only. The shared basic-auth login; the password must be at least 16 characters |
 
-The image excludes `.env*`; set the six required values at runtime. The three monitoring values are optional and also read at runtime, including by the browser through the no-store `/api/runtime-config` route, so one image serves every environment. Never copy the generated local `.env.docker` to a hosted environment. Local fixture keys and Stripe placeholders are unusable for real Checkout. Use `/` for a basic HTTP 200 liveness probe; it deliberately does not test database, email or billing connectivity.
+The image excludes `.env*`; set the six required values at runtime, plus the three staging values on staging only. The three monitoring values are optional and also read at runtime, including by the browser through the no-store `/api/runtime-config` route, so one image serves every environment. Never copy the generated local `.env.docker` to a hosted environment. Local fixture keys and Stripe placeholders are unusable for real Checkout. Use `/api/health` as the liveness probe. It returns 200 `ok`, needs no staging password, and deliberately does not test database, email or billing connectivity.
+
+## Staging access
+
+Set `APP_ENV=staging` with `STAGING_USERNAME` and `STAGING_PASSWORD` on the staging service only. Generate the password in a password manager (at least 16 characters; 32 random characters recommended) and share it only with testers. `src/lib/staging-access.ts` then:
+
+- answers every request without the right login with 401 and a password prompt, before any application code or Supabase call runs;
+- sends `X-Robots-Tag: noindex, nofollow` on every response, and `robots.txt` disallows everything;
+- refuses every request with 503 if the login is missing, the password is too short or `APP_ENV` has any other value, so the health check fails and Render keeps the previous deploy.
+
+Three paths answer without the password. The Stripe webhook is authenticated by its signature. `/api/health` returns only `ok`, because Render's health check can't send a login. The twelve fictional theme images (`/media/themes/<theme>.webp`, exact files only) are public on production too, and Next's image optimiser fetches them internally without request headers, so gating them breaks the homepage images. Any other `/media/themes/...` path matches the guest routes and stays gated. Build assets under `/_next/static` and `/_next/image` skip the proxy. Build assets contain no customer data, and `images.localPatterns` limits the optimiser to the theme images, whose internal fetch is the only one that passes the gate.
+
+Browsers remember the login for the session. Auth emails link to `/auth/confirm`, which prompts for the login once if needed. Staging uses only disposable test data; the password keeps out search engines and the public, not a determined attacker, so never load real customer data into staging.
+
+## Image publishing and Render
+
+On every push to `main`, after all CI checks pass, the `publish-image` job pushes the tested image to `ghcr.io/<owner>/<repo>:<commit SHA>` and records its digest in the run summary. It holds the only registry write token and runs no project code. Pull requests and other branches publish nothing. (GitHub's default branch is still an old `master`; the workflow names `main` explicitly. Switching the default to `main` in the repository settings is a tidy-up, not a requirement.) Packages of a public repository are free to store and pull. If the repository becomes private, GitHub's package storage and transfer limits apply; then delete old tags that are no longer rollback candidates.
+
+- **Registry credentials:** Render pulls with a GitHub **classic** personal access token that has only `read:packages` (Render: Settings → Registry Credentials); GHCR doesn't accept fine-grained tokens for this.
+- **Health check path:** `/api/health` on both services.
+- **Staging deploys:** optional. Copy the staging service's deploy hook (Render: Settings → Deploy Hook) into the GitHub Actions secret `RENDER_STAGING_DEPLOY_HOOK`. CI then deploys each published tag to staging. The hook URL is a secret; regenerate it in Render if it leaks. Without it, deploy staging the same way as production.
+- **Production deploys:** manual, only after the checks in [Verification and promotion](#verification-and-promotion). In the production service's settings, change the image tag to the reviewed commit SHA and save; if Render doesn't start a deploy, use **Manual Deploy → Deploy latest reference**. Check that the digest in Render's deploy log matches the CI run summary.
+- **Rollback:** redeploy the previous working deploy from the service's deploy history ([Rollback and incidents](#rollback-and-incidents)). Keep its tag in GHCR; Render's rollback fails if the image is gone.
+- **Notifications:** in Render's notification settings, send deploy failures and service failures to the incident email.
 
 ## Memory and photo uploads
 
@@ -179,7 +204,7 @@ Example prompts:
 
 ## Rollback and incidents
 
-Keep the prior image digest and configuration version available. On application regression, route traffic to the prior image only if compatible with the current schema, then rerun smoke and the affected workflow. Prefer forward fixes for database migrations; never drop columns or restore an old database merely to roll back application code. If compatibility is uncertain, put the host into maintenance mode while resolving it. Exercise image rollback on staging before release.
+Keep the prior image digest and configuration version available. On application regression, roll back to the prior deploy in Render's deploy history only if its image is compatible with the current schema, then rerun smoke and the affected workflow. Prefer forward fixes for database migrations; never drop columns or restore an old database merely to roll back application code. If compatibility is uncertain, put the host into maintenance mode while resolving it. Exercise image rollback on staging before release.
 
 Configure the chosen host to alert the incident contact on failed liveness, elevated server errors and restart loops. Monitor Supabase availability/storage capacity, SMTP failures and Stripe failed webhook deliveries. Redact auth tokens, invitation query strings, guest details and secrets from proxy and application logs; the application's own logs and Sentry data follow the [logging standard](#logging-standard). Investigation steps are in [Monitoring and AI-assisted investigation](#monitoring-and-ai-assisted-investigation). Alerting, log retention and contact routing must still be exercised on the real host (F009).
 
