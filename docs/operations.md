@@ -24,8 +24,8 @@ CI builds the Dockerfile's `production` target, tests it and publishes that same
 | `SENTRY_DSN` | Optional. The Sentry EU project's DSN (Project Settings → Client Keys). If unset, nothing is sent to Sentry and the browser never loads the SDK |
 | `SENTRY_ENVIRONMENT` | Optional. `staging` or `production`. Tags Sentry events and log lines; defaults to `local` |
 | `APP_RELEASE` | Optional. The commit SHA. CI builds it into the image (`--build-arg APP_RELEASE`), so set it only to override. Defaults to `unreleased` |
-| `APP_ENV` | Staging only: `staging`. Leave unset in production. Any other value refuses every request |
-| `STAGING_USERNAME`, `STAGING_PASSWORD` | Staging only. The shared basic-auth login; the password must be at least 16 characters |
+| `APP_ENV` | `staging` on staging. Production also sets it before launch as the pre-launch lock ([launch plan](launch-plan.md)), then leaves it unset from launch onwards. Any other value refuses every request |
+| `STAGING_USERNAME`, `STAGING_PASSWORD` | Set with `APP_ENV=staging` (staging, and production until launch). The shared basic-auth login; the password must be at least 16 characters |
 
 The image excludes `.env*`; set the six required values at runtime, plus the three staging values on staging only. The three monitoring values are optional and also read at runtime, including by the browser through the no-store `/api/runtime-config` route, so one image serves every environment. Never copy the generated local `.env.docker` to a hosted environment. Local fixture keys and Stripe placeholders are unusable for real Checkout. Use `/api/health` as the liveness probe. It returns 200 `ok`, needs no staging password, and deliberately does not test database, email or billing connectivity.
 
@@ -84,6 +84,8 @@ These are local Docker figures. Repeat the same check on F009 staging once the h
 3. Register `/api/stripe/webhook` for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `refund.created`, and `charge.dispute.created`. Use the endpoint-specific secret. Verify test Checkout and delivery/retries on staging. A browser success redirect alone does not grant publication. Live purchase/refund verification needs the owner's release authority and records of the actual result.
 
 ## Verification and promotion
+
+The launch order is set by the [launch plan](launch-plan.md). Production is created locked, reviewed by Stripe and Google, rehearsed end to end by the owner (including a live purchase and refund), and only then opened by removing the lock.
 
 The repository's automated account/database tests create and delete fictional local users and use local Mailpit and signed webhook fixtures. **Do not point the browser suite (`test:e2e`), integration or persistence tests at a hosted deployment.** They require a local Supabase stack and test Stripe placeholders. They do not verify hosted Checkout, SMTP, a managed database, or real payment processing.
 

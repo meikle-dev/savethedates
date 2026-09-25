@@ -103,7 +103,8 @@ These choices are required before implementing and testing export/deletion. The 
 - [ ] Backup restore drill owner: `
 - [ ] Staging journey tester: `
 - [ ] Independent release reviewer: `
-- [ ] Planned release window: `
+- [ ] Planned release window: `following the launch plan (docs/launch-plan.md): production is set up locked, reviewed by Stripe and Google, rehearsed by the owner, then opened. Date to be set`
+- [ ] Production dress rehearsal completed (launch plan stage 4): `
 - [ ] Rollback approver: `
 - [ ] Final production launch approval: `pending`
 

@@ -12,6 +12,7 @@ Read only what the current task needs. [Backlog](backlog.md) holds current state
 | How do I release and operate it? | [Release and operations](operations.md) (preparation; hosted release pending) |
 | How do I log, monitor and investigate errors? | [Logging standard](operations.md#logging-standard), [Monitoring and AI-assisted investigation](operations.md#monitoring-and-ai-assisted-investigation) |
 | What must be provided before launch? | [Production release inputs](release-inputs.md) |
+| How do we launch? | [Launch plan: private review, then open](launch-plan.md), with the browser-agent [production setup prompt](production-setup-prompt.md) |
 | Which technologies? | [Stack](overview/tech-stack.md) |
 | How is it structured and secured? | [Architecture](overview/architecture.md) |
 | How should the platform look? | [Platform direction](overview/site-ui.md), [reference board](ux/site-ui-design.png) |
