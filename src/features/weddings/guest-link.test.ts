@@ -1,10 +1,10 @@
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { reservedNames, suggestedNames } from "./guest-link";
 
 const root = path.resolve(import.meta.dirname, "../../..");
-const conventionFiles = new Set(["layout", "page", "not-found", "error", "global-error", "loading", "template", "default", "globals", "route"]);
+const conventionFiles = new Set(["layout", "page", "not-found", "error", "global-error", "loading", "template", "default", "route"]);
 
 // Every first path segment the application serves itself: src/app folders (through route groups) and metadata
 // files, plus folders in public/. A names part equal to one would be routed to that page instead of the wedding.
@@ -16,7 +16,7 @@ function topLevelSegments(directory: string): string[] {
       return [entry.name];
     }
     const name = entry.name.replace(/\..*$/, "");
-    return conventionFiles.has(name) ? [] : [name];
+    return conventionFiles.has(name) || entry.name.endsWith(".css") ? [] : [name];
   });
 }
 
@@ -26,6 +26,13 @@ describe("guest link", () => {
     const segments = [...topLevelSegments(path.join(root, "src/app")), ...publicFolders];
     expect(segments).toEqual(expect.arrayContaining(["account", "dashboard", "demo", "examples", "robots"]));
     expect(segments.filter((segment) => !reservedNames.has(segment))).toEqual([]);
+  });
+
+  it("matches the names reserved by the latest wedding_slug_valid migration", () => {
+    const migrations = path.join(root, "supabase/migrations");
+    const latest = readdirSync(migrations).sort().reverse().map((file) => readFileSync(path.join(migrations, file), "utf8")).find((sql) => sql.includes("add constraint wedding_slug_valid"))!;
+    const list = latest.slice(latest.indexOf("add constraint wedding_slug_valid")).match(/slug not in \(([^)]*)\)/)![1];
+    expect(new Set([...list.matchAll(/'([^']+)'/g)].map((match) => match[1]))).toEqual(reservedNames);
   });
 
   it("keeps the only dynamic top-level route as the guest link", () => {

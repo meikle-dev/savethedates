@@ -1,7 +1,6 @@
 // Browser monitoring. Configuration comes from a no-store runtime route, so static pages never freeze it and one
 // image serves every environment. With SENTRY_DSN unset the SDK is never downloaded and nothing leaves the site.
 import type { SentryRuntimeConfig } from "./config";
-import { sentryOptions } from "./sentry-options";
 
 type SentryModule = typeof import("./sentry-browser");
 const shared = ((globalThis as { __saveTheDatesMonitoring?: { sentry?: Promise<SentryModule | null> } }).__saveTheDatesMonitoring ??= {});
@@ -18,7 +17,8 @@ export function startBrowserMonitoring() {
   shared.sentry ??= loadConfig()
     .then(async (config) => {
       if (!config) return null;
-      const Sentry = await import("./sentry-browser");
+      // The scrubber loads with the SDK, so pages without Sentry never download it.
+      const [Sentry, { sentryOptions }] = await Promise.all([import("./sentry-browser"), import("./sentry-options")]);
       Sentry.init({
         ...sentryOptions(config),
         // No tracing, no session pings on page views, and no console or DOM breadcrumbs: click breadcrumbs carry

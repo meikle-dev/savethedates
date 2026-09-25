@@ -1,3 +1,4 @@
+import "@/app/app.css";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";

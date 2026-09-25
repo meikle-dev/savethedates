@@ -22,7 +22,7 @@ export async function proxy(request: NextRequest) {
     return refusal;
   }
   let response = NextResponse.next({ request });
-  const refreshAuth = request.nextUrl.pathname === "/" || ["/dashboard", "/account", "/auth"].some((prefix) => request.nextUrl.pathname.startsWith(`${prefix}/`) || request.nextUrl.pathname === prefix);
+  const refreshAuth = ["/", "/digital-save-the-date"].includes(request.nextUrl.pathname) || ["/dashboard", "/account", "/auth"].some((prefix) => request.nextUrl.pathname.startsWith(`${prefix}/`) || request.nextUrl.pathname === prefix);
   if (refreshAuth && process.env.SUPABASE_URL && process.env.SUPABASE_PUBLISHABLE_KEY) {
     const { url, key } = supabaseConfig();
     const supabase = createServerClient(url, key, {

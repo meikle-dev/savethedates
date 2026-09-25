@@ -396,6 +396,6 @@ Palettes, swatches and type are in [theme-list.md](designs/themes/theme-list.md)
 | Velvet | Claret velvet cover; photo on the left with a double gold hairline; ivory text on the right with gold kicker, `em` and rule. On phones it becomes a centred column. The rose sprig is hidden on claret. | Velvet band, photo inset 20px with a gold hairline | Blush gradient / `velvet-rsvp-claret.webp` left, content from 38%. Card has a gold border and inner outline. |
 | Black Tie | Ivory card inside a black 24px / ivory 8px / black 1px letterpress border (12/5/1px on phones); centred landscape photo, text and orchid below. | Black band, photo inset 18px; square outlined icons | 10px black top border / `black-tie-rsvp-letterpress.webp` left, content from 30%. Card has a black double rule. |
 
-Photo-framing editor shapes (in `globals.css`, measured at 390/1440px): Coastal 39/38 and 50/21; Riviera 33/38 and 12/17; Velvet 83/100 and 37/50; Black Tie 33/34 and 57/25. Details frames use the shared shapes.
+Photo-framing editor shapes (in `src/app/base.css`, measured at 390/1440px): Coastal 39/38 and 50/21; Riviera 33/38 and 12/17; Velvet 83/100 and 37/50; Black Tie 33/34 and 57/25. Details frames use the shared shapes.
 
 **Contrast (computed):** Coastal text/surface 13.02, muted 6.02, accent/paper 6.41. Riviera text 13.37, muted 6.06, accent/tint 7.56. Velvet text 15.78, muted 7.14; ivory on claret `#4A141C` 13.78, gold on claret 7.82, blush location `#E6D3CD` on claret 10.34. Black Tie text 17.65, muted 7.35. White on each accent is at least 8.08.

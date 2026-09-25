@@ -129,6 +129,14 @@ Footer
 
 A visitor should understand what SaveTheDates does within a few seconds.
 
+## Search wording and the digital save the date page (F059, 25 September 2026)
+
+- The homepage keeps its brand headings. The lines around them say plainly what the product is: a digital save the date, wedding details and online RSVP in one link, shared by WhatsApp, text or email.
+- `/digital-save-the-date` is the one extra indexed marketing page. It reuses the homepage parts in this order: dark hero, three-step "one link, three pages", pricing, a light three-column explainer, FAQ, footer. There is no new visual language.
+- Its hero phones use different themes from the homepage.
+- The footer links to it, and so does the homepage FAQ answer "What is a digital save the date?".
+- Copy states only built features. It doesn't compare SaveTheDates with named competitors or promise refunds, retention or preview-card behaviour before those are approved.
+
 ---
 
 # Calls to Action

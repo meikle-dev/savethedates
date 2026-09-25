@@ -7,7 +7,7 @@ Fill in the non-secret decisions and identifiers below when they are available. 
 - [x] Production host/provider: `Render (Hobby workspace; production on a Starter web service, deployed from the GHCR image) — approved 24 September 2026, see F037`
 - [ ] Hosting account/project identifier: `
 - [x] Deployment region: `Frankfurt (EU Central)`
-- [ ] Production domain: `
+- [x] Production domain: `savethedates.co.uk` (owner, 25 September 2026). Canonical origin `https://savethedates.co.uk` (`APP_ORIGIN`); `www.savethedates.co.uk` redirects to it with a 301.
 - [ ] DNS access available: `yes / no`
 - [x] TLS/HTTPS will be managed by: `Render (automatic certificates for custom domains)`
 - [ ] Monthly spending limit or approval: `

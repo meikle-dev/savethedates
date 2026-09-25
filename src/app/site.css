@@ -1,0 +1,7 @@
+/* Every page: the homepage needs only this. Routes with wedding or workspace pages add app.css after it. */
+@import "tailwindcss";
+@import "../components/controls.css";
+@import "../features/marketing/marketing.css";
+@import "../features/weddings/photo-label.css";
+@import "../components/motion.css";
+@import "./base.css";

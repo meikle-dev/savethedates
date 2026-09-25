@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056, F057 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F055 (Google sign-in) is Deferred** (owner decision, 25 September 2026). It is built, tested, reviewed and switched off, and no longer gates launch. Its entry lists what the owner must provide to finish it. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056, F057 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F055 (Google sign-in) is Deferred** (owner decision, 25 September 2026). It is built, tested, reviewed and switched off, and no longer gates launch. Its entry lists what the owner must provide to finish it. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. **F051 is In Progress:** the [SEO audit report](reports/2026-09-25-seo-audit.md) is written and triaged, and only the owner's keyword-volume input remains. The owner chose the domain `savethedates.co.uk` and asked for the SEO and speed work, which is delivered in **F058 and F059 (Done)**. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -1611,7 +1611,7 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 
 ## F051 - Full SEO audit and search-visibility report
 
-**Status:** Ready
+**Status:** In Progress (report and triage done 25 September 2026; waits for the owner's keyword-volume input, see handoff)
 **Priority / lead:** P2 / SEO & Growth, with the Software Engineer for technical checks. Report only; no application changes.
 **Purpose:** Find out what stops SaveTheDates appearing in Google for the searches UK and Irish couples make, and produce a prioritised fix list.
 **Depends on:** None to start. Checks that need the live domain wait for F041/F009: Search Console, real indexing, and field Core Web Vitals.
@@ -1647,6 +1647,136 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 - It includes a sourced, dated keyword list, a competitor summary, and recommendations ranked by expected benefit and effort.
 - Its technical checklist is reusable as F009's existing "SEO launch checks" step. The broader recommendations don't gate launch unless the owner says so.
 - The Product Manager's triage is recorded in the backlog: accepted items become tickets, and rejected items are recorded with the reason.
+
+**Handoff (25 September 2026):**
+
+- **What exists.** The report is [`docs/reports/2026-09-25-seo-audit.md`](reports/2026-09-25-seo-audit.md). It contains:
+  - the Launch Review checklist, with local results and the recheck on the live domain (reusable for F009's SEO launch checks);
+  - ten findings;
+  - keyword intent and who ranks today, a competitor summary, and content, link and Search Console guidance;
+  - a prioritised action list;
+  - a "Not checked" table.
+  - No application code changed.
+- **Checks.** Run against production image `save-the-dates:f051`, on port 3001 with local Supabase:
+  - `curl` of robots, sitemap, rendered heads and headers for eleven routes. Indexing boundaries all pass.
+  - Lighthouse 12.8.2 (Playwright Chromium): mobile ×3 gave performance 92/93/93, LCP 3.3/3.2/3.2 s, CLS 0. Desktop gave 100. SEO, accessibility and best practice scored 100 in both.
+  - Web search and page fetches on 25 September 2026. The search tool is US-located.
+- **Not done.**
+  - The Done-when's "sourced, dated keyword list" is only partial. No volume or difficulty figures exist because no keyword tool was available, and none were invented.
+  - Live-domain checks wait for F041/F009.
+- **Product Manager triage.**
+  - Accepted:
+    - F058: structured data, `lang`, brand-link label, preview image `sizes`.
+    - F053 takes the homepage wording findings 2, 4 and 5, so copy changes once.
+    - F009 uses the checklist.
+    - F041 update 3 adds the footer legal links.
+  - Owner decides: a digital save the date page; a "when to send save the dates" guide; editorial outreach; Keyword Planner access.
+  - Deferred until data exists: mobile LCP and static-homepage work (findings 7 and 9), and a themes gallery page.
+  - Rejected:
+    - FAQ markup: no rich result for commercial sites.
+    - `Product` markup: eligibility for a service is unclear.
+    - Indexable theme examples: thin, near-duplicate fictional pages.
+    - Targeting "free wedding website": does not match a £29 product.
+    - Town or venue pages and competitor-comparison pages: thin, or risky claims.
+- **Blocker.** Owner input: either record Keyword Planner volumes for the UK and Ireland in the report's keyword table, or accept the gap and use Search Console after launch. Once either is recorded, F051 can be marked Done.
+
+## F058 - Homepage search basics and mobile speed
+
+**Status:** Done (25 September 2026)
+**Priority / lead:** P2, before launch / Software Engineer. The owner asked on 25 September 2026 to improve mobile speed, especially Google's 2.5 s LCP target.
+**Purpose:** Small technical fixes from F051 that help Google identify the site and keep the homepage light.
+**Depends on:** None. Homepage wording is F059.
+**References:** [SEO audit](reports/2026-09-25-seo-audit.md) findings 3, 6, 7, 8 and 10; `src/app/page.tsx`, `src/app/layout.tsx`, `src/features/marketing/metadata.ts`, `home.tsx`, `phone-preview.tsx`, `tests/marketing.spec.ts`.
+**Scope:**
+
+- Homepage JSON-LD only:
+  - `WebSite` with `name: "SaveTheDates"` and `url` from `marketingOrigin()`;
+  - `Organization` with `name`, `url` and `logo` (`/icon-512.png`).
+  - No contact details until approved in release-inputs. No FAQ or Product markup.
+- `<html lang="en-GB">`.
+- The brand link's accessible name includes its visible text.
+- Tighten the theme preview `sizes` to their displayed widths.
+- Added at the owner's request: bring mobile lab LCP under 2.5 s without changing the design.
+
+**Done when:**
+
+- The homepage JSON-LD is valid, and a test checks it and its absence elsewhere.
+- Lighthouse reports no `label-content-name-mismatch`, and the image-size saving shrinks.
+- The mobile and desktop homepage look unchanged.
+- `npm.cmd run check` and `tests/marketing.spec.ts` pass.
+
+**Handoff (25 September 2026):**
+
+- **What exists.**
+  - The homepage JSON-LD (`homeStructuredData` in `metadata.ts`, `JsonLd` in `chrome.tsx`).
+  - `lang="en-GB"`.
+  - The brand link's tagline is `aria-hidden` and the link has no `aria-label`.
+  - Speed:
+    - Per-use `sizes`, and the previews use `getImageProps` with a plain `<img>`, so the homepage ships no Image client component.
+    - Theme cards use `content-visibility: auto`.
+    - `globals.css` is split into `site.css` (root layout) and `app.css` (app routes), so the homepage stylesheet fell from 113 KB to 42 KB. The cascade reasoning is in `architecture.md`.
+    - Sentry configuration and the SDK start after the first paint (or at most 4 s after the script runs), and the scrubber loads with the SDK.
+- **Lab results.** Lighthouse 12.8.2 mobile, production image, median of three runs. The full table is in the audit report's follow-up.
+  - HTTP/1.1: performance 92 → 97 and LCP 3.3 s → 2.5–2.6 s.
+  - HTTPS + HTTP/2 (Caddy proxy, closest to Render): 99–100, LCP 1.81–1.96 s. Before the change it was 97–100, LCP 1.93 s.
+  - Page weight 432 → 253 KB. Desktop 100.
+  - SEO, accessibility and best practice 100. `label-content-name-mismatch` is not applicable.
+- **Checks.**
+  - `npm.cmd run check` passed: lint, typecheck, 85 unit tests, build.
+  - `npm run test:monitoring` passed 2/2.
+  - Full `E2E_PRODUCTION=1` Playwright against the production image on port 3000: 85 passed, 20 skipped, 1 failed.
+    - The failure was `tests/guests.spec.ts` on mobile, where sign-in stayed on "Please wait…" under load.
+    - With `--repeat-each=4` it fails 1 in 4 on both the new image and the pre-change image (`save-the-dates:f051`, at a different step), so it predates this work.
+  - After the review fixes, `npm run smoke` passed. The marketing, metadata, monitoring-off, account, RSVP-preview and theme-design suites passed 36/36 on the final image.
+  - Inspected screenshots at 390 px and 1440 px: homepage, digital save the date page, sign-in, Velvet example, 404, dashboard overview, design, preview, and the homepage after dashboard navigation.
+  - Note: full-page screenshots leave off-screen theme cards blank because of `content-visibility`. When scrolled to, all twelve render (checked).
+- **Review.**
+  - The independent reviewer found no Blocking or Important issues.
+  - Minors fixed: a 4 s monitoring fallback from script start, the reserved-name comment plus a unit test that the migration list equals `reservedNames`, publish wording that now mentions payment, and the documented label-rule exception.
+  - Noted, not fixed: 404s from `notFound()` inside nested routes send no stylesheet link in the server HTML (React adds it on load). This predates the work.
+- **Observed once.** In a long-running local container, one optimised image (`black-tie.webp`, `w=256`) hung while others worked. A fresh container served it in 0.1 s, and it was not reproduced. Watch for hanging `/_next/image` requests during the F041 staging checks.
+- **Next.** After launch, run PageSpeed Insights on `https://savethedates.co.uk` (F009 SEO launch checks), then use Search Console's Core Web Vitals report once there is traffic.
+
+## F059 - Digital save the date page and search wording
+
+**Status:** Done (25 September 2026)
+**Priority / lead:** P2 / SEO & Growth, UX (reusing documented patterns), Software Engineer. The owner approved on 25 September 2026: "Please proceed with SEO improvements. I want you to handle it."
+**Purpose:** Target the searches where SaveTheDates is genuinely different (audit findings 2, 4 and 5, and the first content recommendation) without inventing claims.
+**Depends on:** F051 report.
+**Scope:**
+
+- Homepage wording: title and description; hero, theme and step lines; descriptive H2s; seven FAQs, including "What is a digital save the date?", "When should we send our save the dates?" and "What happens after the wedding?".
+- An indexable `/digital-save-the-date` page, added to the sitemap, the proxy auth refresh and `reservedNames` plus migration `20260925000300_reserve_digital_save_the_date.sql`.
+- A footer link and an FAQ link from the homepage.
+- A shared marketing header, footer and pricing (`chrome.tsx`).
+- No competitor names, refund, retention or preview-card promises.
+
+**Done when:**
+
+- Both pages are indexable with a correct canonical and `og:url`, and are the only sitemap entries.
+- Guest, example and account routes stay `noindex`.
+- Claims match built features.
+- A names part can't collide with the new route.
+- Mobile and desktop layouts are free of overflow at 320–1440 px.
+- `npm.cmd run check`, marketing tests and independent review pass.
+
+**Handoff (25 September 2026):**
+
+- Built as scoped; `site-ui.md` records the page structure.
+- The migration was applied locally with `npx supabase migration up --local`. It renames an existing names part `digital-save-the-date` to `digital-save-the-date-wedding`. It must be applied on staging and production with the other migrations (operations.md).
+- A new Playwright test covers:
+  - footer navigation, the title and H1;
+  - `index, follow` with no `X-Robots-Tag`;
+  - the canonical URL and `og:url`;
+  - the CTAs and `/#themes`;
+  - the FAQ;
+  - 320–1440 px overflow;
+  - the homepage FAQ link.
+- The metadata test covers the new title, two sitemap entries, and JSON-LD on the homepage only.
+- Checks and review: shared with F058, above. The reviewer checked each marketing claim against the code.
+- **Next:**
+  - F053 should review the current homepage copy, not the audit-time copy.
+  - Add the "when to send save the dates" guide only if Search Console shows demand.
 
 ## F052 - Cost-effective advertising strategy report
 

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import { PhotoLabel } from "@/features/weddings/wedding-photo";
 import { themes, type WeddingTheme } from "@/features/weddings/themes";
 
@@ -10,10 +10,12 @@ const photoCentre: Record<WeddingTheme, number> = {
 };
 
 // Decorative miniature of the real example page; regenerate with `npm run marketing:previews`.
-export function PhonePreview({ theme = "minimal", eager = false, photoLabel }: { theme?: WeddingTheme; eager?: boolean; photoLabel?: string }) {
+// `sizes` must match the screen width set in marketing.css (phone width minus its border) at each breakpoint.
+export function PhonePreview({ theme = "minimal", eager = false, photoLabel, sizes }: { theme?: WeddingTheme; eager?: boolean; photoLabel?: string; sizes: string }) {
   const surface = themes.find((item) => item.id === theme)?.swatch[0];
   return <div className="phone-preview" style={{ background: surface }} aria-hidden="true"><div className="phone-speaker" /><div className="phone-screen" style={{ "--photo-y": photoCentre[theme] } as React.CSSProperties}>
-    <Image src={`/media/themes/${theme}.webp`} alt="" fill sizes="(max-width: 600px) 190px, 250px" loading={eager ? "eager" : "lazy"} fetchPriority={eager ? "high" : undefined} />
+    {/* eslint-disable-next-line @next/next/no-img-element -- getImageProps keeps optimisation without shipping the Image client component */}
+    <img {...getImageProps({ src: `/media/themes/${theme}.webp`, alt: "", fill: true, sizes, loading: eager ? "eager" : "lazy", fetchPriority: eager ? "high" : undefined }).props} alt="" />
     {photoLabel && <PhotoLabel label={photoLabel} className={theme === "bold" ? "photo-label-below" : undefined} />}
   </div></div>;
 }

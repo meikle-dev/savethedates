@@ -1,3 +1,4 @@
+import "@/app/app.css";
 import { DevelopmentWeddingPage } from "@/features/weddings/development-page";
 
 export const dynamic = "force-dynamic";

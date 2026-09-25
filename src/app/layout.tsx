@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SiteMotion } from "@/components/site-motion";
-import "./globals.css";
+import "./site.css";
 
 export const metadata: Metadata = {
   title: "SaveTheDates",
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body><SiteMotion>{children}</SiteMotion></body></html>;
+  return <html lang="en-GB"><body><SiteMotion>{children}</SiteMotion></body></html>;
 }

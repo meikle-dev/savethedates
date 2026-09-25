@@ -5,12 +5,12 @@
 export const guestSecretPattern = /^[A-Za-z0-9_-]{43}$/;
 
 // The names part is the first path segment, so it must never equal a top-level route in src/app or folder in public/.
-// Keep identical to the wedding_slug_valid check in supabase/migrations/20260925000100_secret_guest_urls.sql.
+// Keep identical to the wedding_slug_valid check in the latest migration that sets it (guest-link.test.ts compares them).
 // Before adding a new top-level route, add it here and in a migration, after checking no wedding uses it.
 export const reservedNames = new Set([
   "account", "auth", "dashboard", "api", "media", "preview", "preview-photo", "demo", "demo-no-photo", "demo-long-names",
   "pricing", "features", "guides", "examples", "privacy", "terms", "support", "robots", "sitemap", "favicon",
-  "s", "contact", "refunds", "assets", "fonts",
+  "s", "contact", "refunds", "assets", "fonts", "digital-save-the-date",
 ]);
 
 export type GuestHrefs = { home: string; details: string; rsvp: string };
