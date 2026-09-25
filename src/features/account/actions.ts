@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { errorReason, identify, log, withLogging } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
-import { appOrigin } from "@/lib/supabase/config";
+import { appOrigin, googleSignInEnabled } from "@/lib/supabase/config";
 import { emailSchema, passwordSchema, type FormState } from "./validation";
 
 const localDemoAccount = {
@@ -36,6 +36,27 @@ export async function signIn(_: FormState, form: FormData): Promise<FormState> {
       return { message: "Sign-in is temporarily unavailable. Please try again." };
     }
     redirect("/dashboard");
+  });
+}
+
+export async function signInWithGoogle(): Promise<void> {
+  return withLogging("account.google", "/account/[screen]", async () => {
+    let providerUrl: string | undefined;
+    if (googleSignInEnabled()) {
+      try {
+        const client = await createClient();
+        // The PKCE verifier is stored in an httpOnly cookie; /auth/callback exchanges the returned code server-side.
+        const { data, error } = await client.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: `${appOrigin()}/auth/callback`, skipBrowserRedirect: true, queryParams: { prompt: "select_account" } },
+        });
+        if (error) log.error("account.google.failed", { reason: errorReason(error) });
+        else providerUrl = data.url;
+      } catch (error) {
+        log.error("account.google.failed", { reason: errorReason(error) });
+      }
+    }
+    redirect(providerUrl ?? "/account/sign-in?google=failed");
   });
 }
 

@@ -22,6 +22,7 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL ? undefined : {
     env: {
       APP_ORIGIN: "http://127.0.0.1:3100",
+      AUTH_GOOGLE_ENABLED: "true",
       STRIPE_SECRET_KEY: "sk_test_local_webhook_verification_only",
       STRIPE_WEBHOOK_SECRET: "whsec_local_webhook_test_secret",
     },

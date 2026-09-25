@@ -23,12 +23,12 @@ export const loadWorkspace = cache(async () => {
   if (!user) redirect("/account/sign-in");
   const { data: wedding, error } = await client.from("weddings").select(weddingColumns).eq("owner_id", user.id).maybeSingle();
   if (error) throw new Error("Unable to load wedding workspace.");
-  if (!wedding) return { client, wedding: null, entitlement: noEntitlement, live: false, offline: false };
+  if (!wedding) return { client, user, wedding: null, entitlement: noEntitlement, live: false, offline: false };
   const { data, error: entitlementError } = await client.rpc("owner_entitlement").maybeSingle<Entitlement>();
   if (entitlementError) throw new Error("Unable to load publication entitlement.");
   const entitlement = data ?? noEntitlement;
   // offline: still marked published, but the purchase has expired or ended, so guests get a 404.
-  return { client, wedding, entitlement, live: wedding.published && entitlement.active, offline: wedding.published && !entitlement.active };
+  return { client, user, wedding, entitlement, live: wedding.published && entitlement.active, offline: wedding.published && !entitlement.active };
 });
 
 // Sections other than Basics need a saved wedding; new accounts are sent to Basics to create one.

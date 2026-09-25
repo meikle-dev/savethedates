@@ -51,6 +51,19 @@ npx supabase migration up --local
 
 Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, and preview saved content. Preview theme does not save changes; Apply theme persists the previewed choice. **Preview RSVP page** opens the saved couple/theme presentation without saving a response, including before publication. Each wedding has one private guest link, `/<names>/<secret>`, shown in Publish. The names part is suggested from the couple's names and can be changed at any time; it is not unique. A verified £29 test-mode purchase is required before publishing. Published edits take effect when saved. Once live, Publish and Overview show the absolute guest link (on `APP_ORIGIN`) with an editable share message, native Share where supported, Share on WhatsApp, Copy message and Copy link. The RSVP section can enable or close responses, copy the guest link, replace the link (every earlier link, including the Save the Date, stops working) and show attendance totals. Guests can submit separate responses through that link; owners correct or remove them in Guests. Unpublishing hides the page, photo, and RSVP on new requests; copies already downloaded cannot be recalled.
 
+## Google sign-in (optional)
+
+The **Continue with Google** option appears on sign-in and sign-up only when the app has `AUTH_GOOGLE_ENABLED=true`. It is off in the generated environment files and in local Supabase, so a normal local setup shows email and password only.
+
+`tests/google-sign-in.spec.ts` needs the flag but never contacts Google: it intercepts the Supabase authorize request and replays the callback, covering the start of the flow, cancellation, rejected codes and the Basics notice for Google accounts. Its success test uses a local magic link carrying the browser's PKCE challenge, so the real code exchange runs through `/auth/callback`. On an existing local stack, run `npm run db:stop` then `npm run db:start` once so local Auth allows the `/auth/callback` URLs. The Playwright web server and CI set the flag. When running the suite against a container with `E2E_BASE_URL`, start that container with `-e AUTH_GOOGLE_ENABLED=true`, as in the production check below; the Compose development container does not set it.
+
+To try real Google sign-in locally:
+
+1. Create a Google OAuth client as in [F041 step 2](docs/backlog.md#f041---production-setup-guide), with authorised redirect URI `http://127.0.0.1:54321/auth/v1/callback`.
+2. In your shell, set `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` and `SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET`. Change `enabled` to `true` under `[auth.external.google]` in `supabase/config.toml`, but don't commit that change or the credentials.
+3. Run `npm run db:stop`, then `npm run db:start`. Saved data is kept.
+4. Add `AUTH_GOOGLE_ENABLED=true` to `.env.local` and start the app on port 3000 or 3100 (the callback URLs local Auth allows).
+
 ## Stripe test-mode checkout
 
 Replace the generated Stripe placeholders in `.env.local` (and `.env.docker` when using Compose) with a Stripe test secret key and the webhook signing secret printed by the Stripe CLI. Keep both values server-only. Start the application, then forward test events in a separate terminal:
@@ -163,7 +176,7 @@ Complete local production check (PowerShell, with local Supabase running and `.e
 ```powershell
 docker build --target production -t save-the-dates:f009 .
 docker compose stop app
-docker run -d --name wedding-f009-verify --add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ORIGIN=http://127.0.0.1:3000 -e STRIPE_SECRET_KEY=sk_test_local_webhook_verification_only -e STRIPE_WEBHOOK_SECRET=whsec_local_webhook_test_secret -p 127.0.0.1:3000:3000 save-the-dates:f009
+docker run -d --name wedding-f009-verify --add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ORIGIN=http://127.0.0.1:3000 -e AUTH_GOOGLE_ENABLED=true -e STRIPE_SECRET_KEY=sk_test_local_webhook_verification_only -e STRIPE_WEBHOOK_SECRET=whsec_local_webhook_test_secret -p 127.0.0.1:3000:3000 save-the-dates:f009
 # Wait for the server to report ready.
 docker logs wedding-f009-verify
 npm.cmd run smoke -- http://127.0.0.1:3000

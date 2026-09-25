@@ -20,6 +20,7 @@ CI builds the Dockerfile's `production` target, tests it and publishes that same
 | `SUPABASE_SERVICE_ROLE_KEY` | Same project's server-only service-role key, used by the verified webhook |
 | `STRIPE_SECRET_KEY` | Test key on staging; live key only for the approved production release |
 | `STRIPE_WEBHOOK_SECRET` | Signing secret for this environment's registered webhook endpoint |
+| `AUTH_GOOGLE_ENABLED` | `true` once that environment's Supabase project has the Google provider configured; shows **Continue with Google**. Unset hides it |
 | `SENTRY_DSN` | Optional. The Sentry EU project's DSN (Project Settings → Client Keys). If unset, nothing is sent to Sentry and the browser never loads the SDK |
 | `SENTRY_ENVIRONMENT` | Optional. `staging` or `production`. Tags Sentry events and log lines; defaults to `local` |
 | `APP_RELEASE` | Optional. The commit SHA. CI builds it into the image (`--build-arg APP_RELEASE`), so set it only to override. Defaults to `unreleased` |
@@ -79,7 +80,7 @@ These are local Docker figures. Repeat the same check on F009 staging once the h
 ## Database, email and payments
 
 1. Verify the target project identifier and environment before any database write. Capture a recoverable database backup and separate Storage backup before upgrading an existing environment. On a new staging project, apply all committed `supabase/migrations/` in order using the pinned repository CLI. For a deliberately linked project, inspect `npx supabase migration list`, then `npx supabase db push --dry-run`, review the pending SQL, and only then run `npx supabase db push`. Do not run local reset, test fixtures or local environment generation against production.
-2. In managed Auth, enable email/password confirmation, set Site URL to `APP_ORIGIN`, and allow the exact `APP_ORIGIN/auth/confirm` redirect. Copy the signup/recovery templates from `supabase/templates/`; the application expects token hashes at `/auth/confirm`. Configure verified Resend SMTP credentials in Supabase Auth, not a second application email flow. Verify signup and recovery in real external inboxes, including expired links and return to the correct host. Supabase's [default SMTP service is for non-production use](https://supabase.com/docs/guides/auth/auth-smtp); see its [redirect configuration](https://supabase.com/docs/guides/auth/redirect-urls).
+2. In managed Auth, enable email/password confirmation, set Site URL to `APP_ORIGIN`, and allow the exact `APP_ORIGIN/auth/confirm` redirect. Copy the signup/recovery templates from `supabase/templates/`; the application expects token hashes at `/auth/confirm`. Configure verified Resend SMTP credentials in Supabase Auth, not a second application email flow. Verify signup and recovery in real external inboxes, including expired links and return to the correct host. For Google sign-in, also allow the exact `APP_ORIGIN/auth/callback` redirect, enable the Google provider with that environment's OAuth client (F041 step 2), then set `AUTH_GOOGLE_ENABLED=true` on the service. The app exchanges the returned code server-side (PKCE, verifier in an httpOnly cookie). Access and refresh tokens never appear in URLs. The single-use code does appear in the `/auth/callback` URL, including browser history and any host log that keeps query strings, but it cannot be used without that browser's verifier. Supabase's [default SMTP service is for non-production use](https://supabase.com/docs/guides/auth/auth-smtp); see its [redirect configuration](https://supabase.com/docs/guides/auth/redirect-urls).
 3. Register `/api/stripe/webhook` for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `refund.created`, and `charge.dispute.created`. Use the endpoint-specific secret. Verify test Checkout and delivery/retries on staging. A browser success redirect alone does not grant publication. Live purchase/refund verification needs the owner's release authority and records of the actual result.
 
 ## Verification and promotion
@@ -120,6 +121,8 @@ Reading one request ID should tell the story of that request (F038).
 | `account.recovery.requested` / `.failed` | info / error | Recovery email requested / fault |
 | `account.password.updated` / `.rejected` / `.failed` | info / warn / error | Password changed / expired link or refused password / fault |
 | `account.signout.failed` | error | Sign-out failed |
+| `account.google.failed` | error | Could not start Google sign-in (Supabase error or fault) |
+| `account.google_callback.succeeded` / `.rejected` / `.failed` | info / warn / error | Google sign-in completed / cancelled (`access_denied`), provider error, rejected or missing code / fault |
 | `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, theme, photo_framing, rsvp_settings, guest_link) / concurrent change / fault |
 | `workspace.ownership.denied` | warn | No session or no saved wedding for this owner |
 | `photo.upload.accepted` | info | Photo processed and stored; `durationMs` is processing time, including any wait for the processing slot |
@@ -136,13 +139,13 @@ Reading one request ID should tell the story of that request (F038).
 | `rsvp.link.rotated` / `.rejected` / `.failed` | info / warn / error | Shared link replaced / invalid shared link opened / fault |
 | `rsvp.response.corrected` / `.removed` / `.rejected` / `.failed` | info / info / warn / error | Owner corrected or removed a response / response not found / fault |
 
-`withLogging` operations (each has a `.failed` event above and a local `.completed` debug line): `account.signup`, `account.signin`, `account.recovery`, `account.password`, `account.signout`, `account.confirm`, `workspace.save`, `photo.upload`, `photo.read`, `publication.publish`, `publication.unpublish`, `payment.checkout`, `payment.webhook`, `rsvp.submit`, `rsvp.link`, `rsvp.response`.
+`withLogging` operations (each has a `.failed` event above and a local `.completed` debug line): `account.signup`, `account.signin`, `account.recovery`, `account.password`, `account.signout`, `account.confirm`, `account.google` (starting Google sign-in), `account.google_callback`, `workspace.save`, `photo.upload`, `photo.read`, `publication.publish`, `publication.unpublish`, `payment.checkout`, `payment.webhook`, `rsvp.submit`, `rsvp.link`, `rsvp.response`.
 
 ### Where to log
 
 | Area | Where | Events |
 | --- | --- | --- |
-| Account | `src/features/account/actions.ts`, `src/app/auth/confirm/route.ts` | `account.*` |
+| Account | `src/features/account/actions.ts`, `src/app/auth/confirm/route.ts`, `src/app/auth/callback/route.ts` | `account.*` |
 | Workspace | `src/features/workspace/actions.ts`, `details-actions.ts`, `theme-action.ts`, `photo-framing-action.ts`, `rsvp-actions.ts` (RSVP settings), `publication-actions.ts` (guest link names), `workspace-access.ts` | `workspace.save.*`, `workspace.ownership.denied` |
 | Photos | `src/features/workspace/publication-actions.ts` (`changePhoto`); `src/app/[names]/[secret]/photo` and `src/app/dashboard/photo` route handlers through `src/features/weddings/photo-response.ts` | `photo.*`. The development-only `/preview-photo` fixture route is not logged |
 | Publication | `src/features/workspace/publication-actions.ts` | `publication.*` |

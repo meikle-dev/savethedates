@@ -7,6 +7,11 @@ export function supabaseConfig() {
   return { url, key };
 }
 
+// Supabase must have the Google provider enabled too; the flag only shows the option.
+export function googleSignInEnabled() {
+  return process.env.AUTH_GOOGLE_ENABLED === "true";
+}
+
 export function appOrigin() {
   const url = process.env.APP_ORIGIN;
   if (!url) throw new Error("APP_ORIGIN is required for authentication email links and guest links.");

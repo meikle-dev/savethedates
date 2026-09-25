@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056, F057 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F055 is Ready:** Google sign-in is now a paid-launch gate (owner decision, 25 September 2026); implementation can start when F047 is complete. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) and F055 (Google sign-in) are paid-launch gates.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056, F057 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F055 (Google sign-in) is Deferred** (owner decision, 25 September 2026). It is built, tested, reviewed and switched off, and no longer gates launch. Its entry lists what the owner must provide to finish it. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -1143,10 +1143,18 @@ Alternatives considered:
    Store each database password in a password manager.
 2. In each project, open **Authentication** and set:
    - **Sign in / Providers → Email:** enabled, Confirm email on, Secure email change on, minimum password length 12, email OTP expiry 3600 seconds.
-   - **URL Configuration:** Site URL = that environment's `APP_ORIGIN`. Redirect URL = `APP_ORIGIN/auth/confirm`.
+   - **URL Configuration:** Site URL = that environment's `APP_ORIGIN`. Redirect URLs = `APP_ORIGIN/auth/confirm` and `APP_ORIGIN/auth/callback`.
+   - **Sign in / Providers → Google** (F055, deferred; skip for launch): set up after the Google client below.
    - **Email Templates:**
      - Confirm signup: subject "Confirm your SaveTheDates account", body from `supabase/templates/confirmation.html`.
      - Reset password: subject "Reset your SaveTheDates password", body from `supabase/templates/recovery.html`.
+   - **Google sign-in** (F055, deferred by the owner; not needed for launch). When resuming it, do this once per environment, staging first:
+     1. In [Google Cloud Console](https://console.cloud.google.com/), create a project named `SaveTheDates` (one project covers both environments).
+     2. Open **Google Auth Platform → Branding**. Set the app name `SaveTheDates` and the support email. Under **Authorised domains**, add the production domain and each Supabase project's domain (`<project-ref>.supabase.co`). Add the privacy and terms links once the F041 policy pages exist.
+     3. **Audience:** choose External, then **Publish app**. Only the basic email and profile scopes are used. Until Google verifies the brand (free, needs the policy links and domain), its consent screen says "continue to `<project-ref>.supabase.co`". Record the chosen option in `release-inputs.md` section 3.
+     4. **Clients → Create client → Web application**, named `SaveTheDates staging` or `SaveTheDates production`. Authorised JavaScript origin: that environment's `APP_ORIGIN`. Authorised redirect URI: the **Callback URL** shown in Supabase under **Sign in / Providers → Google** (`https://<project-ref>.supabase.co/auth/v1/callback`).
+     5. In Supabase **Sign in / Providers → Google**: enable it and paste the client ID and client secret. Keep the secret out of Git and this backlog.
+     6. On that environment's Render service, set `AUTH_GOOGLE_ENABLED=true`.
 3. Give the engineer access to both projects. The engineer applies the migrations using the procedure in `docs/operations.md`: staging first, then production. The migrations also create the photo storage bucket.
 4. Record the project refs, region and plans in `release-inputs.md` section 2.
 
@@ -1189,7 +1197,7 @@ Alternatives considered:
    | Port | 3000 | 3000 |
    | Health check path | `/api/health` | `/api/health` |
 
-4. Set these environment variables on each service, using that environment's values: `APP_ORIGIN`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. On staging only, also set `APP_ENV=staging`, `STAGING_USERNAME` and `STAGING_PASSWORD` (a password-manager password of at least 16 characters; see `docs/operations.md`, Staging access).
+4. Set these environment variables on each service, using that environment's values: `APP_ORIGIN`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `AUTH_GOOGLE_ENABLED=true` once Google sign-in is set up in step 2. On staging only, also set `APP_ENV=staging`, `STAGING_USERNAME` and `STAGING_PASSWORD` (a password-manager password of at least 16 characters; see `docs/operations.md`, Staging access).
 5. On production, add the custom domains `<domain>` and `www.<domain>`. Create the DNS records Render shows and wait for the certificate to be issued.
 6. In notification settings, send deploy failures and service failures to the incident email.
 7. Optional: copy the staging service's deploy hook into the GitHub Actions secret `RENDER_STAGING_DEPLOY_HOOK`, so each tested image deploys to staging automatically. Production is always promoted by hand (`docs/operations.md`, Image publishing and Render).
@@ -1300,7 +1308,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 - After the review fixes, `tests/rsvp-preview.spec.ts`, `tests/rsvp.spec.ts` and `tests/publication.spec.ts` passed 12/12 against `next start` (slowest 9.7s). The whole suite was not re-run after those fixes. The temporary image was removed and the development app container restored.
 - Independent review: no Blocking findings. The Important gap (no theme's RSVP page checked at 320px or in the closed state) is fixed by the 320px check in `rsvp-preview.spec.ts` and the reload-only closed-state loop in `rsvp.spec.ts`; the one-theme gaps that remain are recorded above. Minor wording, a stale marketing description and publication-test leftovers are fixed. The reviewer's second Important point stands: CI speed is not proven until GitHub Actions passes.
 - **GitHub Actions verified (25 September 2026):** CI `verify` job passed. Browser suite executes once against the production image in under 3 minutes with all checks passing.
-- Next: F055 (Google sign-in, now a pre-launch gate).
+- Next: F055 (Google sign-in; later deferred by the owner, 25 September 2026).
 
 ## 24 September walkthrough assessment
 
@@ -1330,7 +1338,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 **Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F055 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032 and F050 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment. **Owner decision (25 September 2026):** F055 (Google sign-in) is promoted from post-launch to a paid-launch gate.
 
-**Paid-launch gate:** F038, F040-F049, F054 (security review), F055 (Google sign-in) and existing F009 gates must be Done with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
+**Paid-launch gate:** F038, F040-F049, F054 (security review) and existing F009 gates must be Done (F055 Google sign-in was deferred by the owner on 25 September 2026 and no longer gates launch) with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
 
 | Report finding | Disposition |
 | --- | --- |
@@ -1791,20 +1799,65 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 
 ## F055 - Sign in with Google
 
-**Status:** Ready (promoted to pre-launch gate, owner decision 25 September 2026)
-**Priority / lead:** P1, paid-launch gate / Software Engineer; independent auth review required.
+**Status:** Deferred (owner decision, 25 September 2026). The code is built, tested and reviewed but switched off. It is no longer a paid-launch gate. The site launches with email and password only, and **Continue with Google** stays hidden until `AUTH_GOOGLE_ENABLED=true`.
+**Priority / lead:** P2, post-launch / Software Engineer; independent auth review done.
+
+**To finish (owner provides):**
+
+1. **A Google Cloud project with two OAuth clients** (staging and production), created by following F041 step 2 → "Google sign-in". Paste each client ID and secret into that environment's Supabase **Sign in / Providers → Google**, never into Git or docs.
+2. **A consent-screen choice:**
+   - brand verification, which is free and shows "SaveTheDates";
+   - a Supabase custom domain, which is a paid add-on;
+   - or accept "continue to `<project-ref>.supabase.co`".
+
+   Brand verification needs the F041 privacy and terms pages and the production domain.
+3. **Supabase settings per environment:** the redirect URL `APP_ORIGIN/auth/callback` (F041 step 2), and `AUTH_GOOGLE_ENABLED=true` on the Render service.
+4. **A privacy notice that mentions Google sign-in** (wording requirement in `release-inputs.md` section 3).
+5. **A staging pass:** test with disposable Google accounts, using the checklist in `release-inputs.md` section 3. The engineer runs it once items 1–3 exist on staging, and records the results below. Then F055 can be marked Done.
+
+Record items 1–3 in `release-inputs.md` section 3.
 **Purpose:** Let couples create or access their account with Google when they prefer it to an email and password.
 **Depends on:** F045 (clear email signup and auth errors). Ready for implementation; promoted to pre-launch scope by owner decision, 25 September 2026.
 **References:** F002 and F045; `src/features/account/`, `src/app/auth/`, `src/lib/supabase/`, `supabase/config.toml`, `docs/release-inputs.md`, `tests/account.spec.ts`.
 **Scope when promoted:** Add a clearly labelled Google option to account creation and sign-in through Supabase Auth. Configure a Google OAuth client and exact local, staging and production callback/redirect allowlists through the existing environment setup. Keep the email/password route available. Return safely to the account journey after success, cancellation or provider failure; do not put tokens in application URLs or logs. Verify how Supabase links a Google identity to an existing confirmed account with the same email, and give clear recovery guidance when the Google email differs from an existing account. Keep the existing server-side ownership and tenant boundaries. Update privacy/provider disclosures with the approved production policy.
 **Done when promoted:** A new Google user and a returning Google user can reach their own wedding; existing email/password users can still sign in and recover access. Same-email linking, different-email accounts, cancellation, denied consent, invalid callbacks and cross-account access have been checked without exposing whether an email exists. Local and hosted configuration is documented without committing credentials. Mobile/desktop and keyboard checks, relevant auth and isolation tests, `npm.cmd run check`, and independent auth review pass.
 
+**Handoff (25 September 2026):**
+
+- **What exists.**
+  - Sign-in and sign-up show **Continue with Google** above the email form, only when `AUTH_GOOGLE_ENABLED=true`.
+  - `signInWithGoogle` (`src/features/account/actions.ts`) starts a server-side PKCE flow with `prompt=select_account`. The verifier goes in an httpOnly cookie.
+  - `src/app/auth/callback/route.ts` exchanges the code, clears the verifier cookies, and redirects to `/dashboard`. Otherwise it returns to sign-in with a generic `?google=cancelled|failed` message. Outages are logged at `error`.
+  - Basics tells a new Google account with no wedding which email it is signed in with, and to sign out if its wedding uses another email.
+  - Email/password is unchanged.
+  - Config and docs:
+    - `supabase/config.toml` allows the local `/auth/callback` URLs and has a disabled Google block.
+    - Playwright and the CI production container set the flag.
+    - Setup is documented in `run-app-instructions.md` (Google sign-in), `operations.md`, F041 step 2, `release-inputs.md` section 3 and `architecture.md`.
+- **Checks.**
+  - `npm.cmd run check` passed: lint, typecheck, 84 unit tests, production build.
+  - `E2E_PRODUCTION=1 npx.cmd playwright test tests/google-sign-in.spec.ts tests/account.spec.ts tests/dashboard.spec.ts tests/metadata.spec.ts` passed 26/26, desktop and mobile.
+  - The new spec intercepts Supabase's authorize request. It checks:
+    - the PKCE parameters and callback URL;
+    - httpOnly/Lax verifier cookies;
+    - cancelled, forged-code and malformed callbacks, with no-store/no-referrer headers;
+    - a real server-side code exchange, using a local magic link that carries the browser's PKCE challenge;
+    - the Basics notice (present for a Google account, absent for an email account);
+    - 320px overflow.
+  - Inspected screenshots of sign-in (320px), sign-up and the failure message (1440px), and the Basics notice (mobile).
+  - Local Supabase was restarted with the Google variables unset.
+  - `git diff --check` passed; `next-env.d.ts` build churn restored.
+- **Review.** The independent auth reviewer found no Blocking issues and three Important ones: no success-path test, pre-account-takeover check not named, incomplete Google Cloud steps. All three are fixed, as are Minors 1–4 and 6. Minor 5 is deferred: status messages on page load may not be announced, the same as the existing `?error=expired` alerts; F049's screen-reader pass covers it. On re-review, no Blocking or Important findings remain, so the required independent review is complete. The reviewer's optional suggestion: add local evidence of a returning user reaching an existing wedding (currently a staging check).
+- **Not run.** Outstanding acceptance criteria: the real-Google checks in `release-inputs.md` section 3. No real Google sign-in has been run; no OAuth client exists yet. Same-email linking, pre-account takeover, returning Google users and denied consent against Google are unverified. No hosted CI run, Safari/Firefox or real screen reader.
+- **Blockers.** The owner inputs in "To finish" above, plus staging access (F041).
+- **Next.** Deferred by the owner. When the owner resumes it, complete "To finish" items 1–3 on staging, then do step 5.
+
 ## F009 - Launch and operate the service
 
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F049, F054 (security review) and F055 (Google sign-in) under the 24 September paid-launch gate; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
+**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F049, F054 (security review) under the 24 September paid-launch gate (F055 deferred by the owner, 25 September 2026); F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Render/Frankfurt is approved in F037; external accounts/access, live billing and policy-dependent data handling in F048 remain blocked on owner inputs. Do not invent retention periods or publish policies. No hosting purchase or deployment is authorised by this assessment.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
 **Decisions/access before release:** Production accounts/domain, live billing configuration, support contact, owner-approved terms/privacy/retention/deletion policy and site lifetime communication. Record any external review still needed; do not invent assurances.

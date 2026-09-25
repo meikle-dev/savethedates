@@ -40,8 +40,19 @@ Needed securely at deployment time: project URL, publishable key, and service-ro
 - [ ] Signup confirmation tested in a real inbox: `yes / no`
 - [ ] Password recovery tested in a real inbox: `yes / no`
 - [ ] Support contact shown to customers: `
+Google sign-in (F055) was deferred by the owner on 25 September 2026 and is not needed for launch. Fill in the next four items only when resuming it.
 
-Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` callback. The application uses the repository templates in `supabase/templates/`.
+- [ ] Google Cloud project and OAuth client owner (F055): `
+- [ ] Google OAuth clients created for staging and production: `yes / no`
+- [ ] Google consent screen name: `brand verification (free; shows "SaveTheDates") / Supabase custom domain (paid add-on) / accept "<ref>.supabase.co"`
+- [ ] Google sign-in tested on staging with disposable Google accounts: `yes / no`. Record each result in the F055 handoff:
+  - a new Google user creates an account and reaches Basics; signing in again returns to the same wedding;
+  - a confirmed email/password user signs in with Google (same email) and reaches their existing wedding, and their password still works;
+  - pre-account takeover: sign up with email/password but leave it unconfirmed, then sign in with Google using that address. The old password and old confirmation link must then be rejected;
+  - a Google account with a different email gets a separate, empty account with the Basics notice;
+  - cancelling on Google's consent screen returns to sign-in with the cancelled (or generic failed) message.
+
+Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` and `${APP_ORIGIN}/auth/callback` callbacks. Google client secrets go only into Supabase's Google provider settings, never Git or this file. The privacy notice must say that couples can sign in with Google, and that Google then shares their name, email address and profile-picture link. Supabase Auth stores these with the account; the app itself uses only the email address. The application uses the repository templates in `supabase/templates/`.
 
 ## 4. Stripe billing
 

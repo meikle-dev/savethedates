@@ -40,7 +40,7 @@ jobs:
           -t save-the-dates:ci .
       - name: Production container smoke and browser suite
         run: |
-          docker run -d --name wedding-smoke --add-host host.docker.internal:host-gateway --env-file .env.docker -p 127.0.0.1:3000:3000 save-the-dates:ci
+          docker run -d --name wedding-smoke --add-host host.docker.internal:host-gateway --env-file .env.docker -e AUTH_GOOGLE_ENABLED=true -p 127.0.0.1:3000:3000 save-the-dates:ci
           curl --retry 30 --retry-all-errors --retry-delay 2 --fail --silent --show-error http://127.0.0.1:3000 > /dev/null
           npm run smoke
           E2E_BASE_URL=http://127.0.0.1:3000 E2E_PRODUCTION=1 npm run test:e2e

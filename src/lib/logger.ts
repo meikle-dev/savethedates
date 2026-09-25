@@ -10,6 +10,7 @@ import { isUuid, scrubText } from "./monitoring/scrub";
 /** Units of work wrapped by `withLogging`. Each has a `<operation>.failed` event below. */
 export const logOperations = [
   "account.signup", "account.signin", "account.recovery", "account.password", "account.signout", "account.confirm", "account.confirmation_resend",
+  "account.google", "account.google_callback",
   "workspace.save", "photo.upload", "photo.read", "publication.publish", "publication.unpublish",
   "payment.checkout", "payment.webhook", "rsvp.submit", "rsvp.link", "rsvp.response",
 ] as const;
@@ -25,6 +26,7 @@ export const logEvents = [
   "account.recovery.requested", "account.recovery.failed",
   "account.password.updated", "account.password.rejected", "account.password.failed",
   "account.signout.failed",
+  "account.google.failed", "account.google_callback.succeeded", "account.google_callback.rejected", "account.google_callback.failed",
   "workspace.save.succeeded", "workspace.save.rejected", "workspace.save.failed", "workspace.ownership.denied",
   "photo.upload.accepted", "photo.upload.rejected", "photo.upload.failed", "photo.read.failed",
   "publication.publish.succeeded", "publication.publish.blocked", "publication.publish.failed",
@@ -44,7 +46,7 @@ void everyOperationHasFailure;
 
 /** Route templates, never concrete paths: concrete paths can contain secrets and slugs. */
 export type LogRoute =
-  | "/[names]/[secret]/photo" | "/account/[screen]" | "/api/stripe/webhook" | "/auth/confirm" | "/dashboard"
+  | "/[names]/[secret]/photo" | "/account/[screen]" | "/api/stripe/webhook" | "/auth/callback" | "/auth/confirm" | "/dashboard"
   | "/dashboard/basics" | "/dashboard/design" | "/dashboard/details" | "/dashboard/photo" | "/dashboard/preview" | "/dashboard/publish"
   | "/dashboard/guests" | "/dashboard/rsvp" | "/[names]/[secret]/rsvp";
 export type LogLevel = "debug" | "info" | "warn" | "error";
