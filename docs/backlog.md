@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056, F057 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F055 (Google sign-in) is Deferred** (owner decision, 25 September 2026). It is built, tested, reviewed and switched off, and no longer gates launch. Its entry lists what the owner must provide to finish it. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. **F051 is In Progress:** the [SEO audit report](reports/2026-09-25-seo-audit.md) is written and triaged, and only the owner's keyword-volume input remains. The owner chose the domain `savethedates.co.uk` and asked for the SEO and speed work, which is delivered in **F058 and F059 (Done)**. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056, F057 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **F038 is In Progress and next:** the code is reviewed, and Sentry is now set up (F041 step 6, 25 September 2026), so its staging checks can run. Its checkout check needs **F061** (staging checkout fails: Stripe rejects the staging secret key; owner replaces it). F061-F064 were raised from the owner's [25 September notes](notes/25-09-2026.md); see the delivery order for where they sit. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F055 (Google sign-in) is Deferred for production** (owner decision, 25 September 2026) and no longer gates launch. It is built, tested and reviewed, and since 26 September it is switched on for staging only, with Google's consent screen in Testing mode. Its entry lists what the owner must provide to finish it. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. **F051 is In Progress:** the [SEO audit report](reports/2026-09-25-seo-audit.md) is written and triaged, and only the owner's keyword-volume input remains. The owner chose the domain `savethedates.co.uk` and asked for the SEO and speed work, which is delivered in **F058 and F059 (Done)**. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -867,7 +867,7 @@ Alternatives considered:
 
 ## F038 - Error tracking and AI-queryable logs
 
-**Status:** In Progress (code built and reviewed 24 September 2026; Sentry setup deferred by the owner on 25 September 2026, so the staging checks wait for F041 step 6)
+**Status:** In Progress (code built and reviewed 24 September 2026; Sentry set up for staging and GitHub on 25 September 2026, so the staging checks can now run; the checkout check also needs F061)
 **Priority / lead:** P1, release gate for F009 monitoring / Software Engineer. Independent security and privacy review is required: this adds a third-party processor and touches secret-bearing URLs and owner/guest data.
 **Purpose:** When something breaks in production, the owner is alerted and can find out what failed, since when and for whom. They can do this by asking Claude through MCP, as well as in dashboards.
 **Depends on:** F037 (host). Implementation and local verification can happen before the host exists; hosted alert and retention checks happen on F009 staging.
@@ -985,7 +985,7 @@ Alternatives considered:
   - The re-review passed with conditions. It compared headers on the proxied paths against the pre-F038 image and found no regressions; `?share=` responses are now `no-store`. A signed Stripe webhook still verifies.
   - Its one remaining minor note is a cached `X-Request-Id` on public responses; it's now covered by a runbook line.
 - **Outstanding (why this stays In Progress):**
-  - It needs a Sentry EU project (owner account, free plan) and staging.
+  - The Sentry EU project and staging now exist (F041 steps 5 and 6).
   - On staging:
     - a thrown Server Action error, a browser error with a resolved source map and a rejected-webhook log must arrive with release, environment and request ID;
     - the three MCP queries must work;
@@ -993,8 +993,9 @@ Alternatives considered:
     - a real Stripe test checkout walkthrough is still needed.
   - The Sentry DPA/transfer terms and the privacy notice entry belong to F009.
 - **Risks:** Next.js's own stderr error output isn't scrubbed (documented). Browser errors before the SDK loads are missed. Every full page load makes one extra no-store config request.
-- **Deferred (owner, 25 September 2026):** creating the Sentry project and setting its values is a later to-do, tracked in F041 step 6 and `operations.md` → "Set up Sentry (once)". `APP_RELEASE` needs no action; CI builds it in.
-- **Next:** after F041 step 6 and staging exist, run the staging checks above and mark F038 Done. Meanwhile continue with F042 (F043 is Done).
+- **Sentry set up (25 September 2026):** org `meikle`, project `savethedates`, EU (Germany). `SENTRY_DSN` and `SENTRY_ENVIRONMENT=staging` are set on the staging Render service, and `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` in GitHub. Details are in F041 step 6 and `operations.md` → "Set up Sentry (once)". `APP_RELEASE` needs no action; CI builds it in. The production service still needs its own values when it is created.
+- **Early staging evidence (25 September 2026):** Render's staging logs show structured `payment.stripe.failed` lines with release, environment, route, request ID and a scrubbed reason (`StripeAuthenticationError`). That found F061. Whether the same events reached Sentry was not checked, because no Sentry connector was attached to that session.
+- **Next:** run the staging checks above and mark F038 Done. The real Stripe test checkout waits for F061.
 
 ## F039 - Privacy-friendly visitor and funnel analytics
 
@@ -1205,7 +1206,7 @@ Alternatives considered:
 
 **6. Monitoring (F038 required; F039 optional)**
 
-1. **Sentry (to do later; deferred by the owner on 25 September 2026).** Follow "Set up Sentry (once)" in `docs/operations.md`. In short:
+1. **Sentry (staging and GitHub done on 25 September 2026; see the progress notes below).** Follow "Set up Sentry (once)" in `docs/operations.md`. For production, set `SENTRY_DSN` and `SENTRY_ENVIRONMENT=production` when that service is created. In short:
    - Sign up with the EU data region and create a Next.js project.
    - On each Render service, set `SENTRY_DSN` and `SENTRY_ENVIRONMENT` (`staging` or `production`).
    - In GitHub, add the secret `SENTRY_AUTH_TOKEN` and the variables `SENTRY_ORG` and `SENTRY_PROJECT`.
@@ -1355,9 +1356,9 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Account and Publish forms already validate on the server. B5 concerns presentation and error discoverability, not missing validation. The RSVP deadline really is UTC; changing its label alone would misstate the cutoff.
 - A walkthrough does not prove tenant isolation, legal compliance, or provider activation requirements. Self-service deletion plus RSVP CSV is not a complete data policy. Owner-approved policy and provider requirements remain F041/F048/F009 inputs; no new legal conclusion is adopted here.
 
-**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F055 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032 and F050 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment. **Owner decision (25 September 2026):** F055 (Google sign-in) is promoted from post-launch to a paid-launch gate.
+**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F055 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. **25 September additions (owner notes):** F061 goes with F038, because F038's staging checkout check needs it. F062 and F064 come next, before F047. F062 is a paid-launch gate; F064 is a small polish ticket that doesn't gate launch. F063 is done with F055's production setup and doesn't gate launch. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032 and F050 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment. **Owner decision (25 September 2026):** F055 (Google sign-in) is promoted from post-launch to a paid-launch gate.
 
-**Paid-launch gate:** F038, F040-F049, F054 (security review) and existing F009 gates must be Done (F055 Google sign-in was deferred by the owner on 25 September 2026 and no longer gates launch) with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
+**Paid-launch gate:** F038, F040-F049, F054 (security review), F061, F062 and existing F009 gates must be Done (F055 Google sign-in was deferred by the owner on 25 September 2026 and no longer gates launch) with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
 
 | Report finding | Disposition |
 | --- | --- |
@@ -2035,6 +2036,88 @@ Record items 1–3 in `release-inputs.md` section 3.
 **Depends on:** F006, F026 (RSVP, Done); schedule after launch (F009).
 **Open decisions before Ready:** Is an invitation a fourth guest page type, a variant of the existing RSVP page, or a timed unlock of the existing RSVP link? Does it need its own content (ceremony/reception specifics, formal wording) distinct from Details? Does publishing an invitation change when/whether the RSVP link becomes reachable from Save the Date or Details? Any new owner controls (send date, reminder) needed, or is manual sharing of the link sufficient as today?
 **Done when promoted:** Acceptance criteria defined by Product Manager once the above decisions are resolved; must preserve tenant isolation and the private-link model, keep the three themes equivalent, and not reintroduce an RSVP link on the Save the Date page.
+
+## F061 - Staging checkout rejected by Stripe
+
+**Status:** In Progress (diagnosed 25 September 2026; waiting on the owner to replace the staging Stripe key)
+**Priority / lead:** P1, paid-launch gate and needed for F038's staging checkout check / Owner action, then Software Engineer verifies.
+**Purpose:** "Buy and continue to Stripe" on staging opens Stripe Checkout instead of showing "We couldn't start checkout".
+**Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md).
+**Evidence:** Render's staging app logs (`srv-darbpap7lnhs73cp2t50`, release `3c375aa`) show five attempts between 20:39 and 20:45 UTC on 25 September. Each is `payment.stripe.failed` on `/dashboard/publish` with `reason: "StripeAuthenticationError"`, for example request ID `d304929c-ce4a-427e-a29a-d810aa4a2cf9`.
+**Cause:** Stripe refused the API key itself. It's a configuration fault, not a code fault. `src/features/payments/stripe.ts` passes `STRIPE_SECRET_KEY` to the Stripe SDK unchanged, and the variable is set: if it were missing, the app would log a different error. So the value on the staging Render service is one Stripe doesn't accept. Common causes are a key that was rolled or revoked, a publishable `pk_test_…` key, a key from a different Stripe account or sandbox, or stray quotes or spaces pasted with it. No one in this session saw the key's value, and it must stay out of Git and these docs.
+**Fix (owner):**
+
+1. In the Stripe Dashboard, open the account used for staging (the renamed former "Equimarket sandbox", F041 step 4) in test mode.
+2. Open **Developers → API keys** and copy the **Secret key**. It starts with `sk_test_`. If you use a restricted key (`rk_test_`) instead, it needs write access to Checkout Sessions.
+3. In Render, open `savethedates-staging` → **Environment**. Replace `STRIPE_SECRET_KEY` with the copied value, with no quotes or spaces, then **Save and deploy**.
+4. While you're there, check that `STRIPE_WEBHOOK_SECRET` (`whsec_…`) is the signing secret of the test-mode webhook endpoint in that same account. Otherwise, paid checkouts will fail to publish afterwards.
+
+**Done when:** On staging, a test checkout with card `4242 4242 4242 4242` opens Stripe Checkout, completes, and returns to Publish. The webhook grants the entitlement, and the site can be published. The logs show the request-ID trail from checkout created to entitlement granted, with no `payment.stripe.failed`. Record the result in F038 (its real Stripe test checkout check) and F041.
+**Next:** The owner replaces the key. Then the engineer runs the check above.
+
+## F062 - Accept large photos by resizing them in the browser
+
+**Status:** Ready (approach recommended by engineering, 25 September 2026; the owner can override it)
+**Priority / lead:** P1, paid-launch gate / Software Engineer. Independent review is not required: server validation, processing and storage don't change (the same reasoning as F040). Inspect the UI at mobile and desktop widths.
+**Purpose:** Couples can choose the photos they actually have, straight from a phone or camera, including 40 MB files. Uploads stay quick on mobile data and within the server's memory.
+**Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md): the 5 MB limit is too low, and the owner has photos of about 40 MB. Wanted: a clean, best-practice fix, with no hacks.
+**Current behaviour:** Both the browser (`src/features/workspace/photo-form.tsx:37`) and the server (`src/features/workspace/photo.ts:55`) reject files over 5 MiB. The server decodes up to 25 megapixels and stores a WebP at 2000 px maximum and quality 85 (`preparePhoto`). The Server Action body limit is `6mb` (`next.config.ts`). F040 measured memory use for these limits on a 512 MB instance and deferred browser-side resizing.
+**Options considered:**
+
+- **Raise the server limit to about 50 MB.** Rejected. A 40 MB upload is slow on mobile data. Such files are often 45–60 MP, well past the 25 MP that F040 measured, so a few uploads at once could restart the 512 MB server. It would also need a much larger Server Action body limit. The stored photo is 2000 px either way, so the extra pixels are thrown away after upload.
+- **Upload originals straight to Storage and process them later.** Rejected. It needs the same decode memory, adds background processing and stores originals the product doesn't need, which is more data to retain and delete.
+- **Chosen: shrink large photos in the browser before upload.** The device does the heavy decoding. Only a photo that is already web-sized is sent, and the server keeps its current checks.
+
+**Scope:**
+
+- **Only transform when needed.** If the chosen JPEG, PNG or WebP is within 5 MiB and 25 MP, upload it unchanged, exactly as today. Otherwise, decode it in the browser with the correct orientation, scale it so the long edge is about 2,500 px (headroom above the server's 2000 px output, so the final image isn't noticeably softened), and encode it as high-quality JPEG. If the result is still over 5 MiB, lower the quality once. Then upload it through the existing form and action.
+- **Phones must work.** iOS Safari limits a canvas to about 16.7 MP, which is below many camera photos. Use a decode path that resizes while decoding or in steps, and verify it on a real iPhone and a real Android phone.
+- **The server stays the authority.** The 5 MiB, 25 MP and type checks, the upload queue (F040) and the stored output are unchanged. Nothing is trusted because the browser resized it.
+- **Privacy side effect.** Re-encoding in the browser drops camera metadata, including GPS location, before the photo leaves the device. The server already strips metadata from what it stores.
+- **Input ceiling.** Accept files up to a clear browser-side ceiling, for example 60 MB. Above it, or if decoding fails (for example an unsupported format such as HEIC that the browser doesn't convert), show a plain message and keep the current photo. Keep the existing server rejection messages.
+- **Copy and states.** Replace "up to 5 MB" guidance with wording that says large photos are fine. Show a "Preparing photo…" state while resizing. Keep the current busy and error messages from F040.
+- **Docs.** Update `docs/overview/site-ui.md` (photo upload) and the F040 note in `docs/operations.md` to say browser resizing is now in place.
+
+**Done when:**
+
+- A 40 MB, 45 MP-plus camera JPEG uploads successfully on desktop Chrome, Firefox and Safari, and on a real iPhone (Safari) and Android phone (Chrome). The stored photo has the correct orientation and is a 2000 px WebP.
+- Photos already within the limits upload byte-for-byte unchanged.
+- Files over the browser ceiling, and files that can't be decoded, show a clear message and leave the current photo and draft unchanged.
+- The existing server validation tests pass unchanged. New unit tests cover the "needs resizing" decision and the size and quality steps. An E2E test uploads a large fixture generated during the test (no large file committed) and checks the saved result.
+- `npm.cmd run check` passes. The photo form is inspected at 390 px and 1440 px.
+
+## F063 - Show SaveTheDates, not the Supabase address, in Google sign-in
+
+**Status:** Planned (needs an owner choice; done with F055's production setup)
+**Priority / lead:** P2, doesn't gate launch because F055 is deferred for production / Owner setup, then Software Engineer verifies.
+**Purpose:** Google's sign-in screens and emails name SaveTheDates or `savethedates.co.uk`, not the Supabase project address.
+**Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md). After a staging Google sign-in, Google's security email said: "You used Sign in with Google to sign in to onrblnlwrnbdvyeasqdt.supabase.co".
+**Cause:** With Supabase Auth, Google sends the user back to the Supabase project's callback, `https://<project-ref>.supabase.co/auth/v1/callback` (F041 step 2). So Google identifies the site by that address. On staging, the consent screen is also in Testing mode, and the brand isn't verified.
+**This won't fix itself in production.** Production will use its own Supabase project, with its own `<project-ref>.supabase.co` address. It only changes if one of the options below is taken.
+**Options (from F055's consent-screen choice):**
+
+1. **Google brand verification (free; recommended first).** Publish the consent screen with Homepage, Privacy and Terms links on `savethedates.co.uk` (the F041 legal pages now exist), and verify the domain in Search Console (F041 step 7). The consent screen then shows "SaveTheDates". Check whether Google's security email also changes; this hasn't been confirmed.
+2. **Supabase custom domain (paid add-on).** For example `auth.savethedates.co.uk`. The callback moves to that domain, so every Google screen and email names `savethedates.co.uk`. It needs a paid Supabase plan plus the add-on's cost, and the Google client's redirect URI must be updated.
+3. **Accept it for now.** Keep the current wording.
+
+**Done when:** The owner has picked an option, recorded in `release-inputs.md` section 3 and F055. On production, a Google sign-in's consent screen and Google's follow-up email name SaveTheDates or `savethedates.co.uk`, checked with a real sign-in.
+
+## F064 - Colour the site status on the workspace overview
+
+**Status:** Ready
+**Priority / lead:** P3, polish; doesn't gate launch / Software Engineer. No independent review needed.
+**Purpose:** Couples can see at a glance whether their site is still private or live.
+**Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md): orange text for Private draft, green for Published, in the site status box.
+**References:** `src/app/dashboard/(workspace)/page.tsx` (the Site status card, lines 50–53), `src/app/dashboard/(workspace)/layout.tsx:19` (header status badge), `src/features/workspace/workspace.css` (`.ws-stat[data-tone="live"]`), `src/components/controls.css` (`--positive-*` tokens).
+**Scope:**
+
+- In the Overview's Site status card, show "Private draft" in a warm orange and "Published" in green. "Offline" keeps its current neutral style, since the owner didn't ask for a change.
+- Add a small set of caution tokens (for example `--caution-ink` and `--caution-soft`) next to the existing `--positive-*` tokens. Reuse the positive green for Published.
+- Give the header's "Private draft" badge the same orange tone, so the two statuses agree. The Published badge is already green.
+- Text must reach at least 4.5:1 contrast on the card background. The words and icons stay, so colour isn't the only signal.
+- Workspace only. Guest-facing themes are unchanged.
+
+**Done when:** Draft shows orange and Published shows green, both in the card and the header badge. Offline is unchanged. Contrast is checked at 4.5:1 or better. The overview is inspected at 390 px and 1440 px. `tests/dashboard.spec.ts` and `npm.cmd run check` pass.
 
 ## F010 - Post-launch extensions
 
