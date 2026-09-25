@@ -18,8 +18,8 @@ describe("share message", () => {
   });
 
   it("invites rather than announces while the Invitation page is on", () => {
-    expect(shareMessage({ ...base, invitation: true })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation and RSVP: ${url}`);
-    expect(shareMessage({ ...base, invitation: true, rsvpOpen: false })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation: ${url}`);
+    expect(shareMessage({ ...base, invitation: true })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation and RSVP: ${url}/invitation`);
+    expect(shareMessage({ ...base, invitation: true, rsvpOpen: false })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation: ${url}/invitation`);
   });
 
   it("always shares the full link, even when the couple edits it out or alters it", () => {
@@ -28,6 +28,8 @@ describe("share message", () => {
     expect(withGuestLink(`Broken ${url.slice(0, -1)}`, url)).toBe(`Broken ${url.slice(0, -1)}\n${url}`);
     expect(withGuestLink(`Altered ${url}x`, url)).toBe(`Altered ${url}x\n${url}`);
     expect(withGuestLink("   ", url)).toBe(url);
+    expect(withGuestLink(`Invitation: ${url}/invitation`, url)).toBe(`Invitation: ${url}/invitation`);
+    expect(withGuestLink(`Altered ${url}/invitationx`, url)).toBe(`Altered ${url}/invitationx\n${url}`);
   });
 
   it("encodes the whole message for WhatsApp's own share link", () => {

@@ -34,7 +34,7 @@ test("couples write, preview and share an optional invitation that follows their
     await expect(page).toHaveURL(/\/dashboard$/);
     const pages = page.getByRole("region", { name: "Guest pages" });
     await expect(pages.getByRole("link", { name: /Invitation\s*Off/ })).toBeVisible();
-    await expect(pages.getByRole("link", { name: /Save the Date\s*Always on/ })).toBeVisible();
+    await expect(pages.getByRole("link", { name: /Save the Date\s*On when published/ })).toBeVisible();
 
     await openWorkspaceSection(page, "Invitation");
     await expect(page.getByRole("heading", { name: "Wedding Invitation" })).toBeVisible();
@@ -54,6 +54,15 @@ test("couples write, preview and share an optional invitation that follows their
     await openWorkspaceSection(page, "Details");
     await expect(page.locator("#ceremony_venue")).toHaveValue("The Old Hall");
     await expect(page.locator("#ceremony_time")).toHaveValue("2:30 pm");
+
+    // With Details switched on, the shared ceremony fields can't all be cleared from the Invitation form.
+    expect((await local.admin.from("weddings").update({ details_enabled: true }).eq("id", wedding.data!.id)).error).toBeNull();
+    await openWorkspaceSection(page, "Invitation");
+    for (const field of [/Ceremony time/, /^Venue/, /^Address/]) await page.getByLabel(field).fill("");
+    await page.getByRole("button", { name: "Save Invitation" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "would be left empty" })).toBeVisible();
+    expect((await local.admin.from("weddings").select("ceremony_venue").eq("id", wedding.data!.id).single()).data!.ceremony_venue).toBe("The Old Hall");
+    expect((await local.admin.from("weddings").update({ details_enabled: false }).eq("id", wedding.data!.id)).error).toBeNull();
 
     await page.goto("/dashboard/preview/invitation");
     await expect(page.getByText(/Private Invitation preview/)).toBeVisible();
@@ -77,8 +86,23 @@ test("couples write, preview and share an optional invitation that follows their
     await expect(card.getByText("followed by dinner and dancing")).toBeVisible();
     await expect(card.getByText(/^Kindly reply by /)).toBeVisible();
     await expect(card.getByRole("link", { name: /Reply online/ })).toHaveAttribute("href", `${home}/rsvp`);
+    // The action is a link styled as a light-text button: its keyboard focus ring must use the theme accent, not white.
+    await card.getByRole("link", { name: /Reply online/ }).focus();
+    expect(await card.getByRole("link", { name: /Reply online/ }).evaluate((link) => getComputedStyle(link).outlineColor)).not.toBe("rgb(255, 255, 255)");
     await expect(guestPage.getByRole("link", { name: "Travel, accommodation and more" })).toHaveCount(0);
     expect(await fitsWidth(guestPage)).toBe(true);
+
+    // No closing date: guests are asked to reply online, with no date.
+    expect((await local.admin.from("weddings").update({ rsvp_closes_on: null }).eq("id", wedding.data!.id)).error).toBeNull();
+    await guestPage.reload();
+    await expect(card.getByText("Kindly reply online")).toBeVisible();
+    await expect(card.getByRole("link", { name: /Reply online/ })).toBeVisible();
+
+    // Past the closing date (UTC): replies have closed and there's no reply action.
+    expect((await local.admin.from("weddings").update({ rsvp_closes_on: daysFromToday(-2) }).eq("id", wedding.data!.id)).error).toBeNull();
+    await guestPage.reload();
+    await expect(card.getByText(/Replies have now closed/)).toBeVisible();
+    await expect(card.getByRole("link", { name: /Reply online/ })).toHaveCount(0);
 
     // RSVPs off: no reply section, and switching the invitation on never reopened them.
     expect((await local.admin.from("weddings").update({ rsvp_enabled: false }).eq("id", wedding.data!.id)).error).toBeNull();

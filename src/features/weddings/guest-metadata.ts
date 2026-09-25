@@ -24,6 +24,8 @@ export async function guestMetadata(secret: string, page: GuestPage): Promise<Me
     alt: "Save the Date invitation card",
   };
   const pageTitle = { home: "Save the Date", invitation: "Invitation", details: "Details", rsvp: "RSVP" }[page];
+  // Link previews name the invitation when that page is shared; every other page previews as the Save the Date.
+  const shareTitle = page === "invitation" ? "Invitation" : "Save the Date";
 
   return {
     title: `${pageTitle} · ${names} | SaveTheDates`,
@@ -32,10 +34,10 @@ export async function guestMetadata(secret: string, page: GuestPage): Promise<Me
     openGraph: {
       type: "website",
       siteName: "SaveTheDates",
-      title: `${names} · Save the Date`,
+      title: `${names} · ${shareTitle}`,
       description: date,
       images: [image],
     },
-    twitter: { card: "summary_large_image", title: `${names} · Save the Date`, description: date, images: [image.url] },
+    twitter: { card: "summary_large_image", title: `${names} · ${shareTitle}`, description: date, images: [image.url] },
   };
 }

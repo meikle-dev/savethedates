@@ -2099,6 +2099,36 @@ Record items 1–3 in `release-inputs.md` section 3.
 - Unit tests cover the invitation schema and the share message. E2E covers the owner journey, the guest page with RSVP on and off, the preview and an example page.
 - Marketing copy is updated. `npm run check`, `npm run test:integration` and the relevant browser suites pass. Independent review passes, and the docs are current.
 
+**Handoff (25 September 2026):**
+
+- **Built:**
+  - **Database:** migration `20260925000600_wedding_invitation.sql`, covering the columns and constraint, `guest_wedding` gaining `invitation_enabled`, and `guest_wedding_invitation`.
+  - **Guest page:** the route `src/app/[names]/[secret]/invitation`, the `invitation-view.tsx` view inside each theme's RSVP card, `invitation.ts` (schema, date with weekday, place fallback), the navigation link, and metadata (the page title and link-preview title "Invitation").
+  - **Workspace:** the `/dashboard/invitation` section (`invitation-form.tsx`, `invitation-actions.ts`), the navigation entry and icon, the Overview **Guest pages** card (`guestPageStatuses`, including "Site offline"), optional Invitation and Details checklist steps, the `/dashboard/preview/invitation` preview, and a share message that links to `/invitation` while it's on. `withGuestLink` treats links to guest pages under the guest link as the guest link.
+  - **Marketing:** the homepage hero, theme intro, how-it-works steps, a new FAQ on printed invitations, the digital save the date page ("one link, up to four pages", now four steps), the pricing list, the purchase panel, the terms line on what £29 includes, and `/examples/<theme>/invitation` for all twelve themes.
+  - **Docs:** `product-overview.md`, `architecture.md`, `site-ui.md`, `template-ui-summary.md` and `operations.md` (log section and call site).
+- **Checks** (Node 24.11.0 and local Supabase; Chromium 1194):
+  - `npm run check`: passed (lint, typecheck, 99 unit tests including the new `invitation.test.ts`, production build).
+  - `npm run test:integration`: 26 passed, including three new invitation tests: owner-only writes and constraints; the guest function while off, a draft, on, with a wrong or short secret, and expired; and the shared-field guard.
+  - `tests/invitation.spec.ts` passed at desktop and mobile. It covers:
+    - the owner journey, with the Overview card, the form, saved visibility, shared ceremony fields, and the refusal when a save would empty an enabled Details page;
+    - the preview;
+    - the guest page after publishing, including reply-by with a date, "Kindly reply online", closed, and RSVP off;
+    - the focus ring on "Reply online";
+    - switching the page off, giving a 404 and dropping the navigation link;
+    - long names;
+    - every theme's example at the project width and at 320 px.
+  - The full production-mode suite was run once before the review fixes. Its one failure was the expected checklist count, 7 steps instead of 6, now updated.
+  - Screenshots of all twelve themes at 390 px and 1440 px, the Invitation form and the Overview card were inspected. One contrast fault was found and fixed: the Details link had been placed on dark surrounds.
+- **Independent review:** pass with conditions, with no Blocking findings.
+  - The Important focus-ring finding is fixed, with a test.
+  - The Important share-link finding is fixed: the message now links to the invitation.
+  - The Minor findings are also fixed: offline statuses; a section-level refusal message; the link-preview title; the untested reply states and refusal (now tested); stale docs; and preview navigation parity.
+- **Owner decisions pending:**
+  - Re-approve the terms line, which now lists the Invitation in what £29 includes.
+  - Whether the Save the Date body should link to the Invitation. Not added, because the owner removed a body button from that page on 25 September 2026.
+- **Next:** rerun the affected browser suites after the review fixes, record the results here, then mark F060 Done.
+
 ## F061 - Staging checkout rejected by Stripe
 
 **Status:** In Progress (both causes fixed on staging, and the owner completed a real Stripe test checkout on staging, 25 September 2026; only independent review remains)

@@ -33,7 +33,7 @@ export default async function Overview() {
   const rsvp = rsvpReadiness(wedding, live, offline);
   const availability = rsvp.availability;
   const steps = setupSteps({ ...detailsSchema.parse(wedding), photo_path: wedding.photo_path, rsvp_enabled: wedding.rsvp_enabled, invitation_enabled: wedding.invitation_enabled }, entitlement.active, live);
-  const pages = guestPageStatuses(wedding, availability, live);
+  const pages = guestPageStatuses(wedding, availability, live, offline);
   const completed = steps.filter((step) => step.done).length;
   const setupComplete = steps.every((step) => step.done || step.optional);
   // The guest link only works while the site is live, so drafts and expired sites get no share panel.

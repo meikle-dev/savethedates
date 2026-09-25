@@ -30,6 +30,6 @@ export default async function InvitationPreview({ searchParams }: { searchParams
     <InvitationPageView
       invitation={{ ...invitation, first_name: data.first_name, second_name: data.second_name, wedding_date: data.wedding_date, location: data.location, theme }}
       homeHref={`/dashboard/preview${query}`} invitationHref={`/dashboard/preview/invitation${query}`}
-      detailsHref={data.details_enabled ? `/dashboard/preview/details${query}` : undefined} reply={reply} />
+      detailsHref={data.details_enabled ? `/dashboard/preview/details${query}` : undefined} reply={reply} rsvpHref={`/dashboard/preview/rsvp${query}`} />
   </>;
 }

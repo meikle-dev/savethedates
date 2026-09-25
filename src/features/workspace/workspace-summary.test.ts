@@ -63,8 +63,10 @@ describe("workspace summary", () => {
   it("lists every guest page in guest order with its state", () => {
     const summary = (invitation: boolean, details: boolean, rsvp: Parameters<typeof guestPageStatuses>[1], live: boolean) =>
       guestPageStatuses({ invitation_enabled: invitation, details_enabled: details }, rsvp, live).map(({ id, status, on }) => [id, status, on]);
-    expect(summary(false, false, "off", false)).toEqual([["home", "Always on", true], ["invitation", "Off", false], ["details", "Off", false], ["rsvp", "Off", false]]);
-    expect(summary(true, true, "not-live", false)).toEqual([["home", "Always on", true], ["invitation", "On when published", true], ["details", "On when published", true], ["rsvp", "Opens when published", true]]);
-    expect(summary(true, false, "closed", true)).toEqual([["home", "Always on", true], ["invitation", "On", true], ["details", "Off", false], ["rsvp", "Closed", false]]);
+    expect(summary(false, false, "off", false)).toEqual([["home", "On when published", true], ["invitation", "Off", false], ["details", "Off", false], ["rsvp", "Off", false]]);
+    expect(summary(true, true, "not-live", false)).toEqual([["home", "On when published", true], ["invitation", "On when published", true], ["details", "On when published", true], ["rsvp", "Opens when published", true]]);
+    expect(summary(true, false, "closed", true)).toEqual([["home", "On", true], ["invitation", "On", true], ["details", "Off", false], ["rsvp", "Closed", false]]);
+    const offline = guestPageStatuses({ invitation_enabled: true, details_enabled: false }, "offline", false, true).map(({ id, status, on }) => [id, status, on]);
+    expect(offline).toEqual([["home", "Site offline", false], ["invitation", "Site offline", true], ["details", "Off", false], ["rsvp", "Site offline", false]]);
   });
 });

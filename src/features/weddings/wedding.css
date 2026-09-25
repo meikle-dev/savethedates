@@ -276,4 +276,6 @@
 .invitation-reply { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--theme-line); }
 .invitation-reply > p { font-size: 15px; line-height: 1.55; }
 .invitation-reply .rsvp-submit { margin-top: 16px; text-decoration: none; }
+/* A link styled as the action button: its text colour is light, so the default currentColor ring would vanish. */
+.wedding-shell a.rsvp-submit:focus-visible { outline-color: var(--theme-accent); }
 .invitation-more { margin-top: 18px; }

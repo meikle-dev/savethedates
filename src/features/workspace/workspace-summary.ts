@@ -53,11 +53,15 @@ export type GuestPageStatus = { id: "home" | "invitation" | "details" | "rsvp"; 
 
 const rsvpStatus: Record<RsvpAvailability, string> = { open: "Open", "not-live": "Opens when published", closed: "Closed", off: "Off", offline: "Site offline" };
 
-/** Each guest page in guest order, with whether it's switched on, for the Overview's Guest pages card. */
-export function guestPageStatuses(wedding: { invitation_enabled: boolean; details_enabled: boolean }, rsvp: RsvpAvailability, live: boolean): GuestPageStatus[] {
-  const shown = (enabled: boolean) => enabled ? live ? "On" : "On when published" : "Off";
+/**
+ * Each guest page in guest order, with whether it's switched on, for the Overview's Guest pages card. `offline` is a
+ * published site whose purchase has ended: no page opens, whatever its switch says.
+ */
+export function guestPageStatuses(wedding: { invitation_enabled: boolean; details_enabled: boolean }, rsvp: RsvpAvailability, live: boolean, offline = false): GuestPageStatus[] {
+  const site = offline ? "Site offline" : live ? "On" : "On when published";
+  const shown = (enabled: boolean) => enabled ? site : "Off";
   return [
-    { id: "home", label: "Save the Date", status: "Always on", on: true, href: "/dashboard/basics" },
+    { id: "home", label: "Save the Date", status: site, on: !offline, href: "/dashboard/basics" },
     { id: "invitation", label: "Invitation", status: shown(wedding.invitation_enabled), on: wedding.invitation_enabled, href: "/dashboard/invitation" },
     { id: "details", label: "Details", status: shown(wedding.details_enabled), on: wedding.details_enabled, href: "/dashboard/details" },
     { id: "rsvp", label: "RSVP", status: rsvpStatus[rsvp], on: rsvp === "open" || rsvp === "not-live", href: "/dashboard/rsvp" },

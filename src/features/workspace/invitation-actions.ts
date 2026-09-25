@@ -25,11 +25,7 @@ export async function saveInvitation(_: InvitationFormState, form: FormData): Pr
       // Ceremony fields are shared with Details, and an enabled Details page must keep at least one section.
       if (error?.message.includes("enabled_details_have_content")) {
         log.warn("workspace.save.rejected", { section: "invitation", reason: "details_would_be_empty" });
-        return {
-          message: "Your Details page is switched on and would be left empty. Keep a ceremony time, venue or address, or switch Details off first.",
-          errors: { ceremony_venue: ["Your Details page uses this. Keep it, or switch Details off first."] },
-          values: parsed.data,
-        };
+        return { message: "Your Details page is switched on and would be left empty. Keep a ceremony time, venue or address, or switch Details off first.", values: parsed.data };
       }
       if (error || !data) {
         log.error("workspace.save.failed", { section: "invitation", reason: errorReason(error) });

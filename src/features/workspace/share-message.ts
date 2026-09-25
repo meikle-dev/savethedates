@@ -8,15 +8,18 @@ type MessageInput = { firstName: string; secondName: string; date: string; locat
 export function shareMessage({ firstName, secondName, date, location, url, rsvpOpen, invitation = false }: MessageInput) {
   const place = location.trim().replace(/[\s.]+$/, "");
   const news = `${firstName} & ${secondName} are getting married on ${formatWeddingDate(date)}${place ? ` at ${place}` : ""}.`;
-  if (invitation) return `You’re invited! ${news} ${rsvpOpen ? "Your invitation and RSVP" : "Your invitation"}: ${url}`;
+  if (invitation) return `You’re invited! ${news} ${rsvpOpen ? "Your invitation and RSVP" : "Your invitation"}: ${url}/invitation`;
   return `Save the date! ${news} ${rsvpOpen ? "Details and RSVP here" : "Find out more"}: ${url}`;
 }
 
 const escaped = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** The text actually shared or copied: the couple's edit, with the full guest link appended if they removed or altered it. */
+/**
+ * The text actually shared or copied: the couple's edit, with the full guest link appended if they removed or altered it.
+ * A link to one of the guest pages under it (such as /invitation) counts as the guest link.
+ */
 export function withGuestLink(message: string, url: string) {
-  if (new RegExp(`${escaped(url)}(?![A-Za-z0-9_/-])`).test(message)) return message;
+  if (new RegExp(`${escaped(url)}(?:/(?:invitation|details|rsvp))?(?![A-Za-z0-9_/-])`).test(message)) return message;
   const text = message.trim();
   return text ? `${text}\n${url}` : url;
 }

@@ -132,7 +132,7 @@ A visitor should understand what SaveTheDates does within a few seconds.
 ## Search wording and the digital save the date page (F059, 25 September 2026)
 
 - The homepage keeps its brand headings. The lines around them say plainly what the product is: a digital save the date, wedding details and online RSVP in one link, shared by WhatsApp, text or email.
-- `/digital-save-the-date` is the one extra indexed marketing page. It reuses the homepage parts in this order: dark hero, three-step "one link, three pages", pricing, a light three-column explainer, FAQ, footer. There is no new visual language.
+- `/digital-save-the-date` is the one extra indexed marketing page. It reuses the homepage parts in this order: dark hero, four-step "one link, up to four pages" (F060 added the Invitation), pricing, a light three-column explainer, FAQ, footer. There is no new visual language.
 - Its hero phones use different themes from the homepage.
 - The footer links to it, and so does the homepage FAQ answer "What is a digital save the date?".
 - Copy states only built features. It doesn't compare SaveTheDates with named competitors or promise refunds, retention or preview-card behaviour before those are approved.
@@ -290,8 +290,9 @@ A new account lands on Basics ("Start with your story.") with no section navigat
 
 - **Every guest page except Save the Date is optional.** Invitation, Details and RSVP each keep one switch in their own section, beside that section's save action: "Show Invitation page", "Show Details page" and "Accept RSVPs".
 - **Overview Guest pages card.** It sits beside the figures and lists the four pages in guest order. Each row has a status and one link to that page’s section:
-  - Save the Date: "Always on".
+  - Save the Date: "On" or "On when published". It has no switch.
   - Invitation and Details: "On", "On when published" or "Off", matching the saved switch.
+  - Every page shows "Site offline" when the site is published but its purchase has ended.
   - RSVP: "Open", "Opens when published", "Closed", "Off" or "Site offline".
 
   The status is text with a small dot. Colour is never the only signal.
@@ -311,6 +312,7 @@ The F043 URL is always called **Your guest link** and is the only link the works
 
 - **Live panel.** While the site is live (published with an active purchase), one panel leads Publish and follows the Overview figures: heading, **Live** and RSVP status badges, the link, **Open your site**, an RSVP status sentence, and the warning that anyone with the link can view the site (and reply only while RSVPs are open), with a pointer to replacement in RSVP. Publishing success appears inside this panel and moves focus to its heading; later visits show the same panel without the notice.
 - **Message.** An editable textarea holds "Save the date! A & B are getting married on <date> at <location>. Details and RSVP here: <link>" ("Find out more" when RSVPs are not open). It is built from saved data and never stored; **Restore suggested message** appears after an edit. Every shared or copied message contains the full link: it is appended if the couple removed or altered it. A renamed or replaced link resets the suggestion.
+  - While the Invitation page is on (F060), the message reads "You’re invited! A & B are getting married on <date> at <location>. Your invitation and RSVP: <link>/invitation" ("Your invitation" when RSVPs are not open), so guests land on the invitation itself. A link to any guest page under the guest link counts as the guest link, so it is never appended twice.
 - **Actions**, in order: **Share** (native share sheet, only where supported, primary), **Share on WhatsApp** (WhatsApp's own `wa.me/?text=` link in a new tab; primary when native share is unavailable), **Copy message**, **Copy link**. All are started by the couple; nothing is sent to a shortener, QR or analytics service. Copy results use one status line ("Link copied." / "Message copied.") or an alert asking the couple to select and copy manually. Closing the share sheet shows nothing; other share errors suggest Copy message. Phones stack the actions full width; 640px and wider wrap them in a row.
 - **RSVP status.** Open ("Guests can reply", with the exact cutoff "until 23:59 UTC on <date> (<UK and Irish time>)" if a date is set), closed ("RSVPs closed at 23:59 UTC on <date>… Guests can still view your site but can't reply.") or off (with an **Open RSVPs** link). A closed or off RSVP never hides the link, and publishing never opens RSVPs.
 - **Not live.** Drafts, unpublished, expired and revoked sites get no panel and no share or copy actions. For drafts and unpublished sites, Publish shows the future link in a dashed, muted box marked **Works once published**; the RSVP section uses the same wording. Expired or revoked published sites show the existing guest link as **Currently offline** and explain that a new site period restores guest access.

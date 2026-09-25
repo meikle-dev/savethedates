@@ -8,14 +8,14 @@ type Reply = { href: string; open: boolean; closesOn: string | null };
 
 // A formal card inside each theme's RSVP surround (rsvp-shell, rsvp-main, rsvp-card), so every theme's backdrop and
 // paper card apply. `reply` is present only while RSVPs are on; the invitation never opens them.
-export function InvitationPageView({ invitation, homeHref, invitationHref, detailsHref, reply }: {
-  invitation: InvitationPage; homeHref: string; invitationHref: string; detailsHref?: string; reply?: Reply;
+export function InvitationPageView({ invitation, homeHref, invitationHref, detailsHref, reply, rsvpHref = reply?.href }: {
+  invitation: InvitationPage; homeHref: string; invitationHref: string; detailsHref?: string; reply?: Reply; rsvpHref?: string;
 }) {
   const names = [invitation.first_name, invitation.second_name] as const;
   const place = invitationPlace(invitation);
   const deadline = reply?.closesOn ? rsvpDeadline(reply.closesOn) : null;
   return <WeddingFrame theme={invitation.theme} className="details-shell rsvp-shell invitation-shell">
-    <WeddingHeader names={names} homeHref={homeHref} invitationHref={invitationHref} detailsHref={detailsHref} rsvpHref={reply?.href} current="invitation" />
+    <WeddingHeader names={names} homeHref={homeHref} invitationHref={invitationHref} detailsHref={detailsHref} rsvpHref={rsvpHref} current="invitation" />
     <main id="main" className="rsvp-main">
       <div className="rsvp-intro">
         <div className="rsvp-intro-art" aria-hidden="true"><BotanicalArt /></div>

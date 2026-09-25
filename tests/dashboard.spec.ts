@@ -267,7 +267,7 @@ test("overview summarises the owner's own wedding and every section is reachable
     await expect(overview.getByRole("region", { name: "Latest responses" }).getByRole("listitem")).toHaveCount(3);
     await expect(overview.getByText("Not Yours")).toHaveCount(0);
     const checklist = overview.getByRole("region", { name: "Setup checklist" });
-    await expect(checklist).toContainText("2 of 6 complete");
+    await expect(checklist).toContainText("2 of 7 complete");
     await expect(checklist.getByRole("link", { name: /Open RSVPs \(done\)/ })).toHaveAttribute("href", "/dashboard/rsvp");
     await expect(checklist.getByRole("link", { name: /Purchase your site \(to do\)/ })).toHaveAttribute("href", "/dashboard/publish");
     // The guest link only works once the site is live, so a draft offers no share panel or actions.
