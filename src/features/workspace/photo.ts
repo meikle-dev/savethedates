@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { photoMaxBytes, photoMaxPixels, photoTypes } from "./photo-limits";
 
 // A small host (512 MB, 0.5 CPU) must decode one photo at a time: libvips would otherwise start a thread per
 // detected host CPU and keep an operation cache. Measurements and upgrade triggers: docs/operations.md.
@@ -52,7 +53,7 @@ function acquirePhotoSlot(): Promise<() => void> {
 }
 
 export async function preparePhoto(file: File) {
-  const invalid = !file.size || file.size > 5 * 1024 * 1024 ? "size" : !["image/jpeg", "image/png", "image/webp"].includes(file.type) ? "type" : null;
+  const invalid = !file.size || file.size > photoMaxBytes ? "size" : !photoTypes.includes(file.type) ? "type" : null;
   if (invalid) throw new PhotoRejectedError("Choose a JPEG, PNG or WebP photo up to about 5 MB.", invalid);
   const release = await acquirePhotoSlot();
   try {
@@ -66,7 +67,7 @@ async function convertPhoto(input: Buffer) {
   try {
     // autoOrient is applied after the resize, so JPEG/WebP shrink-on-load stays available and the full-size
     // image is never rotated in memory.
-    const photo = sharp(input, { limitInputPixels: 25_000_000, failOn: "warning", autoOrient: true });
+    const photo = sharp(input, { limitInputPixels: photoMaxPixels, failOn: "warning", autoOrient: true });
     const metadata = await photo.metadata();
     if (!["jpeg", "png", "webp"].includes(metadata.format ?? "") || (metadata.pages ?? 1) > 1) throw new Error("Unsupported image");
     // Full-quality JPEG resampling avoids moiré on fine fabric patterns. sharp only shrinks WebP on load in fast

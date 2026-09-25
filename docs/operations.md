@@ -54,7 +54,7 @@ On every push to `main`, after all CI checks pass, the `publish-image` job pushe
 
 ## Memory and photo uploads
 
-Photo decoding is the main memory risk on a small host (F037: Render Starter, 512 MB, 0.5 CPU). Each server instance processes one photo at a time. Up to three more uploads wait, for at most 20 seconds each. Any other upload gets "Photo uploads are busy — please try again in a moment" and nothing is saved. libvips runs with one thread and no operation cache. The production image sets `MALLOC_ARENA_MAX=2` to limit glibc fragmentation.
+Photo decoding is the main memory risk on a small host (F037: Render Starter, 512 MB, 0.5 CPU). Each server instance processes one photo at a time. Up to three more uploads wait, for at most 20 seconds each. Any other upload gets "Photo uploads are busy — please try again in a moment" and nothing is saved. libvips runs with one thread and no operation cache. The production image sets `MALLOC_ARENA_MAX=2` to limit glibc fragmentation. Since F062, owners' browsers shrink photos over 5 MiB or 25 MP before upload, so the server's limits and these measurements still apply unchanged.
 
 Measured on 24 September 2026 with the production image run locally using `docker run --memory=512m --cpus=0.5` against local Supabase. Each burst was five near-simultaneous 5000×5000 uploads (three JPEG, two PNG) while a published wedding page received 10 requests per second. Each row covers three bursts on one container:
 

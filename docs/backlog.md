@@ -1075,7 +1075,7 @@ Alternatives considered:
 - **Allocator.** Following sharp's guidance for glibc, reduce fragmentation in the production image, for example with `ENV MALLOC_ARENA_MAX=2` or jemalloc. Keep whichever measures better.
 - **Documentation.** Record in `docs/operations.md` the measured memory profile, and when to upgrade to Standard (2 GB): memory regularly above about 70%, restarts from running out of memory, or guest page latency rising at peak.
 - **Upload guidance (24 September walkthrough):** Use plain language for the size limit without changing or understating the actual 5 MiB cap; keep the 25-megapixel rejection explicit when relevant. Do not silently relax server validation.
-- **Deferred:** resizing photos in the browser before upload. Revisit only if the measurements or mobile upload times justify it. The server stays the authority on validation either way.
+- **Deferred:** resizing photos in the browser before upload. Revisit only if the measurements or mobile upload times justify it. The server stays the authority on validation either way. (Delivered later in F062 at the owner's request.)
 
 **Done when:**
 
@@ -2066,7 +2066,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 
 ## F062 - Accept large photos by resizing them in the browser
 
-**Status:** Ready (approach recommended by engineering, 25 September 2026; the owner can override it)
+**Status:** In Progress (started 25 September 2026; the owner approved the recommended approach)
 **Priority / lead:** P1, paid-launch gate / Software Engineer. Independent review is not required: server validation, processing and storage don't change (the same reasoning as F040). Inspect the UI at mobile and desktop widths.
 **Purpose:** Couples can choose the photos they actually have, straight from a phone or camera, including 40 MB files. Uploads stay quick on mobile data and within the server's memory.
 **Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md): the 5 MB limit is too low, and the owner has photos of about 40 MB. Wanted: a clean, best-practice fix, with no hacks.
@@ -2094,6 +2094,21 @@ Record items 1–3 in `release-inputs.md` section 3.
 - Files over the browser ceiling, and files that can't be decoded, show a clear message and leave the current photo and draft unchanged.
 - The existing server validation tests pass unchanged. New unit tests cover the "needs resizing" decision and the size and quality steps. An E2E test uploads a large fixture generated during the test (no large file committed) and checks the saved result.
 - `npm.cmd run check` passes. The photo form is inspected at 390 px and 1440 px.
+
+**Handoff (25 September 2026):**
+
+- **Built:**
+  - `src/features/workspace/photo-limits.ts` holds the 5 MiB, 25 MP and type limits, shared by the server (`photo.ts`, behaviour unchanged) and the browser.
+  - `src/features/workspace/photo-resize.ts` does the browser work. `prepareUpload` refuses files over 60 MB before reading them, and returns the original file when the server would accept it as chosen (within 5 MiB, 25 MP and the accepted types). Otherwise it loads the photo into an `<img>` (orientation applied), draws it on a white canvas at 2500 px on the long edge, and encodes a JPEG at quality 0.9, then 0.8 if needed. If the browser can't decode a file that is already within the limits, the file is sent unchanged, so the server's own checks and messages still apply.
+  - `photo-form.tsx` shows "Preparing photo…" while resizing, then the existing upload state. New help text: "A JPEG, PNG or WebP photo, up to 60 MB. Large photos are made smaller on your device before they upload." Focus returns to the photo button after a browser-side error; this was a focus bug caught by the E2E test. The upload is sent through the existing `changePhoto` action; the file input no longer submits a form.
+  - Docs: `architecture.md` (photos) and `operations.md` (memory and photo uploads).
+- **Checks** (Node 24.11.0 and local Supabase; Chromium 1194 because the container can't download Playwright's pinned build):
+  - `npm run check`: passed (lint, typecheck, 92 unit tests including 7 new ones in `photo-resize.test.ts`, production build).
+  - `npm run test:integration`: 23 passed.
+  - `tests/publication.spec.ts`: passed at desktop and mobile. This includes the new test "large camera photos are made smaller on the device; photos within the limits upload unchanged". A page script records each file the page sends and its SHA-256. The small photo arrived byte-for-byte unchanged. A 6000×4500 (27 MP), over-5 MB JPEG with EXIF orientation 6 was sent as a JPEG of 5 MiB or less and stored as a correctly rotated 1500×2000 WebP. A 7 MB undecodable file shows "We couldn’t read that photo" and returns focus to the button. The over-60 MB refusal is covered by a unit test, because a 61 MB fixture made the long publish journey exceed its time limit.
+  - The photo form was inspected at 390 px and 1440 px, idle and in the error state, with no overflow.
+- **Not run (why this stays In Progress):** real-device checks on an iPhone (Safari) and an Android phone (Chrome), and desktop Firefox and Safari. The container runs Chromium only, so browser memory with a 40 MB photo on a phone and iOS canvas behaviour are unverified. Independent review isn't required (see Priority).
+- **Next:** the owner uploads one of their 40 MB photos on staging from a phone and from a desktop browser other than Chrome, checks it looks right, and then F062 can be marked Done.
 
 ## F063 - Show SaveTheDates, not the Supabase address, in Google sign-in
 

@@ -1,9 +1,14 @@
+import { createHash } from "node:crypto";
+import { writeFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
 
+type SentFile = { name: string; type: string; size: number; sha256: string };
+
 const local = localSupabase();
+const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 const photo = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#738c79" } }).jpeg().toBuffer();
 
 async function createOwner() {
@@ -147,6 +152,71 @@ test("owner previews privately, uploads and frames a photo", async ({ page, brow
 });
 
 // Starts from a saved draft with a framed photo; the upload and framing controls are covered above.
+test("large camera photos are made smaller on the device; photos within the limits upload unchanged", async ({ page }, testInfo) => {
+  const { email, password, ownerId } = await createOwner();
+  let weddingId: string | undefined;
+  test.slow();
+  // Chromium doesn't expose file-upload bodies to Playwright, so record each file the page sends to the server.
+  await page.addInitScript(() => {
+    const sent: Array<Promise<SentFile>> = [];
+    (window as unknown as { sentFiles: typeof sent }).sentFiles = sent;
+    const originalFetch = window.fetch;
+    window.fetch = (input, init) => {
+      if (init?.body instanceof FormData) {
+        for (const value of init.body.values()) {
+          if (value instanceof File) sent.push(value.arrayBuffer().then(async (bytes) => ({
+            name: value.name,
+            type: value.type,
+            size: value.size,
+            sha256: Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)), (byte) => byte.toString(16).padStart(2, "0")).join(""),
+          })));
+        }
+      }
+      return originalFetch(input, init);
+    };
+  });
+  const sentFiles = () => page.evaluate(() => Promise.all((window as unknown as { sentFiles: Array<Promise<SentFile>> }).sentFiles));
+  const savedPhotoPath = async () => (await local.admin.from("weddings").select("photo_path").eq("id", weddingId!).single()).data!.photo_path as string | null;
+  try {
+    await signIn(page, email, password);
+    await page.getByLabel("Your name", { exact: false }).fill("Alex");
+    await page.locator('[name="second_name"]').fill("Morgan");
+    await page.locator('[name="wedding_date"]').fill("2027-09-18");
+    await page.locator('[name="location"]').fill("Bath, England");
+    await page.getByRole("button", { name: "Save private draft" }).click();
+    await expect(page.getByRole("status")).toContainText("private draft has been saved");
+    weddingId = (await local.admin.from("weddings").select("id").eq("owner_id", ownerId).single()).data!.id;
+    await openWorkspaceSection(page, "Design");
+
+    await page.getByLabel("Photo file").setInputFiles({ name: "photo.jpg", mimeType: "image/jpeg", buffer: photo });
+    await expect.poll(savedPhotoPath).not.toBeNull();
+    const firstPath = await savedPhotoPath();
+    expect(await sentFiles()).toEqual([{ name: "photo.jpg", type: "image/jpeg", size: photo.length, sha256: sha256(photo) }]);
+
+    // 27 MP and over 5 MB, stored sideways with an EXIF "rotate 90°" flag, like many phone photos.
+    const camera = await sharp({ create: { width: 6000, height: 4500, channels: 3, background: "#8a7f6b", noise: { type: "gaussian", mean: 128, sigma: 24 } } })
+      .jpeg({ quality: 95 }).withMetadata({ orientation: 6 }).toBuffer();
+    expect(camera.length).toBeGreaterThan(5 * 1024 * 1024);
+    const cameraPath = testInfo.outputPath("IMG_0042.jpg");
+    await writeFile(cameraPath, camera);
+    await page.getByLabel("Photo file").setInputFiles(cameraPath);
+    await expect.poll(savedPhotoPath, { timeout: 30_000 }).not.toBe(firstPath);
+    await expect(page.getByRole("status").filter({ hasText: "photo has been saved" })).toBeVisible();
+    await expect(page.getByText("Preparing your photo…")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Change photo" })).toBeEnabled();
+    const resized = (await sentFiles())[1];
+    expect(resized).toMatchObject({ name: "IMG_0042.jpg", type: "image/jpeg" });
+    expect(resized.size).toBeLessThanOrEqual(5 * 1024 * 1024);
+
+    const stored = await local.admin.storage.from("wedding-photos").download((await savedPhotoPath())!);
+    expect(stored.error).toBeNull();
+    const metadata = await sharp(Buffer.from(await stored.data!.arrayBuffer())).metadata();
+    expect(metadata).toMatchObject({ format: "webp", width: 1500, height: 2000 });
+  } finally {
+    await removeOwner(ownerId, weddingId);
+  }
+});
+
 test("owner publishes, shares, updates and unpublishes a wedding", async ({ page, browser, baseURL }) => {
   const { email, password, ownerId } = await createOwner();
   const slug = `alex-${crypto.randomUUID()}`;
@@ -321,8 +391,8 @@ test("owner publishes, shares, updates and unpublishes a wedding", async ({ page
     expect((await guest.request.get(`${home}/photo`)).status()).toBe(404);
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
     await openSection("Design");
-    await page.getByLabel("Photo file").setInputFiles({ name: "oversized.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(7 * 1024 * 1024) });
-    await expect(page.getByRole("alert").filter({ hasText: "over 5 MB" })).toBeVisible();
+    await page.getByLabel("Photo file").setInputFiles({ name: "large-unreadable.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(7 * 1024 * 1024) });
+    await expect(page.getByRole("alert").filter({ hasText: "couldn’t read that photo" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Change photo" })).toBeFocused();
     await page.getByRole("button", { name: "Remove photo" }).click();
     await expect(page.getByRole("status").filter({ hasText: "photo has been removed" })).toBeVisible();
