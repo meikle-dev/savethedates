@@ -5,22 +5,28 @@ import type { BrowserContext } from "@playwright/test";
 
 const local = localSupabase();
 
-async function emailLink(email: string, type: "signup" | "recovery") {
-  let link = "";
-  await expect.poll(async () => {
-    const inbox = await fetch(`${local.mailUrl}/api/v1/messages`).then((r) => r.json());
-    for (const message of inbox.messages ?? []) {
-      if (!message.To?.some((to: { Address: string }) => to.Address === email)) continue;
-      const detail = await fetch(`${local.mailUrl}/api/v1/message/${message.ID}`).then((r) => r.json());
-      const match = (detail.HTML as string).match(/href="([^"]+)"/);
-      if (match) {
-        const candidate = match[1].replaceAll("&amp;", "&");
-        if (new URL(candidate).searchParams.get("type") === type) { link = candidate; return true; }
-      }
+async function emailLinks(email: string, type: "signup" | "recovery") {
+  const links: string[] = [];
+  const inbox = await fetch(`${local.mailUrl}/api/v1/messages`).then((r) => r.json());
+  for (const message of inbox.messages ?? []) {
+    if (!message.To?.some((to: { Address: string }) => to.Address === email)) continue;
+    const detail = await fetch(`${local.mailUrl}/api/v1/message/${message.ID}`).then((r) => r.json());
+    const match = (detail.HTML as string).match(/href="([^"]+)"/);
+    if (match) {
+      const candidate = match[1].replaceAll("&amp;", "&");
+      if (new URL(candidate).searchParams.get("type") === type) links.push(candidate);
     }
-    return false;
+  }
+  return links;
+}
+
+async function emailLink(email: string, type: "signup" | "recovery") {
+  let link: string | undefined;
+  await expect.poll(async () => {
+    link = (await emailLinks(email, type))[0];
+    return !!link;
   }, { timeout: 20_000, message: `Expected local ${type} email` }).toBe(true);
-  return link;
+  return link!;
 }
 
 type BrowserCookies = Awaited<ReturnType<BrowserContext["cookies"]>>;
@@ -73,9 +79,33 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.goto("/account/sign-up");
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
+    await page.getByRole("button", { name: "Show password" }).click();
+    await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "text");
+    await expect(page.getByLabel("Password", { exact: true })).toHaveValue(password);
+    await page.getByRole("button", { name: "Hide password" }).click();
+    await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("type", "password");
     await page.screenshot({ path: test.info().outputPath("signup.png"), fullPage: true });
     await page.getByRole("button", { name: "Create account" }).click();
     await expect(page.getByRole("status")).toContainText("Check your email");
+    await expect(page.getByRole("heading", { name: "Check your inbox" })).toBeVisible();
+    await expect(page.getByRole("status").first()).toContainText(email);
+    await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Create account" })).toHaveCount(0);
+    await page.screenshot({ path: test.info().outputPath("signup-inbox.png"), fullPage: true });
+    const firstSignupLink = await emailLink(email, "signup");
+    await page.waitForTimeout(1200); // Local Supabase allows a new email after one second.
+    await page.getByRole("button", { name: "Resend confirmation link" }).click();
+    await expect(page.getByRole("status").last()).toContainText("If this address still needs confirmation");
+    let signupLink = "";
+    await expect.poll(async () => {
+      signupLink = (await emailLinks(email, "signup")).find((link) => link !== firstSignupLink) ?? "";
+      return !!signupLink;
+    }, { timeout: 20_000, message: "Expected a new confirmation link after resend" }).toBe(true);
+    let reloadPosts = 0;
+    page.on("request", (request) => { if (request.method() === "POST") reloadPosts++; });
+    await page.reload();
+    expect(reloadPosts).toBe(0);
+    await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
 
     await page.goto("/account/sign-in");
     await page.getByLabel("Email address").fill(email);
@@ -83,7 +113,7 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page.getByRole("main").getByRole("alert")).toContainText("confirm your email");
 
-    await page.goto(await emailLink(email, "signup"));
+    await page.goto(signupLink);
     await expect(page).toHaveURL(/\/dashboard\/basics$/);
     await expect(page.getByText("Only you can access this draft. It isn’t shared with guests.")).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
@@ -170,6 +200,12 @@ test("owner signs up, confirms email, saves a private draft, and recovers access
     await page.goto(recoveryLink);
     await expect(page).toHaveURL(/\/account\/recovery\?error=expired/);
     await expect(page.getByRole("main").getByRole("alert")).toContainText("invalid or has expired");
+    await page.goto(signupLink);
+    await expect(page).toHaveURL(/\/account\/sign-up\?error=expired/);
+    await expect(page.getByRole("main").getByRole("alert")).toContainText("confirmation link is invalid or has expired");
+    await page.getByLabel("Email address").fill(email);
+    await page.getByRole("button", { name: "Resend confirmation link" }).click();
+    await expect(page.getByRole("status")).toContainText("If this address still needs confirmation");
   } finally {
     const { data } = await local.admin.auth.admin.listUsers({ perPage: 1000 });
     const user = data.users.find((user) => user.email === email);
@@ -188,6 +224,65 @@ test("anonymous and forged sessions cannot open the workspace or password editor
   await page.goto("/account/password");
   await expect(page).toHaveURL(/\/account\/recovery\?error=expired/);
   await page.goto("/auth/confirm?token_hash=invalid&type=signup&next=https://example.com");
-  await expect(page).toHaveURL(/\/account\/recovery\?error=expired/);
+  await expect(page).toHaveURL(/\/account\/sign-up\?error=expired/);
 });
 
+test("account forms focus styled field errors and allow changing the confirmation email", async ({ page }) => {
+  const email = `change-${crypto.randomUUID()}@example.test`;
+  const password = `Initial-${crypto.randomUUID()}`;
+  try {
+    await page.goto("/account/sign-up");
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page.getByLabel("Email address")).toBeFocused();
+    await expect(page.getByLabel("Email address")).toHaveAttribute("aria-describedby", "email-error");
+    await expect(page.locator("#email-error")).toHaveClass(/field-error/);
+    await page.getByLabel("Email address").fill(email);
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page.getByLabel("Password", { exact: true })).toBeFocused();
+    await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute("aria-describedby", "password-help");
+    await expect(page.locator("#password-help")).toHaveClass(/field-error/);
+    await page.getByLabel("Password", { exact: true }).fill(password);
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page.getByRole("heading", { name: "Check your inbox" })).toBeVisible();
+    const originalViewport = page.viewportSize()!;
+    await page.setViewportSize({ width: 320, height: 740 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: test.info().outputPath("signup-inbox-320.png"), fullPage: true });
+    await page.setViewportSize(originalViewport);
+    await page.getByRole("button", { name: "Change email" }).click();
+    await expect(page.getByLabel("Email address")).toHaveValue(email);
+    await expect(page.getByLabel("Password", { exact: true })).toHaveValue("");
+    await expect(page.getByRole("heading", { name: "Check your inbox" })).toHaveCount(0);
+    const firstLink = await emailLink(email, "signup");
+    await page.goto("/auth/confirm?token_hash=invalid&type=signup");
+    await expect(page).toHaveURL(/\/account\/sign-up\?error=expired/);
+    await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
+    await page.getByLabel("Email address").fill(email);
+    await page.waitForTimeout(1200);
+    await page.getByRole("button", { name: "Resend confirmation link" }).click();
+    await expect(page.getByRole("status")).toContainText("If this address still needs confirmation");
+    const pendingResponse = await page.getByRole("status").innerText();
+    let newLink = "";
+    await expect.poll(async () => {
+      newLink = (await emailLinks(email, "signup")).find((link) => link !== firstLink) ?? "";
+      return !!newLink;
+    }, { timeout: 20_000, message: "Expected a new link for an unconfirmed account" }).toBe(true);
+    await page.goto(newLink);
+    await expect(page).toHaveURL(/\/dashboard\/basics$/);
+    for (const address of [email, `unknown-${crypto.randomUUID()}@example.test`]) {
+      await page.goto("/auth/confirm?token_hash=invalid&type=signup");
+      await page.getByLabel("Email address").fill(address);
+      await page.getByRole("button", { name: "Resend confirmation link" }).click();
+      await expect(page.getByRole("status")).toHaveText(pendingResponse);
+    }
+    await page.goto("/account/sign-in");
+    await page.getByLabel("Email address").fill("invalid");
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page.getByLabel("Email address")).toBeFocused();
+    await expect(page.locator("#email-error")).toHaveClass(/field-error/);
+  } finally {
+    const { data } = await local.admin.auth.admin.listUsers({ perPage: 1000 });
+    const user = data.users.find((user) => user.email === email);
+    if (user) await local.admin.auth.admin.deleteUser(user.id);
+  }
+});

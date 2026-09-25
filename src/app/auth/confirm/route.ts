@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   return withLogging("account.confirm", "/auth/confirm", async () => {
     const hash = request.nextUrl.searchParams.get("token_hash");
     const type = request.nextUrl.searchParams.get("type");
-    let destination = "/account/recovery?error=expired";
+    let destination = type === "signup" ? "/account/sign-up?error=expired" : "/account/recovery?error=expired";
     if (hash && (type === "signup" || type === "recovery")) {
       const client = await createClient();
       const { data, error } = await client.auth.verifyOtp({ token_hash: hash, type });

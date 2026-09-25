@@ -9,7 +9,7 @@ import { isUuid, scrubText } from "./monitoring/scrub";
 
 /** Units of work wrapped by `withLogging`. Each has a `<operation>.failed` event below. */
 export const logOperations = [
-  "account.signup", "account.signin", "account.recovery", "account.password", "account.signout", "account.confirm",
+  "account.signup", "account.signin", "account.recovery", "account.password", "account.signout", "account.confirm", "account.confirmation_resend",
   "workspace.save", "photo.upload", "photo.read", "publication.publish", "publication.unpublish",
   "payment.checkout", "payment.webhook", "rsvp.submit", "rsvp.link", "rsvp.response",
 ] as const;
@@ -19,6 +19,7 @@ export type LogOperation = (typeof logOperations)[number];
 export const logEvents = [
   "app.request.failed",
   "account.signup.requested", "account.signup.failed",
+  "account.confirmation_resend.requested", "account.confirmation_resend.rejected", "account.confirmation_resend.failed",
   "account.confirm.succeeded", "account.confirm.rejected", "account.confirm.failed",
   "account.signin.rejected", "account.signin.failed",
   "account.recovery.requested", "account.recovery.failed",

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AccountShell } from "@/components/account-shell";
-import { AuthForm } from "@/features/account/auth-form";
+import { AuthForm, ExpiredConfirmationForm } from "@/features/account/auth-form";
 import { createClient } from "@/lib/supabase/server";
 
 const screens = {
@@ -23,13 +23,12 @@ export default async function AccountPage({ params, searchParams }: { params: Pr
   const { error, demo } = await searchParams;
   return <AccountShell>
     <p className="eyebrow">Your wedding, together</p>
-    <h1 className="editorial mt-4 text-4xl leading-tight md:text-5xl">{screens[mode].title}</h1>
-    <p className="mt-5 leading-relaxed text-[var(--muted)]">{screens[mode].intro}</p>
-    {error && <p role="alert" className="form-error mt-6">This link is invalid or has expired. Request a new reset link, or sign up again for a new confirmation email.</p>}
+    {(mode !== "sign-up" || error === "expired") && <><h1 className="editorial mt-4 text-4xl leading-tight md:text-5xl">{mode === "sign-up" ? "Confirm your account." : screens[mode].title}</h1><p className="mt-5 leading-relaxed text-[var(--muted)]">{mode === "sign-up" ? "Request a fresh confirmation link to finish setting up your account." : screens[mode].intro}</p></>}
+    {error && <p role="alert" className="form-error mt-6">{mode === "sign-up" ? "This confirmation link is invalid or has expired. Enter your email to request a new link." : "This reset link is invalid or has expired. Request a new password reset link."}</p>}
     {demo === "unavailable" && <p role="alert" className="form-error mt-6">The local demo account is unavailable. Run <code>npm run local:demo-account</code>, then try again.</p>}
-    <AuthForm mode={mode} development={process.env.NODE_ENV !== "production"} />
+    {mode === "sign-up" && error === "expired" ? <ExpiredConfirmationForm /> : <AuthForm mode={mode} development={process.env.NODE_ENV !== "production"} />}
     <nav aria-label="Account options" className="mt-8 flex flex-col gap-5 text-center text-sm">
-      {mode !== "sign-in" && <Link className="text-link" href="/account/sign-in">Already have an account? Sign in</Link>}
+      {mode !== "sign-in" && mode !== "sign-up" && <Link className="text-link" href="/account/sign-in">Already have an account? Sign in</Link>}
       {mode === "sign-in" && <><Link className="text-link" href="/account/recovery">Forgot your password?</Link><Link className="text-link" href="/account/sign-up">New here? Create an account</Link></>}
     </nav>
   </AccountShell>;

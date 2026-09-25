@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F044 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F045**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F045-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F045 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F046**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F046-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
 
 ## Status and handoff rules
 
@@ -1441,7 +1441,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 ## F045 - Clear account confirmation and consistent auth errors
 
-**Status:** Ready
+**Status:** Done (25 September 2026)
 **Priority / lead:** P1, paid-launch gate / Software Engineer; independent auth review required.
 **Purpose:** A new couple understands the next email step without submitting sign-up repeatedly.
 **Depends on:** F002 (Done). F041 supplies real sender/support configuration and legal links separately.
@@ -1453,6 +1453,8 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Existing-account and new-account outcomes remain non-enumerating. Resend uses the approved callback origin, obeys backend rate limits, does not resend on render/reload, and handles expired confirmation, failure and retry safely. Copy does not claim email delivery or invent a production sender.
 - Invalid email/password errors are styled, linked to fields, announced and focusable; password toggling preserves the value and announces state. Legal links come from F041, not placeholder policy text.
 - Relevant account/recovery tests and `npm.cmd run check` pass; inspect mobile/desktop and keyboard use; independent auth review closes. Real inbox delivery remains F041/F049 evidence.
+
+**Handoff:** Successful sign-up now shows the server-validated email in a dedicated inbox state, removes the password form, and offers Change email, Sign in and explicit confirmation resend. Expired signup links open an email-only resend form. Resend uses Supabase Auth with the configured callback origin and provider rate limits; its public response is identical for pending, confirmed and unknown addresses. Auth forms now have a password visibility control and focused, announced field errors. No secrets are placed in URLs or logs. `npm.cmd run check` passed (lint, typecheck, 76 unit tests, production build); with `E2E_BASE_URL=http://127.0.0.1:3000`, `npx.cmd playwright test tests/account.spec.ts --reporter=line` passed 6/6 desktop/mobile, including distinct Mailpit resend links, expired-link recovery, no automatic resend on reload, account-state non-enumeration, keyboard/error behavior and the owner journey. Inspected the inbox at 320px, mobile and desktop widths; no overflow. `git diff --check` passed. Independent auth reviewer closed both Important findings, with no Blocking or Important findings remaining. The local Docker app image was rebuilt after a stale dependency error and remains running; local Supabase data was not reset. Real production inbox delivery and hosted browser checks remain F041/F049. Blockers: None. Next: F046.
 
 ## F046 - Clear progress and save controls in the workspace
 

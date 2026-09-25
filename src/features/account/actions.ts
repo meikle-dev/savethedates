@@ -63,11 +63,33 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
       }
       // An existing email is reported as a normal request so the response does not reveal registered accounts.
       log.info("account.signup.requested");
-      return { success: true, message: "Check your email to confirm your account. If you already have an account, sign in or reset your password." };
+      return { success: true, submittedEmail: input.data.email };
     } catch (error) {
       log.error("account.signup.failed", { reason: errorReason(error) });
       return { message: "Account creation is temporarily unavailable. Please try again." };
     }
+  });
+}
+
+export async function resendConfirmation(_: FormState, form: FormData): Promise<FormState> {
+  return withLogging("account.confirmation_resend", "/account/[screen]", async () => {
+    const input = emailSchema.safeParse(form.get("email"));
+    if (!input.success) return { errors: { email: ["Enter a valid email address."] } };
+    try {
+      const client = await createClient();
+      const { error } = await client.auth.resend({
+        type: "signup",
+        email: input.data,
+        options: { emailRedirectTo: `${appOrigin()}/auth/confirm` },
+      });
+      if (error) log.warn("account.confirmation_resend.rejected", { reason: errorReason(error) });
+      else log.info("account.confirmation_resend.requested");
+    } catch (error) {
+      log.error("account.confirmation_resend.failed", { reason: errorReason(error) });
+    }
+    // A provider error can differ between unknown, confirmed and unconfirmed addresses.
+    // Keep the public result identical and let Supabase enforce its resend rate limits.
+    return { success: true, message: "If this address still needs confirmation, a new link may arrive. Please wait a few minutes before trying again." };
   });
 }
 
