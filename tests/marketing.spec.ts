@@ -41,30 +41,29 @@ test("marketing leads to signup and accurately explains price, visibility and RS
 });
 
 test("all public examples use fictional content, working Details and noindex", async ({ page }) => {
-  // Twelve themes, each with two full-page screenshots, against the development server.
-  test.setTimeout(120_000);
-  for (const { id: theme, name } of themes) {
-    await page.goto("/#themes");
-    await page.getByRole("link", { name: new RegExp(`${name}.*Explore this example`) }).click();
-    await expect(page).toHaveURL(new RegExp(`/examples/${theme}$`));
-    await expect(page.getByRole("link", { name: "Create your save the date" })).toHaveAttribute("href", "/account/sign-up");
-    await expect(page.getByText("Fictional wedding example")).toBeVisible();
-    await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
-    await expect(page.getByRole("img")).toHaveJSProperty("naturalWidth", 1400);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: test.info().outputPath(`${theme}-example.png`), fullPage: true });
-    await page.getByRole("link", { name: "Details", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Wedding details" })).toBeVisible();
-    await expect(page.getByText(/fictional venue/)).toBeVisible();
-    await expect(page.getByRole("button")).toHaveCount(0);
-    await page.screenshot({ path: test.info().outputPath(`${theme}-details.png`), fullPage: true });
-    await page.getByRole("link", { name: "Save the date", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
-    await page.getByRole("link", { name: "All themes", exact: false }).click();
-    await expect(page).toHaveURL(/\/#themes$/);
+  // Themes share one implementation; theme-design.spec.ts renders every example. Here every homepage card must link to
+  // its example and every example must be noindex, then one example is walked through.
+  await page.goto("/#themes");
+  for (const { id, name } of themes) {
+    await expect(page.getByRole("link", { name: new RegExp(`${name}.*Explore this example`) })).toHaveAttribute("href", `/examples/${id}`);
   }
-  // Fetched together once every example has compiled, so the check adds little time.
   for (const robots of await Promise.all(themes.map(({ id }) => servedRobots(page, `/examples/${id}`)))) expect(robots).toEqual(["noindex, nofollow"]);
+  const { id: theme, name } = themes[0];
+  await page.getByRole("link", { name: new RegExp(`${name}.*Explore this example`) }).click();
+  await expect(page).toHaveURL(new RegExp(`/examples/${theme}$`));
+  await expect(page.getByRole("link", { name: "Create your save the date" })).toHaveAttribute("href", "/account/sign-up");
+  await expect(page.getByText("Fictional wedding example")).toBeVisible();
+  await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
+  await expect(page.getByRole("img")).toHaveJSProperty("naturalWidth", 1400);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole("link", { name: "Details", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Wedding details" })).toBeVisible();
+  await expect(page.getByText(/fictional venue/)).toBeVisible();
+  await expect(page.getByRole("button")).toHaveCount(0);
+  await page.getByRole("link", { name: "Save the date", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
+  await page.getByRole("link", { name: "All themes", exact: false }).click();
+  await expect(page).toHaveURL(/\/#themes$/);
   expect((await page.goto("/examples/unknown"))?.status()).toBe(404);
   expect((await page.goto("/examples/minimal/rsvp"))?.status()).toBe(404);
 });

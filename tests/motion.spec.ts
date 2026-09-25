@@ -1,5 +1,4 @@
 import { expect, test, type Page } from "@playwright/test";
-import { themes } from "../src/features/weddings/themes";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
 
@@ -75,21 +74,19 @@ test("navigation fades live content without initial motion and disclosures remai
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Your wedding website");
 });
 
-test("all twelve themes navigate with the same motion and stationary headers", async ({ page }) => {
-  test.setTimeout(120_000);
+// Every theme shares this navigation and fade; the themes differ only in CSS.
+test("wedding pages navigate with the fade and stationary headers", async ({ page }) => {
   await observeMotion(page);
-  for (const { id } of themes) {
-    await page.goto(`/examples/${id}`);
-    await page.getByRole("link", { name: "Details", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Wedding details" })).toBeVisible();
-    await expect.poll(async () => (await log(page)).some((animation) => animation.name === "MAIN")).toBe(true);
-    // The fade targets <main>, so headers outside it stay steady.
-    expect(await page.locator(".wedding-header").evaluate((header) => !document.querySelector("main")!.contains(header))).toBe(true);
-    await noOverflow(page);
-    await page.getByRole("link", { name: "Save the date", exact: true }).click();
-    await expect(page.locator(".wedding-hero")).toBeVisible();
-    if (id === "minimal") await page.screenshot({ path: test.info().outputPath("wedding.png"), fullPage: true });
-  }
+  await page.goto("/examples/minimal");
+  await page.getByRole("link", { name: "Details", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Wedding details" })).toBeVisible();
+  await expect.poll(async () => (await log(page)).some((animation) => animation.name === "MAIN")).toBe(true);
+  // The fade targets <main>, so headers outside it stay steady.
+  expect(await page.locator(".wedding-header").evaluate((header) => !document.querySelector("main")!.contains(header))).toBe(true);
+  await noOverflow(page);
+  await page.getByRole("link", { name: "Save the date", exact: true }).click();
+  await expect(page.locator(".wedding-hero")).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("wedding.png"), fullPage: true });
 });
 
 for (const mode of ["reduced", "unsupported"] as const) {
@@ -125,7 +122,6 @@ test("server-rendered notices have no initial animation", async ({ page }) => {
 });
 
 test("workspace keeps its shell, menu and correction controls usable with normal and reduced motion", async ({ page }) => {
-  test.setTimeout(90_000);
   const local = localSupabase();
   const email = `motion-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();

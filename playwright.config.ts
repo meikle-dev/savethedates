@@ -25,7 +25,8 @@ export default defineConfig({
       STRIPE_SECRET_KEY: "sk_test_local_webhook_verification_only",
       STRIPE_WEBHOOK_SECRET: "whsec_local_webhook_test_secret",
     },
-    command: "npm run dev -- --port 3100",
+    // E2E_PRODUCTION=1 serves the existing `npm run build` output, so pages are not compiled on first request.
+    command: process.env.E2E_PRODUCTION ? "npm run start -- --port 3100" : "npm run dev -- --port 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
     timeout: 120_000,

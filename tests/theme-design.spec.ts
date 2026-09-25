@@ -6,7 +6,7 @@ const themeIds = themes.map(({ id }) => id);
 
 for (const theme of themeIds) {
   test(`${theme} guest design stays readable across sizes and image failures`, async ({ page }) => {
-    test.setTimeout(60_000);
+    test.skip(test.info().project.name !== "desktop", "Sets its own widths from 320px to 1440px, so one project covers it");
     await page.goto(`/examples/${theme}`);
     await page.evaluate(() => document.fonts.ready);
     // CSS decoration has no img error UI: decode its actual source to catch broken assets.

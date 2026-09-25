@@ -41,7 +41,6 @@ function guests(page: Page) {
 }
 
 test("guest responses are paginated, filtered, searched and corrected per owner", async ({ page, browser, baseURL }) => {
-  test.setTimeout(120_000);
   const owner = await createOwner("guests-a");
   const other = await createOwner("guests-b");
   const contexts: { close: () => Promise<void> }[] = [];

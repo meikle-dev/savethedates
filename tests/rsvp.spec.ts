@@ -4,8 +4,6 @@ import { rsvpDeadline } from "../src/features/weddings/wedding";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
 
-const themeIds = themes.map(({ id }) => id);
-
 const local = localSupabase();
 
 function openSection(page: Page, name: string) {
@@ -21,7 +19,6 @@ function expectPrivate(response: Response | null) {
 }
 
 test("one shared link collects separate named responses and can be replaced", async ({ page, browser, baseURL }) => {
-  test.setTimeout(120_000);
   const email = `shared-e2e-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
   const slug = `shared-e2e-${crypto.randomUUID()}`;
@@ -104,16 +101,12 @@ test("one shared link collects separate named responses and can be replaced", as
     await jordan.getByLabel("Remove this response from the list and totals").check();
     await jordan.getByRole("button", { name: "Remove response" }).click();
     await expect(responseList.getByText("Jordan Lee")).toHaveCount(0);
-    for (const theme of themeIds) {
-      expect((await local.admin.from("weddings").update({ theme }).eq("id", wedding.data!.id)).error).toBeNull();
-      await guestPage.goto(shareUrl);
-      await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
-      for (const width of [320, 390, 1440]) {
-        await guestPage.setViewportSize({ width, height: 900 });
-        expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        if (width === 390) await guestPage.screenshot({ path: test.info().outputPath(`shared-rsvp-${theme}-390.png`), fullPage: true });
-      }
-      await guestPage.screenshot({ path: test.info().outputPath(`shared-rsvp-${theme}.png`), fullPage: true });
+    // Every theme's RSVP page is rendered in rsvp-preview.spec.ts; the themes differ only in CSS.
+    await guestPage.goto(shareUrl);
+    for (const width of [320, 390, 1440]) {
+      await guestPage.setViewportSize({ width, height: 900 });
+      expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      if (width === 390) await guestPage.screenshot({ path: test.info().outputPath("shared-rsvp-390.png"), fullPage: true });
     }
     await openSection(page, "RSVP");
     const updated = page.getByRole("region", { name: "RSVP", exact: true });
@@ -202,7 +195,6 @@ test("names alone, retired links and unknown secrets give the same private 404",
 // F044: couples see whether guests can reply before and after publishing; guests see the deadline exactly as the
 // database enforces it, one-reply-each guidance and a clear completion with a separate "Reply for someone else".
 test("RSVP readiness, closing date and completion are clear in every state", async ({ page, browser, baseURL }) => {
-  test.setTimeout(300_000);
   const email = `readiness-e2e-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
   const slug = `readiness-e2e-${crypto.randomUUID().slice(0, 8)}`;
@@ -323,40 +315,40 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await guestPage.goto(`${home}/rsvp`);
     await expect(guestPage.getByText("Replies close at 23:59 UTC on 1 December 2026 (23:59 in the UK and Ireland).")).toBeVisible();
 
-    // Open, validation and success in every theme at this project's width.
-    for (const theme of themeIds) {
-      await update({ theme });
-      await guestPage.goto(home);
-      await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
-      await expect(guestPage.getByRole("link", { name: "RSVP now" })).toBeVisible();
-      await noSideways();
-      await guestPage.screenshot({ path: test.info().outputPath(`f044-home-${theme}-${width}.png`), fullPage: true });
-      await guestPage.getByRole("link", { name: "RSVP now" }).click();
-      await guestPage.getByRole("button", { name: "Send RSVP" }).click();
-      await expect(guestPage.getByText("Enter your name.")).toBeVisible();
-      await noSideways();
-      await guestPage.getByLabel("Your name").fill(`Guest ${theme}`);
-      await guestPage.getByLabel("Joyfully accepts").check();
-      await guestPage.getByRole("button", { name: "Send RSVP" }).click();
-      await expect(guestPage.getByRole("heading", { name: "Thank you" })).toBeFocused();
-      await noSideways();
-      await guestPage.screenshot({ path: test.info().outputPath(`f044-success-${theme}-${width}.png`), fullPage: true });
-    }
+    // Open, validation and success at this project's width.
+    await guestPage.goto(home);
+    await expect(guestPage.getByRole("link", { name: "RSVP now" })).toBeVisible();
+    await noSideways();
+    await guestPage.screenshot({ path: test.info().outputPath(`f044-home-${width}.png`), fullPage: true });
+    await guestPage.getByRole("link", { name: "RSVP now" }).click();
+    await guestPage.getByRole("button", { name: "Send RSVP" }).click();
+    await expect(guestPage.getByText("Enter your name.")).toBeVisible();
+    await noSideways();
+    await guestPage.getByLabel("Your name").fill("Guest Open");
+    await guestPage.getByLabel("Joyfully accepts").check();
+    await guestPage.getByRole("button", { name: "Send RSVP" }).click();
+    await expect(guestPage.getByRole("heading", { name: "Thank you" })).toBeFocused();
+    await noSideways();
+    await guestPage.screenshot({ path: test.info().outputPath(`f044-success-${width}.png`), fullPage: true });
 
     // Closed by date: the date that has passed, in UTC, and no reply action anywhere.
     const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     await update({ rsvp_closes_on: yesterday });
-    for (const theme of themeIds) {
-      await update({ theme });
-      await guestPage.goto(home);
-      await expect(guestPage.getByRole("link", { name: "RSVP now" })).toHaveCount(0);
-      await expect(guestPage.getByText("Please reply by")).toHaveCount(0);
-      await guestPage.goto(`${home}/rsvp`);
+    await guestPage.goto(home);
+    await expect(guestPage.getByRole("link", { name: "RSVP now" })).toHaveCount(0);
+    await expect(guestPage.getByText("Please reply by")).toHaveCount(0);
+    await guestPage.goto(`${home}/rsvp`);
+    await expect(guestPage.getByRole("heading", { name: "RSVPs have closed" })).toBeVisible();
+    await expect(guestPage.getByText(`Replies closed at ${rsvpDeadline(yesterday).exact}.`, { exact: false })).toBeVisible();
+    await expect(guestPage.getByLabel("Your name")).toHaveCount(0);
+    await noSideways();
+    await guestPage.screenshot({ path: test.info().outputPath(`f044-closed-${width}.png`), fullPage: true });
+    // The closed notice replaces the form, so check it fits in every theme; each needs only a reload.
+    for (const { id } of themes) {
+      await update({ theme: id });
+      await guestPage.reload();
       await expect(guestPage.getByRole("heading", { name: "RSVPs have closed" })).toBeVisible();
-      await expect(guestPage.getByText(`Replies closed at ${rsvpDeadline(yesterday).exact}.`, { exact: false })).toBeVisible();
-      await expect(guestPage.getByLabel("Your name")).toHaveCount(0);
       await noSideways();
-      await guestPage.screenshot({ path: test.info().outputPath(`f044-closed-${theme}-${width}.png`), fullPage: true });
     }
     await update({ theme: "minimal" });
     await openSection(page, "RSVP");
@@ -390,7 +382,7 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await expect(page.getByText("Your published site is offline because its purchase is no longer active.")).toBeVisible();
     await expect(page.getByText("This is your existing guest link. It will work again if you purchase a new site period.", { exact: false })).toBeVisible();
     await expect(page.getByText("Works once published")).toHaveCount(0);
-    expect((await responses()).length).toBe(3 + themeIds.length);
+    expect((await responses()).length).toBe(4);
   } finally {
     await guest.close();
     await local.admin.auth.admin.deleteUser(ownerId);

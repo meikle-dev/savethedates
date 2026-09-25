@@ -68,7 +68,7 @@ npm run db:stop
 
 `npm run test:integration` creates temporary users and checks owner access, cross-owner denial, anonymous denial, payment ordering/idempotency/revocation, publication gating, lookup by secret only, and database validation. `npm run test:persistence` creates a temporary draft, stops and starts Supabase, signs in again, and verifies the draft remains before removing the temporary user. To deliberately erase all local data, use `npx supabase db reset --local`; this is destructive and reapplies migrations. Never run it against a hosted project.
 
-Publication integration checks also cover reserved names, shared and editable names parts, removal of lookup by names, private photos, replacement/unpublish revocation, and denied signed links. Browser checks cover photo validation, private preview, publication, live edits, removal and republishing at both viewport sizes. `npx playwright test tests/themes.spec.ts` checks private theme preview, cancellation, persistence, live application, preserved content/URL, keyboard selection, and photo/fallback/long-content layouts for all themes.
+Publication integration checks also cover reserved names, shared and editable names parts, removal of lookup by names, private photos, replacement/unpublish revocation, and denied signed links. Browser checks cover photo validation, private preview, publication, live edits, removal and republishing at both viewport sizes. `npx playwright test tests/themes.spec.ts` checks private theme preview, cancellation, persistence, live application, preserved content/URL, keyboard selection, and long-content/failed-photo layouts for all themes.
 
 ## Direct Node.js development
 
@@ -111,9 +111,11 @@ npm run test:e2e
 npm run test:monitoring
 ```
 
-`check` runs lint, route generation/TypeScript, Vitest, and the production build, in that order. The browser suite starts/stops its own development server on port 3100; leave that port free. Run the build and browser suite sequentially so generated Next.js files are not rebuilt during browser checks. On Linux CI, use `npx playwright install --with-deps chromium` for browser system dependencies. Tests use Chromium at desktop and mobile viewport sizes; they do not establish Safari compatibility.
+`check` runs lint, route generation/TypeScript, Vitest, and the production build, in that order. The browser suite starts/stops its own server on port 3100; leave that port free. By default that is the development server. `E2E_PRODUCTION=1 npm run test:e2e` serves the output of the preceding `npm run build` instead, so pages are not compiled on first request (CI instead runs the suite against its production container with `E2E_BASE_URL`); the development-only `/demo` fixture tests are skipped in that mode. Run the build and browser suite sequentially so generated Next.js files are not rebuilt during browser checks. On Linux CI, use `npx playwright install --with-deps chromium` for browser system dependencies. Tests use Chromium at desktop and mobile viewport sizes; they do not establish Safari compatibility.
 
-Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Browser screenshots and failure traces are under ignored `test-results/`; `npx playwright show-report` opens the HTML report. CI also checks database isolation, application-container connectivity, and browser checks through the development container. Locally, run those browser checks with `E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e` after Compose is up.
+Individual checks are `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Browser screenshots and failure traces are under ignored `test-results/`; `npx playwright show-report` opens the HTML report. CI also checks database isolation, application-container connectivity, and the `/demo` fixtures through the development container. Locally, run those with `E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/preview.spec.ts` after Compose is up.
+
+The themes differ only in CSS, so behaviour tests use one theme. Every theme is covered by `tests/theme-design.spec.ts` (Save the Date and Details at 320–1440px, image failures), `tests/rsvp-preview.spec.ts` (the RSVP form at the project width and 320px), `tests/rsvp.spec.ts` (the closed RSVP notice) and `tests/themes.spec.ts` (long content with a failed photo). Tests keep Playwright's 30-second limit: split a test that needs longer instead of raising its limit.
 
 ## Error tracking and logs (optional)
 
@@ -154,7 +156,7 @@ The phones on the marketing homepage are screenshots of the fictional `/examples
 
 Hosted configuration, promotion, rollback and recovery requirements are in [Release and operations](docs/operations.md). Production deployment is still pending F009.
 
-`npm run test:release` selects the account/recovery, publication, themes, Details, RSVP, payments and marketing browser checks. For production-container verification, supply `E2E_BASE_URL` and `E2E_PRODUCTION=1` as below. Run only against a local container connected to local Supabase with test Stripe placeholders; these tests create/delete fictional data and do not support hosted staging/production. Use port 3000 for the complete account journey because local Auth already allows its callback; temporarily stop the development app with `docker compose stop app`, and restart it with `docker compose start app` after removing the verification container. `APP_ORIGIN` must match `E2E_BASE_URL`.
+For production-container verification, run the browser suite with `E2E_BASE_URL` and `E2E_PRODUCTION=1` as below. Run only against a local container connected to local Supabase with test Stripe placeholders; these tests create/delete fictional data and do not support hosted staging/production. Use port 3000 for the complete account journey because local Auth already allows its callback; temporarily stop the development app with `docker compose stop app`, and restart it with `docker compose start app` after removing the verification container. `APP_ORIGIN` must match `E2E_BASE_URL`.
 
 Complete local production check (PowerShell, with local Supabase running and `.env.docker` already generated):
 
@@ -167,7 +169,7 @@ docker logs wedding-f009-verify
 npm.cmd run smoke -- http://127.0.0.1:3000
 $env:E2E_BASE_URL='http://127.0.0.1:3000'
 $env:E2E_PRODUCTION='1'
-npm.cmd run test:release
+npm.cmd run test:e2e
 # Clean up even if a check fails. Restart app only if it was running before.
 Remove-Item Env:E2E_BASE_URL, Env:E2E_PRODUCTION -ErrorAction SilentlyContinue
 docker stop wedding-f009-verify
@@ -177,7 +179,7 @@ docker compose start app
 
 Marketing uses runtime `APP_ORIGIN` for its canonical URL, sitemap and social-sharing URLs. Set it to the exact browser-facing origin (no path), for example `-e APP_ORIGIN=http://127.0.0.1:3001` for the local production container below; the fallback is `http://localhost:3000`. Production HTTPS/domain configuration and launch indexation checks belong to F009. Only `/` is listed in `/sitemap.xml`; fictional `/examples/minimal`, `/examples/romantic`, `/examples/bold` and their Details pages remain noindex. They work in production without database access. `/demo` and `/preview-photo` remain development-only.
 
-`npx playwright test tests/marketing.spec.ts` checks the homepage, account-entry links, three fictional examples, metadata, sitemap, social image and 320px layout. Against a production container use `E2E_BASE_URL=http://127.0.0.1:3001 E2E_PRODUCTION=1 npx playwright test tests/marketing.spec.ts` (PowerShell environment syntax as below). Its local unthrottled rendering measurements are diagnostics, not real-user Core Web Vitals or a Safari compatibility claim.
+`npx playwright test tests/marketing.spec.ts` checks the homepage, account-entry links, every theme's example link and noindex, one fictional example walkthrough, metadata, sitemap, social image and 320px layout. Against a production container use `E2E_BASE_URL=http://127.0.0.1:3001 E2E_PRODUCTION=1 npx playwright test tests/marketing.spec.ts` (PowerShell environment syntax as below). Its local unthrottled rendering measurements are diagnostics, not real-user Core Web Vitals or a Safari compatibility claim.
 
 ```sh
 docker build --target production -t save-the-dates:local .

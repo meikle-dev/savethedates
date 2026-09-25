@@ -20,7 +20,6 @@ jobs:
       - run: npm run test:integration
       - run: npm run test:persistence
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
       - run: npm run test:monitoring
       - run: docker compose up --build -d --wait
       - name: Development container smoke
@@ -28,8 +27,9 @@ jobs:
           curl --retry 30 --retry-all-errors --retry-delay 2 --fail --silent --show-error http://127.0.0.1:3000/demo > /tmp/demo.html
           node scripts/smoke-development.mjs
           docker compose exec -T app node -e "fetch('http://127.0.0.1:3000/account/sign-up').then(r => { if (r.status !== 200) process.exit(1); console.log('Application-container connectivity passed') })"
-      - name: Browser checks through development container
-        run: E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
+      # The full browser suite runs once, against the production image below. Only the demo fixtures need development.
+      - name: Development-only demo fixtures through development container
+        run: E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/preview.spec.ts
       - run: docker compose down
         if: always()
       - name: Build production image
@@ -38,12 +38,12 @@ jobs:
           --label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           --label org.opencontainers.image.revision=${{ github.sha }}
           -t save-the-dates:ci .
-      - name: Production container smoke
+      - name: Production container smoke and browser suite
         run: |
           docker run -d --name wedding-smoke --add-host host.docker.internal:host-gateway --env-file .env.docker -p 127.0.0.1:3000:3000 save-the-dates:ci
           curl --retry 30 --retry-all-errors --retry-delay 2 --fail --silent --show-error http://127.0.0.1:3000 > /dev/null
           npm run smoke
-          E2E_BASE_URL=http://127.0.0.1:3000 E2E_PRODUCTION=1 npm run test:release
+          E2E_BASE_URL=http://127.0.0.1:3000 E2E_PRODUCTION=1 npm run test:e2e
       - run: docker rm -f wedding-smoke
         if: always()
       - name: Production container monitoring (runtime Sentry configuration, scrubbed payloads)

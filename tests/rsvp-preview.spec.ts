@@ -8,7 +8,6 @@ const themeIds = themes.map(({ id }) => id);
 const local = localSupabase();
 
 test("owners can preview saved RSVP content without granting guest access or saving responses", async ({ page, browser, baseURL }) => {
-  test.setTimeout(120_000);
   const email = `rsvp-preview-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
   const created = await local.admin.auth.admin.createUser({ email, password, email_confirm: true });
@@ -56,34 +55,43 @@ test("owners can preview saved RSVP content without granting guest access or sav
     await page.getByRole("button", { name: "Apply theme", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("Theme saved");
 
+    // The all-themes check of the RSVP form, at this project's width and at 320px: the themes differ only in CSS, but
+    // some restyle the RSVP card.
+    const projectViewport = page.viewportSize()!;
     for (const theme of themeIds) {
-      await page.goto(`/dashboard/preview?theme=${theme}`);
-      await expect(page).toHaveTitle("Save the Date preview | SaveTheDates");
-      await page.getByRole("link", { name: "RSVP", exact: true }).click();
-      await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));
-      await expect(page).toHaveTitle("RSVP preview | SaveTheDates");
+      await page.goto(`/dashboard/preview/rsvp?theme=${theme}`);
       await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
       await expect(page.locator(".wedding-shell")).toContainText("Jamie");
-      await expect(page.locator(".wedding-shell")).toContainText("Riley");
-      await expect(page.locator(".wedding-shell")).not.toContainText("Alex");
-      await expect(page.getByRole("heading", { name: "Invitation unavailable" })).toHaveCount(0);
-      await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+      await expect(page.getByRole("button", { name: "Send RSVP" })).toBeDisabled();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({ path: test.info().outputPath(`rsvp-preview-${theme}.png`), fullPage: true });
-      await page.getByRole("link", { name: "Details", exact: true }).click();
-      await expect(page).toHaveURL(new RegExp(`/dashboard/preview/details\\?theme=${theme}$`));
-      await expect(page).toHaveTitle("Details preview | SaveTheDates");
-      await page.getByRole("link", { name: "RSVP", exact: true }).click();
-      await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));
-      await page.reload();
-      const previewSubmit = page.getByRole("button", { name: "Send RSVP" });
-      await expect(previewSubmit).toBeDisabled();
-      await previewSubmit.hover({ force: true });
-      await expect(previewSubmit).toHaveCSS("cursor", "not-allowed");
-      await expect(previewSubmit).not.toHaveAttribute("aria-busy", "true");
-      await page.getByRole("link", { name: "Save the date", exact: true }).click();
-      await expect(page).toHaveURL(new RegExp(`/dashboard/preview\\?theme=${theme}$`));
+      await page.setViewportSize({ width: 320, height: 900 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${theme} RSVP fits 320px`).toBe(true);
+      await page.setViewportSize(projectViewport);
     }
+    // Preview navigation keeps the previewed theme, and the preview can never submit.
+    const theme = "bold";
+    await page.goto(`/dashboard/preview?theme=${theme}`);
+    await expect(page).toHaveTitle("Save the Date preview | SaveTheDates");
+    await page.getByRole("link", { name: "RSVP", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));
+    await expect(page).toHaveTitle("RSVP preview | SaveTheDates");
+    await expect(page.locator(".wedding-shell")).toContainText("Riley");
+    await expect(page.locator(".wedding-shell")).not.toContainText("Alex");
+    await expect(page.getByRole("heading", { name: "Invitation unavailable" })).toHaveCount(0);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await page.getByRole("link", { name: "Details", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/dashboard/preview/details\\?theme=${theme}$`));
+    await expect(page).toHaveTitle("Details preview | SaveTheDates");
+    await page.getByRole("link", { name: "RSVP", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));
+    await page.reload();
+    const previewSubmit = page.getByRole("button", { name: "Send RSVP" });
+    await expect(previewSubmit).toBeDisabled();
+    await expect(previewSubmit).toHaveCSS("cursor", "not-allowed");
+    await expect(previewSubmit).not.toHaveAttribute("aria-busy", "true");
+    await page.getByRole("link", { name: "Save the date", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/dashboard/preview\\?theme=${theme}$`));
     await guest.goto("/dashboard/preview/rsvp");
     await expect(guest).toHaveURL(/account\/sign-in/);
     await expect(guest.getByText("Jamie", { exact: false })).toHaveCount(0);

@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F056 is In Progress:** CI image publishing and staging protection (F041 updates 1, 2 and 4) are built, verified locally and reviewed; only the first CI run on `main` remains. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F056 is In Progress:** CI image publishing and staging protection (F041 updates 1, 2 and 4) are built, verified locally and reviewed; only the first CI run on `main` remains. **F057 is In Progress:** CI's browser checks run once against the production image, with one theme for behaviour tests. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
 
 ## Status and handoff rules
 
@@ -1276,6 +1276,31 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Independent review: no Blocking findings. Both Important findings were fixed and re-checked by the reviewer. The `/media/themes/` prefix had opened the guest routes (names "media", secret "themes"), including a server action; only the twelve exact theme files are open now. Publishing had been keyed to GitHub's default branch, which is a stale `master`; `main` is now named explicitly. Minor points fixed: publish concurrency, the pinned `download-artifact`, `/_next/image` docs plus `localPatterns`, the classic-token wording and the cancelled-run comment.
 - Not run: GitHub Actions itself, a real GHCR push, the Render deploy hook, hosted staging.
 - **Next:** push to `main`. Confirm the CI run passes, including the staging-mode step and `publish-image`, and that `ghcr.io/meikle-dev/savethedates:<sha>` and its digest appear in the run summary. Record the run here, then mark F056 Done. The owner's Render setup (F041 step 5) can then use that image. Optionally, set GitHub's default branch to `main`.
+
+## F057 - Fast, reliable browser checks in CI
+
+**Status:** In Progress
+**Priority / lead:** P1, unblocks every CI run / Software Engineer; independent review required (release verification coverage).
+**Purpose:** CI's browser checks kept failing on timeouts. The owner decided (25 September 2026) that tests should not take that long, instead of raising time limits again.
+**Depends on:** F056 (CI workflow).
+**References:** `.github/workflows/ci.yml`, `playwright.config.ts`, `tests/`, `run-app-instructions.md` (Checks), `docs/operations.md` (Verification and promotion).
+**Cause:** CI ran all 96 browser tests twice against `next dev`, which compiles each page on first request (on the runner, then through the development container), plus a `test:release` subset against the production image. Eight specs also repeated whole journeys for all twelve themes at both viewports, although the themes differ only in CSS. Tests ran at their limits: 26-31s of 30s, and up to 1.3m of 90s.
+**Scope/decisions:**
+
+- The browser suite runs once in CI, against the production image, with `E2E_PRODUCTION=1 npm run test:e2e`; `test:release` is removed. Only the `/demo` fixture tests need development, so the development container runs `tests/preview.spec.ts` alone; those tests skip in production mode. Locally, `E2E_PRODUCTION=1` makes Playwright serve the `npm run build` output instead of `next dev`.
+- Behaviour tests use one theme. Every theme is still covered by `theme-design.spec.ts` (Save the Date and Details at 320-1440px, image failures; desktop project only, since it sets its own widths), `rsvp-preview.spec.ts` (RSVP form at the project width and 320px), `rsvp.spec.ts` (closed RSVP notice) and `themes.spec.ts` (long content with a failed photo). The homepage cards and the noindex of every example are still checked for all twelve. Accepted gap: the RSVP validation error and "Thank you" states, and applying a theme through the UI, are checked on one or two themes only.
+- The development container is now exercised only by `/demo`, the smoke script and the sign-up fetch; the production container covers the same `.env.docker`/`host.docker.internal` wiring with the full suite.
+- Tests keep Playwright's 30-second default: per-test limits are removed, and a test that needs longer is split. `publication.spec.ts` became photo upload/framing and publish/share/update/unpublish.
+- The flaky forced hover in `rsvp-preview.spec.ts` is removed; the disabled cursor comes from `:disabled`, not `:hover`.
+
+**Handoff (25 September 2026):** Implemented as scoped above; docs updated in `run-app-instructions.md` (Checks, marketing and production-container sections) and `docs/operations.md`.
+
+- `npx eslint tests playwright.config.ts` and `npx tsc --noEmit -p .` passed. The workflow parses (js-yaml). `npm run build` then `E2E_PRODUCTION=1 CI=1 npx playwright test --retries=0` against `next start` passed 76, skipped 20 (8 `/demo`, 12 mobile `theme-design`), in 2.6 minutes.
+- As CI will run it: a locally built production image on port 3000 with `.env.docker` and the webhook-test Stripe placeholders passed `npm run smoke`, then `E2E_BASE_URL=http://127.0.0.1:3000 E2E_PRODUCTION=1 CI=1 npx playwright test --retries=0`: 78 passed, 20 skipped, 0 failed or flaky, 2.4 minutes, slowest test 12.5s. `docker compose up --build -d --wait`, then `tests/preview.spec.ts` through the development container, passed 12/12 in 6.9s.
+- After the review fixes, `tests/rsvp-preview.spec.ts`, `tests/rsvp.spec.ts` and `tests/publication.spec.ts` passed 12/12 against `next start` (slowest 9.7s). The whole suite was not re-run after those fixes. The temporary image was removed and the development app container restored.
+- Independent review: no Blocking findings. The Important gap (no theme's RSVP page checked at 320px or in the closed state) is fixed by the 320px check in `rsvp-preview.spec.ts` and the reload-only closed-state loop in `rsvp.spec.ts`; the one-theme gaps that remain are recorded above. Minor wording, a stale marketing description and publication-test leftovers are fixed. The reviewer's second Important point stands: CI speed is not proven until GitHub Actions passes.
+- Not run: GitHub Actions itself.
+- **Next:** push to `main` and confirm the `verify` job passes. Record the browser-suite step time and slowest test here, then mark F057 Done.
 
 ## 24 September walkthrough assessment
 

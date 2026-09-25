@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+// The /demo fixtures exist only in development; CI checks them through the development container.
+const demoOnly = () => test.skip(!!process.env.E2E_PRODUCTION, "Demo fixtures exist only in development");
+
 test("demo shows the announcement without unavailable controls", async ({ page }) => {
+  demoOnly();
   const response = await page.goto("/demo");
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
@@ -29,6 +33,7 @@ test("unknown names and guest links return a non-revealing 404", async ({ page }
 
 for (const slug of ["demo-no-photo", "demo-long-names"]) {
   test(`${slug} remains readable without overflow`, async ({ page }) => {
+    demoOnly();
     await page.goto(`/${slug}`);
     await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
     await expect(page.getByRole("img")).toHaveCount(0);
@@ -38,6 +43,7 @@ for (const slug of ["demo-no-photo", "demo-long-names"]) {
 }
 
 test("failed photography falls back without losing the announcement", async ({ page }) => {
+  demoOnly();
   await page.route("**/preview-photo", (route) => route.abort());
   await page.goto("/demo");
   await expect(page.getByRole("img")).toHaveCount(0);

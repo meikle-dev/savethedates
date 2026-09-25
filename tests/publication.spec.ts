@@ -1,42 +1,50 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection } from "./helpers/workspace";
 
 const local = localSupabase();
-test("owner previews, uploads, publishes, updates and unpublishes a wedding", async ({ page, browser, baseURL }) => {
-  test.setTimeout(90_000);
+const photo = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#738c79" } }).jpeg().toBuffer();
+
+async function createOwner() {
   const email = `publication-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
   const { data, error } = await local.admin.auth.admin.createUser({ email, password, email_confirm: true });
   if (error || !data.user) throw new Error("Unable to create local test owner");
-  const ownerId = data.user.id;
-  const slug = `alex-${crypto.randomUUID()}`;
+  return { email, password, ownerId: data.user.id };
+}
+
+async function signIn(page: Page, email: string, password: string) {
+  await page.goto("/account/sign-in");
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+}
+
+async function removeOwner(ownerId: string, weddingId: string | undefined) {
+  if (weddingId) {
+    const files = await local.admin.storage.from("wedding-photos").list(weddingId);
+    if (files.data?.length) await local.admin.storage.from("wedding-photos").remove(files.data.map((file) => `${weddingId}/${file.name}`));
+  }
+  await local.admin.auth.admin.deleteUser(ownerId);
+}
+
+test("owner previews privately, uploads and frames a photo", async ({ page, browser, baseURL }) => {
+  const { email, password, ownerId } = await createOwner();
   const guest = await browser.newContext({ baseURL, viewport: page.viewportSize() });
   const guestPage = await guest.newPage();
-  const photo = await sharp({ create: { width: 800, height: 600, channels: 3, background: "#738c79" } }).jpeg().toBuffer();
-  const replacementPhoto = await sharp({ create: { width: 600, height: 900, channels: 3, background: "#a86464" } }).jpeg().toBuffer();
   let weddingId: string | undefined;
   const openSection = (name: string) => openWorkspaceSection(page, name);
-  // The header status is shown from 768px; it must follow publish and unpublish without a manual reload.
-  const expectHeaderStatus = async (status: string) => {
-    if (test.info().project.name === "desktop") await expect(page.getByRole("banner").getByText(status, { exact: true })).toBeVisible();
-  };
   try {
-    await page.goto("/account/sign-in");
-    await page.getByLabel("Email address").fill(email);
-    await page.getByLabel("Password", { exact: true }).fill(password);
-    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await signIn(page, email, password);
     await page.getByLabel("Your name", { exact: false }).fill("Alex");
     await page.locator('[name="second_name"]').fill("Morgan");
     await page.locator('[name="wedding_date"]').fill("2027-09-18");
     await page.locator('[name="location"]').fill("Bath, England");
     await page.getByRole("button", { name: "Save private draft" }).click();
     await expect(page.getByRole("status")).toContainText("private draft has been saved");
-    const saved = (await local.admin.from("weddings").select("id, rsvp_share_secret").eq("owner_id", ownerId).single()).data!;
+    const saved = (await local.admin.from("weddings").select("id").eq("owner_id", ownerId).single()).data!;
     weddingId = saved.id;
-    const secret = saved.rsvp_share_secret as string;
-    const home = `/${slug}/${secret}`;
     expect((await local.grantEntitlement(weddingId!, ownerId)).error).toBeNull();
     await openSection("Publish");
     await page.getByRole("link", { name: "Preview saved site" }).click();
@@ -132,6 +140,38 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await openSection("Design");
     await expect(page.getByText("Editing Modern Minimal")).toBeVisible();
     await expect(page.locator('input[name="x"]')).toHaveValue("20");
+  } finally {
+    await guest.close();
+    await removeOwner(ownerId, weddingId);
+  }
+});
+
+// Starts from a saved draft with a framed photo; the upload and framing controls are covered above.
+test("owner publishes, shares, updates and unpublishes a wedding", async ({ page, browser, baseURL }) => {
+  const { email, password, ownerId } = await createOwner();
+  const slug = `alex-${crypto.randomUUID()}`;
+  const guest = await browser.newContext({ baseURL, viewport: page.viewportSize() });
+  const guestPage = await guest.newPage();
+  const replacementPhoto = await sharp({ create: { width: 600, height: 900, channels: 3, background: "#a86464" } }).jpeg().toBuffer();
+  let weddingId: string | undefined;
+  const openSection = (name: string) => openWorkspaceSection(page, name);
+  // The header status is shown from 768px; it must follow publish and unpublish without a manual reload.
+  const expectHeaderStatus = async (status: string) => {
+    if (test.info().project.name === "desktop") await expect(page.getByRole("banner").getByText(status, { exact: true })).toBeVisible();
+  };
+  try {
+    const inserted = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath, England" }).select("id, rsvp_share_secret").single();
+    expect(inserted.error).toBeNull();
+    weddingId = inserted.data!.id as string;
+    const secret = inserted.data!.rsvp_share_secret as string;
+    const home = `/${slug}/${secret}`;
+    expect((await local.grantEntitlement(weddingId, ownerId)).error).toBeNull();
+    await signIn(page, email, password);
+    await openSection("Design");
+    await page.getByLabel("Photo file").setInputFiles({ name: "photo.jpg", mimeType: "image/jpeg", buffer: photo });
+    await expect(page.getByRole("status").filter({ hasText: "photo has been saved" })).toBeVisible();
+    const framing = { minimal: { saveTheDate: { x: 20, y: 70, zoom: 1.3 }, details: { x: 80, y: 30, zoom: 1.2 } } };
+    expect((await local.admin.from("weddings").update({ photo_framing: framing }).eq("id", weddingId)).error).toBeNull();
     await openSection("Publish");
     // The names part is suggested from the couple's names, and the future guest link is shown before publication.
     const namesField = page.getByLabel("Names in your guest link");
@@ -299,10 +339,6 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     expect((await guest.request.get(`${home}/photo`)).status()).toBe(404);
   } finally {
     await guest.close();
-    if (weddingId) {
-      const files = await local.admin.storage.from("wedding-photos").list(weddingId);
-      if (files.data?.length) await local.admin.storage.from("wedding-photos").remove(files.data.map((file) => `${weddingId}/${file.name}`));
-    }
-    await local.admin.auth.admin.deleteUser(ownerId);
+    await removeOwner(ownerId, weddingId);
   }
 });

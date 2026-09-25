@@ -71,7 +71,6 @@ async function expireAccessToken(context: BrowserContext) {
 }
 
 test("owner signs up, confirms email, saves a private draft, and recovers access", async ({ page, context }) => {
-  test.setTimeout(90_000);
   const email = `journey-${crypto.randomUUID()}@example.test`;
   const password = `Initial-${crypto.randomUUID()}`;
   const newPassword = `Changed-${crypto.randomUUID()}`;
