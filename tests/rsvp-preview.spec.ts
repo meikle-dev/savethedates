@@ -58,8 +58,10 @@ test("owners can preview saved RSVP content without granting guest access or sav
 
     for (const theme of themeIds) {
       await page.goto(`/dashboard/preview?theme=${theme}`);
+      await expect(page).toHaveTitle("Save the Date preview | SaveTheDates");
       await page.getByRole("link", { name: "RSVP", exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));
+      await expect(page).toHaveTitle("RSVP preview | SaveTheDates");
       await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
       await expect(page.locator(".wedding-shell")).toContainText("Jamie");
       await expect(page.locator(".wedding-shell")).toContainText("Riley");
@@ -70,6 +72,7 @@ test("owners can preview saved RSVP content without granting guest access or sav
       await page.screenshot({ path: test.info().outputPath(`rsvp-preview-${theme}.png`), fullPage: true });
       await page.getByRole("link", { name: "Details", exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/dashboard/preview/details\\?theme=${theme}$`));
+      await expect(page).toHaveTitle("Details preview | SaveTheDates");
       await page.getByRole("link", { name: "RSVP", exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));
       await page.reload();

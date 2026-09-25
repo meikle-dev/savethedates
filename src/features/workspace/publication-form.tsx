@@ -72,7 +72,7 @@ export function PublicationForm({ origin, names, secret, published, offline, ent
       {published && <>
         <p className="field-help mt-6">Saved details and photo changes are immediately visible to guests.</p>
         <form action={unpublishAction} className="mt-6">
-          <p className="mb-4 text-sm leading-relaxed">Unpublishing hides your site and photo on new visits. It cannot remove copies someone has already downloaded.</p>
+          <p className="mb-4 text-sm leading-relaxed">Unpublishing hides your site and photo on new visits. It cannot remove copies someone has already downloaded, and messaging apps may keep an earlier link preview.</p>
           <button className="button button-secondary" disabled={unpublishPending}>{unpublishPending ? "Unpublishing…" : "Unpublish site"}</button>
           {!unpublishState.success && <Notice state={unpublishState} />}
         </form>

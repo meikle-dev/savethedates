@@ -17,7 +17,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:monitoring": "playwright test --config playwright.monitoring.config.ts",
-    "test:release": "playwright test tests/account.spec.ts tests/dashboard.spec.ts tests/publication.spec.ts tests/themes.spec.ts tests/details.spec.ts tests/rsvp.spec.ts tests/payments.spec.ts tests/marketing.spec.ts",
+    "test:release": "playwright test tests/account.spec.ts tests/dashboard.spec.ts tests/publication.spec.ts tests/themes.spec.ts tests/details.spec.ts tests/rsvp.spec.ts tests/payments.spec.ts tests/marketing.spec.ts tests/metadata.spec.ts",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "smoke": "node scripts/smoke.mjs",
     "marketing:previews": "node scripts/capture-theme-previews.mjs",

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { AccountShell } from "@/components/account-shell";
 import { AuthForm, ExpiredConfirmationForm } from "@/features/account/auth-form";
@@ -10,6 +11,20 @@ const screens = {
   recovery: { title: "Let’s get you back in.", intro: "Enter your email and we’ll send you a link to choose a new password." },
   password: { title: "A fresh start.", intro: "Choose a new password for your account." },
 };
+
+const screenTitles: Record<keyof typeof screens, string> = {
+  "sign-in": "Sign in",
+  "sign-up": "Create an account",
+  recovery: "Reset your password",
+  password: "Choose a new password",
+};
+
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ screen: string }>; searchParams: Promise<{ error?: string }> }): Promise<Metadata> {
+  const { screen } = await params;
+  if (!Object.hasOwn(screenTitles, screen)) return { title: "Page not found | SaveTheDates" };
+  const title = screen === "sign-up" && (await searchParams).error === "expired" ? "Confirm your account" : screenTitles[screen as keyof typeof screens];
+  return { title: `${title} | SaveTheDates` };
+}
 
 export default async function AccountPage({ params, searchParams }: { params: Promise<{ screen: string }>; searchParams: Promise<{ error?: string; demo?: string }> }) {
   const { screen } = await params;

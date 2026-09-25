@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { SaveTheDate } from "@/features/weddings/save-the-date";
 import { toWedding } from "@/features/weddings/published";
@@ -6,6 +7,8 @@ import { toWedding } from "@/features/weddings/published";
 import { isWeddingTheme } from "@/features/weddings/themes";
 import { PreviewToolbar } from "@/features/workspace/preview-toolbar";
 import { todayUtc } from "@/features/workspace/workspace-summary";
+
+export const metadata: Metadata = { title: "Save the Date preview | SaveTheDates" };
 
 export default async function Preview({ searchParams }: { searchParams: Promise<{ theme?: string }> }) {
   const client = await createClient();

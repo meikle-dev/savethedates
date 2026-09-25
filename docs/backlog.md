@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F047**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F047-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F046 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
 
 ## Status and handoff rules
 
@@ -1475,7 +1475,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 ## F047 - Distinguishable pages and safe site identity
 
-**Status:** Ready
+**Status:** In Progress
 **Priority / lead:** P1, paid-launch gate / Software Engineer; independent metadata/privacy review required.
 **Purpose:** Browser tabs and shared links identify the right page without exposing private data.
 **Depends on:** F043 (guest routes move); F008, F031, F035 (Done).
@@ -1497,6 +1497,12 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 - Private routes remain noindex, private/no-store as applicable and out of sitemaps. No per-wedding image endpoint, canonical URL containing the secret or third-party image fetch is introduced. A manual check confirms that a WhatsApp preview, and one preview fetched by an app's servers (for example Slack), show only the names, date and theme card. Homepage marketing metadata is preserved.
 - The favicon works on normal/error/account/wedding pages. A 404 provides usable recovery without confirming whether a hidden wedding exists.
 - Rendered-head assertions cover valid, invalid and replaced secrets, and expired and draft cases. Mobile/desktop 404 inspection, `npm.cmd run check` and independent privacy review pass.
+
+**Handoff (25 September 2026):** Distinct account, owner-preview, example-theme and guest-page titles are implemented. Valid guest heads use only the public secret-gated names/date and a fixed theme card; hidden/unavailable cases have generic metadata. Twelve original static 1200×630 cards and local favicon/app icons are in `public/`; provenance is in `public/assets/share/README.md`. The 404 offers home and sign-in recovery without identifying a wedding. Publish copy warns that messaging apps may retain an earlier preview. `guestWedding` and the enabled-Details projection are request-cached so metadata and page rendering share the same gated lookup. The new metadata suite is included in `test:release`. See `src/features/weddings/guest-metadata.ts`, route pages and `docs/overview/architecture.md`.
+
+- `npx.cmd playwright test tests/metadata.spec.ts tests/rsvp-preview.spec.ts --reporter=line` passed 6/6 desktop/mobile. Rendered-head checks cover valid Save the Date, Details and RSVP; draft, unpublished, expired, disabled Details, invalid and replaced links; card response, favicon, auth/example/preview titles, private headers and 404 recovery. The development server emitted `no-cache, must-revalidate`, which existing tests accept; the production proxy policy is `private, no-store`. Inspected 404 screenshots at 390px/mobile and 1440px/desktop with no overflow, and a representative theme card. `npm.cmd run check` passed: lint, typecheck, 77 unit tests and production build. `git diff --check` passed.
+- Independent reviewer found no Blocking or Important code issue and confirmed all twelve cards are 1200×630 JPEGs without EXIF data. No deployment or hosted/production-container browser check was run.
+- **Remaining acceptance check:** on a reachable staging URL, manually share a disposable published wedding link in WhatsApp and one app that fetches previews server-side (for example Slack); confirm names, date and static theme card only, and confirm an unavailable link gives generic metadata. Record the result here. Staging access is being prepared in F041. Do not mark F047 Done until this is verified. Next: perform that check when staging exists; eligible launch work may continue while it waits.
 
 ## F048 - Deliver the approved customer data lifecycle
 

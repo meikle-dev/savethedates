@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
 import { guestWeddingDetails, requireGuestWedding } from "@/features/weddings/published";
+import { guestMetadata } from "@/features/weddings/guest-metadata";
 import { WeddingDetailsPageView } from "@/features/weddings/wedding-details";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ names: string; secret: string }> }) {
+  return guestMetadata((await params).secret, "details");
+}
 
 export default async function DetailsPage({ params }: { params: Promise<{ names: string; secret: string }> }) {
   const { names, secret } = await params;

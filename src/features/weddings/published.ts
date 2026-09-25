@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import { publicClient } from "@/lib/supabase/public";
 import type { WeddingTheme } from "./themes";
@@ -19,12 +20,12 @@ export function toWedding(row: WeddingContent, photoUrl: string): Wedding {
 const configured = () => !!process.env.SUPABASE_URL && !!process.env.SUPABASE_PUBLISHABLE_KEY;
 
 /** The published, entitled wedding for a guest link secret, or null. Never looks a wedding up by its names part. */
-export async function guestWedding(secret: string): Promise<GuestWedding | null> {
+export const guestWedding = cache(async (secret: string): Promise<GuestWedding | null> => {
   if (!guestSecretPattern.test(secret) || !configured()) return null;
   const { data, error } = await publicClient().rpc("guest_wedding", { requested_secret: secret }).maybeSingle<GuestWedding>();
   if (error) throw new Error("Unable to load wedding.");
   return data;
-}
+});
 
 /**
  * Resolves a guest page. Unknown, replaced, unpublished and expired links all give the same 404; an outdated or
@@ -41,7 +42,7 @@ export async function requireGuestWedding(names: string, secret: string, page: "
   return { wedding, hrefs };
 }
 
-export async function guestWeddingDetails(secret: string): Promise<(WeddingDetailsPage & { photoFraming: PhotoFraming }) | null> {
+export const guestWeddingDetails = cache(async (secret: string): Promise<(WeddingDetailsPage & { photoFraming: PhotoFraming }) | null> => {
   if (!guestSecretPattern.test(secret) || !configured()) return null;
   const { data, error } = await publicClient().rpc("guest_wedding_details", { requested_secret: secret }).maybeSingle<Omit<WeddingDetailsPage, "details_enabled"> & { photo_framing: unknown }>();
   if (error) throw new Error("Unable to load wedding details.");
@@ -53,4 +54,4 @@ export async function guestWeddingDetails(secret: string): Promise<(WeddingDetai
     theme: data.theme as WeddingTheme,
     photoFraming: parsePhotoFraming(data.photo_framing),
   };
-}
+});

@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { RsvpPage } from "@/features/weddings/rsvp-page";
 import { isWeddingTheme } from "@/features/weddings/themes";
 import { PreviewToolbar } from "@/features/workspace/preview-toolbar";
+
+export const metadata: Metadata = { title: "RSVP preview | SaveTheDates" };
 
 export default async function RsvpPreview({ searchParams }: { searchParams: Promise<{ theme?: string }> }) {
   const client = await createClient();

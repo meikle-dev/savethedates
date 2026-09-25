@@ -1,8 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isWeddingTheme, themes } from "@/features/weddings/themes";
 import { Icon } from "@/features/workspace/workspace-icons";
-export const metadata = { title: "Fictional wedding theme example | SaveTheDates", robots: { index: false, follow: false } };
+export async function generateMetadata({ params }: { params: Promise<{ theme: string }> }): Promise<Metadata> {
+  const { theme } = await params;
+  const name = themes.find((item) => item.id === theme)?.name;
+  return { title: name ? `${name} example · Save the Date | SaveTheDates` : "Page not found | SaveTheDates", robots: { index: false, follow: false } };
+}
 export default async function ExampleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ theme: string }> }) {
   const { theme } = await params;
   if (!isWeddingTheme(theme)) notFound();

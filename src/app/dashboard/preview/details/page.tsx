@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { detailsSchema } from "@/features/weddings/details";
 import { WeddingDetailsPageView } from "@/features/weddings/wedding-details";
 import { isWeddingTheme } from "@/features/weddings/themes";
 import { createClient } from "@/lib/supabase/server";
 import { parsePhotoFraming } from "@/features/weddings/photo-framing";
 import { PreviewToolbar } from "@/features/workspace/preview-toolbar";
+
+export const metadata: Metadata = { title: "Details preview | SaveTheDates" };
 
 export default async function DetailsPreview({ searchParams }: { searchParams: Promise<{ theme?: string }> }) {
   const client = await createClient();
