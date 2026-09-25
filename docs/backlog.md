@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F044 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F045**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F045-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F044 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F045**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F045-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate. F055 (Google sign-in) is a deferred post-launch enhancement.
 
 ## Status and handoff rules
 
@@ -1271,9 +1271,9 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Account and Publish forms already validate on the server. B5 concerns presentation and error discoverability, not missing validation. The RSVP deadline really is UTC; changing its label alone would misstate the cutoff.
 - A walkthrough does not prove tenant isolation, legal compliance, or provider activation requirements. Self-service deletion plus RSVP CSV is not a complete data policy. Owner-approved policy and provider requirements remain F041/F048/F009 inputs; no new legal conclusion is adopted here.
 
-**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032 and F050 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment.
+**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032, F050 and F055 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment.
 
-**Paid-launch gate:** F038, F040-F049, F054 (security review) and existing F009 gates must be Done with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
+**Paid-launch gate:** F038, F040-F049, F054 (security review) and existing F009 gates must be Done with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050, F055 and F010 enhancements do not gate launch.
 
 | Report finding | Disposition |
 | --- | --- |
@@ -1721,6 +1721,16 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 - All Critical and High findings are fixed and retested before paid launch. Medium findings have an owner-accepted plan with dates. Low findings are recorded.
 - Added regression tests cover every fixed access-control or leakage issue, and `npm.cmd run check` and `npm.cmd run test:integration` pass.
 - The breach runbook exists in `operations.md`. F009's release review references this report.
+
+## F055 - Sign in with Google
+
+**Status:** Deferred (post-launch; promote when signup feedback or usage supports it)
+**Priority / lead:** P2 / Product Manager then Software Engineer; independent auth review required when implemented.
+**Purpose:** Let couples create or access their account with Google when they prefer it to an email and password.
+**Depends on:** F045 (clear email signup and auth errors); schedule after the paid launch unless the owner explicitly changes the launch scope.
+**References:** F002 and F045; `src/features/account/`, `src/app/auth/`, `src/lib/supabase/`, `supabase/config.toml`, `docs/release-inputs.md`, `tests/account.spec.ts`.
+**Scope when promoted:** Add a clearly labelled Google option to account creation and sign-in through Supabase Auth. Configure a Google OAuth client and exact local, staging and production callback/redirect allowlists through the existing environment setup. Keep the email/password route available. Return safely to the account journey after success, cancellation or provider failure; do not put tokens in application URLs or logs. Verify how Supabase links a Google identity to an existing confirmed account with the same email, and give clear recovery guidance when the Google email differs from an existing account. Keep the existing server-side ownership and tenant boundaries. Update privacy/provider disclosures with the approved production policy.
+**Done when promoted:** A new Google user and a returning Google user can reach their own wedding; existing email/password users can still sign in and recover access. Same-email linking, different-email accounts, cancellation, denied consent, invalid callbacks and cross-account access have been checked without exposing whether an email exists. Local and hosted configuration is documented without committing credentials. Mobile/desktop and keyboard checks, relevant auth and isolation tests, `npm.cmd run check`, and independent auth review pass.
 
 ## F009 - Launch and operate the service
 
