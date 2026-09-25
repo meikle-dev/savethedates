@@ -1,9 +1,12 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection, workspaceLink } from "./helpers/workspace";
 import { formatWeddingDate, rsvpDeadline } from "../src/features/weddings/wedding";
 
 const local = localSupabase();
+const caution = "rgb(179, 71, 15)";
+const published = "rgb(47, 107, 79)";
+const siteStatusValue = (overview: Locator) => overview.getByRole("article", { name: "Site status" }).locator(".ws-stat-value");
 const sections = [
   ["Overview", "/dashboard"],
   ["Basics", "/dashboard/basics"],
@@ -253,6 +256,8 @@ test("overview summarises the owner's own wedding and every section is reachable
     const overview = page.getByRole("region", { name: "Alex & Morgan" });
     await expect(page).toHaveTitle("Overview · SaveTheDates");
     await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Private draft");
+    await expect(siteStatusValue(overview)).toHaveCSS("color", caution);
+    await expect(page.locator(".ws-top .badge").filter({ hasText: "Private draft" })).toHaveCSS("color", caution);
     await expect(overview.getByRole("article", { name: "Countdown" })).toContainText("120 days");
     // RSVPs are switched on, but guests cannot reply until the site is live.
     const rsvp = overview.getByRole("article", { name: /RSVPs · opens when published/ });
@@ -290,6 +295,7 @@ test("overview summarises the owner's own wedding and every section is reachable
     await expect(page).toHaveURL(/\/dashboard$/);
     await page.reload();
     await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Published");
+    await expect(siteStatusValue(overview)).toHaveCSS("color", published);
     await expect(overview.getByRole("article", { name: "Site status" }).getByRole("link", { name: "Share your guest link" })).toHaveAttribute("href", "#guest-link");
     await expect(overview.getByRole("article", { name: /RSVPs · open/ })).toContainText("3 responses");
     await expect(overview.getByRole("region", { name: "Setup checklist" })).toHaveCount(0);
@@ -343,6 +349,8 @@ test("overview summarises the owner's own wedding and every section is reachable
     expect((await local.admin.from("stripe_payments").update({ expires_at: new Date(Date.now() - 60_000).toISOString() }).eq("wedding_id", wedding.data!.id)).error).toBeNull();
     await page.goto("/dashboard");
     await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Offline");
+    await expect(siteStatusValue(overview)).not.toHaveCSS("color", caution);
+    await expect(siteStatusValue(overview)).not.toHaveCSS("color", published);
     await expect(overview.getByRole("article", { name: /RSVPs · site offline/ })).toBeVisible();
     await expect(panel).toHaveCount(0);
     await expect(page.getByText(guestLink)).toHaveCount(0);

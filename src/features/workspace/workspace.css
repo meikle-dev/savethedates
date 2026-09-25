@@ -69,6 +69,9 @@
 .ws-stat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.25rem 0.9rem; align-content: start; padding: 1.1rem 1.2rem; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
 .ws-stat-icon { grid-row: span 3; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: #eaf2f6; color: var(--teal); }
 .ws-stat[data-tone="live"] .ws-stat-icon { background: var(--sage-soft); color: var(--sage); }
+.ws-stat[data-tone="live"] .ws-stat-value { color: var(--sage); }
+.ws-stat[data-tone="draft"] .ws-stat-icon { background: var(--caution-soft); color: var(--caution-ink); }
+.ws-stat[data-tone="draft"] .ws-stat-value { color: var(--caution-ink); }
 .ws-stat-label { color: var(--muted); font-size: 0.8125rem; font-weight: 600; }
 .ws-stat-value { font-family: Georgia, serif; font-size: 1.85rem; line-height: 1.15; overflow-wrap: anywhere; }
 .ws-stat-note { color: var(--muted); font-size: 0.8125rem; line-height: 1.5; overflow-wrap: anywhere; }

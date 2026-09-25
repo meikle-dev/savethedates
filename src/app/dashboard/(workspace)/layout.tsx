@@ -16,7 +16,7 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
           <span aria-hidden="true" className="h-5 border-l border-[var(--line)]" />
           <span className="ws-top-names">{wedding.first_name} &amp; {wedding.second_name}</span>
           <span className="whitespace-nowrap">{formatWeddingDate(wedding.wedding_date)}</span>
-          {live ? <span className="badge badge-positive badge-dot">Published</span> : <span className="badge"><Icon name="lock" />Private draft</span>}
+          {live ? <span className="badge badge-positive badge-dot">Published</span> : <span className="badge badge-caution"><Icon name="lock" />Private draft</span>}
         </div>}
       </div>
       <div className="ws-top-actions">

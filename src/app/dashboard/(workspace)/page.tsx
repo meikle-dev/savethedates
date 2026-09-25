@@ -47,7 +47,7 @@ export default async function Overview() {
     </header>
 
     <div className="ws-stats">
-      <article className="ws-stat" data-tone={live ? "live" : undefined} aria-labelledby="stat-site">
+      <article className="ws-stat" data-tone={live ? "live" : offline ? undefined : "draft"} aria-labelledby="stat-site">
         <span className="ws-stat-icon"><Icon name={live ? "globe" : "lock"} /></span>
         <h2 id="stat-site" className="ws-stat-label">Site status</h2>
         <p className="ws-stat-value">{live ? "Published" : offline ? "Offline" : "Private draft"}</p>

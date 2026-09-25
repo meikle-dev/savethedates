@@ -17,6 +17,8 @@
   --positive-mark: #5f794a;
   --negative-soft: #f5ebe8;
   --negative-ink: #7a3d33;
+  --caution-soft: #fbeee2;
+  --caution-ink: #b3470f;
 }
 
 /* Buttons: add one variant class alongside .button (links, buttons and summaries alike). */
@@ -47,6 +49,7 @@ summary.button::-webkit-details-marker { display: none; }
 .badge svg { width: 0.8rem; height: 0.8rem; flex: none; }
 .badge-positive { background: var(--positive-soft); color: var(--positive-ink); }
 .badge-negative { background: var(--negative-soft); color: var(--negative-ink); }
+.badge-caution { background: var(--caution-soft); color: var(--caution-ink); }
 .badge-dot::before { content: ""; width: 0.4rem; height: 0.4rem; flex: none; border-radius: 50%; background: currentColor; }
 .badge-positive.badge-dot::before { background: var(--positive-mark); }
 
