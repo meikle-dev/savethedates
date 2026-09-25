@@ -33,7 +33,10 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await page.locator('[name="location"]').fill("Bath, England");
     await page.getByRole("button", { name: "Save private draft" }).click();
     await expect(page.getByRole("status")).toContainText("private draft has been saved");
-    weddingId = (await local.admin.from("weddings").select("id").eq("owner_id", ownerId).single()).data!.id;
+    const saved = (await local.admin.from("weddings").select("id, rsvp_share_secret").eq("owner_id", ownerId).single()).data!;
+    weddingId = saved.id;
+    const secret = saved.rsvp_share_secret as string;
+    const home = `/${slug}/${secret}`;
     expect((await local.grantEntitlement(weddingId!, ownerId)).error).toBeNull();
     await openSection("Publish");
     await page.getByRole("link", { name: "Preview saved site" }).click();
@@ -130,20 +133,38 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await expect(page.getByText("Editing Modern Minimal")).toBeVisible();
     await expect(page.locator('input[name="x"]')).toHaveValue("20");
     await openSection("Publish");
-    await page.getByLabel("Your wedding URL").fill("dashboard");
-    await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
+    // The names part is suggested from the couple's names, and the future guest link is shown before publication.
+    const namesField = page.getByLabel("Names in your guest link");
+    await expect(namesField).toHaveValue("alex-and-morgan");
+    await expect(page.getByText("Works once published")).toBeVisible();
+    await expect(page.getByText(`/alex-and-morgan/${secret}`, { exact: true })).toBeVisible();
+    // A format error and a missing consent are shown together, next to their fields, without a browser pop-up.
+    await namesField.fill("dashboard");
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByRole("main").getByRole("alert").last()).toContainText("reserved");
-    await page.getByLabel("Your wedding URL").fill(` ${slug.toUpperCase()} `);
+    await expect(page.locator("#slug-error")).toContainText("used by SaveTheDates pages");
+    await expect(page.locator("#visibility-error")).toContainText("Confirm that anyone with your guest link can view your site.");
+    await expect(namesField).toHaveAttribute("aria-invalid", "true");
+    await expect(namesField).toHaveAttribute("aria-describedby", /slug-error/);
+    await expect(page.getByText(`/dashboard/${secret}`)).toHaveCount(0);
+    await page.screenshot({ path: test.info().outputPath("publish-errors.png"), fullPage: true });
+    await page.getByRole("checkbox", { name: /I understand that anyone with our guest link/ }).check();
+    await namesField.fill(` ${slug.toUpperCase()} `);
+    await expect(page.getByText(home, { exact: true })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("private-workspace.png"), fullPage: true });
-    expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
+    expect((await guest.request.get(home)).status()).toBe(404);
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Your site is live for anyone with its URL.")).toBeVisible();
+    await expect(page.getByText("Your site is live for anyone with your guest link.")).toBeVisible();
+    await expect(page.getByRole("link", { name: home })).toHaveAttribute("href", home);
     await expectHeaderStatus("Published");
     await page.screenshot({ path: test.info().outputPath("published-workspace.png"), fullPage: true });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    const response = await guestPage.goto(`/${slug}`);
+    const response = await guestPage.goto(home);
     expect(response!.status()).toBe(200);
+    expect(response!.headers()["referrer-policy"]).toBe("no-referrer");
+    expect(response!.headers()["x-robots-tag"]).toContain("noindex");
+    // Names alone, and a valid names part with an unknown secret, give the same 404.
+    expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
+    expect((await guest.request.get(`/${slug}/${"x".repeat(43)}`)).status()).toBe(404);
     // Development Next.js uses mandatory revalidation; production dynamic pages use no-store.
     expect(response!.headers()["cache-control"]).toMatch(/no-store|no-cache, must-revalidate/);
     if (process.env.E2E_PRODUCTION) expect(response!.headers()["cache-control"]).toContain("no-store");
@@ -151,17 +172,25 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await expect(guestPage.locator(".wedding-photo img")).toHaveCSS("object-position", "20% 70%");
     await expect(guestPage.locator(".wedding-photo img")).toHaveCSS("transform", /matrix\(1\.3/);
     await expect(guestPage.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-    const asset = await guest.request.get(`/${slug}/photo`);
+    await expect(guestPage.locator(".wedding-photo img")).toHaveAttribute("src", new RegExp(`${home}/photo$`));
+    const asset = await guest.request.get(`${home}/photo`);
     expect(asset.status()).toBe(200);
     expect(asset.headers()["cache-control"]).toContain("no-store");
     expect(asset.headers()["content-type"]).toBe("image/webp");
     await guestPage.screenshot({ path: test.info().outputPath("published-guest.png"), fullPage: true });
     expect((await local.admin.from("weddings").update({ details_enabled: true, ceremony_venue: "The Orangery" }).eq("id", weddingId)).error).toBeNull();
-    await guestPage.goto(`/${slug}/details`);
+    await guestPage.goto(`${home}/details`);
     await expect(guestPage.getByRole("heading", { name: "Wedding details" })).toBeVisible();
     await expect(guestPage.locator(".wedding-photo img")).toHaveCSS("object-position", "80% 30%");
     await expect(guestPage.locator(".wedding-photo img")).toHaveCSS("transform", /matrix\(1\.2/);
-    await guestPage.goto(`/${slug}`);
+    // No guest page sends the private storage path (which contains the wedding ID) in its HTML or RSC payload.
+    for (const path of [home, `${home}/details`, `${home}/rsvp`]) {
+      const html = await (await guest.request.get(path)).text();
+      expect(html, path).toContain("Alex");
+      expect(html, path).not.toContain(weddingId!);
+      expect(html, path).not.toContain("photo_path");
+    }
+    await guestPage.goto(home);
     await openSection("Basics");
     await page.locator('[name="location"]').fill("Bristol, England");
     await page.getByRole("button", { name: "Save live changes" }).click();
@@ -176,7 +205,7 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     expect((await local.admin.from("weddings").select("photo_framing").eq("id", weddingId).single()).data!.photo_framing).toEqual({});
     await expect(page.locator('input[name="x"]')).toHaveValue("50");
     const ownerReplacement = await page.request.get("/dashboard/photo");
-    const guestReplacement = await guest.request.get(`/${slug}/photo`);
+    const guestReplacement = await guest.request.get(`${home}/photo`);
     expect(ownerReplacement.status()).toBe(200);
     expect(guestReplacement.status()).toBe(200);
     const [ownerStats, guestStats] = await Promise.all([
@@ -185,13 +214,25 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     ]);
     expect(ownerStats.channels[0].mean).toBeGreaterThan(ownerStats.channels[1].mean);
     expect(guestStats.channels[0].mean).toBeGreaterThan(guestStats.channels[1].mean);
+    // The names part can change after publishing; links with the earlier names redirect to the current one.
     await openSection("Publish");
+    const renamed = `${slug}-renamed`;
+    await page.getByLabel("Names in your guest link").fill(renamed);
+    await page.getByRole("button", { name: "Save link names" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Links you already shared still work" })).toBeVisible();
+    await guestPage.goto(`${home}/details`);
+    await expect(guestPage).toHaveURL(new RegExp(`/${renamed}/${secret}/details$`));
+    await guestPage.goto(`/altered-names/${secret}`);
+    await expect(guestPage).toHaveURL(new RegExp(`/${renamed}/${secret}$`));
+    await page.getByLabel("Names in your guest link").fill(slug);
+    await page.getByRole("button", { name: "Save link names" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Links you already shared still work" })).toBeVisible();
     await page.getByRole("button", { name: "Unpublish site" }).click();
     await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
     await expectHeaderStatus("Private draft");
-    await expect(page.getByLabel("Your wedding URL")).toHaveAttribute("readonly", "");
-    expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
-    expect((await guest.request.get(`/${slug}/photo`)).status()).toBe(404);
+    await expect(page.getByLabel("Names in your guest link")).toBeEditable();
+    expect((await guest.request.get(home)).status()).toBe(404);
+    expect((await guest.request.get(`${home}/photo`)).status()).toBe(404);
     expect((await page.request.get("/dashboard/photo")).status()).toBe(200);
     await openSection("Design");
     await page.getByLabel("Photo file").setInputFiles({ name: "oversized.jpg", mimeType: "image/jpeg", buffer: Buffer.alloc(7 * 1024 * 1024) });
@@ -201,12 +242,13 @@ test("owner previews, uploads, publishes, updates and unpublishes a wedding", as
     await expect(page.getByRole("status").filter({ hasText: "photo has been removed" })).toBeVisible();
     expect((await page.request.get("/dashboard/photo")).status()).toBe(404);
     await openSection("Publish");
-    await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
+    await expect(page.getByLabel("Names in your guest link")).toHaveValue(slug);
+    await page.getByRole("checkbox", { name: /I understand that anyone with our guest link/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Your site is live for anyone with its URL.")).toBeVisible();
+    await expect(page.getByText("Your site is live for anyone with your guest link.")).toBeVisible();
     await expectHeaderStatus("Published");
-    expect((await guest.request.get(`/${slug}`)).status()).toBe(200);
-    expect((await guest.request.get(`/${slug}/photo`)).status()).toBe(404);
+    expect((await guest.request.get(home)).status()).toBe(200);
+    expect((await guest.request.get(`${home}/photo`)).status()).toBe(404);
   } finally {
     await guest.close();
     if (weddingId) {

@@ -5,10 +5,10 @@ import { z } from "zod";
 import { errorReason, identify, log, withLogging } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 import { publicClient } from "@/lib/supabase/public";
-import { sharedRsvpHref } from "@/features/weddings/invitation-context";
+import { currentNames, guestHrefs, guestPagesRoute } from "@/features/weddings/guest-link";
 import {
   closeDateSchema,
-  invitationTokenSchema,
+  guestSecretSchema,
   rsvpNameSchema,
   type RsvpState,
 } from "@/features/weddings/rsvp";
@@ -19,19 +19,15 @@ async function ownerWorkspace() {
   const { data: { user } } = await client.auth.getUser();
   if (!user) denyWorkspace("no_session", "Your session has ended. Sign in again, then retry.");
   identify({ ownerId: user.id });
-  const { data, error } = await client.from("weddings").select("id, slug, published").eq("owner_id", user.id).single();
+  const { data, error } = await client.from("weddings").select("id, slug, first_name, second_name, published").eq("owner_id", user.id).single();
   if (error || !data) denyWorkspace("no_wedding", "Save your wedding details first, then retry.");
   identify({ weddingId: data.id });
   return { client, wedding: data };
 }
 
-function refreshRsvp(slug?: string | null) {
+function refreshRsvp() {
   revalidatePath("/dashboard", "layout");
-  if (slug) {
-    revalidatePath(`/${slug}`);
-    revalidatePath(`/${slug}/details`);
-    revalidatePath(`/${slug}/rsvp`);
-  }
+  revalidatePath(guestPagesRoute, "layout");
 }
 
 export async function saveRsvpSettings(_: RsvpState, form: FormData): Promise<RsvpState> {
@@ -46,7 +42,7 @@ export async function saveRsvpSettings(_: RsvpState, form: FormData): Promise<Rs
         log.error("workspace.save.failed", { section: "rsvp_settings", reason: errorReason(error) });
         return { message: "We couldn’t save your RSVP settings. Please retry." };
       }
-      refreshRsvp(wedding.slug);
+      refreshRsvp();
       log.info("workspace.save.succeeded", { section: "rsvp_settings" });
       return { success: true, message: enabled ? "RSVP is enabled. Share your one private RSVP link below." : "RSVP is closed. Existing responses remain in your workspace." };
     } catch (error) {
@@ -58,20 +54,20 @@ export async function saveRsvpSettings(_: RsvpState, form: FormData): Promise<Rs
 
 export async function rotateSharedRsvp(_: RsvpState, form: FormData): Promise<RsvpState> {
   return withLogging("rsvp.link", "/dashboard/rsvp", async () => {
-    if (form.get("confirm_rotate") !== "yes") return { message: "Confirm that you want to replace the shared link." };
+    if (form.get("confirm_rotate") !== "yes") return { message: "Confirm that you want to replace your guest link." };
     try {
       const { client, wedding } = await ownerWorkspace();
       const { data, error } = await client.rpc("rotate_shared_rsvp_secret", { requested_wedding_id: wedding.id });
       if (error || !data) {
         log.error("rsvp.link.failed", { reason: error ? errorReason(error) : "no_secret" });
-        return { message: "We couldn’t replace the shared link. Please retry." };
+        return { message: "We couldn’t replace your guest link. Please retry." };
       }
-      refreshRsvp(wedding.slug);
+      refreshRsvp();
       log.info("rsvp.link.rotated");
-      return { success: true, message: "Shared link replaced. Previously shared copies no longer work.", shareUrl: wedding.slug ? sharedRsvpHref(wedding.slug, data) : undefined };
+      return { success: true, message: "Guest link replaced. Every link you shared before, including your Save the Date, no longer works.", shareUrl: guestHrefs(currentNames(wedding), data).rsvp };
     } catch (error) {
       if (!(error instanceof WorkspaceAccessError)) log.error("rsvp.link.failed", { reason: errorReason(error) });
-      return { message: "We couldn’t replace the shared link. Please retry." };
+      return { message: "We couldn’t replace your guest link. Please retry." };
     }
   });
 }
@@ -102,7 +98,7 @@ export async function manageSharedResponse(_: RsvpState, form: FormData): Promis
         log.warn("rsvp.response.rejected", { reason: "not_found" });
         return { message: "We couldn’t change this response. Reload and retry." };
       }
-      refreshRsvp(wedding.slug);
+      refreshRsvp();
       log.info(intent.data === "remove" ? "rsvp.response.removed" : "rsvp.response.corrected");
       return { success: true, message: intent.data === "remove" ? "Response removed." : "Response corrected." };
     } catch (error) {
@@ -115,18 +111,17 @@ export async function manageSharedResponse(_: RsvpState, form: FormData): Promis
 const rsvpRejections: Record<string, string> = { unavailable: "invalid_link", rate_limited: "rate_limited", full: "capacity", closed: "closed" };
 
 export async function submitSharedRsvp(_: RsvpState, form: FormData): Promise<RsvpState> {
-  return withLogging("rsvp.submit", "/s/[shareSecret]/[weddingSlug]/rsvp", async () => {
+  return withLogging("rsvp.submit", "/[names]/[secret]/rsvp", async () => {
     const unavailable = { message: "This RSVP link is unavailable. Ask the couple for a current link." };
-    const slug = z.string().min(3).max(63).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).safeParse(form.get("slug"));
-    const secret = invitationTokenSchema.safeParse(form.get("secret"));
-    if (!slug.success || !secret.success) {
+    const secret = guestSecretSchema.safeParse(form.get("secret"));
+    if (!secret.success) {
       log.warn("rsvp.submit.rejected", { reason: "invalid_link" });
       return unavailable;
     }
     const name = rsvpNameSchema.safeParse(form.get("responding_name"));
     const attendance = z.enum(["yes", "no"]).safeParse(form.get("attending"));
     const { data, error } = await publicClient().rpc("submit_shared_rsvp", {
-      requested_slug: slug.data, requested_secret: secret.data,
+      requested_secret: secret.data,
       requested_name: name.success ? name.data : null,
       requested_attending: attendance.success ? attendance.data === "yes" : null,
     });
@@ -143,7 +138,6 @@ export async function submitSharedRsvp(_: RsvpState, form: FormData): Promise<Rs
       responding_name: name.success ? undefined : name.error.issues.map((issue) => issue.message),
       attending: attendance.success ? undefined : ["Choose attending or not attending."],
     } };
-    revalidatePath(sharedRsvpHref(slug.data, secret.data));
     log.info("rsvp.submit.accepted");
     return { success: true, message: `Your RSVP for ${name.data} has been saved. Contact the couple if you need to change it.` };
   });

@@ -26,7 +26,7 @@ export const logEvents = [
   "account.signout.failed",
   "workspace.save.succeeded", "workspace.save.rejected", "workspace.save.failed", "workspace.ownership.denied",
   "photo.upload.accepted", "photo.upload.rejected", "photo.upload.failed", "photo.read.failed",
-  "publication.publish.succeeded", "publication.publish.blocked", "publication.publish.rejected", "publication.publish.failed",
+  "publication.publish.succeeded", "publication.publish.blocked", "publication.publish.failed",
   "publication.unpublish.succeeded", "publication.unpublish.failed",
   "payment.checkout.created", "payment.checkout.reused", "payment.checkout.conflicted", "payment.checkout.rejected", "payment.checkout.failed",
   "payment.checkout.expired", "payment.stripe.failed",
@@ -43,11 +43,11 @@ void everyOperationHasFailure;
 
 /** Route templates, never concrete paths: concrete paths can contain secrets and slugs. */
 export type LogRoute =
-  | "/[weddingSlug]/photo" | "/account/[screen]" | "/api/stripe/webhook" | "/auth/confirm" | "/dashboard"
+  | "/[names]/[secret]/photo" | "/account/[screen]" | "/api/stripe/webhook" | "/auth/confirm" | "/dashboard"
   | "/dashboard/basics" | "/dashboard/design" | "/dashboard/details" | "/dashboard/photo" | "/dashboard/preview" | "/dashboard/publish"
-  | "/dashboard/guests" | "/dashboard/rsvp" | "/s/[shareSecret]/[weddingSlug]/rsvp";
+  | "/dashboard/guests" | "/dashboard/rsvp" | "/[names]/[secret]/rsvp";
 export type LogLevel = "debug" | "info" | "warn" | "error";
-export type WorkspaceSection = "basics" | "details" | "theme" | "photo_framing" | "rsvp_settings";
+export type WorkspaceSection = "basics" | "details" | "theme" | "photo_framing" | "rsvp_settings" | "guest_link";
 export type LogFields = {
   ownerId?: string;
   weddingId?: string;
@@ -85,7 +85,7 @@ const shared: SharedState = ((globalThis as { __saveTheDatesLogging?: SharedStat
   failures: new WeakMap(),
 });
 const { storage, failures } = shared;
-const sections = new Set<string>(["basics", "details", "theme", "photo_framing", "rsvp_settings"]);
+const sections = new Set<string>(["basics", "details", "theme", "photo_framing", "rsvp_settings", "guest_link"]);
 const code = /^[A-Za-z0-9_.:-]{1,80}$/;
 
 const isProduction = () => process.env.NODE_ENV === "production";

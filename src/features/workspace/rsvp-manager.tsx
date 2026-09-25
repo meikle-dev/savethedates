@@ -2,30 +2,30 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { sharedRsvpHref } from "@/features/weddings/invitation-context";
 import type { RsvpState } from "@/features/weddings/rsvp";
 import { rotateSharedRsvp, saveRsvpSettings } from "./rsvp-actions";
 import { CopyLinkButton } from "./copy-link-button";
 import { Icon } from "./workspace-icons";
 
-export function RsvpManager({ enabled, closesOn, slug, shareSecret }: { enabled: boolean; closesOn: string | null; slug: string | null; shareSecret: string }) {
+export function RsvpManager({ enabled, closesOn, rsvpHref, live }: { enabled: boolean; closesOn: string | null; rsvpHref: string; live: boolean }) {
   const [settings, settingsAction, settingsPending] = useActionState<RsvpState, FormData>(saveRsvpSettings, {});
   const [rotated, rotateAction, rotatePending] = useActionState<RsvpState, FormData>(rotateSharedRsvp, {});
-  const shareUrl = rotated.shareUrl ?? (slug ? sharedRsvpHref(slug, shareSecret) : null);
+  const shareUrl = rotated.shareUrl ?? rsvpHref;
 
   return <div className="ws-stack">
     <section className="ws-panel" aria-labelledby="shared-rsvp-title">
       <h2 id="shared-rsvp-title">One link for all guests</h2>
       <p className="ws-panel-intro">Share this same private link with everyone. Guests enter their own names; only you can see responses. They should contact you if plans change.</p>
-      {shareUrl ? <div className="mt-5">
+      <div className="mt-5">
         <label htmlFor="shared-rsvp-url" className="field-label">Your shared RSVP link</label>
         <input id="shared-rsvp-url" className="field-input font-mono text-xs" value={shareUrl} readOnly onFocus={(event) => event.currentTarget.select()} />
         <div className="mt-3 flex flex-wrap gap-3">
           <CopyLinkButton href={shareUrl} label="Copy full link" className="button button-secondary" failure="We couldn’t copy the link. Select it above and copy it manually."><Icon name="link" /></CopyLinkButton>
           <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="button button-secondary"><Icon name="external" />Open RSVP page<span className="sr-only"> (opens in a new tab)</span></a>
         </div>
-      </div> : <p className="field-help mt-4">Publish your site and choose its permanent URL to get the shared link.</p>}
-      {shareUrl && <form action={rotateAction} className="mt-5 border-t border-[var(--line)] pt-5"><label className="flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_rotate" value="yes" required /><span>Replace this link and stop previously shared copies from working</span></label><button className="button button-secondary mt-3" disabled={rotatePending}>{rotatePending ? "Replacing…" : "Replace shared link"}</button>{rotated.message && <p className={rotated.success ? "form-notice" : "form-error"} role={rotated.success ? "status" : "alert"}>{rotated.message}</p>}</form>}
+        {!live && <p className="field-help">Works once your site is published.</p>}
+      </div>
+      <form action={rotateAction} className="mt-5 border-t border-[var(--line)] pt-5"><p className="text-sm leading-relaxed">Replacing gives your Save the Date, Details and RSVP pages a new private address. Every link you shared before stops working, including your Save the Date.</p><label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" name="confirm_rotate" value="yes" required /><span>Replace my guest link and stop every previously shared link from working</span></label><button className="button button-secondary mt-3" disabled={rotatePending}>{rotatePending ? "Replacing…" : "Replace shared link"}</button>{rotated.message && <p className={rotated.success ? "form-notice" : "form-error"} role={rotated.success ? "status" : "alert"}>{rotated.message}</p>}</form>
     </section>
     <section className="ws-panel" aria-labelledby="rsvp-settings-title">
       <h2 id="rsvp-settings-title">RSVP settings</h2>
@@ -36,6 +36,6 @@ export function RsvpManager({ enabled, closesOn, slug, shareSecret }: { enabled:
         <button className="button button-primary mt-5" disabled={settingsPending}>{settingsPending ? "Saving…" : "Save RSVP settings"}</button>
       </form>
     </section>
-    <div><Link href="/dashboard/preview/rsvp" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview RSVP page</Link><p className="field-help">Preview your saved names and wedding style. Your shared link above opens the live guest page.</p></div>
+    <div><Link href="/dashboard/preview/rsvp" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview RSVP page</Link><p className="field-help">Preview your saved names and wedding style. Your shared link above opens the live guest page once published.</p></div>
   </div>;
 }

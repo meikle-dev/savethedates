@@ -75,13 +75,13 @@ describe("logger", () => {
 
 describe("withLogging", () => {
   it("adds request context to lines and logs nothing extra when the code logged its outcome", async () => {
-    const result = await withLogging("rsvp.submit", "/s/[shareSecret]/[weddingSlug]/rsvp", async () => {
+    const result = await withLogging("rsvp.submit", "/[names]/[secret]/rsvp", async () => {
       identify({ ownerId });
       log.info("rsvp.submit.accepted");
       return "saved";
     });
     expect(result).toBe("saved");
-    expect(lines()).toEqual([expect.objectContaining({ event: "rsvp.submit.accepted", requestId, ownerId, route: "/s/[shareSecret]/[weddingSlug]/rsvp", durationMs: expect.any(Number) })]);
+    expect(lines()).toEqual([expect.objectContaining({ event: "rsvp.submit.accepted", requestId, ownerId, route: "/[names]/[secret]/rsvp", durationMs: expect.any(Number) })]);
   });
 
   it("records one local completion line when the code logged nothing", async () => {

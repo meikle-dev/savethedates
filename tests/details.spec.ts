@@ -18,13 +18,14 @@ test("owner edits and previews Details while guests see only enabled published c
   const guest = await browser.newContext({ baseURL, viewport: page.viewportSize() });
   const guestPage = await guest.newPage();
   try {
-    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id").single();
+    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id, rsvp_share_secret").single();
     expect(wedding.error).toBeNull();
+    const home = `/${slug}/${wedding.data!.rsvp_share_secret}`;
     expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
-    await guestPage.goto(`/${slug}`);
+    await guestPage.goto(home);
     await expect(guestPage.getByRole("link", { name: "Details" })).toHaveCount(0);
-    const hiddenResponse = await guestPage.goto(`/${slug}/details`);
+    const hiddenResponse = await guestPage.goto(`${home}/details`);
     expect(hiddenResponse?.status()).toBe(404);
 
     await page.goto("/account/sign-in");
@@ -104,9 +105,9 @@ test("owner edits and previews Details while guests see only enabled published c
     await openWorkspaceSection(page, "Details");
     await expect(page).toHaveURL(/\/dashboard\/details$/);
 
-    await guestPage.goto(`/${slug}`);
+    await guestPage.goto(home);
     await guestPage.getByRole("link", { name: "Details" }).click();
-    await expect(guestPage).toHaveURL(new RegExp(`/${slug}/details$`));
+    await expect(guestPage).toHaveURL(new RegExp(`${home}/details$`));
     await expect(guestPage.getByRole("heading", { name: "Wedding details" })).toBeVisible();
     await expect(guestPage.getByText("The Old Hall", { exact: true })).toBeVisible();
     await expect(guestPage.getByText("The Old Hall, Bath BA1 1AA")).toBeVisible();
@@ -146,9 +147,9 @@ test("owner edits and previews Details while guests see only enabled published c
     await expect(updatedSection.getByLabel("Show Details page")).not.toBeChecked();
     await page.reload();
     await expect(page.getByRole("region", { name: "Wedding Details" }).getByLabel("Show Details page")).not.toBeChecked();
-    await guestPage.goto(`/${slug}`);
+    await guestPage.goto(home);
     await expect(guestPage.getByRole("link", { name: "Details" })).toHaveCount(0);
-    expect((await guestPage.goto(`/${slug}/details`))?.status()).toBe(404);
+    expect((await guestPage.goto(`${home}/details`))?.status()).toBe(404);
   } finally {
     await guest.close();
     await local.admin.auth.admin.deleteUser(ownerId);

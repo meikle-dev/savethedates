@@ -30,8 +30,9 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
   if (created.error || !created.data.user) throw new Error("Cannot create payment browser-test owner");
   const ownerId = created.data.user.id;
   const slug = `paid-${crypto.randomUUID()}`;
-  const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath" }).select("id").single();
+  const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath" }).select("id, rsvp_share_secret").single();
   if (wedding.error || !wedding.data) throw new Error("Cannot create payment browser-test wedding");
+  const home = `/${slug}/${wedding.data.rsvp_share_secret}`;
   const guest = await browser.newContext({ baseURL });
   try {
     await page.goto("/account/sign-in");
@@ -42,7 +43,13 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await expect(page.getByText("£29", { exact: false })).toBeVisible();
     await expect(page.getByText(/A new purchase keeps your site online until six months after the wedding date/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Buy and continue to Stripe" })).toBeVisible();
-    await expect(page.getByLabel("Your wedding URL")).toHaveCount(0);
+    // The names part of the guest link can be chosen before payment; publishing cannot.
+    await expect(page.getByRole("button", { name: "Publish site" })).toHaveCount(0);
+    await expect(page.getByText("Works once published")).toBeVisible();
+    await page.getByLabel("Names in your guest link").fill(slug);
+    await page.getByRole("button", { name: "Save link names" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "guest link names are saved" })).toBeVisible();
+    await expect(page.getByText(home, { exact: true })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("payment-required.png"), fullPage: true });
     await page.goto("/dashboard/publish?checkout=cancelled");
     await expect(page.getByText("Checkout was cancelled", { exact: false })).toBeVisible();
@@ -87,11 +94,11 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     expect(paidResponse.status()).toBe(200);
     await page.reload();
     await expect(page.getByText("Payment confirmed", { exact: false })).toBeVisible();
-    await page.getByLabel("Your wedding URL").fill(slug);
-    await page.getByRole("checkbox", { name: /I understand that anyone with the URL/ }).check();
+    await expect(page.getByLabel("Names in your guest link")).toHaveValue(slug);
+    await page.getByRole("checkbox", { name: /I understand that anyone with our guest link/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Your site is live for anyone with its URL.")).toBeVisible();
-    expect((await guest.request.get(`/${slug}`)).status()).toBe(200);
+    await expect(page.getByText("Your site is live for anyone with your guest link.")).toBeVisible();
+    expect((await guest.request.get(home)).status()).toBe(200);
 
     expect((await local.admin.from("stripe_payments").update({ expires_at: "2026-01-01T00:00:00Z" }).eq("payment_intent_id", paymentIntent)).error).toBeNull();
     await page.reload();
@@ -111,7 +118,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await expect(page.getByRole("status").filter({ hasText: "Theme saved to your private draft" })).toBeVisible();
     await page.getByRole("link", { name: "Back to workspace" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
-    expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
+    expect((await guest.request.get(home)).status()).toBe(404);
 
     const refund = signedEvent("refund.created", { id: `re_test_${crypto.randomUUID()}`, object: "refund", payment_intent: paymentIntent });
     const refundResponse = await page.request.post("/api/stripe/webhook", { data: refund.payload, headers: { "content-type": "application/json", "stripe-signature": refund.signature } });
@@ -122,7 +129,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await expect(page.getByText("Your site is private until you publish it.")).toBeVisible();
     await expect(page.getByText("This purchase was refunded", { exact: false })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("payment-refunded.png"), fullPage: true });
-    expect((await guest.request.get(`/${slug}`)).status()).toBe(404);
+    expect((await guest.request.get(home)).status()).toBe(404);
   } finally {
     await guest.close();
     await local.admin.auth.admin.deleteUser(ownerId);

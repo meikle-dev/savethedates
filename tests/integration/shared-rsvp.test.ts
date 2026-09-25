@@ -35,11 +35,12 @@ afterAll(async () => {
 });
 
 it("accepts multiple named responses through one secret without revealing them", async () => {
-  expect((await guest.rpc("shared_guest_rsvp", { requested_slug: slug, requested_secret: secret })).data).toEqual([{ is_open: true }]);
-  expect((await guest.rpc("shared_guest_rsvp", { requested_slug: slug, requested_secret: "x".repeat(43) })).data).toEqual([]);
-  expect((await guest.rpc("shared_guest_rsvp", { requested_slug: "wrong-wedding", requested_secret: secret })).data).toEqual([]);
+  expect((await guest.rpc("guest_wedding", { requested_secret: secret })).data).toEqual([expect.objectContaining({ rsvp_open: true })]);
+  expect((await guest.rpc("guest_wedding", { requested_secret: "x".repeat(43) })).data).toEqual([]);
+  // The names part alone never finds the wedding.
+  expect((await guest.rpc("guest_wedding", { requested_secret: slug })).data).toEqual([]);
   for (const [name, attending] of [["Sam Taylor", true], ["Jordan Lee", false], ["Sam Taylor", false]] as const) {
-    const result = await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: name, requested_attending: attending });
+    const result = await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: name, requested_attending: attending });
     expect(result.error).toBeNull();
     expect(result.data).toBe("saved");
   }
@@ -51,6 +52,7 @@ it("accepts multiple named responses through one secret without revealing them",
   expect(saved.data).toHaveLength(3);
   expect(saved.data!.filter((row) => row.responding_name === "Sam Taylor")).toHaveLength(2);
   expect((await other.rpc("rotate_shared_rsvp_secret", { requested_wedding_id: weddingId })).data).toBeNull();
+  expect((await guest.rpc("rotate_shared_rsvp_secret", { requested_wedding_id: weddingId })).error).not.toBeNull();
 });
 
 it("lets only the owner correct or remove a response and isolates name limits", async () => {
@@ -66,10 +68,10 @@ it("lets only the owner correct or remove a response and isolates name limits", 
   expect((await owner.from("shared_rsvp_responses").select("id").eq("wedding_id", weddingId)).data).toHaveLength(2);
 
   for (let attempt = 0; attempt < 10; attempt += 1) {
-    expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "Busy Name", requested_attending: true })).data).toBe("saved");
+    expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "Busy Name", requested_attending: true })).data).toBe("saved");
   }
-  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "busy name", requested_attending: true })).data).toBe("rate_limited");
-  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "Another Guest", requested_attending: true })).data).toBe("saved");
+  expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "busy name", requested_attending: true })).data).toBe("rate_limited");
+  expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "Another Guest", requested_attending: true })).data).toBe("saved");
 });
 
 it("keeps a high emergency cap on a wedding without affecting the owner list", async () => {
@@ -79,22 +81,22 @@ it("keeps a high emergency cap on a wedding without affecting the owner list", a
   expect(remaining).toBeGreaterThan(0);
   const added = await local.admin.from("shared_rsvp_attempts").insert(Array.from({ length: remaining }, (_, index) => ({ wedding_id: weddingId, name_key: `load-${index}` })));
   expect(added.error).toBeNull();
-  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "New Guest", requested_attending: true })).data).toBe("rate_limited");
+  expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "New Guest", requested_attending: true })).data).toBe("rate_limited");
   expect((await local.admin.from("shared_rsvp_attempts").delete().eq("wedding_id", weddingId)).error).toBeNull();
-  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "New Guest", requested_attending: true })).data).toBe("saved");
+  expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "New Guest", requested_attending: true })).data).toBe("saved");
 });
 
 it("validates input, respects closure, and invalidates the old link on rotation", async () => {
-  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "", requested_attending: true })).data).toBe("invalid");
-  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "Sam", requested_attending: null })).data).toBe("invalid");
+  expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "", requested_attending: true })).data).toBe("invalid");
+  expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "Sam", requested_attending: null })).data).toBe("invalid");
   expect((await owner.from("weddings").update({ rsvp_enabled: false }).eq("id", weddingId)).error).toBeNull();
-  expect((await guest.rpc("shared_guest_rsvp", { requested_slug: slug, requested_secret: secret })).data).toEqual([{ is_open: false }]);
-  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "Sam", requested_attending: true })).data).toBe("closed");
+  expect((await guest.rpc("guest_wedding", { requested_secret: secret })).data).toEqual([expect.objectContaining({ rsvp_open: false })]);
+  expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "Sam", requested_attending: true })).data).toBe("closed");
   const rotated = await owner.rpc("rotate_shared_rsvp_secret", { requested_wedding_id: weddingId });
   expect(rotated.error).toBeNull();
   expect(rotated.data).toMatch(/^[A-Za-z0-9_-]{43}$/);
   expect(rotated.data).not.toBe(secret);
-  expect((await guest.rpc("shared_guest_rsvp", { requested_slug: slug, requested_secret: secret })).data).toEqual([]);
-  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secret, requested_name: "Sam", requested_attending: true })).data).toBe("unavailable");
-  expect((await guest.rpc("shared_guest_rsvp", { requested_slug: slug, requested_secret: rotated.data })).data).toEqual([{ is_open: false }]);
+  expect((await guest.rpc("guest_wedding", { requested_secret: secret })).data).toEqual([]);
+  expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "Sam", requested_attending: true })).data).toBe("unavailable");
+  expect((await guest.rpc("guest_wedding", { requested_secret: rotated.data })).data).toEqual([expect.objectContaining({ rsvp_open: false })]);
 });

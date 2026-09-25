@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { detailsSchema } from "@/features/weddings/details";
 import { formatWeddingDate } from "@/features/weddings/wedding";
-import { sharedRsvpHref } from "@/features/weddings/invitation-context";
+import { currentNames, guestHrefs } from "@/features/weddings/guest-link";
 import { AttendanceBadge } from "@/features/workspace/attendance-badge";
 import { CopyLinkButton } from "@/features/workspace/copy-link-button";
 import { Icon } from "@/features/workspace/workspace-icons";
@@ -34,8 +34,8 @@ export default async function Overview() {
   const steps = setupSteps({ ...detailsSchema.parse(wedding), photo_path: wedding.photo_path, rsvp_enabled: wedding.rsvp_enabled }, entitlement.active, live);
   const completed = steps.filter((step) => step.done).length;
   const setupComplete = steps.every((step) => step.done || step.optional);
-  // The shared link only works for guests while the site is live.
-  const rsvpHref = live && wedding.slug ? sharedRsvpHref(wedding.slug, wedding.rsvp_share_secret) : null;
+  // The guest link only works while the site is live.
+  const guest = live ? guestHrefs(currentNames(wedding), wedding.rsvp_share_secret) : null;
   const expiry = live && entitlement.expires_at ? formatWeddingDate(entitlement.expires_at.slice(0, 10)) : null;
 
   return <section aria-labelledby="overview-title">
@@ -50,8 +50,8 @@ export default async function Overview() {
         <span className="ws-stat-icon"><Icon name={live ? "globe" : "lock"} /></span>
         <h2 id="stat-site" className="ws-stat-label">Site status</h2>
         <p className="ws-stat-value">{live ? "Published" : "Private draft"}</p>
-        <p className="ws-stat-note">{live && wedding.slug
-          ? <><a href={`/${wedding.slug}`}>/{wedding.slug}</a>{expiry && <> · online until {expiry}</>}</>
+        <p className="ws-stat-note">{guest
+          ? <><a href={guest.home}>Your guest link</a>{expiry && <> · online until {expiry}</>}</>
           : <Link href="/dashboard/publish">{entitlement.active ? "Ready to publish" : "Purchase and publish"}</Link>}</p>
       </article>
       <article className="ws-stat" aria-labelledby="stat-countdown">
@@ -102,8 +102,8 @@ export default async function Overview() {
         <h2 id="actions-title">Quick actions</h2>
         <div className="ws-actions">
           <Link href="/dashboard/preview" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview your site</Link>
-          {live && wedding.slug && <a href={`/${wedding.slug}`} className="button button-secondary"><Icon name="external" />Open live site</a>}
-          {rsvpHref && <CopyLinkButton href={rsvpHref} label="Copy RSVP link" className="button button-secondary" failure="We couldn’t copy the link. Open the RSVP section to select and copy it manually."><Icon name="link" /></CopyLinkButton>}
+          {guest && <a href={guest.home} className="button button-secondary"><Icon name="external" />Open live site</a>}
+          {guest && <CopyLinkButton href={guest.rsvp} label="Copy RSVP link" className="button button-secondary" failure="We couldn’t copy the link. Open the RSVP section to select and copy it manually."><Icon name="link" /></CopyLinkButton>}
         </div>
       </section>
     </div>

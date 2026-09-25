@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { invitationTokenPattern } from "./invitation-context";
+import { guestSecretPattern } from "./guest-link";
 
 export const rsvpNameSchema = z.string().trim().min(1, "Enter your name.").max(80, "Use no more than 80 characters.");
-export const invitationTokenSchema = z.string().regex(invitationTokenPattern);
+export const guestSecretSchema = z.string().regex(guestSecretPattern);
 export const closeDateSchema = z.union([
   z.literal("").transform(() => null),
   z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {

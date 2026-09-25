@@ -7,6 +7,7 @@ const other = local.anonymous();
 let ownerId = "";
 let otherId = "";
 let weddingId = "";
+let secret = "";
 let otherWeddingId = "";
 const slug = `paid-${crypto.randomUUID()}`;
 
@@ -26,9 +27,10 @@ beforeAll(async () => {
     assign(created.data.user.id);
     expect((await client.auth.signInWithPassword({ email, password })).error).toBeNull();
   }
-  const inserted = await owner.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id").single();
+  const inserted = await owner.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id, rsvp_share_secret").single();
   expect(inserted.error).toBeNull();
   weddingId = inserted.data!.id;
+  secret = inserted.data!.rsvp_share_secret;
   const otherWedding = await other.from("weddings").insert({ owner_id: otherId, first_name: "Taylor", second_name: "Jordan", wedding_date: "2027-09-18", location: "York" }).select("id").single();
   expect(otherWedding.error).toBeNull();
   otherWeddingId = otherWedding.data!.id;
@@ -84,12 +86,12 @@ it("handles out-of-order, duplicate, refund and repurchase events", async () => 
   expect(entitlement.data?.[0]).toMatchObject({ active: true, revoked_reason: null });
   expect(entitlement.data?.[0]?.expires_at).toContain("2028-03-18");
   expect((await owner.from("weddings").update({ published: true }).eq("id", weddingId)).error).toBeNull();
-  expect((await local.anonymous().rpc("published_wedding", { requested_slug: slug })).data).toHaveLength(1);
+  expect((await local.anonymous().rpc("guest_wedding", { requested_secret: secret })).data).toHaveLength(1);
 
   expect((await paymentEvent({ id: `evt_${crypto.randomUUID()}`, type: "disputed", intent: secondIntent })).data).toBe("revoked");
   expect((await owner.rpc("owner_entitlement")).data?.[0]?.active).toBe(false);
   expect((await owner.from("weddings").select("published").eq("id", weddingId).single()).data?.published).toBe(false);
-  expect((await local.anonymous().rpc("published_wedding", { requested_slug: slug })).data).toEqual([]);
+  expect((await local.anonymous().rpc("guest_wedding", { requested_secret: secret })).data).toEqual([]);
 
   const invalidOwner = await paymentEvent({ id: `evt_${crypto.randomUUID()}`, type: "paid", intent: `pi_${crypto.randomUUID()}`, session: `cs_${crypto.randomUUID()}`, wedding: weddingId, owner: otherId });
   expect(invalidOwner.error).not.toBeNull();

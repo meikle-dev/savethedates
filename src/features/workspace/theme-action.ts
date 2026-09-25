@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { guestPagesRoute } from "@/features/weddings/guest-link";
 import { errorReason, identify, log, withLogging } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 import type { FormState } from "@/features/account/validation";
@@ -18,7 +19,7 @@ export async function applyTheme(_: FormState, form: FormData): Promise<FormStat
         return { message: "Your session has ended. Sign in again, then retry." };
       }
       identify({ ownerId: user.id });
-      const { data, error } = await client.from("weddings").update({ theme }).eq("owner_id", user.id).select("id, slug, published").single();
+      const { data, error } = await client.from("weddings").update({ theme }).eq("owner_id", user.id).select("id, published").single();
       const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
       const isLive = !!data?.published && !!entitlement?.active;
       if (error || !data) {
@@ -27,7 +28,7 @@ export async function applyTheme(_: FormState, form: FormData): Promise<FormStat
       }
       identify({ weddingId: data.id });
       revalidatePath("/dashboard", "layout");
-      if (data.slug) revalidatePath(`/${data.slug}`);
+      revalidatePath(guestPagesRoute, "layout");
       log.info("workspace.save.succeeded", { section: "theme" });
       return { success: true, message: isLive ? "Theme applied to your live wedding site." : "Theme saved to your private draft." };
     } catch (error) {

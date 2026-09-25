@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { errorReason, identify, log, withLogging } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 import type { FormState } from "@/features/account/validation";
-import { slugSchema } from "./publication-validation";
+import { guestPagesRoute } from "@/features/weddings/guest-link";
+import { slugError, slugSchema } from "./publication-validation";
 import { PhotoRejectedError, preparePhoto } from "./photo";
 import { denyWorkspace, WorkspaceAccessError } from "./workspace-access";
 
@@ -18,37 +19,58 @@ async function workspace() {
   const { data: { user } } = await client.auth.getUser();
   if (!user) denyWorkspace("no_session", "Your session has ended. Sign in again, then retry.");
   identify({ ownerId: user.id });
-  const { data, error } = await client.from("weddings").select("id, slug, photo_path, published, first_published_at").eq("owner_id", user.id).single();
+  const { data, error } = await client.from("weddings").select("id, photo_path, published").eq("owner_id", user.id).single();
   if (error || !data) denyWorkspace("no_wedding", "Save your wedding details first, then retry.");
   identify({ weddingId: data.id });
   return { client, wedding: data };
 }
-function refresh(slug: string | null) {
+function refresh() {
   revalidatePath("/dashboard", "layout");
-  if (slug) revalidatePath(`/${slug}`);
+  revalidatePath(guestPagesRoute, "layout");
+}
+/** Saves the names part of the guest link. Allowed before payment and after publishing; it is not unique. */
+export async function saveGuestLinkNames(_: FormState, form: FormData): Promise<FormState> {
+  return withLogging("workspace.save", "/dashboard/publish", async () => {
+    const slug = slugSchema.safeParse(form.get("slug"));
+    if (!slug.success) return { message: "Check the names in your guest link.", errors: { slug: slugError(slug) } };
+    try {
+      const { client, wedding } = await workspace();
+      const { error } = await client.from("weddings").update({ slug: slug.data }).eq("id", wedding.id);
+      if (error) {
+        log.error("workspace.save.failed", { section: "guest_link", reason: errorReason(error) });
+        return { message: "We couldn’t save your guest link. Please retry." };
+      }
+      refresh();
+      log.info("workspace.save.succeeded", { section: "guest_link" });
+      return { success: true, message: wedding.published ? "Your guest link is updated. Links you already shared still work." : "Your guest link names are saved." };
+    } catch (error) {
+      if (!(error instanceof WorkspaceAccessError)) log.error("workspace.save.failed", { section: "guest_link", reason: errorReason(error) });
+      return { message: error instanceof Error ? error.message : "We couldn’t save your guest link. Please retry." };
+    }
+  });
 }
 export async function publishWedding(_: FormState, form: FormData): Promise<FormState> {
   return withLogging("publication.publish", "/dashboard/publish", async () => {
     try {
+      const slug = slugSchema.safeParse(form.get("slug"));
+      const consent = form.get("visibility") === "on";
+      // Both problems are reported together, next to their fields.
+      if (!slug.success || !consent) return { message: "Check the highlighted fields.", errors: {
+        slug: slugError(slug),
+        visibility: consent ? undefined : ["Confirm that anyone with your guest link can view your site."],
+      } };
       const { client, wedding } = await workspace();
-      const slug = slugSchema.safeParse(wedding.first_published_at ? wedding.slug : form.get("slug"));
-      if (!slug.success) return { message: "Choose a URL with 3–63 letters or numbers, separated by single hyphens. Application URLs are reserved." };
-      if (form.get("visibility") !== "on") return { message: "Please confirm that your site will be public to anyone with the URL." };
       const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
       if (!entitlement?.active) {
         log.warn("publication.publish.blocked", { reason: "no_entitlement" });
         return { message: "Purchase this wedding site before publishing." };
       }
       const { error } = await client.from("weddings").update({ slug: slug.data, published: true }).eq("id", wedding.id);
-      if (error?.code === "23505") {
-        log.warn("publication.publish.rejected", { reason: "slug_taken" });
-        return { message: "That URL is already taken. Please choose another." };
-      }
       if (error) {
         log.error("publication.publish.failed", { reason: errorReason(error) });
-        return { message: "We couldn’t publish. Reload to check your saved URL, then retry." };
+        return { message: "We couldn’t publish. Please retry." };
       }
-      refresh(slug.data);
+      refresh();
       log.info("publication.publish.succeeded");
       return { success: true, message: "Your wedding site is published and ready to share." };
     } catch (error) {
@@ -66,7 +88,7 @@ export async function unpublishWedding(): Promise<FormState> {
         log.error("publication.unpublish.failed", { reason: errorReason(error) });
         return { message: "We couldn’t unpublish. Please retry." };
       }
-      refresh(wedding.slug);
+      refresh();
       log.info("publication.unpublish.succeeded");
       return { success: true, message: "Your site is now private. Previously downloaded copies cannot be recalled." };
     } catch (error) {
@@ -111,7 +133,7 @@ export async function changePhoto(_: PhotoFormState, form: FormData): Promise<Ph
         return { message: "Your photo changed in another request or couldn’t be saved. Reload and retry." };
       }
       if (wedding.photo_path) await client.storage.from("wedding-photos").remove([wedding.photo_path]);
-      refresh(wedding.slug);
+      refresh();
       return {
         success: true,
         message: path ? "Your photo has been saved." : "Your photo has been removed.",

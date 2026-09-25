@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037 and F040 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F043**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F042-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040 and F043 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. F043 is Done (25 September). **Next: F042**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F042-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -994,7 +994,7 @@ Alternatives considered:
   - The Sentry DPA/transfer terms and the privacy notice entry belong to F009.
 - **Risks:** Next.js's own stderr error output isn't scrubbed (documented). Browser errors before the SDK loads are missed. Every full page load makes one extra no-store config request.
 - **Deferred (owner, 25 September 2026):** creating the Sentry project and setting its values is a later to-do, tracked in F041 step 6 and `operations.md` → "Set up Sentry (once)". `APP_RELEASE` needs no action; CI builds it in.
-- **Next:** after F041 step 6 and staging exist, run the staging checks above and mark F038 Done. Meanwhile continue with F043.
+- **Next:** after F041 step 6 and staging exist, run the staging checks above and mark F038 Done. Meanwhile continue with F042 (F043 is Done).
 
 ## F039 - Privacy-friendly visitor and funnel analytics
 
@@ -1327,7 +1327,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 ## F043 - One secret guest URL for every wedding page
 
-**Status:** Ready
+**Status:** Done (25 September 2026)
 **Priority / lead:** P1, paid-launch gate / Software Engineer; independent security and database review required.
 **Purpose:** Each wedding has one link that opens all three pages and accepts replies. Couples choose its readable names part freely, before or after paying, with no uniqueness check or reservation.
 **Depends on:** F026, F031 (Done). Owner decision of 24 September; this replaces the earlier reservation design.
@@ -1364,6 +1364,34 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Replacing the link invalidates the old URL for every page and the photo, and the warning says so.
 - RSVP submission, capacity limits, closing dates, entitlement checks and owner isolation are unchanged. Existing publication, RSVP, isolation and payment tests are updated and pass. The migration applies cleanly to existing local data.
 - `architecture.md`, the `run-app-instructions.md` route table and the marketing copy are updated. Browser checks run at mobile and desktop widths. `npm.cmd run check`, `npm.cmd run test:integration` and the affected Playwright suites pass, and independent security and database review closes.
+
+**Handoff (25 September 2026):**
+
+- **Built.** Guest routes `src/app/[names]/[secret]/` (page, `details`, `rsvp`, `photo`). `/[weddingSlug]`, `/s/…`, `?share=`, the public RSVP entry page and its owner redirect are removed. `src/features/weddings/guest-link.ts` holds the secret pattern, `reservedNames`, `guestHrefs` and `suggestedNames`, replacing `invitation-context.ts`. `published.ts` looks weddings up by secret only and redirects an outdated names part (307). Migration `20260925000100_secret_guest_urls.sql`:
+  - drops `weddings_slug_key` and the first-publication lock;
+  - reserves `s`, `contact`, `refunds`, `assets` and `fonts`, renaming any existing row;
+  - drops `published_wedding(text)`, `published_wedding_details(text)`, `shared_guest_rsvp(text,text)` and `submit_shared_rsvp(text,text,text,boolean)`;
+  - adds `guest_wedding(secret)`, `guest_wedding_details(secret)` and `submit_shared_rsvp(secret,name,attending)` with unchanged capacity, rate limits, close date and entitlement checks;
+  - revokes `rotate_shared_rsvp_secret` from `anon`. The same statement was applied to the local database.
+- **Publish and RSVP.** Publish shows the future guest link ("Works once published"). The names field can be edited before payment and after publishing, and names and consent errors appear together next to their fields. The replace-link warning says every earlier link, including the Save the Date, stops working. `/demo` and its variants have their own development-only routes. `src/proxy.ts` gives non-reserved two-segment paths private/no-store, no-referrer and noindex headers. `scrub.ts` hides the second segment of guest paths, after resolving repeated slashes and dot segments. The RSVP page passes its client component only the fields it renders. The homepage, product overview, site UI, tech stack, architecture, operations and `run-app-instructions.md` are updated.
+- **Deviations.** `assets` and `fonts` are also reserved because they are top-level `public/` folders; the route test covers `public/`. The photo route serves by secret without redirecting an outdated names part, because pages always link the current one. The RSVP page stays reachable in its closed state when RSVP is off.
+- **Independent review: approve with fixes, with no Blocking or Important findings.** Fixed:
+  - (1) The RSVP page RSC payload carried `photo_path`. Now only rendered fields are passed; `publication.spec.ts` asserts that no guest page's HTML contains the wedding ID.
+  - (2) Scrubber bypasses through `//` and `/./`. Now resolved before matching, and tested.
+  - (5) Stale `[weddingSlug]` in `architecture.md` and `tech-stack.md`. Updated.
+  - The `anon` execute grant on `rotate_shared_rsvp_secret` is also revoked.
+- **Deferred to F054, with reasons recorded there.** Direct owner writes to `rsvp_share_secret` (pre-existing table-wide grant). Path-only access to published photos through `is_published_photo` (pre-existing). A 308 without private headers for `//` and trailing-slash variants (negligible: the requester already holds the secret). Local drift of `rotate_shared_rsvp_secret` (pre-existing; the owner decides on a reset).
+- **Checks after the last change (25 September).**
+  - `npm.cmd run check` passed: lint, typecheck, Vitest 15 files/67 tests, production build.
+  - `npm.cmd run test:integration` passed: 6 files/21 tests.
+  - `npm.cmd run test:e2e` passed: 84 tests at desktop and mobile widths.
+  - `npm.cmd run test:monitoring` passed: 2 tests. Sentry payloads contain no secret, 20-character secret prefix or `?share=`.
+  - A test-only change then added a 390px screenshot to `tests/rsvp.spec.ts`. Its re-run passed (4 tests), as did `npm.cmd run lint`.
+  - The RSVP guest page was inspected at 390px and 1440px, and the Publish panel and guest pages at mobile and desktop widths.
+- **Earlier checks.** `npx.cmd supabase migration up --local` applied cleanly to existing local data. `npm.cmd run smoke` passed against a local production build on port 3001, and an unknown guest link there returned 404 with private headers.
+- **Not run.** The production-container `test:release` journey. A fresh `supabase db reset`, to preserve local data; the reviewer applied the migration from scratch to a throwaway Postgres 17 database with seeded clashing names, and it applied cleanly.
+- **Environment note.** The Docker development container on port 3000 is stale (missing `@sentry/nextjs`, returns 500) and needs `docker compose up --build -d`. F043 did not cause this.
+- **Next step.** F042.
 
 ## F044 - Make RSVP readiness and completion clear
 
@@ -1610,6 +1638,11 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
   - No leakage through Referer headers, logs, analytics, error pages, redirects, preview metadata or cached responses.
   - Replacing the link really invalidates every page and the photo.
   - Rate limits make guessing links, spamming RSVPs and repeated form submissions impractical.
+  - Deferred from the F043 review (25 September), check each specifically:
+    - Owners can write `rsvp_share_secret` directly through the table-wide `grant update` (`20260918000100_private_weddings.sql:14`). Replace it with per-column insert/update grants that exclude the secret.
+    - The `is_published_photo` storage policy lets anyone holding a published photo's storage path download it without the secret or an active payment. Consider requiring active entitlement or secret-scoped access.
+    - `//<names>/<secret>` and trailing-slash variants get a Next.js 308 without private/no-store/noindex headers. Negligible, because the requester already holds the secret.
+    - The local database has drifted from the migration files for `rotate_shared_rsvp_secret` (`search_path = extensions` locally, `''` in the file); this predates F043. `supabase db reset` would fix it but wipes local data, so the owner decides.
 - **Accounts.**
   - Supabase Auth settings: email confirmation, password rules, leaked-password protection if the plan offers it, rate limits and link expiry.
   - Session cookie flags, and sign-out.

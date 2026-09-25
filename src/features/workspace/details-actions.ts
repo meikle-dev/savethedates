@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { guestPagesRoute } from "@/features/weddings/guest-link";
 import { errorReason, identify, log, withLogging } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 import { detailsFormValues, parseDetailsForm, type DetailsFormState } from "@/features/weddings/details";
@@ -24,7 +25,7 @@ export async function saveDetails(_: DetailsFormState, form: FormData): Promise<
         return { message: "Your session has ended. Sign in again in another tab, then retry. Your changes are still here.", values: parsed.data };
       }
       identify({ ownerId: user.id });
-      const { data, error } = await client.from("weddings").update(parsed.data).eq("owner_id", user.id).select("id, slug, published").single();
+      const { data, error } = await client.from("weddings").update(parsed.data).eq("owner_id", user.id).select("id, published").single();
       const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
       const isLive = !!data?.published && !!entitlement?.active;
       if (error || !data) {
@@ -33,10 +34,7 @@ export async function saveDetails(_: DetailsFormState, form: FormData): Promise<
       }
       identify({ weddingId: data.id });
       revalidatePath("/dashboard", "layout");
-      if (data.slug) {
-        revalidatePath(`/${data.slug}`);
-        revalidatePath(`/${data.slug}/details`);
-      }
+      revalidatePath(guestPagesRoute, "layout");
       log.info("workspace.save.succeeded", { section: "details" });
       const message = parsed.data.details_enabled
         ? isLive ? "Your Details page is saved and shown on your live site." : "Your Details page is saved and ready for guests when you publish."

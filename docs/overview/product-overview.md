@@ -83,7 +83,7 @@ savethedates.co.uk/chloeandross/<guest-secret>/rsvp
 
 The RSVP feature allows guests to respond to their invitation online.
 
-The couple shares one private RSVP link with everyone. Guests enter their own name and answer; only the couple can see saved responses. Guests contact the couple to correct an answer.
+The couple shares one private guest link with everyone, and guests reply on its RSVP page. Guests enter their own name and answer; only the couple can see saved responses. Guests contact the couple to correct an answer.
 
 Its main purpose is to make RSVP collection easier for both the couple and their guests.
 
@@ -130,7 +130,7 @@ Behind the guest-facing website, couples need a simple way to configure and mana
 At a high level they will need to be able to:
 
 * create their wedding
-* choose their wedding URL
+* choose the readable names part of their guest link
 * provide landing-page content
 * add wedding details
 * configure RSVP

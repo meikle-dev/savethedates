@@ -172,7 +172,7 @@ test("overview summarises the owner's own wedding and every section is reachable
   const ownerId = created.data.user!.id;
   const slug = `dashboard-${crypto.randomUUID()}`;
   try {
-    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: daysFromToday(120), location: "Bath", slug, rsvp_enabled: true }).select("id").single();
+    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: daysFromToday(120), location: "Bath", slug, rsvp_enabled: true }).select("id, rsvp_share_secret").single();
     expect(wedding.error).toBeNull();
     const otherWedding = await local.admin.from("weddings").insert({ owner_id: other.data.user!.id, first_name: "Other", second_name: "Couple", wedding_date: "2027-09-18", location: "York" }).select("id").single();
     expect(otherWedding.error).toBeNull();
@@ -223,7 +223,7 @@ test("overview summarises the owner's own wedding and every section is reachable
     await expect(page).toHaveURL(/\/dashboard$/);
     await page.reload();
     await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Published");
-    await expect(overview.getByRole("article", { name: "Site status" }).getByRole("link", { name: `/${slug}` })).toHaveAttribute("href", `/${slug}`);
+    await expect(overview.getByRole("article", { name: "Site status" }).getByRole("link", { name: "Your guest link" })).toHaveAttribute("href", `/${slug}/${wedding.data!.rsvp_share_secret}`);
     await expect(overview.getByRole("button", { name: "Copy RSVP link" })).toBeVisible();
     await expect(overview.getByRole("article", { name: /RSVPs · open/ })).toContainText("3 responses");
     await expect(overview.getByRole("region", { name: "Setup checklist" })).toHaveCount(0);

@@ -43,7 +43,8 @@ test("one shared link collects separate named responses and can be replaced", as
     const section = page.getByRole("region", { name: "RSVP", exact: true });
     await expect(section.getByRole("heading", { name: "One link for all guests" })).toBeVisible();
     const shareUrl = await section.getByLabel("Your shared RSVP link").inputValue();
-    expect(shareUrl).toMatch(new RegExp(`^/s/[A-Za-z0-9_-]{43}/${slug}/rsvp$`));
+    expect(shareUrl).toMatch(new RegExp(`^/${slug}/[A-Za-z0-9_-]{43}/rsvp$`));
+    const oldHome = shareUrl.replace(/\/rsvp$/, "");
     await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseURL!).origin });
     await section.getByRole("button", { name: "Copy full link" }).click();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(new URL(shareUrl, baseURL).href);
@@ -103,6 +104,7 @@ test("one shared link collects separate named responses and can be replaced", as
       for (const width of [320, 390, 1440]) {
         await guestPage.setViewportSize({ width, height: 900 });
         expect(await guestPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        if (width === 390) await guestPage.screenshot({ path: test.info().outputPath(`shared-rsvp-${theme}-390.png`), fullPage: true });
       }
       await guestPage.screenshot({ path: test.info().outputPath(`shared-rsvp-${theme}.png`), fullPage: true });
     }
@@ -113,13 +115,17 @@ test("one shared link collects separate named responses and can be replaced", as
     await expect(updated.getByRole("status").filter({ hasText: "RSVP is closed" })).toBeVisible();
     await guestPage.reload();
     await expect(guestPage.getByRole("heading", { name: "RSVP is closed" })).toBeVisible();
-    await updated.getByLabel("Replace this link and stop previously shared copies from working").check();
+    await expect(updated.getByText("Every link you shared before stops working, including your Save the Date.")).toBeVisible();
+    await updated.getByLabel("Replace my guest link and stop every previously shared link from working").check();
     await updated.getByRole("button", { name: "Replace shared link" }).click();
-    await expect(updated.getByRole("status").filter({ hasText: "replaced" })).toBeVisible();
+    await expect(updated.getByRole("status").filter({ hasText: "including your Save the Date, no longer works" })).toBeVisible();
     const replacement = await updated.getByLabel("Your shared RSVP link").inputValue();
     expect(replacement).not.toBe(shareUrl);
+    expect(replacement).toMatch(new RegExp(`^/${slug}/[A-Za-z0-9_-]{43}/rsvp$`));
+    // Every page under the old link now gives the same 404 as an unknown link.
     await guestPage.reload();
-    await expect(guestPage.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
+    await expect(guestPage.getByRole("heading", { name: "Page not found" })).toBeVisible();
+    for (const path of [oldHome, `${oldHome}/details`, shareUrl, `${oldHome}/photo`]) expect((await guest.request.get(path)).status()).toBe(404);
     await guestPage.goto(replacement);
     await expect(guestPage.getByRole("heading", { name: "RSVP is closed" })).toBeVisible();
     expect((await local.admin.from("shared_rsvp_responses").select("id").eq("wedding_id", wedding.data!.id)).data).toHaveLength(1);
@@ -129,7 +135,7 @@ test("one shared link collects separate named responses and can be replaced", as
   }
 });
 
-test("retired invitation parameters behave like public links on every wedding page", async ({ page, browser, baseURL }) => {
+test("names alone, retired links and unknown secrets give the same private 404", async ({ page, browser, baseURL }) => {
   const email = `retired-e2e-${crypto.randomUUID()}@example.test`;
   const password = crypto.randomUUID();
   const slug = `retired-e2e-${crypto.randomUUID()}`;
@@ -139,36 +145,33 @@ test("retired invitation parameters behave like public links on every wedding pa
   const guest = await browser.newContext({ baseURL });
   const guestPage = await guest.newPage();
   try {
-    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug, details_enabled: true, ceremony_venue: "Bath Abbey", rsvp_enabled: true }).select("id").single();
+    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug, details_enabled: true, ceremony_venue: "Bath Abbey", rsvp_enabled: true }).select("id, rsvp_share_secret").single();
     expect(wedding.error).toBeNull();
     expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
-    const oldTokens = ["A".repeat(43), "malformed", "B".repeat(43)];
-    for (const token of oldTokens) {
-      await guestPage.goto(`/${slug}?invite=${token}`);
-      await expect(guestPage.getByRole("link", { name: "Details" })).toHaveAttribute("href", `/${slug}/details`);
-      await guestPage.getByRole("link", { name: "Details" }).click();
-      await expect(guestPage.getByRole("link", { name: "RSVP" })).toHaveAttribute("href", `/${slug}/rsvp`);
-      await guestPage.goto(`/${slug}/details?invite=${token}`);
-      await expect(guestPage.getByRole("link", { name: "RSVP" })).toHaveAttribute("href", `/${slug}/rsvp`);
-      await guestPage.goto(`/${slug}/rsvp?invite=${token}`);
-      await expect(guestPage.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
-      await expect(guestPage.getByLabel("Your name")).toHaveCount(0);
+    const secret = wedding.data!.rsvp_share_secret as string;
+    const home = `/${slug}/${secret}`;
+    // Retired query parameters are ignored on the guest link, whose pages link each other under the secret.
+    await guestPage.goto(`${home}?invite=${"A".repeat(43)}&share=${"B".repeat(43)}`);
+    await expect(guestPage.getByRole("link", { name: "Details" })).toHaveAttribute("href", `${home}/details`);
+    await expect(guestPage.getByRole("link", { name: "RSVP" })).toHaveAttribute("href", `${home}/rsvp`);
+    const unknown = [`/${slug}`, `/${slug}/details`, `/${slug}/rsvp`, `/${slug}/photo`, `/${slug}?share=${secret}`, `/s/${secret}/${slug}/rsvp`,
+      `/${slug}/${"x".repeat(43)}`, `/${slug}/${"x".repeat(43)}/rsvp`, `/${slug}/${secret.slice(0, 42)}/rsvp`, `/${slug}/${secret}x`];
+    for (const path of unknown) {
+      const response = await guestPage.goto(path);
+      expect(response?.status(), path).toBe(404);
+      await expect(guestPage.getByRole("heading", { name: "Page not found" })).toBeVisible();
     }
-    await guestPage.goto(`/${slug}/rsvp`);
-    await expect(guestPage.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
+    for (const path of [`/${slug}/${"x".repeat(43)}`, `/${slug}/${"x".repeat(43)}/rsvp`]) expectPrivate(await guestPage.goto(path));
     expect((await local.admin.from("shared_rsvp_responses").select("id").eq("wedding_id", wedding.data!.id)).data).toEqual([]);
 
+    // The owner is no longer redirected from the names part to the RSVP page.
     await page.goto("/account/sign-in");
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard(?:\/|$)/);
-    const liveRsvp = new RegExp(`/s/[A-Za-z0-9_-]{43}/${slug}/rsvp$`);
-    await page.goto(`/${slug}/rsvp`);
-    await expect(page).toHaveURL(liveRsvp);
-    await page.goto(`/${slug}/rsvp?invite=${oldTokens[0]}`);
-    await expect(page).toHaveURL(liveRsvp);
+    expect((await page.goto(`/${slug}/rsvp`))?.status()).toBe(404);
   } finally {
     await guest.close();
     await local.admin.auth.admin.deleteUser(ownerId);

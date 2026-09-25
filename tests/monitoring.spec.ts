@@ -95,15 +95,15 @@ test("shared-link RSVP, auth confirmation and checkout return send no secrets or
     await expect(page).toHaveURL(/\/dashboard/);
     await waitForServerLog("account.confirm.succeeded", confirmRequestId);
 
-    // Guest journey through the shared link: ?share= on the landing page, then the /s/<secret>/ RSVP page.
+    // Guest journey through the guest link: the landing page, then its RSVP page, both under /<names>/<secret>/.
     await page.context().clearCookies();
-    await page.goto(`/${slug}?share=${secret}`);
+    await page.goto(`/${slug}/${secret}`);
     await throwInBrowser(page, "e2e-share-landing-error");
     await page.getByRole("link", { name: "RSVP" }).first().click();
-    await expect(page).toHaveURL(new RegExp(`/s/${secret}/${slug}/rsvp$`));
+    await expect(page).toHaveURL(new RegExp(`/${slug}/${secret}/rsvp$`));
     await page.getByLabel("Your name").fill(guestName);
     await page.getByLabel("Joyfully accepts").check();
-    const submitted = page.waitForResponse((response) => response.request().method() === "POST" && response.url().includes(`/s/${secret}/`));
+    const submitted = page.waitForResponse((response) => response.request().method() === "POST" && response.url().includes(`/${secret}/`));
     await page.getByRole("button", { name: "Send RSVP" }).click();
     const rsvpRequestId = (await submitted).headers()["x-request-id"];
     await expect(page.getByRole("status")).toContainText(guestName);
@@ -132,10 +132,10 @@ test("shared-link RSVP, auth confirmation and checkout return send no secrets or
 
     const everything = received.map(({ body }) => body).join("\n");
     await writeFile(test.info().outputPath("sentry-payloads.txt"), everything);
-    for (const value of [secret, encodeURIComponent(secret), tokenHash, guestName, encodeURIComponent(guestName), email, password, "wedding-auth", "?share=", "token_hash=", "checkout=success"]) {
+    for (const value of [secret, encodeURIComponent(secret), secret.slice(0, 20), tokenHash, guestName, encodeURIComponent(guestName), email, password, "wedding-auth", "?share=", "token_hash=", "checkout=success"]) {
       expect(everything, `Sentry payloads must not contain ${value}`).not.toContain(value);
     }
-    expect(everything).toContain("/s/[secret]/");
+    expect(everything).toContain(`/${slug}/[secret]`);
   } finally {
     await local.admin.auth.admin.deleteUser(ownerId);
   }

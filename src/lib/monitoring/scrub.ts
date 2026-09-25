@@ -1,5 +1,6 @@
 // One scrubber for everything that leaves the application: Sentry events, breadcrumbs, logs and the JSON logger.
-// It runs in the browser and on the server, so it has no dependencies. See docs/operations.md (Monitoring).
+// It runs in the browser and on the server, so it depends only on the plain guest-link rules. See docs/operations.md (Monitoring).
+import { reservedNames } from "../../features/weddings/guest-link";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const sensitiveKey = /^(authorization|proxy-authorization|cookies?|set-cookie|password|email|ip_address|x-forwarded-for|x-real-ip|stripe-signature|body|form|formdata|query_string|.*secret.*|.*token.*)$/i;
@@ -9,12 +10,40 @@ export function isUuid(value: unknown): value is string {
   return typeof value === "string" && uuidPattern.test(value);
 }
 
-/** Drops query string, fragment and credentials, and hides the shared RSVP secret in `/s/<secret>/…`. */
+// Guest links are /<names>/<secret>/…: the second segment after any first segment that is not an application
+// route is hidden when it holds a long base64url run, including altered or truncated secrets. Route templates
+// such as /[names]/[secret] and application paths are kept. Retired /s/<secret>/… links are still hidden.
+// Repeated slashes and dot segments (//names/…, /names/./…) are resolved before matching.
+const guestUrl = /^((?:[a-z][a-z0-9+.-]*:\/\/[^/]*)?\/)([^/]+)\/([^/]*[\w-]{20,}[^/]*)/i;
+const guestPathInText = /(^|[\s"'(=,])\/+(?:\.\/+)*([^/\s?#"'<>]+)\/+(?:\.\/+)*([^/\s?#"'<>]*[\w-]{20,}[^/\s?#"'<>]*)/g;
+const hideGuestSecret = (whole: string, prefix: string, first: string) =>
+  reservedNames.has(first) || /^[._[]/.test(first) ? whole : `${prefix}${prefix.endsWith("/") ? "" : "/"}${first}/[secret]`;
+
+function resolvePath(path: string) {
+  if (!path.startsWith("/")) return path;
+  const segments: string[] = [];
+  for (const segment of path.split("/").slice(1)) {
+    if (segment === "" || segment === ".") continue;
+    if (segment === "..") segments.pop();
+    else segments.push(segment);
+  }
+  return `/${segments.join("/")}${/\/\.{0,2}$/.test(path) && segments.length ? "/" : ""}`;
+}
+
+// Matching uses the resolved path; a URL that is not a guest path is returned unchanged, so stack-frame
+// paths such as webpack-internal:///(ssr)/./src/… keep their exact form.
+function hideGuestUrl(url: string) {
+  const resolved = url.replace(/^((?:[a-z][a-z0-9+.-]*:\/\/[^/]*)?)(\/[\s\S]*)$/i, (_, origin: string, path: string) => origin + resolvePath(path));
+  const scrubbed = resolved.replace(guestUrl, hideGuestSecret);
+  return scrubbed === resolved ? url : scrubbed;
+}
+
+/** Drops query string, fragment and credentials, and hides the guest link secret in `/<names>/<secret>/…`. */
 export function scrubUrl(url: string): string {
-  return url
+  return hideGuestUrl(url
     .replace(/[?#][\s\S]*$/, "")
-    .replace(/^([a-z][a-z0-9+.-]*:\/\/)[^/@]*@/i, "$1")
-    // Route templates such as /s/[shareSecret]/… are kept; real secrets never start with "[".
+    .replace(/^([a-z][a-z0-9+.-]*:\/\/)[^/@]*@/i, "$1"))
+    // Retired /s/<secret>/… links; route templates are kept because real secrets never start with "[".
     .replace(/(^|[^/:])\/s\/(?!\[)[^/?#\s]+/g, "$1/s/[secret]");
 }
 
@@ -25,6 +54,7 @@ export function scrubText(text: string): string {
     .replace(/\b[a-z][a-z0-9+.-]*:\/\/[^\s"'<>]+/gi, (url) => scrubUrl(url))
     .replace(/(\/[^\s?#"'<>]*)\?[^\s"'<>]*/g, "$1")
     .replace(/(^|[\s"'(=,])\/s\/(?!\[)[^/?#\s"'<>]+/g, "$1/s/[secret]")
+    .replace(guestPathInText, hideGuestSecret)
     .replace(/\b(token_hash|token|access_token|refresh_token|code|share|secret|password|q|type)=[^&\s"']+/gi, "$1=[redacted]")
     .replace(/\bBearer\s+[\w.~+/-]+=*/gi, "Bearer [redacted]")
     .replace(/\b(?:sk|rk|pk)_(?:test|live)_[0-9A-Za-z]+|\bwhsec_[0-9A-Za-z]+|\bsb_(?:secret|publishable)_[\w-]+/g, "[redacted]")

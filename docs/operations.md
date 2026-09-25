@@ -74,7 +74,7 @@ Before promotion, obtain independent release review. Check HTTPS, intended canon
 Reading one request ID should tell the story of that request (F038).
 
 - **One logger.** Server code logs only through `src/lib/logger.ts`. ESLint `no-console` enforces this in `src/`.
-- **Output.** Production writes one JSON line per event to stdout, which the host keeps. Local development prints one readable line, for example `21:44:51.406 INFO  rsvp.submit.accepted req=e2633aa2 route=/s/[shareSecret]/[weddingSlug]/rsvp durationMs=23`.
+- **Output.** Production writes one JSON line per event to stdout, which the host keeps. Local development prints one readable line, for example `21:44:51.406 INFO  rsvp.submit.accepted req=e2633aa2 route=/[names]/[secret]/rsvp durationMs=23`.
 - **Fields on every line:** `timestamp`, `level`, `event`, `requestId`, `environment`, `release` and `route` (a route template, never a real path).
 - **Optional fields** come from a typed allow-list: `ownerId`, `weddingId` (UUIDs), `stripeEventId`, `eventType`, `reason` (a short code, never free text), `durationMs`, `count`, `section` and `errorReference`. Anything else is dropped, and every value goes through the shared scrubber (`src/lib/monitoring/scrub.ts`). Names, emails, form values and URLs with query strings cannot be logged.
 - **Levels.** `error` needs attention and raises a Sentry alert. `warn` is an expected but notable refusal. `info` is a key business event. `debug` is local only.
@@ -95,7 +95,7 @@ Reading one request ID should tell the story of that request (F038).
 | `account.recovery.requested` / `.failed` | info / error | Recovery email requested / fault |
 | `account.password.updated` / `.rejected` / `.failed` | info / warn / error | Password changed / expired link or refused password / fault |
 | `account.signout.failed` | error | Sign-out failed |
-| `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, theme, photo_framing, rsvp_settings) / concurrent change / fault |
+| `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, theme, photo_framing, rsvp_settings, guest_link) / concurrent change / fault |
 | `workspace.ownership.denied` | warn | No session or no saved wedding for this owner |
 | `photo.upload.accepted` | info | Photo processed and stored; `durationMs` is processing time, including any wait for the processing slot |
 | `photo.upload.rejected` / `.failed` | warn / error | `reason` size, type, pixels, unreadable, busy (F040) or concurrent_change / Storage or database fault |
@@ -118,11 +118,11 @@ Reading one request ID should tell the story of that request (F038).
 | Area | Where | Events |
 | --- | --- | --- |
 | Account | `src/features/account/actions.ts`, `src/app/auth/confirm/route.ts` | `account.*` |
-| Workspace | `src/features/workspace/actions.ts`, `details-actions.ts`, `theme-action.ts`, `photo-framing-action.ts`, `rsvp-actions.ts` (RSVP settings), `workspace-access.ts` | `workspace.save.*`, `workspace.ownership.denied` |
-| Photos | `src/features/workspace/publication-actions.ts` (`changePhoto`); `src/app/[weddingSlug]/photo` and `src/app/dashboard/photo` route handlers through `src/features/weddings/photo-response.ts` | `photo.*`. The development-only `/preview-photo` fixture route is not logged |
+| Workspace | `src/features/workspace/actions.ts`, `details-actions.ts`, `theme-action.ts`, `photo-framing-action.ts`, `rsvp-actions.ts` (RSVP settings), `publication-actions.ts` (guest link names), `workspace-access.ts` | `workspace.save.*`, `workspace.ownership.denied` |
+| Photos | `src/features/workspace/publication-actions.ts` (`changePhoto`); `src/app/[names]/[secret]/photo` and `src/app/dashboard/photo` route handlers through `src/features/weddings/photo-response.ts` | `photo.*`. The development-only `/preview-photo` fixture route is not logged |
 | Publication | `src/features/workspace/publication-actions.ts` | `publication.*` |
 | Payments | `src/features/payments/payment-actions.ts`, `src/app/api/stripe/webhook/route.ts` | `payment.*` |
-| RSVP | `src/features/workspace/rsvp-actions.ts`, `src/app/s/[shareSecret]/[weddingSlug]/rsvp/page.tsx` | `rsvp.*` |
+| RSVP | `src/features/workspace/rsvp-actions.ts`, `src/app/[names]/[secret]/rsvp/page.tsx` | `rsvp.*` |
 | All | `src/instrumentation.ts` (`onRequestError`) | `app.request.failed` |
 
 New server features follow the same pattern: add the event names to `src/lib/logger.ts` and to the tables above.
@@ -135,7 +135,7 @@ New server features follow the same pattern: add the event names to `src/lib/log
 - **Host stdout** keeps every JSON log line. This is the fallback when Sentry is unavailable.
 - **Supabase** keeps its own Postgres, Auth, Storage and API logs.
 - Settings: `sendDefaultPii` off; the Sentry user is the owner UUID only; no console or DOM (click and input) breadcrumbs; `tracesSampleRate` 0 (no tracing) and no trace headers on outgoing requests; no Session Replay; no browser session tracking, so a normal page view sends nothing to Sentry. The browser contacts Sentry only to report an error.
-- **Scrubbing** happens before anything leaves the app. It removes all query strings (`?share=`, `?q=`, `/auth/confirm` `token_hash`/`type`, Supabase REST filters); rewrites `/s/<secret>/` to `/s/[secret]/`; drops Authorization/Cookie headers, JWTs, service keys, request and form bodies and Server Action payloads; and removes values from exception messages.
+- **Scrubbing** happens before anything leaves the app. It removes all query strings (`?share=`, `?q=`, `/auth/confirm` `token_hash`/`type`, Supabase REST filters); rewrites the guest link secret in `/<names>/<secret>/…` (including altered or truncated secrets) to `/<names>/[secret]/…`, and retired `/s/<secret>/` links to `/s/[secret]/`; drops Authorization/Cookie headers, JWTs, service keys, request and form bodies and Server Action payloads; and removes values from exception messages.
 - With `SENTRY_DSN` unset, nothing is sent and the browser never downloads the Sentry SDK.
 
 ### Set up Sentry (once)

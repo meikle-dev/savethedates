@@ -18,7 +18,6 @@ test("owners can preview saved RSVP content without granting guest access or sav
   expect(other.error).toBeNull();
   const otherId = other.data.user!.id;
   const slug = `preview-${crypto.randomUUID()}`;
-  const otherSlug = `other-${crypto.randomUUID()}`;
   const anonymous = await browser.newContext({ baseURL });
   const guest = await anonymous.newPage();
   try {
@@ -87,24 +86,31 @@ test("owners can preview saved RSVP content without granting guest access or sav
     await expect(guest.getByText("Jamie", { exact: false })).toHaveCount(0);
 
     expect((await local.grantEntitlement(weddingId, ownerId)).error).toBeNull();
-    expect((await local.admin.from("weddings").update({ slug, published: true, rsvp_enabled: true }).eq("id", weddingId)).error).toBeNull();
-    await page.goto(`/${slug}`);
+    const live = await local.admin.from("weddings").update({ slug, published: true, rsvp_enabled: true }).eq("id", weddingId).select("rsvp_share_secret").single();
+    expect(live.error).toBeNull();
+    const home = `/${slug}/${live.data!.rsvp_share_secret}`;
+    await page.goto(home);
     await page.getByRole("link", { name: "RSVP", exact: true }).click();
-    await expect(page).toHaveURL(new RegExp(`/s/[A-Za-z0-9_-]{43}/${slug}/rsvp$`));
+    await expect(page).toHaveURL(new RegExp(`${home}/rsvp$`));
     await expect(page.getByRole("button", { name: "Send RSVP" })).toBeEnabled();
-    await expect(page.getByRole("heading", { name: "Invitation unavailable" })).toHaveCount(0);
-    await guest.goto(`/${slug}/rsvp`);
-    await expect(guest.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
+    // The names part alone never opens the RSVP page, for guests or for the signed-in owner.
+    expect((await guest.goto(`/${slug}/rsvp`))?.status()).toBe(404);
+    expect((await page.goto(`/${slug}/rsvp`))?.status()).toBe(404);
 
-    const otherWedding = await local.admin.from("weddings").insert({ owner_id: otherId, first_name: "Other", second_name: "Couple", wedding_date: "2027-09-18", location: "York", slug: otherSlug, rsvp_enabled: true }).select("id").single();
+    // Another couple may use the same names part; each secret opens only its own wedding.
+    const otherWedding = await local.admin.from("weddings").insert({ owner_id: otherId, first_name: "Other", second_name: "Couple", wedding_date: "2027-09-18", location: "York", slug, rsvp_enabled: true }).select("id, rsvp_share_secret").single();
     expect(otherWedding.error).toBeNull();
     expect((await local.grantEntitlement(otherWedding.data!.id, otherId)).error).toBeNull();
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", otherWedding.data!.id)).error).toBeNull();
-    await page.goto(`/${otherSlug}/rsvp`);
-    await expect(page.getByRole("heading", { name: "Invitation unavailable" })).toBeVisible();
+    await guest.goto(`/${slug}/${otherWedding.data!.rsvp_share_secret}/rsvp`);
+    await expect(guest.getByText("Other", { exact: false }).first()).toBeVisible();
+    await expect(guest.getByText("Jamie", { exact: false })).toHaveCount(0);
+    await guest.goto(`${home}/rsvp`);
+    await expect(guest.getByText("Jamie", { exact: false }).first()).toBeVisible();
+    await expect(guest.getByText("Other", { exact: false })).toHaveCount(0);
 
     expect((await local.admin.from("weddings").update({ published: false }).eq("id", weddingId)).error).toBeNull();
-    const hidden = await guest.goto(`/${slug}/rsvp`);
+    const hidden = await guest.goto(`${home}/rsvp`);
     expect(hidden?.status()).toBe(404);
     await page.goto("/dashboard/preview/rsvp?theme=invalid");
     await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", "minimal");

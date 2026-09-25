@@ -1,6 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseConfig } from "@/lib/supabase/config";
+import { reservedNames } from "@/features/weddings/guest-link";
+
+// Guest pages live at /<names>/<secret>/…; any first segment that is not an application route is treated as one,
+// so unknown, malformed and valid guest links all get the same private, unindexed response headers.
+function isGuestPath(pathname: string) {
+  const [first, second] = pathname.split("/").slice(1);
+  return !!first && !!second && !reservedNames.has(first) && !/^[._]/.test(first);
+}
 
 export async function proxy(request: NextRequest) {
   // Always replaced, never trusted from the client: it links log lines, Sentry events and error references.
@@ -24,7 +32,7 @@ export async function proxy(request: NextRequest) {
     });
     await supabase.auth.getUser();
   }
-  const privateGuestLink = request.nextUrl.searchParams.has("share") || /^\/s\/[A-Za-z0-9_-]{43}\/[^/]+\/rsvp$/.test(request.nextUrl.pathname);
+  const privateGuestLink = isGuestPath(request.nextUrl.pathname);
   if (refreshAuth || privateGuestLink) {
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
     response.headers.set("Referrer-Policy", "no-referrer");

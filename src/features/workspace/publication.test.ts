@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
-import { slugSchema, reservedSlugs } from "./publication-validation";
+import { slugSchema, reservedNames } from "./publication-validation";
 import { PhotoRejectedError, preparePhoto } from "./photo";
 
 describe("publication input", () => {
   it("normalises URLs and rejects reserved or invalid paths", () => {
     expect(slugSchema.parse(" Alex-and-Morgan ")).toBe("alex-and-morgan");
-    for (const value of [...reservedSlugs, "ab", "a".repeat(64), "-alex", "alex-", "alex--morgan", "alex/morgan", "alex morgan", "áléx"]) expect(slugSchema.safeParse(value).success).toBe(false);
+    for (const value of [...reservedNames, "ab", "a".repeat(64), "-alex", "alex-", "alex--morgan", "alex/morgan", "alex morgan", "áléx"]) expect(slugSchema.safeParse(value).success).toBe(false);
   });
   it("decodes, resizes, and strips photo metadata", async () => {
     const source = await sharp({ create: { width: 2400, height: 1200, channels: 3, background: "#0f4c5c" } }).withMetadata().jpeg().toBuffer();

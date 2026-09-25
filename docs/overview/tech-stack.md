@@ -32,7 +32,7 @@ as highly optimised SEO pages, while also supporting:
 
 ```text
 /dashboard
-/[weddingSlug]
+/[names]/[secret]
 ```
 
 within the same application.
@@ -294,18 +294,22 @@ Examples:
 /guides/*
 ```
 
-Customer wedding sites will use dynamic routes:
+Customer wedding sites use one private guest link per wedding (F043): a readable names part followed by the wedding's long secret, with Details, RSVP and the photo beneath it:
 
 ```text
-/[weddingSlug]
+/[names]/[secret]
+/[names]/[secret]/details
+/[names]/[secret]/rsvp
 ```
 
 For example:
 
 ```text
-/chloeandross
-/sophieandjames
+/chloe-and-ross/<guest-secret>
+/sophie-and-james/<guest-secret>/rsvp
 ```
+
+The secret identifies the wedding; the names part is decorative and need not be unique.
 
 Wedding sites will be generated from database content rather than existing as separate applications or deployments.
 

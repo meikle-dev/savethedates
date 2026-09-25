@@ -18,11 +18,13 @@ test("demo shows the announcement without unavailable controls", async ({ page }
   await page.screenshot({ path: test.info().outputPath("demo.png"), fullPage: true });
 });
 
-test("unknown slugs return a non-revealing 404", async ({ page }) => {
-  const response = await page.goto("/not-a-wedding");
-  expect(response?.status()).toBe(404);
-  await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
-  await expect(page.locator("body")).not.toHaveText(/Chloe|Ross/);
+test("unknown names and guest links return a non-revealing 404", async ({ page }) => {
+  for (const path of ["/not-a-wedding", `/not-a-wedding/${"x".repeat(43)}`, `/demo/${"x".repeat(43)}`]) {
+    const response = await page.goto(path);
+    expect(response?.status(), path).toBe(404);
+    await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
+    await expect(page.locator("body")).not.toHaveText(/Chloe|Ross/);
+  }
 });
 
 for (const slug of ["demo-no-photo", "demo-long-names"]) {

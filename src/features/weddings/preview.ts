@@ -1,6 +1,8 @@
 import "server-only";
 import type { Wedding } from "./wedding";
 
+export type DevelopmentFixture = "demo" | "demo-no-photo" | "demo-long-names";
+
 // Explicit fictional development fixtures. Never a publication data source.
 export function getDevelopmentWedding(slug: string): Wedding | null {
   if (process.env.NODE_ENV !== "development") return null;

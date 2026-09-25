@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, expect, it } from "vitest";
 import sharp from "sharp";
 import { localSupabase } from "../helpers/local-supabase";
-import { reservedSlugs } from "../../src/features/workspace/publication-validation";
+import { reservedNames } from "../../src/features/weddings/guest-link";
 import { themes } from "../../src/features/weddings/themes";
 
 const local = localSupabase();
@@ -30,17 +30,34 @@ afterAll(async () => {
   for (const id of ids) await local.admin.auth.admin.deleteUser(id);
 });
 
-it("enforces reserved slugs, concurrent uniqueness and permanent URL locking", async () => {
-  for (const invalid of [...reservedSlugs, "a", "UPPER", "two--hyphens", "x/y", "a".repeat(64)]) {
-    expect((await owners[0].from("weddings").update({ slug: invalid }).eq("id", weddings[0])).error).not.toBeNull();
+it("enforces reserved names, allows shared and editable names parts, and never looks a wedding up by names", async () => {
+  for (const invalid of [...reservedNames, "a", "UPPER", "two--hyphens", "x/y", "a".repeat(64)]) {
+    const result = await owners[0].from("weddings").update({ slug: invalid }).eq("id", weddings[0]);
+    expect(result.error?.code, invalid).toBe("23514");
   }
-  const results = await Promise.all(owners.map((owner, i) => owner.from("weddings").update({ slug, published: true }).eq("id", weddings[i])));
-  expect(results.filter((r) => !r.error)).toHaveLength(1);
-  expect(results.find((r) => r.error)?.error?.code).toBe("23505");
-  const winner = results.findIndex((r) => !r.error);
-  expect((await owners[winner].from("weddings").update({ published: false, first_published_at: null }).eq("id", weddings[winner])).error).toBeNull();
-  expect((await owners[winner].from("weddings").update({ slug: `${slug}-new` }).eq("id", weddings[winner])).error?.code).toBe("23514");
-  expect((await local.anonymous().rpc("published_wedding", { requested_slug: slug })).data).toEqual([]);
+  // Names parts are not unique: two weddings publish with the same one, and each secret shows only its own wedding.
+  expect((await owners[1].from("weddings").update({ first_name: "Sam" }).eq("id", weddings[1])).error).toBeNull();
+  const results = await Promise.all(owners.map((owner, i) => owner.from("weddings").update({ slug, published: true }).eq("id", weddings[i]).select("rsvp_share_secret").single()));
+  expect(results.map((r) => r.error)).toEqual([null, null]);
+  const secrets = results.map((r) => r.data!.rsvp_share_secret as string);
+  expect(secrets[0]).not.toBe(secrets[1]);
+  const guest = local.anonymous();
+  expect((await guest.rpc("guest_wedding", { requested_secret: secrets[0] })).data).toEqual([expect.objectContaining({ slug, first_name: "Alex" })]);
+  expect((await guest.rpc("guest_wedding", { requested_secret: secrets[1] })).data).toEqual([expect.objectContaining({ slug, first_name: "Sam" })]);
+  // The names part can change after publication; the secret still opens the wedding with the new names part.
+  expect((await owners[0].from("weddings").update({ slug: `${slug}-new` }).eq("id", weddings[0])).error).toBeNull();
+  expect((await guest.rpc("guest_wedding", { requested_secret: secrets[0] })).data).toEqual([expect.objectContaining({ slug: `${slug}-new` })]);
+  // Unknown, unpublished and malformed secrets give nothing.
+  for (const unknown of ["x".repeat(43), "", slug]) expect((await guest.rpc("guest_wedding", { requested_secret: unknown })).data).toEqual([]);
+  expect((await owners[1].from("weddings").update({ published: false }).eq("id", weddings[1])).error).toBeNull();
+  expect((await guest.rpc("guest_wedding", { requested_secret: secrets[1] })).data).toEqual([]);
+  expect((await guest.rpc("guest_wedding_details", { requested_secret: secrets[1] })).data).toEqual([]);
+  // Lookup by names part alone no longer exists.
+  expect((await guest.rpc("published_wedding", { requested_slug: slug })).error?.code).toBe("PGRST202");
+  expect((await guest.rpc("published_wedding_details", { requested_slug: slug })).error?.code).toBe("PGRST202");
+  expect((await guest.rpc("shared_guest_rsvp", { requested_slug: slug, requested_secret: secrets[0] })).error?.code).toBe("PGRST202");
+  expect((await guest.rpc("submit_shared_rsvp", { requested_slug: slug, requested_secret: secrets[0], requested_name: "Sam", requested_attending: true })).error?.code).toBe("PGRST202");
+  expect((await owners[0].from("weddings").update({ published: false }).eq("id", weddings[0])).error).toBeNull();
 });
 
 it("isolates storage and exposes only the current published photo with no signed URLs", async () => {
@@ -57,11 +74,12 @@ it("isolates storage and exposes only the current published photo with no signed
   expect((await anon.download(path)).error).not.toBeNull();
   expect((await other.remove([path])).data).toEqual([]);
   expect((await owners[1].from("weddings").update({ photo_path: path }).eq("id", weddings[1])).error).not.toBeNull();
-  const ownRow = await owners[0].from("weddings").select("slug").eq("id", weddings[0]).single();
+  const ownRow = await owners[0].from("weddings").select("slug, rsvp_share_secret").eq("id", weddings[0]).single();
   const ownSlug = ownRow.data!.slug ?? `${slug}-other`;
   expect((await owners[0].from("weddings").update({ photo_path: path, slug: ownSlug, published: true }).eq("id", weddings[0])).error).toBeNull();
-  const published = await local.anonymous().rpc("published_wedding", { requested_slug: ownSlug });
-  expect(Object.keys(published.data![0]).sort()).toEqual(["first_name", "second_name", "wedding_date", "location", "message", "photo_path", "photo_framing", "theme", "details_enabled", "rsvp_enabled"].sort());
+  const published = await local.anonymous().rpc("guest_wedding", { requested_secret: ownRow.data!.rsvp_share_secret });
+  // Narrow projection: no owner, wedding ID, secret, RSVP responses or closing date.
+  expect(Object.keys(published.data![0]).sort()).toEqual(["slug", "first_name", "second_name", "wedding_date", "location", "message", "photo_path", "photo_framing", "theme", "details_enabled", "rsvp_enabled", "rsvp_open"].sort());
   expect((await anon.download(path)).error).toBeNull();
   expect((await anon.list(weddings[0])).data).toEqual([]);
   for (const reader of [anon, other, bucket]) expect((await reader.createSignedUrl(path, 3600)).error).not.toBeNull();
@@ -119,18 +137,19 @@ it("validates, isolates and narrowly publishes per-theme photo framing, then res
   const denied = await owners[1].from("weddings").update({ photo_framing: {} }).eq("id", id).select("id");
   expect(denied.data ?? []).toEqual([]);
 
-  const row = await owner.from("weddings").select("slug").eq("id", id).single();
+  const row = await owner.from("weddings").select("slug, rsvp_share_secret").eq("id", id).single();
   const publicSlug = row.data!.slug ?? `${slug}-framing`;
+  const secret = { requested_secret: row.data!.rsvp_share_secret };
   expect((await owner.from("weddings").update({ slug: publicSlug, published: true, theme: "minimal", details_enabled: true, ceremony_venue: "The Orangery" }).eq("id", id)).error).toBeNull();
-  const published = await local.anonymous().rpc("published_wedding", { requested_slug: publicSlug });
+  const published = await local.anonymous().rpc("guest_wedding", secret);
   expect(published.data![0].photo_framing).toEqual({ minimal: framing.minimal });
-  const publishedDetails = await local.anonymous().rpc("published_wedding_details", { requested_slug: publicSlug });
+  const publishedDetails = await local.anonymous().rpc("guest_wedding_details", secret);
   expect(publishedDetails.data![0].photo_framing).toEqual({ minimal: framing.minimal });
 
   expect((await owner.from("weddings").update({ theme: "romantic" }).eq("id", id)).error).toBeNull();
-  expect((await local.anonymous().rpc("published_wedding", { requested_slug: publicSlug })).data![0].photo_framing).toEqual({ romantic: framing.romantic });
+  expect((await local.anonymous().rpc("guest_wedding", secret)).data![0].photo_framing).toEqual({ romantic: framing.romantic });
   expect((await owner.from("weddings").update({ theme: "minimal" }).eq("id", id)).error).toBeNull();
-  expect((await local.anonymous().rpc("published_wedding", { requested_slug: publicSlug })).data![0].photo_framing).toEqual({ minimal: framing.minimal });
+  expect((await local.anonymous().rpc("guest_wedding", secret)).data![0].photo_framing).toEqual({ minimal: framing.minimal });
 
   const beforeSave = await owner.from("weddings").select("photo_path, photo_framing").eq("id", id).single();
   const changed = { ...framing, bold: { details: { x: 40, y: 45, zoom: 1.1 } } };

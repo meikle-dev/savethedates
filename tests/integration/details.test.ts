@@ -7,6 +7,7 @@ const other = local.anonymous();
 let ownerId = "";
 let otherId = "";
 let weddingId = "";
+let secret = "";
 const slug = `details-${crypto.randomUUID()}`;
 
 beforeAll(async () => {
@@ -18,9 +19,10 @@ beforeAll(async () => {
     assign(created.data.user.id);
     expect((await client.auth.signInWithPassword({ email, password })).error).toBeNull();
   }
-  const inserted = await owner.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id").single();
+  const inserted = await owner.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug }).select("id, rsvp_share_secret").single();
   expect(inserted.error).toBeNull();
   weddingId = inserted.data!.id;
+  secret = inserted.data!.rsvp_share_secret;
   expect((await local.grantEntitlement(weddingId, ownerId)).error).toBeNull();
 });
 
@@ -56,18 +58,18 @@ it("validates structured details and exposes only enabled details for published 
     const denied = await caller.from("weddings").update({ dress_code: "Changed" }).eq("id", weddingId).select("id");
     expect(denied.data ?? []).toEqual([]);
   }
-  const landing = await local.anonymous().rpc("published_wedding", { requested_slug: slug });
+  const landing = await local.anonymous().rpc("guest_wedding", { requested_secret: secret });
   expect(landing.data![0].details_enabled).toBe(true);
   expect(landing.data![0]).not.toHaveProperty("travel");
-  const published = await local.anonymous().rpc("published_wedding_details", { requested_slug: slug });
+  const published = await local.anonymous().rpc("guest_wedding_details", { requested_secret: secret });
   expect(published.error).toBeNull();
   expect(published.data![0]).toMatchObject({ first_name: "Alex", second_name: "Morgan", ceremony_venue: "The Old Hall", travel: details.travel, dress_code: details.dress_code, faqs: details.faqs });
   expect(published.data![0]).not.toHaveProperty("owner_id");
 
   expect((await owner.from("weddings").update({ details_enabled: false }).eq("id", weddingId)).error).toBeNull();
-  expect((await local.anonymous().rpc("published_wedding_details", { requested_slug: slug })).data).toEqual([]);
+  expect((await local.anonymous().rpc("guest_wedding_details", { requested_secret: secret })).data).toEqual([]);
   const saved = await owner.from("weddings").select("travel, faqs").eq("id", weddingId).single();
   expect(saved.data).toEqual({ travel: details.travel, faqs: details.faqs });
   expect((await owner.from("weddings").update({ details_enabled: true, published: false }).eq("id", weddingId)).error).toBeNull();
-  expect((await local.anonymous().rpc("published_wedding_details", { requested_slug: slug })).data).toEqual([]);
+  expect((await local.anonymous().rpc("guest_wedding_details", { requested_secret: secret })).data).toEqual([]);
 });

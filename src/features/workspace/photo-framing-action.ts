@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { guestPagesRoute } from "@/features/weddings/guest-link";
 import { z } from "zod";
 import { errorReason, identify, log, withLogging } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
@@ -38,7 +39,7 @@ export async function savePhotoFraming(_: PhotoFramingFormState, form: FormData)
       }
       identify({ ownerId: user.id });
       const { data: wedding, error } = await client.from("weddings")
-        .select("id, slug, published, photo_path, photo_framing, theme")
+        .select("id, published, photo_path, photo_framing, theme")
         .eq("owner_id", user.id)
         .single();
       if (error || !wedding) {
@@ -75,10 +76,7 @@ export async function savePhotoFraming(_: PhotoFramingFormState, form: FormData)
       }
 
       revalidatePath("/dashboard", "layout");
-      if (wedding.slug) {
-        revalidatePath(`/${wedding.slug}`);
-        revalidatePath(`/${wedding.slug}/details`);
-      }
+      revalidatePath(guestPagesRoute, "layout");
       log.info("workspace.save.succeeded", { section: "photo_framing" });
       return {
         success: true,

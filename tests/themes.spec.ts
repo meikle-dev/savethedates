@@ -20,8 +20,9 @@ test("theme preview is private and applying preserves the live wedding", async (
   const guestPage = await guest.newPage();
   const content = { owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath, England", message: "We would love you to be part of our special day.", slug };
   try {
-    const wedding = await local.admin.from("weddings").insert(content).select("id").single();
+    const wedding = await local.admin.from("weddings").insert(content).select("id, rsvp_share_secret").single();
     expect(wedding.error).toBeNull();
+    const home = `/${slug}/${wedding.data!.rsvp_share_secret}`;
     expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
     await page.goto("/account/sign-in");
@@ -42,7 +43,7 @@ test("theme preview is private and applying preserves the live wedding", async (
     await expect(page).toHaveURL(/\/dashboard\/preview\?theme=romantic$/);
     await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", "romantic");
     await page.screenshot({ path: test.info().outputPath("theme-picker.png"), fullPage: true });
-    await guestPage.goto(`/${slug}`);
+    await guestPage.goto(home);
     await expect(guestPage.locator(".wedding-shell")).toHaveAttribute("data-theme", "minimal");
     await page.getByRole("link", { name: "Back to workspace" }).click();
     await openWorkspaceSection(page, "Design");
@@ -71,15 +72,15 @@ test("theme preview is private and applying preserves the live wedding", async (
     const photo = await readFile("fixtures/lake-como.jpg");
     const row = await local.admin.from("weddings").select("id").eq("owner_id", ownerId).single();
     const path = `${row.data!.id}/${crypto.randomUUID()}.webp`;
-    await guestPage.route(`**/${slug}/photo`, (route) => route.fulfill({ contentType: "image/jpeg", body: photo }));
+    await guestPage.route(`**${home}/photo`, (route) => route.fulfill({ contentType: "image/jpeg", body: photo }));
     for (const id of themeIds) {
       expect((await local.admin.from("weddings").update({ theme: id, photo_path: path }).eq("owner_id", ownerId)).error).toBeNull();
       await guestPage.reload();
       await expect(guestPage.locator(".wedding-photo img")).toBeVisible();
       await guestPage.screenshot({ path: test.info().outputPath(`${id}-photo.png`), fullPage: true });
     }
-    await guestPage.unroute(`**/${slug}/photo`);
-    await guestPage.route(`**/${slug}/photo`, (route) => route.abort());
+    await guestPage.unroute(`**${home}/photo`);
+    await guestPage.route(`**${home}/photo`, (route) => route.abort());
     for (const id of themeIds) {
       expect((await local.admin.from("weddings").update({ theme: id, first_name: "Alexandria".repeat(8), second_name: "Montgomery".repeat(8), message: "A long personal message. ".repeat(20).trim() }).eq("owner_id", ownerId)).error).toBeNull();
       await guestPage.reload();
@@ -89,9 +90,9 @@ test("theme preview is private and applying preserves the live wedding", async (
       await guestPage.screenshot({ path: test.info().outputPath(`${id}-long-failed-photo.png`), fullPage: true });
     }
     // The overlay must protect the whole message even when valid newlines make it very tall.
-    await guestPage.unroute(`**/${slug}/photo`);
+    await guestPage.unroute(`**${home}/photo`);
     const darkPhoto = await sharp({ create: { width: 400, height: 400, channels: 3, background: "#000" } }).png().toBuffer();
-    await guestPage.route(`**/${slug}/photo`, route => route.fulfill({ contentType: "image/png", body: darkPhoto }));
+    await guestPage.route(`**${home}/photo`, route => route.fulfill({ contentType: "image/png", body: darkPhoto }));
     expect((await local.admin.from("weddings").update({ theme: "minimal", message: "With love\n".repeat(50).trim() }).eq("owner_id", ownerId)).error).toBeNull();
     await guestPage.reload();
     await expect(guestPage.locator(".wedding-photo img")).toHaveJSProperty("naturalWidth", 400);

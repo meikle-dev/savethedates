@@ -17,6 +17,6 @@ export default async function RsvpPreview({ searchParams }: { searchParams: Prom
   const query = `?theme=${theme}`;
   return <>
     <PreviewToolbar label="RSVP" note="no responses are saved" path="/dashboard/preview/rsvp" backHref="/dashboard/rsvp" theme={theme} savedTheme={data.theme} published={data.published && !!entitlement?.active} />
-    <RsvpPage key={theme} wedding={{ ...data, theme }} access={null} slug="" previewHrefs={{ home: `/dashboard/preview${query}`, details: `/dashboard/preview/details${query}`, rsvp: `/dashboard/preview/rsvp${query}` }} />
+    <RsvpPage key={theme} wedding={{ ...data, theme }} open secret={null} hrefs={{ home: `/dashboard/preview${query}`, details: `/dashboard/preview/details${query}`, rsvp: `/dashboard/preview/rsvp${query}` }} />
   </>;
 }

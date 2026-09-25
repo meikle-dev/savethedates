@@ -22,7 +22,7 @@ Open http://localhost:3000 for the marketing homepage and linked public theme ex
 
 If Docker Desktop continues serving an old page after a source change, run `docker compose restart app` to refresh the development compiler. This preserves database and uploaded data.
 
-With host Node installed, `node scripts/smoke-development.mjs` checks the demo, image response, and unknown-slug 404 in the running development container.
+With host Node installed, `node scripts/smoke-development.mjs` checks the demo, image response, and unknown-names 404 in the running development container.
 
 ```sh
 docker compose down
@@ -49,7 +49,7 @@ npm run db:start
 npx supabase migration up --local
 ```
 
-Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, and preview saved content. Preview theme does not save changes; Apply theme persists the previewed choice. **Preview RSVP page** opens the saved couple/theme presentation without saving a response, including before publication. A verified £29 test-mode purchase is required before choosing the permanent URL and publishing. Published edits take effect when saved. The RSVP section can enable or close responses, copy or rotate one shared private link, and show attendance totals. Guests can submit separate responses through that link; owners correct or remove them in Guests. The general wedding URL contains no guest secret; owners reaching RSVP through it are directed to their live shared RSVP page. Unpublishing hides the page, photo, and RSVP on new requests; copies already downloaded cannot be recalled.
+Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, and preview saved content. Preview theme does not save changes; Apply theme persists the previewed choice. **Preview RSVP page** opens the saved couple/theme presentation without saving a response, including before publication. Each wedding has one private guest link, `/<names>/<secret>`, shown in Publish. The names part is suggested from the couple's names and can be changed at any time; it is not unique. A verified £29 test-mode purchase is required before publishing. Published edits take effect when saved. The RSVP section can enable or close responses, copy the RSVP page of the guest link, replace the link (every earlier link, including the Save the Date, stops working) and show attendance totals. Guests can submit separate responses through that link; owners correct or remove them in Guests. Unpublishing hides the page, photo, and RSVP on new requests; copies already downloaded cannot be recalled.
 
 ## Stripe test-mode checkout
 
@@ -66,9 +66,9 @@ Restart the application after changing environment values. In the dashboard, use
 npm run db:stop
 ```
 
-`npm run test:integration` creates temporary users and checks owner access, cross-owner denial, anonymous denial, payment ordering/idempotency/revocation, publication gating, uniqueness, and database validation. `npm run test:persistence` creates a temporary draft, stops and starts Supabase, signs in again, and verifies the draft remains before removing the temporary user. To deliberately erase all local data, use `npx supabase db reset --local`; this is destructive and reapplies migrations. Never run it against a hosted project.
+`npm run test:integration` creates temporary users and checks owner access, cross-owner denial, anonymous denial, payment ordering/idempotency/revocation, publication gating, lookup by secret only, and database validation. `npm run test:persistence` creates a temporary draft, stops and starts Supabase, signs in again, and verifies the draft remains before removing the temporary user. To deliberately erase all local data, use `npx supabase db reset --local`; this is destructive and reapplies migrations. Never run it against a hosted project.
 
-Publication integration checks also cover reserved/concurrent URLs, immutable published URLs, private photos, replacement/unpublish revocation, and denied signed links. Browser checks cover photo validation, private preview, publication, live edits, removal and republishing at both viewport sizes. `npx playwright test tests/themes.spec.ts` checks private theme preview, cancellation, persistence, live application, preserved content/URL, keyboard selection, and photo/fallback/long-content layouts for all themes.
+Publication integration checks also cover reserved names, shared and editable names parts, removal of lookup by names, private photos, replacement/unpublish revocation, and denied signed links. Browser checks cover photo validation, private preview, publication, live edits, removal and republishing at both viewport sizes. `npx playwright test tests/themes.spec.ts` checks private theme preview, cancellation, persistence, live application, preserved content/URL, keyboard selection, and photo/fallback/long-content layouts for all themes.
 
 ## Direct Node.js development
 
@@ -90,12 +90,12 @@ Development routes:
 | `/demo-no-photo` | No photo or optional message |
 | `/demo-long-names` | Long names and no photo |
 | `/preview-photo` | Development-only photo response |
-| `/[weddingSlug]` | Published wedding landing page |
-| `/[weddingSlug]/details` | Enabled published Details page |
-| `/[weddingSlug]/rsvp` | Public RSVP entry showing how to obtain the private link; the verified owner goes to preview |
-| `/s/[shareSecret]/[weddingSlug]/rsvp` | Shared private link where guests submit separate responses |
+| `/[names]/[secret]` | Published Save the Date page: the guest link |
+| `/[names]/[secret]/details` | Enabled published Details page |
+| `/[names]/[secret]/rsvp` | RSVP page where guests submit separate responses |
+| `/[names]/[secret]/photo` | Published wedding photo |
 
-Unknown and unpublished slugs return 404. Only the marketing homepage permits indexing and appears in `/sitemap.xml`; wedding, account and example pages remain noindex. All fixtures are fictional. Production returns 404 for every demo slug and the fixture photo route. Accounts, private preview, publication, Details, and RSVP work with configured Supabase.
+The wedding is found by its secret only; an outdated names part redirects to the current one. `/[names]` alone, unknown or replaced secrets, and unpublished or expired weddings return the same 404. Only the marketing homepage permits indexing and appears in `/sitemap.xml`; wedding, account and example pages remain noindex. All fixtures are fictional. Production returns 404 for every demo route and the fixture photo route. Accounts, private preview, publication, Details, and RSVP work with configured Supabase.
 
 ## Checks
 
@@ -127,7 +127,7 @@ Sentry is off unless these runtime variables are set. Leave them unset locally; 
 | `SENTRY_ENVIRONMENT` | Label such as `staging` or `production`; defaults to `local` |
 | `APP_RELEASE` | Commit SHA; defaults to `unreleased`. `docker build --build-arg APP_RELEASE=<sha>` builds it into the image |
 
-`npm run test:monitoring` checks what Sentry would receive, without contacting Sentry. It starts the development server on port 3100 with a fake DSN that points at a local ingest on port 3199. It then runs a shared-link RSVP with `?share=`, an auth confirmation, a checkout return and a rejected webhook, and asserts the captured payloads contain no secrets or form values. It needs local Supabase. `npm run test:e2e` includes a check that, with the variables unset, pages load no SDK and contact no other origin.
+`npm run test:monitoring` checks what Sentry would receive, without contacting Sentry. It starts the development server on port 3100 with a fake DSN that points at a local ingest on port 3199. It then runs a guest-link RSVP under `/<names>/<secret>`, an auth confirmation, a checkout return and a rejected webhook, and asserts the captured payloads contain no secrets or form values. It needs local Supabase. `npm run test:e2e` includes a check that, with the variables unset, pages load no SDK and contact no other origin.
 
 To run the same check against a production container (PowerShell, local Supabase running, `.env.docker` generated):
 
@@ -187,7 +187,7 @@ docker stop save-the-dates-smoke
 docker rm save-the-dates-smoke
 ```
 
-Run the smoke command after the container reports ready (`docker logs save-the-dates-smoke`). It verifies the home page and 404 responses for the demo variants, photo, and an unknown wedding. This image uses Next.js standalone output and runs as the non-root `node` user. No production deployment or external services are configured yet.
+Run the smoke command after the container reports ready (`docker logs save-the-dates-smoke`). It verifies the home page and 404 responses for the demo variants, photo, an unknown names part and an unknown guest link. This image uses Next.js standalone output and runs as the non-root `node` user. No production deployment or external services are configured yet.
 
 To test publication in the production image against local Supabase, add `--add-host host.docker.internal:host-gateway --env-file .env.docker -e APP_ORIGIN=http://127.0.0.1:3001` to the `docker run` command. Then run `E2E_BASE_URL=http://127.0.0.1:3001 E2E_PRODUCTION=1 npx playwright test tests/publication.spec.ts`. In PowerShell set `$env:E2E_BASE_URL='http://127.0.0.1:3001'` and `$env:E2E_PRODUCTION='1'` before `npx.cmd playwright test tests/publication.spec.ts`; remove those environment variables afterwards. These checks use temporary fictional data and require local Supabase to be running.
 
