@@ -9,7 +9,7 @@ import type { Entitlement } from "@/features/payments/purchase-panel";
 import type { SharedResponse } from "@/features/weddings/rsvp";
 import { filteredCount, guestPagination, namePattern, type GuestQuery } from "./guest-list";
 import type { GuestLinkShare } from "./guest-link-panel";
-import { shareMessage } from "./share-message";
+import { rsvpShareStatus, shareMessage } from "./share-message";
 import { collectResponses, rsvpAvailability, todayUtc } from "./workspace-summary";
 
 const weddingColumns = "id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on, rsvp_share_secret";
@@ -23,11 +23,12 @@ export const loadWorkspace = cache(async () => {
   if (!user) redirect("/account/sign-in");
   const { data: wedding, error } = await client.from("weddings").select(weddingColumns).eq("owner_id", user.id).maybeSingle();
   if (error) throw new Error("Unable to load wedding workspace.");
-  if (!wedding) return { client, wedding: null, entitlement: noEntitlement, live: false };
+  if (!wedding) return { client, wedding: null, entitlement: noEntitlement, live: false, offline: false };
   const { data, error: entitlementError } = await client.rpc("owner_entitlement").maybeSingle<Entitlement>();
   if (entitlementError) throw new Error("Unable to load publication entitlement.");
   const entitlement = data ?? noEntitlement;
-  return { client, wedding, entitlement, live: wedding.published && entitlement.active };
+  // offline: still marked published, but the purchase has expired or ended, so guests get a 404.
+  return { client, wedding, entitlement, live: wedding.published && entitlement.active, offline: wedding.published && !entitlement.active };
 });
 
 // Sections other than Basics need a saved wedding; new accounts are sent to Basics to create one.
@@ -43,6 +44,14 @@ type ShareableWedding = { slug: string | null; first_name: string; second_name: 
 export function currentGuestUrl(wedding: ShareableWedding) {
   return guestUrl(appOrigin(), currentNames(wedding), wedding.rsvp_share_secret);
 }
+
+/** RSVP readiness in words, from saved data and the current UTC date, for every owner view that states it. */
+export function rsvpReadiness(wedding: { rsvp_enabled: boolean; rsvp_closes_on: string | null }, live: boolean, offline: boolean) {
+  const availability = rsvpAvailability(wedding.rsvp_enabled, wedding.rsvp_closes_on, todayUtc(), live, offline);
+  return { availability, ...rsvpShareStatus(availability, wedding.rsvp_closes_on, live) };
+}
+
+export type RsvpReadiness = ReturnType<typeof rsvpReadiness>;
 
 /** F042: the live guest link with its suggested (never stored) message. Null unless the site is live, so drafts,
  * unpublished and expired sites are never offered a link that looks shareable. */

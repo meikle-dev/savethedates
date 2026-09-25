@@ -26,6 +26,23 @@ describe("workspace summary", () => {
     expect(rsvpAvailability(true, "2026-09-22", "2026-09-23", true)).toBe("closed");
     expect(rsvpAvailability(true, null, "2026-09-23", false)).toBe("not-live");
     expect(rsvpAvailability(false, null, "2026-09-23", false)).toBe("off");
+    // A closing date that has passed is reported before publication too, and an offline site overrides everything.
+    expect(rsvpAvailability(true, "2026-09-22", "2026-09-23", false)).toBe("closed");
+    expect(rsvpAvailability(true, null, "2026-09-23", false, true)).toBe("offline");
+    expect(rsvpAvailability(false, null, "2026-09-23", false, true)).toBe("offline");
+  });
+
+  it("closes RSVPs at the same UTC boundary as the database (current_date <= closing date)", () => {
+    const at = (instant: string) => rsvpAvailability(true, "2027-05-01", todayUtc(new Date(instant)), true);
+    expect(at("2027-05-01T23:59:59.999Z")).toBe("open");
+    expect(at("2027-05-02T00:00:00.000Z")).toBe("closed");
+    // 00:30 on 2 May in UK summer time is still 1 May UTC, so replies are still accepted.
+    expect(at("2027-05-01T23:30:00Z")).toBe("open");
+    expect(at("2027-05-02T00:30:00+01:00")).toBe("open");
+    expect(at("2027-05-02T01:00:00+01:00")).toBe("closed");
+    const winter = (instant: string) => rsvpAvailability(true, "2026-12-01", todayUtc(new Date(instant)), true);
+    expect(winter("2026-12-01T23:59:59Z")).toBe("open");
+    expect(winter("2026-12-02T00:00:00Z")).toBe("closed");
   });
 
   it("derives setup progress from saved data only", () => {

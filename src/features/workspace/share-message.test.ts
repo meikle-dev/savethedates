@@ -42,9 +42,20 @@ describe("share message", () => {
   });
 
   it("states closed and off RSVPs explicitly", () => {
-    expect(rsvpShareStatus("open", null)).toEqual({ label: "RSVPs open", note: "Guests can reply." });
-    expect(rsvpShareStatus("open", "2027-05-01").note).toBe("Guests can reply until 1 May 2027.");
-    expect(rsvpShareStatus("closed", "2027-05-01")).toEqual({ label: "RSVPs closed", note: "RSVPs closed on 1 May 2027. Guests can still view your site but can’t reply." });
+    expect(rsvpShareStatus("open", null)).toEqual({ label: "RSVPs open", note: "Guests can reply. There is no closing date." });
+    expect(rsvpShareStatus("open", "2027-05-01").note).toBe("Guests can reply until 23:59 UTC on 1 May 2027 (00:59 on 2 May in the UK and Ireland).");
+    expect(rsvpShareStatus("closed", "2026-12-01")).toEqual({ label: "RSVPs closed", note: "RSVPs closed at 23:59 UTC on 1 December 2026 (23:59 in the UK and Ireland). Guests can still view your site but can’t reply." });
     expect(rsvpShareStatus("off", null).label).toBe("RSVPs off");
+  });
+
+  it("describes readiness accurately before publishing and once the site is offline", () => {
+    expect(rsvpShareStatus("not-live", null, false)).toEqual({ label: "RSVPs open when published", note: "RSVPs are on. Guests can reply once your site is published." });
+    expect(rsvpShareStatus("not-live", "2026-12-01", false).note).toBe("RSVPs are on. Guests can reply once your site is published, until 23:59 UTC on 1 December 2026 (23:59 in the UK and Ireland).");
+    expect(rsvpShareStatus("off", null, false).note).toBe("RSVPs are off. After you publish, guests can view your site but can’t reply until you open RSVPs.");
+    expect(rsvpShareStatus("off", null, true).note).toBe("Guests can view your site but can’t reply until you open RSVPs.");
+    expect(rsvpShareStatus("closed", "2027-05-01", false).note).toMatch(/^Your closing date has passed \(23:59 UTC on 1 May 2027/);
+    expect(rsvpShareStatus("offline", "2027-05-01", false)).toEqual({ label: "Site offline", note: "Your site is no longer online, so guests can’t view it or reply." });
+    // No closing date never produces a deadline.
+    for (const availability of ["open", "not-live", "off"] as const) expect(rsvpShareStatus(availability, null, availability === "open").note).not.toMatch(/UTC|until \d/);
   });
 });

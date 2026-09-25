@@ -6,6 +6,7 @@ import { guestUrl, reservedNames } from "@/features/weddings/guest-link";
 import { publishWedding, saveGuestLinkNames, unpublishWedding } from "./publication-actions";
 import { GuestLinkPanel, type GuestLinkShare } from "./guest-link-panel";
 import { Icon } from "./workspace-icons";
+import type { RsvpReadiness } from "./workspace-data";
 import type { FormState } from "@/features/account/validation";
 import { PurchasePanel, type Entitlement } from "@/features/payments/purchase-panel";
 
@@ -17,7 +18,9 @@ function Notice({ state }: { state: FormState }) {
 // Validation is server-side and shown as field messages, so no browser pop-up hides another error.
 // While live, the shareable guest link panel leads the page (F042); before that only the future link is shown, marked as not
 // yet working. `origin` is the configured APP_ORIGIN, never the request host.
-export function PublicationForm({ origin, names, secret, published, entitlement, checkout, share }: { origin: string; names: string; secret: string; published: boolean; entitlement: Entitlement; checkout?: string; share: GuestLinkShare | null }) {
+// Before publishing, RSVP readiness is stated next to the future link; publishing never changes RSVP settings, and an
+// announcement-only site (RSVPs off) can still be published deliberately.
+export function PublicationForm({ origin, names, secret, published, offline, entitlement, checkout, share, rsvp }: { origin: string; names: string; secret: string; published: boolean; offline: boolean; entitlement: Entitlement; checkout?: string; share: GuestLinkShare | null; rsvp: RsvpReadiness }) {
   const [url, setUrl] = useState(names);
   const [visibility, setVisibility] = useState(false);
   const [publishState, publishAction, publishPending] = useActionState<FormState, FormData>(publishWedding, {});
@@ -47,8 +50,11 @@ export function PublicationForm({ origin, names, secret, published, entitlement,
       {!published && <section className="mt-6" aria-labelledby="future-link-title">
         <h3 id="future-link-title" className="text-lg font-medium">Your guest link</h3>
         <p className="guest-link-url font-mono" data-pending="" translate="no">{futureLink}</p>
-        <p className="field-help"><span className="badge"><Icon name="lock" />Works once published</span></p>
-        <p className="field-help">This one private link opens your Save the Date, Details and RSVP pages. Once published, anyone who has it can view your site and reply. You can share it after publishing.</p>
+        <p className="field-help"><span className="badge"><Icon name="lock" />{offline ? "Currently offline" : "Works once published"}</span></p>
+        <p className="field-help">{offline ? "This is your existing guest link. It will work again if you purchase a new site period. Guests cannot use it while the site is offline." : <>This one private link opens every page of your site. Once published, anyone who has it can view your site{rsvp.availability === "not-live" ? " and reply" : ""}. You can share it after publishing.</>}</p>
+        {rsvp.availability === "not-live"
+          ? <p className="field-help"><span className="badge badge-positive">{rsvp.label}</span> {rsvp.note}</p>
+          : <div className="form-warning mt-4" role="note"><p><strong>Guests won’t be able to reply.</strong> {rsvp.note}</p>{rsvp.availability !== "offline" && <p className="mt-2"><Link href="/dashboard/rsvp" className="text-link">Open RSVP settings</Link>, or publish as an announcement only.</p>}</div>}
       </section>}
       <form action={publishing ? publishAction : (form) => { setRetiredNotice(publishState); namesAction(form); }} className="mt-6" noValidate>
         <label htmlFor="slug" className="field-label">Names in your guest link</label>
@@ -62,7 +68,7 @@ export function PublicationForm({ origin, names, secret, published, entitlement,
         <button className="button button-primary mt-6" disabled={pending}>{publishing ? publishPending ? "Publishing…" : "Publish site" : namesPending ? "Saving…" : "Save link names"}</button>
         <Notice state={notice} />
       </form>
-      {!published && !entitlement.active && <p className="mt-5 text-sm leading-relaxed text-[var(--muted)]">Purchase this wedding site to publish it. You can choose the names in your guest link now. Your draft and private preview remain available without payment.</p>}
+      {!published && !entitlement.active && <p className="mt-5 text-sm leading-relaxed text-[var(--muted)]">{offline ? "Purchase a new site period to restore guest access. Your saved site and private preview remain available." : "Purchase this wedding site to publish it. You can choose the names in your guest link now. Your draft and private preview remain available without payment."}</p>}
       {published && <>
         <p className="field-help mt-6">Saved details and photo changes are immediately visible to guests.</p>
         <form action={unpublishAction} className="mt-6">

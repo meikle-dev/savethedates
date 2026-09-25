@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { localSupabase } from "./helpers/local-supabase";
 import { openWorkspaceSection, workspaceLink } from "./helpers/workspace";
-import { formatWeddingDate } from "../src/features/weddings/wedding";
+import { formatWeddingDate, rsvpDeadline } from "../src/features/weddings/wedding";
 
 const local = localSupabase();
 const sections = [
@@ -274,7 +274,7 @@ test("overview summarises the owner's own wedding and every section is reachable
     expect((await local.admin.from("weddings").update({ rsvp_closes_on: daysFromToday(-2) }).eq("id", wedding.data!.id)).error).toBeNull();
     await page.reload();
     await expect(panel.getByText("RSVPs closed", { exact: true })).toBeVisible();
-    await expect(panel).toContainText(`RSVPs closed on ${formatWeddingDate(daysFromToday(-2))}. Guests can still view your site but can’t reply.`);
+    await expect(panel).toContainText(`RSVPs closed at ${rsvpDeadline(daysFromToday(-2)).exact}. Guests can still view your site but can’t reply.`);
     await expect(panel.getByLabel("Message to send")).toHaveValue(message.replace("Details and RSVP here", "Find out more"));
     await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
     for (const width of [390, 1440]) {
@@ -291,7 +291,8 @@ test("overview summarises the owner's own wedding and every section is reachable
     // Expired access: the site is no longer live, so no panel or link is offered.
     expect((await local.admin.from("stripe_payments").update({ expires_at: new Date(Date.now() - 60_000).toISOString() }).eq("wedding_id", wedding.data!.id)).error).toBeNull();
     await page.goto("/dashboard");
-    await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Private draft");
+    await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Offline");
+    await expect(overview.getByRole("article", { name: /RSVPs · site offline/ })).toBeVisible();
     await expect(panel).toHaveCount(0);
     await expect(page.getByText(guestLink)).toHaveCount(0);
   } finally {

@@ -6,30 +6,32 @@ import { formatWeddingDate } from "@/features/weddings/wedding";
 import { AttendanceBadge } from "@/features/workspace/attendance-badge";
 import { GuestLinkPanel } from "@/features/workspace/guest-link-panel";
 import { Icon } from "@/features/workspace/workspace-icons";
-import { guestLinkShare, loadLatestResponses, loadResponseTotals, loadWorkspace } from "@/features/workspace/workspace-data";
-import { daysUntil, rsvpAvailability, setupSteps, todayUtc, type RsvpAvailability } from "@/features/workspace/workspace-summary";
+import { guestLinkShare, loadLatestResponses, loadResponseTotals, loadWorkspace, rsvpReadiness } from "@/features/workspace/workspace-data";
+import { daysUntil, setupSteps, todayUtc, type RsvpAvailability } from "@/features/workspace/workspace-summary";
 
 export const metadata: Metadata = { title: "Overview · SaveTheDates" };
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 
-const rsvpLabels: Record<RsvpAvailability, string> = { open: "open", closed: "closed", off: "not accepting", "not-live": "opens when published" };
+const rsvpLabels: Record<RsvpAvailability, string> = { open: "open", closed: "closed", off: "not accepting", "not-live": "opens when published", offline: "site offline" };
 const emptyResponses: Record<RsvpAvailability, string> = {
   open: "No responses yet. Share your guest link to start collecting replies.",
   closed: "No responses yet, and RSVPs are closed.",
   off: "No responses yet. Open RSVPs when you’re ready to collect replies.",
   "not-live": "No responses yet. Guests can reply once your site is published.",
+  offline: "No responses yet, and your site is no longer online.",
 };
 
 export default async function Overview() {
-  const { wedding, entitlement, live } = await loadWorkspace();
+  const { wedding, entitlement, live, offline } = await loadWorkspace();
   // New accounts begin by saving the basics, which unlocks the other sections.
   if (!wedding) redirect("/dashboard/basics");
 
   const [totals, responses] = await Promise.all([loadResponseTotals(), loadLatestResponses(5)]);
   const today = todayUtc();
   const days = daysUntil(wedding.wedding_date, today);
-  const availability = rsvpAvailability(wedding.rsvp_enabled, wedding.rsvp_closes_on, today, live);
+  const rsvp = rsvpReadiness(wedding, live, offline);
+  const availability = rsvp.availability;
   const steps = setupSteps({ ...detailsSchema.parse(wedding), photo_path: wedding.photo_path, rsvp_enabled: wedding.rsvp_enabled }, entitlement.active, live);
   const completed = steps.filter((step) => step.done).length;
   const setupComplete = steps.every((step) => step.done || step.optional);
@@ -41,14 +43,14 @@ export default async function Overview() {
     <header className="ws-page-head">
       <p className="eyebrow">Your wedding workspace</p>
       <h1 id="overview-title">{wedding.first_name} &amp; {wedding.second_name}</h1>
-      <p>{live ? "Your wedding site is live. Changes you save appear to guests straight away." : "Your site is a private draft. Only you can see it until you publish."}</p>
+      <p>{live ? "Your wedding site is live. Changes you save appear to guests straight away." : offline ? "Your site is no longer online. Guests can’t open your guest link." : "Your site is a private draft. Only you can see it until you publish."}</p>
     </header>
 
     <div className="ws-stats">
       <article className="ws-stat" data-tone={live ? "live" : undefined} aria-labelledby="stat-site">
         <span className="ws-stat-icon"><Icon name={live ? "globe" : "lock"} /></span>
         <h2 id="stat-site" className="ws-stat-label">Site status</h2>
-        <p className="ws-stat-value">{live ? "Published" : "Private draft"}</p>
+        <p className="ws-stat-value">{live ? "Published" : offline ? "Offline" : "Private draft"}</p>
         <p className="ws-stat-note">{share
           ? <><a href="#guest-link">Share your guest link</a>{expiry && <> · online until {expiry}</>}</>
           : <Link href="/dashboard/publish">{entitlement.active ? "Ready to publish" : "Purchase and publish"}</Link>}</p>
@@ -66,6 +68,8 @@ export default async function Overview() {
         <div>
           {totals.total > 0 && <div className="ws-meter" aria-hidden="true"><span className="is-attending" style={{ width: `${(totals.attending / totals.total) * 100}%` }} /><span className="is-declined" style={{ width: `${(totals.declined / totals.total) * 100}%` }} /></div>}
           <p className="ws-stat-note mt-2">{totals.attending} attending · {totals.declined} not attending</p>
+          {/* Live sites state this in the guest link panel below; otherwise say it here so a closed RSVP is never missed. */}
+          {!share && (availability === "off" || availability === "closed") && <p className="ws-stat-note mt-2">{rsvp.note} <Link href="/dashboard/rsvp">RSVP settings</Link></p>}
         </div>
       </article>
     </div>

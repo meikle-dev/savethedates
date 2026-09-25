@@ -44,7 +44,8 @@ export async function saveRsvpSettings(_: RsvpState, form: FormData): Promise<Rs
       }
       refreshRsvp();
       log.info("workspace.save.succeeded", { section: "rsvp_settings" });
-      return { success: true, message: enabled ? "RSVPs are on. Guests can reply through your guest link while your site is published." : "RSVP is closed. Existing responses remain in your workspace." };
+      // The section adds the refreshed RSVP status to this notice, so it is accurate before and after publishing.
+      return { success: true, message: enabled ? "RSVP settings saved." : "RSVP settings saved. Existing responses remain in Guests." };
     } catch (error) {
       if (!(error instanceof WorkspaceAccessError)) log.error("workspace.save.failed", { section: "rsvp_settings", reason: errorReason(error) });
       return { message: error instanceof Error ? error.message : "We couldn’t save your RSVP settings." };
@@ -121,6 +122,8 @@ export async function submitSharedRsvp(_: RsvpState, form: FormData): Promise<Rs
     }
     const name = rsvpNameSchema.safeParse(form.get("responding_name"));
     const attendance = z.enum(["yes", "no"]).safeParse(form.get("attending"));
+    // Refill only this guest's own unsaved entry after a rejection; nothing saved is ever read back.
+    const values = { responding_name: String(form.get("responding_name") ?? "").slice(0, 80), attending: attendance.success ? attendance.data : undefined };
     const { data, error } = await publicClient().rpc("submit_shared_rsvp", {
       requested_secret: secret.data,
       requested_name: name.success ? name.data : null,
@@ -128,18 +131,18 @@ export async function submitSharedRsvp(_: RsvpState, form: FormData): Promise<Rs
     });
     if (error) {
       log.error("rsvp.submit.failed", { reason: errorReason(error) });
-      return unavailable;
+      return { ...unavailable, values };
     }
     if (data !== "saved") log.warn("rsvp.submit.rejected", { reason: rsvpRejections[data] ?? "invalid_input" });
-    if (data === "unavailable") return unavailable;
-    if (data === "rate_limited") return { message: "This link is busy. Wait ten minutes, then try again." };
-    if (data === "full") return { message: "RSVP is temporarily unavailable. Please contact the couple." };
-    if (data === "closed") return { message: "RSVP is now closed. Contact the couple if your plans have changed." };
-    if (data !== "saved") return { message: "Check the highlighted fields.", errors: {
+    if (data === "unavailable") return { ...unavailable, values };
+    if (data === "rate_limited") return { message: "This link is busy. Wait ten minutes, then try again.", values };
+    if (data === "full") return { message: "RSVP is temporarily unavailable. Please contact the couple.", values };
+    if (data === "closed") return { message: "RSVP is now closed. Contact the couple if your plans have changed.", values };
+    if (data !== "saved") return { message: "Check the highlighted fields.", values, errors: {
       responding_name: name.success ? undefined : name.error.issues.map((issue) => issue.message),
       attending: attendance.success ? undefined : ["Choose attending or not attending."],
     } };
     log.info("rsvp.submit.accepted");
-    return { success: true, message: `Your RSVP for ${name.data} has been saved. Contact the couple if you need to change it.` };
+    return { success: true, message: `We’ve saved ${name.data}’s reply: ${attendance.data === "yes" ? "joyfully accepts" : "regretfully declines"}.` };
   });
 }

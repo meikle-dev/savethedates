@@ -17,4 +17,6 @@ export type RsvpState = {
   success?: boolean;
   message?: string;
   errors?: Record<string, string[] | undefined>;
+  /** A guest's own unsaved entry, returned only to refill their form after a rejected submission. */
+  values?: { responding_name: string; attending?: "yes" | "no" };
 };

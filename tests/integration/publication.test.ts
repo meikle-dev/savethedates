@@ -78,8 +78,8 @@ it("isolates storage and exposes only the current published photo with no signed
   const ownSlug = ownRow.data!.slug ?? `${slug}-other`;
   expect((await owners[0].from("weddings").update({ photo_path: path, slug: ownSlug, published: true }).eq("id", weddings[0])).error).toBeNull();
   const published = await local.anonymous().rpc("guest_wedding", { requested_secret: ownRow.data!.rsvp_share_secret });
-  // Narrow projection: no owner, wedding ID, secret, RSVP responses or closing date.
-  expect(Object.keys(published.data![0]).sort()).toEqual(["slug", "first_name", "second_name", "wedding_date", "location", "message", "photo_path", "photo_framing", "theme", "details_enabled", "rsvp_enabled", "rsvp_open"].sort());
+  // Narrow projection: no owner, wedding ID, secret or RSVP responses. The closing date is projected only while RSVP is on.
+  expect(Object.keys(published.data![0]).sort()).toEqual(["slug", "first_name", "second_name", "wedding_date", "location", "message", "photo_path", "photo_framing", "theme", "details_enabled", "rsvp_enabled", "rsvp_open", "rsvp_closes_on"].sort());
   expect((await anon.download(path)).error).toBeNull();
   expect((await anon.list(weddings[0])).data).toEqual([]);
   for (const reader of [anon, other, bucket]) expect((await reader.createSignedUrl(path, 3600)).error).not.toBeNull();

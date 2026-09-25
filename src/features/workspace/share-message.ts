@@ -1,5 +1,5 @@
 // F042: the pre-written message couples can edit before sharing their guest link. Built from saved data and never stored.
-import { formatWeddingDate } from "../weddings/wedding";
+import { formatWeddingDate, rsvpDeadline } from "../weddings/wedding";
 import type { RsvpAvailability } from "./workspace-summary";
 
 type MessageInput = { firstName: string; secondName: string; date: string; location: string; url: string; rsvpOpen: boolean };
@@ -25,10 +25,22 @@ export function whatsAppHref(text: string) {
   return `https://wa.me/?text=${encodeURIComponent(wellFormed)}`;
 }
 
-/** What guests can currently do with the live link, stated explicitly so a closed RSVP is never mistaken for open. */
-export function rsvpShareStatus(availability: RsvpAvailability, closesOn: string | null) {
-  if (availability === "open") return { label: "RSVPs open", note: closesOn ? `Guests can reply until ${formatWeddingDate(closesOn)}.` : "Guests can reply." };
-  if (availability === "closed") return { label: "RSVPs closed", note: `RSVPs closed on ${formatWeddingDate(closesOn!)}. Guests can still view your site but can’t reply.` };
-  if (availability === "off") return { label: "RSVPs off", note: "Guests can view your site but can’t reply until you open RSVPs." };
-  return { label: "RSVPs open when published", note: "Guests can reply once your site is published." };
+/**
+ * What guests can do with the guest link, stated explicitly so a closed RSVP is never mistaken for open. `live` says
+ * whether the site is published now; before that, the note describes what happens after publishing. A closing date
+ * is always given with its exact UTC cutoff, matching database enforcement; no date means no deadline is mentioned.
+ */
+export function rsvpShareStatus(availability: RsvpAvailability, closesOn: string | null, live = true) {
+  const until = closesOn ? rsvpDeadline(closesOn).exact : null;
+  switch (availability) {
+    case "open": return { label: "RSVPs open", note: until ? `Guests can reply until ${until}.` : "Guests can reply. There is no closing date." };
+    case "not-live": return { label: "RSVPs open when published", note: `RSVPs are on. Guests can reply once your site is published${until ? `, until ${until}` : ""}.` };
+    case "closed": return { label: "RSVPs closed", note: live
+      ? `RSVPs closed at ${until}. Guests can still view your site but can’t reply.`
+      : `Your closing date has passed (${until}), so guests won’t be able to reply. Change or clear the date to reopen RSVPs.` };
+    case "off": return { label: "RSVPs off", note: live
+      ? "Guests can view your site but can’t reply until you open RSVPs."
+      : "RSVPs are off. After you publish, guests can view your site but can’t reply until you open RSVPs." };
+    case "offline": return { label: "Site offline", note: "Your site is no longer online, so guests can’t view it or reply." };
+  }
 }

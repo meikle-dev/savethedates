@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042 and F043 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. F043 and F042 are Done (25 September). **Next: F044**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F044-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. F001-F008, F011-F032, F034-F037, F040, F042-F044 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. F038 is In Progress: the code is reviewed, and only staging checks remain. They wait for the Sentry setup, which the owner deferred to F041 step 6. **Next: F045**, then the eligible launch tickets. F033 is Ready but follows launch work, and F039 is optional. F045-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -1424,7 +1424,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 
 ## F044 - Make RSVP readiness and completion clear
 
-**Status:** Ready
+**Status:** Done (25 September 2026)
 **Priority / lead:** P1, paid-launch gate / Software Engineer with UX; independent review of guest data projection and access boundaries required.
 **Purpose:** Couples know whether guests can reply, and guests know the deadline and what to do after replying.
 **Depends on:** F043 (guest routes move); F026, F031 (Done).
@@ -1436,6 +1436,8 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Guest/owner deadline copy matches database enforcement, including summer/winter dates and the exact UTC boundary; no date means no invented deadline. Only necessary public fields are projected, never the secret or responses.
 - Success heading/body agree and are announced accessibly. Reply for someone else clears local name/answer state and starts a separate insert only on deliberate submission; it never grants edit/read access to a previous guest response.
 - Guest CTA/Details links stay within the guest URL and disappear when unavailable; owner previews/examples cannot submit. Open/closed/success/validation cases work across all twelve themes at mobile/desktop widths. Relevant tests, `npm.cmd run check` and review pass.
+
+**Handoff:** Added consistent RSVP readiness across Overview, Publish, RSVP settings and live guest-link panels; the guest deadline, one-reply guidance, clean success state and deliberate separate reply; and a Save the Date RSVP action. The database projects only the needed closing date and enforces the same UTC cutoff. Expired published sites now show their existing link as offline with purchase guidance. `npm.cmd run test:e2e -- --reporter=line` passed 88/88 after the initial stale dashboard assertion was corrected; after review copy fixes, `npx.cmd playwright test tests/rsvp.spec.ts tests/dashboard.spec.ts --grep "RSVP readiness|overview summarises" --reporter=line` passed 4/4. `npm.cmd run check` passed (lint, typecheck, 76 unit tests, production build), `npm.cmd run test:integration` passed 22/22, and `git diff --check` passed. Inspected Publish warning and guest success, closed and Save the Date screens at desktop/mobile widths; Playwright covered open, closed, disabled, validation and success across all twelve themes at both widths. Independent reviewer found two Important copy contradictions; both were fixed and re-reviewed with no remaining Blocking or Important findings. No hosted deployment, hosted CI, Safari/Firefox or real screen reader check. Blockers: None. Next: F045.
 
 ## F045 - Clear account confirmation and consistent auth errors
 

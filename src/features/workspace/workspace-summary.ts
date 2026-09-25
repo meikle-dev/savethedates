@@ -23,10 +23,12 @@ export function collectResponses(sharedResponses: SharedResponse[]): RsvpRespons
   return sharedResponses.map((response) => ({ id: response.id, name: response.responding_name, attending: response.attending, respondedAt: response.responded_at }));
 }
 
-export type RsvpAvailability = "off" | "not-live" | "open" | "closed";
+export type RsvpAvailability = "off" | "not-live" | "open" | "closed" | "offline";
 
-// Guests can only reply while RSVPs are enabled, not past the closing date, and the site is live.
-export function rsvpAvailability(enabled: boolean, closesOn: string | null, today: string, live: boolean): RsvpAvailability {
+// Guests can only reply while RSVPs are enabled, not past the closing date (compared as UTC dates, as the database
+// does), and the site is live. `offline` is a published site whose purchase has expired or ended: guests get a 404.
+export function rsvpAvailability(enabled: boolean, closesOn: string | null, today: string, live: boolean, offline = false): RsvpAvailability {
+  if (offline) return "offline";
   if (!enabled) return "off";
   if (closesOn && today > closesOn) return "closed";
   return live ? "open" : "not-live";

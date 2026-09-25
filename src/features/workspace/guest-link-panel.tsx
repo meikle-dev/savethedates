@@ -55,7 +55,7 @@ export function GuestLinkPanel({ url, message: suggested, availability, closesOn
     <p className="guest-link-url font-mono" translate="no">{url}</p>
     <p className="mt-2"><a href={url} target="_blank" rel="noopener noreferrer" className="text-link text-sm">Open your site<span className="sr-only"> (opens in a new tab)</span></a></p>
     <p className="ws-panel-intro">{status.note}{availability === "off" && <> <Link href="/dashboard/rsvp" className="text-link">Open RSVPs</Link></>}</p>
-    <p className="ws-panel-intro">This one link opens your Save the Date, Details and RSVP pages. Anyone who has it can view your site and reply, so share it only with your guests. To stop it working, <Link href="/dashboard/rsvp" className="text-link">replace it in RSVP</Link>.</p>
+    <p className="ws-panel-intro">This one link opens your Save the Date, Details and RSVP pages. Anyone who has it can view your site{availability === "open" ? " and reply" : ""}, so share it only with your guests. To stop it working, <Link href="/dashboard/rsvp" className="text-link">replace it in RSVP</Link>.</p>
 
     <label htmlFor="share-message" className="field-label mt-6">Message to send</label>
     <textarea id="share-message" className="field-input guest-share-message" rows={5} value={message} onChange={(event) => setEdit({ base: suggested, text: event.target.value })} aria-describedby="share-message-help" />

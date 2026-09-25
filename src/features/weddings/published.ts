@@ -8,7 +8,8 @@ import { guestHrefs, guestSecretPattern } from "./guest-link";
 import { parsePhotoFraming, type PhotoFraming } from "./photo-framing";
 
 export type WeddingContent = { first_name: string; second_name: string; wedding_date: string; location: string; message: string; photo_path: string | null; photo_framing: unknown; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean };
-export type GuestWedding = WeddingContent & { slug: string; rsvp_open: boolean };
+// rsvp_closes_on is projected only while RSVP is enabled (null otherwise), so guests are never shown an inactive date.
+export type GuestWedding = WeddingContent & { slug: string; rsvp_open: boolean; rsvp_closes_on: string | null };
 
 export function toWedding(row: WeddingContent, photoUrl: string): Wedding {
   return { theme: row.theme, names: [row.first_name, row.second_name], date: row.wedding_date, location: row.location, message: row.message,

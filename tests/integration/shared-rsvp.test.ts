@@ -86,6 +86,28 @@ it("keeps a high emergency cap on a wedding without affecting the owner list", a
   expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "New Guest", requested_attending: true })).data).toBe("saved");
 });
 
+it("projects the closing date only while RSVP is on and closes at the UTC date boundary", async () => {
+  const utcDate = (offsetDays: number) => new Date(Date.now() + offsetDays * 86_400_000).toISOString().slice(0, 10);
+  const project = async () => (await guest.rpc("guest_wedding", { requested_secret: secret })).data![0] as { rsvp_open: boolean; rsvp_closes_on: string | null };
+  const submit = () => guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "Boundary Guest", requested_attending: true });
+  // No date: nothing is invented.
+  expect(await project()).toMatchObject({ rsvp_open: true, rsvp_closes_on: null });
+  // Closing today (UTC) is still open; the database's current_date is the UTC date.
+  expect((await owner.from("weddings").update({ rsvp_closes_on: utcDate(0) }).eq("id", weddingId)).error).toBeNull();
+  expect(await project()).toMatchObject({ rsvp_open: true, rsvp_closes_on: utcDate(0) });
+  expect((await submit()).data).toBe("saved");
+  // Closed yesterday (UTC): the guest sees the date and closed state, and submission is refused.
+  expect((await owner.from("weddings").update({ rsvp_closes_on: utcDate(-1) }).eq("id", weddingId)).error).toBeNull();
+  expect(await project()).toMatchObject({ rsvp_open: false, rsvp_closes_on: utcDate(-1) });
+  expect((await submit()).data).toBe("closed");
+  // RSVP off: the saved date is kept for the owner but never projected to guests.
+  expect((await owner.from("weddings").update({ rsvp_enabled: false, rsvp_closes_on: utcDate(30) }).eq("id", weddingId)).error).toBeNull();
+  expect(await project()).toMatchObject({ rsvp_open: false, rsvp_closes_on: null });
+  expect((await owner.from("weddings").select("rsvp_closes_on").eq("id", weddingId).single()).data?.rsvp_closes_on).toBe(utcDate(30));
+  expect((await owner.from("weddings").update({ rsvp_enabled: true, rsvp_closes_on: null }).eq("id", weddingId)).error).toBeNull();
+  expect(await project()).toMatchObject({ rsvp_open: true, rsvp_closes_on: null });
+});
+
 it("validates input, respects closure, and invalidates the old link on rotation", async () => {
   expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "", requested_attending: true })).data).toBe("invalid");
   expect((await guest.rpc("submit_shared_rsvp", { requested_secret: secret, requested_name: "Sam", requested_attending: null })).data).toBe("invalid");
