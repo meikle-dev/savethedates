@@ -6,7 +6,6 @@ import { toWedding } from "@/features/weddings/published";
 
 import { isWeddingTheme } from "@/features/weddings/themes";
 import { PreviewToolbar } from "@/features/workspace/preview-toolbar";
-import { todayUtc } from "@/features/workspace/workspace-summary";
 
 export const metadata: Metadata = { title: "Save the Date preview | SaveTheDates" };
 
