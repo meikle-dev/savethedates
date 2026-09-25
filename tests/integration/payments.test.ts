@@ -146,6 +146,38 @@ it("reuses one pending checkout and freezes the entitlement expiry snapshot", as
   expect(afterVerifiedExpiry.data![0].attempt_id).not.toBe(first.data![0].attempt_id);
 });
 
+it("replaces an attempt that never reached Stripe once it is too close to expiry", async () => {
+  const created = await owner.rpc("begin_checkout_attempt");
+  expect(created.error).toBeNull();
+  let previousId = created.data![0].attempt_id;
+
+  for (const minutesLeft of [29, -5]) {
+    const expiresAt = new Date(Date.now() + minutesLeft * 60_000).toISOString();
+    expect((await local.admin.from("stripe_checkout_attempts").update({ checkout_expires_at: expiresAt }).eq("wedding_id", weddingId)).error).toBeNull();
+    const retry = await owner.rpc("begin_checkout_attempt");
+    expect(retry.error).toBeNull();
+    expect(retry.data![0].attempt_id).not.toBe(previousId);
+    expect(new Date(retry.data![0].checkout_expires_at).getTime()).toBeGreaterThan(Date.now() + 30 * 60_000);
+    previousId = retry.data![0].attempt_id;
+  }
+
+  const current = (await owner.rpc("begin_checkout_attempt")).data![0];
+  expect((await owner.rpc("attach_checkout_session", {
+    requested_attempt_id: current.attempt_id,
+    requested_session_id: "cs_test_near_expiry",
+    requested_checkout_url: "https://checkout.stripe.com/c/pay/near-expiry",
+  })).data).toBe(true);
+  const nearExpiry = new Date(Date.now() + 5 * 60_000).toISOString();
+  expect((await local.admin.from("stripe_checkout_attempts").update({ checkout_expires_at: nearExpiry }).eq("wedding_id", weddingId)).error).toBeNull();
+  const withSession = await owner.rpc("begin_checkout_attempt");
+  expect(withSession.data![0]).toMatchObject({ attempt_id: current.attempt_id, checkout_url: "https://checkout.stripe.com/c/pay/near-expiry" });
+
+  expect((await local.admin.rpc("expire_checkout_attempt", {
+    requested_attempt_id: current.attempt_id,
+    requested_session_id: "cs_test_near_expiry",
+  })).data).toBe(true);
+});
+
 it("uses six calendar months for new attempts and keeps an existing expiry snapshot", async () => {
   expect((await local.admin.from("weddings").update({ wedding_date: "2027-08-31" }).eq("id", otherWeddingId)).error).toBeNull();
   const created = await other.rpc("begin_checkout_attempt");

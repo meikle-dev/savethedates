@@ -59,7 +59,7 @@ export async function startCheckout(): Promise<FormState> {
         checkoutUrl = session.url;
       }
     } catch (error) {
-      if (error instanceof Stripe.errors.StripeError) log.error("payment.stripe.failed", { reason: error.type });
+      if (error instanceof Stripe.errors.StripeError) log.error("payment.stripe.failed", { reason: error.code ? `${error.type}:${error.code}` : error.type });
       else log.error("payment.checkout.failed", { reason: errorReason(error) });
       return { message: "We couldn’t start checkout. Your draft is unchanged; please retry." };
     }

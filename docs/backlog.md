@@ -2039,7 +2039,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 
 ## F061 - Staging checkout rejected by Stripe
 
-**Status:** In Progress (diagnosed 25 September 2026; waiting on the owner to replace the staging Stripe key)
+**Status:** In Progress (both causes fixed on staging 25 September 2026; waiting for a successful staging test checkout)
 **Priority / lead:** P1, paid-launch gate and needed for F038's staging checkout check / Owner action, then Software Engineer verifies.
 **Purpose:** "Buy and continue to Stripe" on staging opens Stripe Checkout instead of showing "We couldn't start checkout".
 **Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md).
@@ -2052,8 +2052,17 @@ Record items 1–3 in `release-inputs.md` section 3.
 3. In Render, open `savethedates-staging` → **Environment**. Replace `STRIPE_SECRET_KEY` with the copied value, with no quotes or spaces, then **Save and deploy**.
 4. While you're there, check that `STRIPE_WEBHOOK_SECRET` (`whsec_…`) is the signing secret of the test-mode webhook endpoint in that same account. Otherwise, paid checkouts will fail to publish afterwards.
 
-**Done when:** On staging, a test checkout with card `4242 4242 4242 4242` opens Stripe Checkout, completes, and returns to Publish. The webhook grants the entitlement, and the site can be published. The logs show the request-ID trail from checkout created to entitlement granted, with no `payment.stripe.failed`. Record the result in F038 (its real Stripe test checkout check) and F041.
-**Next:** The owner replaces the key. Then the engineer runs the check above.
+**Second cause, a code fault (found after the key was replaced):** At 21:05 UTC the error became `StripeInvalidRequestError`. `begin_checkout_attempt` fixes an attempt's deadline at creation (now plus 31 minutes) and reuses the attempt until a Stripe session is attached. The attempt created at 20:39, during the bad-key failures, was still being reused at 21:05. So the action asked Stripe for an `expires_at` about 5 minutes away, below Stripe's 30-minute minimum. Worse, since migration `20260918001800`, an expired attempt is deleted only by the `checkout.session.expired` webhook. An attempt whose Stripe call failed never gets a session, so no webhook would ever clear it, and from 21:10 the wedding would have been stuck on "Stripe is still confirming the previous checkout" permanently. This affects any Stripe failure before a session is attached (a bad key, a Stripe outage, a timeout, or a crash between creating the session and attaching it), not only a bad key.
+**Fix (engineer, 25 September 2026):**
+
+- Migration `20260925000400_replace_unused_checkout_attempts.sql`: `begin_checkout_attempt` now replaces an attempt that has no Stripe session once less than 30 minutes 30 seconds remain, or once it has expired. Nobody has seen such an attempt, because the checkout URL is only shown after a session is attached. A fresh attempt (created in the last 30 seconds) is still reused, so a double submit keeps one `attempt_id` and one Stripe idempotency key. Attempts with a session keep their current behaviour.
+- `payment.stripe.failed` now logs Stripe's error code with its type (for example `StripeInvalidRequestError:parameter_invalid_integer`), so the next Stripe failure names its cause.
+- New integration test: "replaces an attempt that never reached Stripe once it is too close to expiry" in `tests/integration/payments.test.ts`.
+- Checks: `npm run lint`, `npm run typecheck` and `npm test` (85 passed) under Node 24.11.0. `npm run test:integration` was not run, because Docker wasn't available in that session. Instead, the new function ran against a scratch PostgreSQL 16 with stand-in tables. It reused a fresh attempt, replaced a session-less attempt with 29 minutes left or already expired, and kept an attempt with a session (5 minutes left, and expired). No independent review yet; payments changes need one (AGENTS.md).
+- Applied to staging through the Supabase connector. The recorded version is `20260925000400`, and the MD5 of its statements matches the file.
+
+**Done when:** On staging, a test checkout with card `4242 4242 4242 4242` opens Stripe Checkout, completes, and returns to Publish. The webhook grants the entitlement, and the site can be published. The logs show the request-ID trail from checkout created to entitlement granted, with no `payment.stripe.failed`. `npm run test:integration` passes, and an independent review of the migration finds no Blocking issues. Record the result in F038 (its real Stripe test checkout check) and F041.
+**Next:** The owner retries checkout on staging. The engineer runs the integration suite and gets the review. The logging change reaches staging with the next image deploy.
 
 ## F062 - Accept large photos by resizing them in the browser
 
