@@ -43,6 +43,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await expect(page.getByText("£29", { exact: false })).toBeVisible();
     await expect(page.getByText(/A new purchase keeps your site online until six months after the wedding date/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Buy and continue to Stripe" })).toBeVisible();
+    await expect(page.getByText("By buying you agree to our terms and refund policy", { exact: false }).getByRole("link", { name: "refund policy" })).toHaveAttribute("href", "/refunds");
     // The names part of the guest link can be chosen before payment; publishing cannot.
     await expect(page.getByRole("button", { name: "Publish site" })).toHaveCount(0);
     await expect(page.getByText("Works once published")).toBeVisible();

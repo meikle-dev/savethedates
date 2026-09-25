@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { digitalSaveTheDatePath } from "./metadata";
+import { digitalSaveTheDatePath, supportEmail } from "./metadata";
 
 export function AccountAction({ href, label }: { href: string; label: string }) {
   return <Link className="marketing-button marketing-button-primary" href={href}>
@@ -25,5 +25,6 @@ export function MarketingHeader({ isAuthenticated, sectionBase }: { isAuthentica
 }
 
 export function MarketingFooter({ isAuthenticated, sectionBase }: { isAuthenticated: boolean; sectionBase: "" | "/" }) {
-  return <footer className="marketing-footer marketing-width"><Link className="marketing-brand" href="/">SaveTheDates</Link><p>A beautiful beginning, shared.</p><nav aria-label="Footer navigation"><a href={`${sectionBase}#themes`}>Themes</a><a href={`${sectionBase}#pricing`}>Pricing</a><Link href={digitalSaveTheDatePath}>Digital save the dates</Link><Link href={isAuthenticated ? "/dashboard" : "/account/sign-in"}>{isAuthenticated ? "Your workspace" : "Sign in"}</Link></nav></footer>;
+  return <footer className="marketing-footer marketing-width"><Link className="marketing-brand" href="/">SaveTheDates</Link><p>A beautiful beginning, shared.</p><nav aria-label="Footer navigation"><a href={`${sectionBase}#themes`}>Themes</a><a href={`${sectionBase}#pricing`}>Pricing</a><Link href={digitalSaveTheDatePath}>Digital save the dates</Link><Link href={isAuthenticated ? "/dashboard" : "/account/sign-in"}>{isAuthenticated ? "Your workspace" : "Sign in"}</Link></nav>
+    <nav className="marketing-legal-nav" aria-label="Legal and contact"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/refunds">Refunds</Link><a href={`mailto:${supportEmail}`}>Contact: {supportEmail}</a></nav></footer>;
 }

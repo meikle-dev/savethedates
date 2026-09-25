@@ -12,7 +12,7 @@ describe("staging access", () => {
     }
   });
   it("grants every path only with the exact username and password", () => {
-    for (const path of ["/", "/dashboard", "/names/secret/rsvp", "/robots.txt", "/favicon.ico", "/media/share"]) {
+    for (const path of ["/dashboard", "/names/secret/rsvp", "/robots.txt", "/favicon.ico", "/media/share", "/digital-save-the-date"]) {
       expect(stagingAccess(path, basic("team:correct-horse-battery-staple"), staging)).toBe("granted");
       expect(stagingAccess(path, null, staging)).toBe("denied");
     }
@@ -22,17 +22,20 @@ describe("staging access", () => {
       basic("team:wrong-password-of-some-length"), basic("other:correct-horse-battery-staple"), basic("team:correct-horse-battery-stapl"),
       basic("team"), basic(":correct-horse-battery-staple"), basic("team:correct-horse-battery-staple:extra"), "Bearer abc", "Basic", "Basic !!!", "",
     ]) {
-      expect(stagingAccess("/", authorization, staging)).toBe("denied");
+      expect(stagingAccess("/dashboard", authorization, staging)).toBe("denied");
     }
   });
   it("accepts a password containing a colon", () => {
     const env = { ...staging, STAGING_PASSWORD: "has:a-colon-inside-it" };
-    expect(stagingAccess("/", basic("team:has:a-colon-inside-it"), env)).toBe("granted");
+    expect(stagingAccess("/dashboard", basic("team:has:a-colon-inside-it"), env)).toBe("granted");
   });
-  it("opens only the signed webhook, the health check and the fictional theme images", () => {
-    for (const path of ["/api/stripe/webhook", "/api/health", "/media/themes/bold.webp"]) expect(stagingAccess(path, null, staging)).toBe("open");
+  it("opens only the signed webhook, the health check, the fictional theme images, the homepage and legal pages", () => {
+    for (const path of ["/api/stripe/webhook", "/api/health", "/media/themes/bold.webp", "/", "/privacy", "/terms", "/refunds"]) {
+      expect(stagingAccess(path, null, staging)).toBe("open");
+    }
     for (const path of [
       "/api/stripe/webhook/x", "/api/health/", "/api/runtime-config", "/media/share", "/media/themes", "/media/lake-como.webp",
+      "//", "/privacy/", "/privacy/x", "/terms/details", "/refunds/rsvp", "/Privacy", "/account/sign-up", "/dashboard/publish",
       // These match the guest routes (names "media", secret "themes") and must stay behind the password.
       "/media/themes/rsvp", "/media/themes/details", "/media/themes/photo", "/media/themes/a/b", "/media/themes/unknown.webp",
     ]) expect(stagingAccess(path, null, staging)).toBe("denied");

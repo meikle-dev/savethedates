@@ -134,6 +134,31 @@ test("the digital save the date page is indexable, accurate and linked from the 
   await expect(page.getByRole("link", { name: "More about digital save the dates" })).toHaveAttribute("href", "/digital-save-the-date");
 });
 
+test("privacy, terms and refund pages are linked from the footer and beside sign-up", async ({ page, baseURL }) => {
+  const pages = [
+    { link: "Privacy", path: "/privacy", heading: "Privacy notice", text: "Google shares your name, email address and profile picture link" },
+    { link: "Terms", path: "/terms", heading: "Terms of service", text: "you pay £29 once for one wedding site" },
+    { link: "Refunds", path: "/refunds", heading: "Refund policy", text: "within 14 days of paying and get a full refund" },
+  ];
+  for (const { link, path, heading, text } of pages) {
+    await page.goto("/");
+    await page.getByRole("navigation", { name: "Legal and contact" }).getByRole("link", { name: link, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${path}$`));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
+    await expect(page.getByText(text)).toBeVisible();
+    await expect(page.locator("main").getByRole("link", { name: "hello@savethedates.co.uk" }).first()).toHaveAttribute("href", "mailto:hello@savethedates.co.uk");
+    expect(await servedRobots(page, path)).toEqual(["index, follow"]);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${baseURL}${path}`);
+  }
+  await expect(page.getByRole("navigation", { name: "Legal and contact" }).getByRole("link", { name: /Contact/ })).toHaveAttribute("href", "mailto:hello@savethedates.co.uk");
+  await page.goto("/account/sign-up");
+  const agreement = page.getByText(/By creating an account.* you agree to our terms and refund policy/);
+  await expect(agreement).toBeVisible();
+  for (const [name, path] of [["terms", "/terms"], ["refund policy", "/refunds"], ["privacy notice", "/privacy"]]) {
+    await expect(agreement.getByRole("link", { name, exact: true })).toHaveAttribute("href", path);
+  }
+});
+
 test("homepage remains usable at 320px and reports local rendering measurements", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.addInitScript(() => {

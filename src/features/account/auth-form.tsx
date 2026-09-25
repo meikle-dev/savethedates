@@ -5,6 +5,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { requestRecovery, resendConfirmation, signIn, signInDemo, signInWithGoogle, signUp, updatePassword } from "./actions";
 import type { FormState } from "./validation";
+import { LegalAgreement } from "@/features/marketing/legal-agreement";
 
 const modes = {
   "sign-in": { action: signIn, label: "Sign in" },
@@ -123,6 +124,7 @@ function AuthFields({ mode, development, google, initialEmail, onChangeEmail }: 
       <button className="button button-primary w-full" disabled={pending}>{pending ? "Please wait…" : modes[mode].label}</button>
       {mode === "password" && state.success && <Link className="text-link block text-center" href="/dashboard">Return to your workspace</Link>}
     </form>
+    {mode === "sign-up" && <LegalAgreement action={showGoogle ? "creating an account or continuing with Google" : "creating an account"} />}
     {mode === "sign-up" && <Link className="text-link mt-8 block text-center text-sm" href="/account/sign-in">Already have an account? Sign in</Link>}
     {mode === "sign-in" && development && <>
       <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.16em] text-[var(--muted)]" aria-hidden="true"><span className="h-px flex-1 bg-[var(--line)]" />or<span className="h-px flex-1 bg-[var(--line)]" /></div>

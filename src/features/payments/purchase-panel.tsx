@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { startCheckout } from "./payment-actions";
 import type { FormState } from "@/features/account/validation";
+import { LegalAgreement } from "@/features/marketing/legal-agreement";
 
 export type Entitlement = { active: boolean; expires_at: string | null; revoked_reason: string | null };
 
@@ -25,6 +26,7 @@ export function PurchasePanel({ entitlement, checkout }: { entitlement: Entitlem
         : expiry && <p className="form-error mt-4" role="alert">The previous site period ended on {expiry}, so the site is private. Your draft is still saved; update the wedding date if needed before purchasing again.</p>}
       <form action={action} className="mt-5">
         <button className="button button-primary" disabled={pending}>{pending ? "Opening secure checkout…" : "Buy and continue to Stripe"}</button>
+        <LegalAgreement action="buying" />
         {state.message && <p className="form-error mt-4" role="alert">{state.message}</p>}
       </form>
     </>}

@@ -11,7 +11,7 @@ const get = (path, headers = {}) => fetch(new URL(path, base), { headers, redire
 const assertNoindex = (response, path) => assert.match(response.headers.get("x-robots-tag") ?? "", /noindex/, `${path} must be noindex`);
 
 // /media/themes/rsvp matches the guest RSVP route (names "media", secret "themes"); only the theme image files are open.
-for (const path of ["/", "/account/sign-in", "/robots.txt", "/favicon.ico", `/unknown-wedding/${"x".repeat(43)}`, "/media/themes/rsvp"]) {
+for (const path of ["/digital-save-the-date", "/account/sign-in", "/dashboard", "/robots.txt", "/favicon.ico", `/unknown-wedding/${"x".repeat(43)}`, "/media/themes/rsvp", "/privacy/x"]) {
   for (const headers of [{}, { authorization: authorization(username, `${password}-wrong`) }]) {
     const response = await get(path, headers);
     assert.equal(response.status, 401, `${path} must require the staging password`);
@@ -21,9 +21,14 @@ for (const path of ["/", "/account/sign-in", "/robots.txt", "/favicon.ico", `/un
   }
 }
 
-const home = await get("/", signedIn);
-assert.equal(home.status, 200);
-assertNoindex(home, "/");
+// Google's OAuth consent screen needs a reachable homepage and privacy policy; these hold no private data.
+for (const path of ["/", "/privacy", "/terms", "/refunds"]) {
+  const response = await get(path);
+  assert.equal(response.status, 200, `${path} must open without the staging password`);
+  assertNoindex(response, path);
+}
+
+const home = await get("/");
 const html = await home.text();
 
 const robots = await get("/robots.txt", signedIn);
@@ -47,4 +52,4 @@ const image = await get(optimised, signedIn);
 assert.equal(image.status, 200, `${optimised} must load on staging`);
 assert.match(image.headers.get("content-type") ?? "", /^image\//);
 
-console.log(`Staging smoke passed: ${base} (password required and noindex everywhere; health, webhook and theme images open)`);
+console.log(`Staging smoke passed: ${base} (password required and noindex everywhere; health, webhook, theme images, homepage and legal pages open)`);

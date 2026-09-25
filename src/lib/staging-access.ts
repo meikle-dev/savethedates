@@ -10,12 +10,15 @@ export type StagingAccess = "unrestricted" | "open" | "granted" | "denied" | "mi
 const minimumPasswordLength = 16;
 // Exact files only: other /media/themes/<x> paths match the guest routes (names "media", secret "themes").
 const themeImages = new Set(themes.map(({ id }) => `/media/themes/${id}.webp`));
+// Google's OAuth consent screen needs a reachable homepage and privacy policy. Exact paths only; both are public on production.
+const publicPages = new Set(["/", "/privacy", "/terms", "/refunds"]);
 
 /** Paths that answer without the staging password. Each authenticates itself or holds nothing private. */
 function isOpenPath(pathname: string) {
   return pathname === "/api/stripe/webhook" // Authenticated by its Stripe signature.
     || pathname === "/api/health" // The host's health check can't send credentials; it returns only "ok".
-    || themeImages.has(pathname); // Fictional theme images. next/image fetches them internally with no request headers.
+    || themeImages.has(pathname) // Fictional theme images. next/image fetches them internally with no request headers.
+    || publicPages.has(pathname);
 }
 
 /** Any APP_ENV value marks a non-production environment. Only "staging" is valid; others fail closed in the proxy. */

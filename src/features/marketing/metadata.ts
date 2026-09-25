@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 export function marketingOrigin() { return new URL(process.env.APP_ORIGIN || "http://localhost:3000").origin; }
 export const digitalSaveTheDatePath = "/digital-save-the-date";
+export const supportEmail = "hello@savethedates.co.uk";
 
 function indexedPage(path: string, title: string, description: string): Metadata {
   const origin = marketingOrigin();

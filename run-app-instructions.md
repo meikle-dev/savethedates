@@ -211,7 +211,7 @@ For a direct production smoke check, run `npm run build`, then `npm start -- --p
 
 ## Staging access check
 
-With `APP_ENV=staging`, every response needs the staging username and password (HTTP basic auth) and is `noindex`, and `robots.txt` disallows everything. Only `/api/health`, the Stripe webhook and the twelve fictional `/media/themes/<theme>.webp` images answer without the password. Leave `APP_ENV` unset locally and in production. Setup and the reasons for the exemptions: [Staging access](docs/operations.md#staging-access).
+With `APP_ENV=staging`, every response needs the staging username and password (HTTP basic auth) and is `noindex`, and `robots.txt` disallows everything. Only `/api/health`, the Stripe webhook, the twelve fictional `/media/themes/<theme>.webp` images, the homepage and the `/privacy`, `/terms` and `/refunds` pages answer without the password. Leave `APP_ENV` unset locally and in production. Setup and the reasons for the exemptions: [Staging access](docs/operations.md#staging-access).
 
 To check a production image in staging mode (PowerShell, local Supabase running, `.env.docker` generated). Port 3200 leaves the development app on 3000 running:
 
@@ -227,7 +227,7 @@ docker rm -f wedding-staging-check
 Remove-Item Env:STAGING_USERNAME, Env:STAGING_PASSWORD -ErrorAction SilentlyContinue
 ```
 
-The check expects 401 with a password prompt and `noindex` without valid credentials, the site with them, a disallow-all `robots.txt`, an open health check and webhook (400 for its missing signature), and working optimised theme images. CI runs it against the image it publishes.
+The check expects 401 with a password prompt and `noindex` without valid credentials (except the open pages, which return 200 and `noindex`), the site with them, a disallow-all `robots.txt`, an open health check and webhook (400 for its missing signature), and working optimised theme images. CI runs it against the image it publishes.
 
 ## Verification record
 

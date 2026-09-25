@@ -39,7 +39,7 @@ Needed securely at deployment time: project URL, publishable key, and service-ro
 - [x] SMTP credentials available securely: `yes — staging API key set as the staging Supabase project's SMTP password. No production key yet`
 - [ ] Signup confirmation tested in a real inbox: `no — SMTP is configured but not yet exercised`
 - [ ] Password recovery tested in a real inbox: `no — not yet exercised`
-- [ ] Support contact shown to customers: `
+- [ ] Support contact shown to customers: `hello@savethedates.co.uk (drafted in the footer and legal pages, 26 September 2026; must forward to a real inbox, since Resend receiving is off)`
 Google sign-in (F055) was reopened for staging by the owner on 26 September 2026 (code was already built; see F055). Not yet published or needed for launch.
 
 - [x] Google Cloud project and OAuth client owner (F055): `Ross (owner); Cloud project "SaveTheDates" (project ID savethedates)`
@@ -59,7 +59,7 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` and `${APP_ORIGI
 - [x] Stripe account/business owner: `Ross (owner). Reused the existing "Equimarket sandbox" account, renamed to SaveTheDates (Account Name field — Stripe had no separate Branding display name), rather than a new account`
 - [ ] Production price confirmed: `GBP 29 one-off / other: `
 - [x] Site lifetime confirmed (F022): `6 months after wedding date, fixed when checkout begins, for checkout attempts created after the F024 change is deployed. Purchases and checkout attempts already created retain their frozen 12-month expiry.`
-- [ ] Refund policy approved: `
+- [ ] Refund policy approved: `draft at /refunds (14-day full refund, then if the site doesn't work); awaiting owner approval`
 - [ ] Production Stripe account is separate from test account: `n/a — still one account, live mode not activated`
 - [x] Webhook endpoint domain: `Staging (test mode) only: https://savethedates-staging.onrender.com/api/stripe/webhook. No live-mode endpoint yet`
 - [ ] Live Checkout activation authorised: `no — deferred until there's a reviewable production site`
@@ -72,9 +72,9 @@ The webhook endpoint is `${APP_ORIGIN}/api/stripe/webhook`. Required events are 
 
 ## 5. Customer and legal policies
 
-- [ ] Terms of service approved: `link or owner decision: `
-- [ ] Privacy notice approved: `link or owner decision: `
-- [ ] Data controller/business identity: `
+- [ ] Terms of service approved: `draft at /terms (26 September 2026); awaiting owner approval`
+- [ ] Privacy notice approved: `draft at /privacy (26 September 2026), includes the Google sign-in wording; awaiting owner approval`
+- [ ] Data controller/business identity: `drafted as "Ross Meikle in the United Kingdom"; owner to confirm (or a business name)`
 - [ ] Support process and response target: `
 - [ ] Site expiry wording approved: `
 - [ ] Data retention period after expiry: `
