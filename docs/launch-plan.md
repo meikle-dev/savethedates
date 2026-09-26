@@ -16,10 +16,12 @@ Production is set up in full, then kept **private behind a password** while the 
 Production runs with the staging access gate switched on (`APP_ENV=staging`, `STAGING_USERNAME`, `STAGING_PASSWORD`; see [Staging access](operations.md#staging-access)). While it's on:
 
 - sign-up, sign-in, the dashboard and every wedding page ask for the shared login;
-- every response is `noindex`, and `robots.txt` disallows everything;
+- every response is `noindex`. `robots.txt` needs the login too, so without it you get a 401 and the browser shows a password prompt, and with it it disallows everything;
 - `/`, `/privacy`, `/terms`, `/refunds`, `/api/health`, the Stripe webhook and the theme images stay open.
 
-The lock password is generated in Render and kept only in the owner's password manager. Visitors who reach the homepage and click sign-up see a password prompt. Search engines are blocked and the site hasn't been shared, so almost nobody will.
+The lock password is generated in Render and kept only in the owner's password manager. Visitors who reach the homepage and click sign-up see a password prompt. Search engines can't index anything and the site hasn't been shared, so almost nobody will.
+
+When checking the lock in a browser, a locked path shows the browser's own login dialog. An automated browser often can't see that dialog and reports the page as hanging. Check with `curl -I https://savethedates.co.uk/dashboard` instead: the expected result is an immediate `401` with a `WWW-Authenticate: Basic` header.
 
 ## Stages
 
