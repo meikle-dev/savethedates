@@ -53,11 +53,12 @@ export function PrivacyNotice() {
         <li><strong>Stripe</strong> — payments.</li>
         <li><strong>Resend</strong> — sending account emails (Ireland).</li>
         <li><strong>Sentry</strong> — error reports that help us fix problems (Germany). A report identifies an account only by a random ID. We remove guest links, form contents and passwords first, and Sentry is set not to store IP addresses.</li>
+        <li><strong>Umami</strong> — counts visits to our public pages, such as the home page, without cookies. It never sees wedding pages, guest links or your account pages.</li>
       </ul>
       <p>If you use Continue with Google, Google handles your sign-in under its own privacy policy.</p>
       <p>Some of these providers may handle data outside the UK. Where they do, the transfer is protected by safeguards recognised under UK law, such as the UK International Data Transfer Addendum or the UK–US data bridge. We don’t sell your information or use it for advertising.</p></section>
     <section aria-labelledby="cookies"><h2 id="cookies">Cookies</h2>
-      <p>We use only cookies needed for the site to work: a sign-in cookie that keeps you signed in, and a cookie that protects Google sign-in and is removed when sign-in finishes. We don’t use analytics or advertising cookies. Stripe’s checkout page sets its own cookies to prevent fraud.</p></section>
+      <p>We use only cookies needed for the site to work: a sign-in cookie that keeps you signed in, and a cookie that protects Google sign-in and is removed when sign-in finishes. We don’t use analytics or advertising cookies; our visit counts work without them. Stripe’s checkout page sets its own cookies to prevent fraud.</p></section>
     <section aria-labelledby="keeping"><h2 id="keeping">How long we keep it</h2>
       <ul>
         <li>Your account and wedding site stay until you ask us to delete them. When your published site period ends, guests can no longer open it, but your private draft and replies stay in your account.</li>

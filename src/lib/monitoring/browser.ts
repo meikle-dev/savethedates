@@ -1,14 +1,13 @@
 // Browser monitoring. Configuration comes from a no-store runtime route, so static pages never freeze it and one
 // image serves every environment. With SENTRY_DSN unset the SDK is never downloaded and nothing leaves the site.
+import { fetchRuntimeConfig } from "../runtime-config-client";
 import type { SentryRuntimeConfig } from "./config";
 
 type SentryModule = typeof import("./sentry-browser");
 const shared = ((globalThis as { __saveTheDatesMonitoring?: { sentry?: Promise<SentryModule | null> } }).__saveTheDatesMonitoring ??= {});
 
 async function loadConfig(): Promise<SentryRuntimeConfig | null> {
-  const response = await fetch("/api/runtime-config", { cache: "no-store", credentials: "omit" });
-  if (!response.ok) return null;
-  const { sentry } = (await response.json()) as { sentry?: Partial<SentryRuntimeConfig> | null };
+  const sentry = (await fetchRuntimeConfig())?.sentry as Partial<SentryRuntimeConfig> | null | undefined;
   if (typeof sentry?.dsn !== "string" || typeof sentry.environment !== "string" || typeof sentry.release !== "string") return null;
   return { dsn: sentry.dsn, environment: sentry.environment, release: sentry.release };
 }

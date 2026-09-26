@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@/components/analytics";
 import { SiteMotion } from "@/components/site-motion";
 import "./site.css";
 
@@ -10,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en-GB"><body><SiteMotion>{children}</SiteMotion></body></html>;
+  return <html lang="en-GB"><body><SiteMotion>{children}</SiteMotion><Analytics /></body></html>;
 }

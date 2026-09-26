@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 test("with monitoring unset, pages load no SDK and make no third-party requests", async ({ page, baseURL, request }) => {
   const config = await request.get("/api/runtime-config");
   expect(config.headers()["cache-control"]).toBe("no-store");
-  expect(await config.json()).toEqual({ sentry: null });
+  expect(await config.json()).toEqual({ sentry: null, analytics: null });
 
   const origins = new Set<string>();
   page.on("request", (sent) => {

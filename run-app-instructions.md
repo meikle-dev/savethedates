@@ -143,6 +143,8 @@ Sentry is off unless these runtime variables are set. Leave them unset locally; 
 | `SENTRY_DSN` | Sentry project DSN. Unset turns Sentry off |
 | `SENTRY_ENVIRONMENT` | Label such as `staging` or `production`; defaults to `local` |
 | `APP_RELEASE` | Commit SHA; defaults to `unreleased`. `docker build --build-arg APP_RELEASE=<sha>` builds it into the image |
+| `UMAMI_WEBSITE_ID` | Umami website ID for visit counts on public marketing pages. Unset turns analytics off |
+| `UMAMI_SCRIPT_URL` | Optional tracker URL; defaults to `https://cloud.umami.is/script.js` |
 
 `npm run test:monitoring` checks what Sentry would receive, without contacting Sentry. It starts the development server on port 3100 with a fake DSN that points at a local ingest on port 3199. It then runs a guest-link RSVP under `/<names>/<secret>`, an auth confirmation, a checkout return and a rejected webhook, and asserts the captured payloads contain no secrets or form values. It needs local Supabase. `npm run test:e2e` includes a check that, with the variables unset, pages load no SDK and contact no other origin.
 
