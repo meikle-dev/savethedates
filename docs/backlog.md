@@ -2248,15 +2248,15 @@ Record items 1–3 in `release-inputs.md` section 3.
 2. **Supabase custom domain (paid add-on).** For example `auth.savethedates.co.uk`. The callback moves to that domain, so every Google screen and email names `savethedates.co.uk`. It needs a paid Supabase plan plus the add-on's cost, and the Google client's redirect URI must be updated.
 3. **Accept it for now.** Keep the current wording.
 
-**Owner decision (26 September 2026):** option 2. "I want it to show the savethedates url not supabase."
+**Owner decision (26 September 2026, superseded same day):** option 2, then reversed. The owner first said "I want it to show the savethedates url not supabase," but when actually asked to approve the $10/month Custom Domain add-on during production setup, he declined: "mm okay i dont want to pay more money im already on pro plan... yeah skip it i dont want to pay that." **Current decision: option 1 (brand verification) only. Production stays on the default `msrpxvlxojnnefezestn.supabase.co` address; no custom domain.**
 
-- Production uses a Supabase custom domain, `auth.savethedates.co.uk`. It needs the Pro plan (already planned for production) plus the Custom Domain add-on, about $10 a month; the owner confirms the price shown at setup.
-- Setup: add the domain in Supabase, add its CNAME and verification TXT records in GoDaddy, activate it, set Render production `SUPABASE_URL` to `https://auth.savethedates.co.uk`, and use `https://auth.savethedates.co.uk/auth/v1/callback` as the Google client's redirect URI. The steps are in the [production setup prompt](production-setup-prompt.md), Phase 6.
-- Option 1 (brand verification) is still done too, so the consent screen also names "SaveTheDates".
-- Staging stays on the Free plan and keeps the Supabase address; that's accepted.
-- No code change is expected. After setup, the engineer checks email sign-up, Google sign-in and photo display on production, because the app then reaches Supabase through the custom domain.
+- Google sign-in works identically either way; the only difference is cosmetic (the domain shown during redirect/fine print).
+- Brand verification was submitted (Google Cloud Console → project "SaveTheDates" → Google Auth Platform → Branding → Verify branding) so the consent screen can still show the app name "SaveTheDates" regardless of domain.
+- **Outstanding: verification failed on first submission.** Google's crawler reported `https://savethedates.co.uk/` and `https://savethedates.co.uk/privacy` as unresponsive and "behind a login page" — because the site is still behind the `APP_ENV=staging` password lock. This is expected while locked, not a defect. **TODO: retry "Verify branding" once the production site is unlocked at launch.**
+- Staging stays on the Free plan and keeps the Supabase address; that's unchanged and accepted.
+- No code change is expected. After brand verification succeeds, the engineer checks Google sign-in on production once more to confirm the consent screen names "SaveTheDates".
 
-**Done when:** The owner has picked an option, recorded in `release-inputs.md` section 3 and F055. On production, a Google sign-in's consent screen and Google's follow-up email name SaveTheDates or `savethedates.co.uk`, checked with a real sign-in.
+**Done when:** Brand verification succeeds after launch (once the staging lock is removed), and a real Google sign-in on production shows the consent screen naming "SaveTheDates". Recorded in `release-inputs.md` section 3 and F055.
 
 ## F064 - Colour the site status on the workspace overview
 

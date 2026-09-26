@@ -199,16 +199,18 @@ Confirm all of these before Phases 6 and 7:
 - `/api/health` shows `ok`.
 - The migrations have been applied (ask me if you don't know).
 
-## Phase 6 — Google sign-in for production (custom domain about $10/month; brand review takes days)
+## Phase 6 — Google sign-in for production (brand review takes days)
 
-0. **Custom sign-in domain `auth.savethedates.co.uk`** (my decision, F063). It makes Google's screens and emails show `savethedates.co.uk` instead of `<ref>.supabase.co`.
-   - **⏸ PAUSE: Ross** approves the **Custom Domain** add-on on the production organisation. Tell me the price shown first.
-   - Supabase **production** → Project Settings → **Custom Domains** (it may be under General or Add-ons): enter `auth.savethedates.co.uk`.
-   - In GoDaddy, add exactly the records Supabase asks for, alongside the existing ones. This is usually a **CNAME** `auth` pointing to `<production ref>.supabase.co`, plus a **TXT** record for verification.
-   - Wait until Supabase shows the domain verified, then **activate** it.
-   - Render production → Environment: change `SUPABASE_URL` to `https://auth.savethedates.co.uk`, then **Save and deploy**. Check that `/api/health` shows `ok` and that `/account/sign-in` loads (enter the lock login).
-   - Supabase's Google **Callback URL** should now read `https://auth.savethedates.co.uk/auth/v1/callback`; use it in step 3.
-   - If Supabase's process differs from this, stop and ask me. Log the domain status.
+**Update, 26 September 2026:** Step 0 (custom domain) was skipped. When asked to approve the $10/month add-on during this setup, the owner declined it — "yeah skip it i dont want to pay that" — after confirming Google sign-in works identically either way (the domain shown is cosmetic only). Production stays on the default `msrpxvlxojnnefezestn.supabase.co` address, same as staging. See F063 in `backlog.md` for the full decision history.
+
+0. ~~**Custom sign-in domain `auth.savethedates.co.uk`**~~ — **Skipped, owner decision, 26 September 2026.** Not doing this. Supabase `SUPABASE_URL` and the Google callback URL both stay on the default project address.
+   - ~~**⏸ PAUSE: Ross** approves the **Custom Domain** add-on on the production organisation. Tell me the price shown first.~~
+   - ~~Supabase **production** → Project Settings → **Custom Domains** (it may be under General or Add-ons): enter `auth.savethedates.co.uk`.~~
+   - ~~In GoDaddy, add exactly the records Supabase asks for, alongside the existing ones. This is usually a **CNAME** `auth` pointing to `<production ref>.supabase.co`, plus a **TXT** record for verification.~~
+   - ~~Wait until Supabase shows the domain verified, then **activate** it.~~
+   - ~~Render production → Environment: change `SUPABASE_URL` to `https://auth.savethedates.co.uk`, then **Save and deploy**. Check that `/api/health` shows `ok` and that `/account/sign-in` loads (enter the lock login).~~
+   - ~~Supabase's Google **Callback URL** should now read `https://auth.savethedates.co.uk/auth/v1/callback`; use it in step 3.~~
+   - ~~If Supabase's process differs from this, stop and ask me. Log the domain status.~~
 
 1. **Verify the domain with Google.** In **Google Search Console**, add a **Domain** property `savethedates.co.uk` and verify it with the DNS **TXT** record it gives. Add that TXT record in GoDaddy alongside the existing records, without replacing any TXT record. Don't submit a sitemap yet; that's a launch-day step.
 2. **Google Cloud Console** → project "SaveTheDates" → **Google Auth Platform → Branding**:
@@ -228,7 +230,7 @@ Confirm all of these before Phases 6 and 7:
 4. Supabase **production** → Authentication → Sign In / Providers → **Google**: enable it, then paste the client ID and client secret. Save. (The `/auth/callback` redirect URL was already added in Phase 1.)
 5. Render production → Environment → add `AUTH_GOOGLE_ENABLED` = `true`, then **Save and deploy** ("Save only" doesn't apply it).
 6. **Google Auth Platform → Audience:** user type **External**, then **Publish app** (move it from Testing to In production). The app requests only the basic scopes (email, profile, openid), so no sensitive-scope verification is needed. Confirm that no sensitive or restricted scopes are listed under Data Access.
-7. **Brand verification:** submit it if Google offers it (Branding or Verification Center). Until it's approved, Google's screen names `auth.savethedates.co.uk` rather than "SaveTheDates". That's expected; tell me the status.
+7. **Brand verification:** submit it if Google offers it (Branding or Verification Center). Until it's approved, Google's screen names the raw `msrpxvlxojnnefezestn.supabase.co` address rather than "SaveTheDates" (there's no custom domain, per the step 0 decision above). **Status, 26 September 2026: submitted once via "Verify branding" and failed immediately.** Google's crawler reported `https://savethedates.co.uk/` and `/privacy` as unresponsive and "behind a login page" — expected, since the site is still behind the `APP_ENV=staging` password lock. I didn't pick either "I've fixed the issues" / "I believe these are wrong" on the resulting dialog, since neither was true yet; it's sitting unresolved with no harm done. **TODO — outstanding: retry "Verify branding" (Google Cloud Console → project "SaveTheDates" → Google Auth Platform → Branding) once the production site is unlocked at launch**, then tell Ross the status.
 8. **Quick check, only if I say yes:** on `https://savethedates.co.uk/account/sign-in` (enter the lock login), click **Continue with Google** and confirm Google's account chooser appears. Stop there unless I ask you to finish signing in; finishing creates a real account in production.
 
 ## Phase 7 — Stripe live mode  ⏸ PAUSE: Ross completes activation and verification
@@ -271,7 +273,7 @@ Confirm all of these before Phases 6 and 7:
 2. `/dashboard` asks for the lock login, and `/robots.txt` disallows everything.
 3. `/account/sign-in` (after the lock login) shows **Continue with Google**.
 4. Render production: the deploy is live on your chosen image tag, the logs show no repeating errors, and the env vars are all present (names only). The full list is `PORT`, `APP_ORIGIN`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `APP_ENV`, `STAGING_USERNAME`, `STAGING_PASSWORD` and `AUTH_GOOGLE_ENABLED`, plus the two Stripe ones if Phase 7 finished.
-5. Supabase production: custom SMTP is on (sender `hello@savethedates.co.uk`), the Google provider is enabled, the Site URL and redirect URLs are as set, and the custom domain `auth.savethedates.co.uk` is active. Render's `SUPABASE_URL` uses it.
+5. Supabase production: custom SMTP is on (sender `hello@savethedates.co.uk`), the Google provider is enabled, and the Site URL and redirect URLs are as set. No custom domain (F063: declined, 26 September 2026); Render's `SUPABASE_URL` stays on the default `<ref>.supabase.co` address.
 6. Stripe live: the webhook endpoint exists with the five events.
 7. Google: the consent screen is **In production**, and the brand verification status is noted.
 

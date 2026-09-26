@@ -42,7 +42,7 @@ Needed securely at deployment time: project URL, publishable key, and service-ro
 - [ ] Support contact shown to customers: `hello@savethedates.co.uk (in the footer and legal pages). Not receiving mail yet: an owner test email on 26 September 2026 went nowhere. F066 sets up forwarding to the owner's Gmail`
 Google sign-in (F055) was reopened for staging by the owner on 26 September 2026 (code was already built; see F055). The owner wants it at launch (25 September 2026).
 
-- [x] Address Google shows at sign-in (F063): `savethedates.co.uk, through a Supabase custom domain auth.savethedates.co.uk on production (owner, 26 September 2026; about $10/month add-on). Staging keeps the Supabase address`
+- [x] Address Google shows at sign-in (F063): `Supabase custom domain declined by the owner on 26 September 2026 when asked to confirm the $10/month price ("i dont want to pay that"); production stays on the default msrpxvlxojnnefezestn.supabase.co address, same as staging. Brand verification (F063 option 1) was submitted instead so the consent screen can show "SaveTheDates" regardless of domain, but it failed because Google's crawler can't reach https://savethedates.co.uk/ or /privacy through the APP_ENV=staging password lock ("unresponsive", "behind a login page"). TODO: re-submit brand verification (Google Cloud Console → project "SaveTheDates" → Google Auth Platform → Branding → Verify branding) once the site is unlocked at launch`
 
 - [x] Google Cloud project and OAuth client owner (F055): `Ross (owner); Cloud project "SaveTheDates" (project ID savethedates)`
 - [ ] Google OAuth clients created for staging and production: `staging only (client "SaveTheDates staging"); no production client`
