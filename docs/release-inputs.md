@@ -18,7 +18,7 @@ The host must run the existing Docker production image, support HTTPS, environme
 
 ## 2. Supabase production project
 
-- [x] Managed Supabase project reference: `Production: msrpxvlxojnnefezestn (Frankfurt). Staging: onrblnlwrnbdvyeasqdt (savethedates-staging, Frankfurt, Free). All 33 migrations in supabase/migrations/ applied to production in order on 26 September 2026 (about 09:00 UTC); checked against the repo with the Supabase connector's list_migrations the same day`
+- [x] Managed Supabase project reference: `Production: msrpxvlxojnnefezestn (Frankfurt). Staging: onrblnlwrnbdvyeasqdt (savethedates-staging, Frankfurt, Free). All 33 migrations in supabase/migrations/ applied to production in order on 26 September 2026 (about 09:00 UTC); checked against the repo with the Supabase connector's list_migrations the same day. `20260926000100_rsvp_meal_choices` (F068) applied to staging at 16:27 UTC and to production at 19:02 UTC on 26 September 2026`
 - [x] Supabase organisation/project owner: `Ross (owner)`
 - [x] Production project is separate from local and staging: `yes — msrpxvlxojnnefezestn, separate from staging's onrblnlwrnbdvyeasqdt`
 - [x] Database region: `Central EU (Frankfurt), to sit next to the app; production on Supabase Pro (organisation "SaveTheDates Production", checked 26 September 2026), staging on Free`
