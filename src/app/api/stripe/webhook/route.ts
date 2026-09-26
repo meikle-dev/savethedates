@@ -13,8 +13,8 @@ export async function POST(request: Request) {
   return withLogging("payment.webhook", "/api/stripe/webhook", () => handleWebhook(request));
 }
 
-function rejected(reason: string, body = "Incomplete Stripe event") {
-  log.warn("payment.webhook.rejected", { reason });
+function rejected(reason: string, body = "Incomplete Stripe event", fields?: { stripeEventId?: string }) {
+  log.warn("payment.webhook.rejected", { reason, ...fields });
   return new Response(body, { status: 400 });
 }
 
@@ -57,7 +57,7 @@ async function handleWebhook(request: Request) {
   if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
     const session = event.data.object;
     if (session.payment_status !== "paid") return Response.json({ received: true });
-    if (session.amount_total !== 2900 || session.currency !== "gbp") return rejected("unexpected_total", "Unexpected checkout total");
+    if (session.amount_total !== 3900 || session.currency !== "gbp") return rejected("unexpected_total", "Unexpected checkout total", { stripeEventId: event.id });
     eventType = "paid";
     paymentIntentId = id(session.payment_intent);
     weddingId = session.metadata?.wedding_id ?? null;

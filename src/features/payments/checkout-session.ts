@@ -25,7 +25,7 @@ export function checkoutSessionParams(attempt: CheckoutAttempt, ownerId: string,
       quantity: 1,
       price_data: {
         currency: "gbp",
-        unit_amount: 2900,
+        unit_amount: 3900,
         product_data: { name: "SaveTheDates wedding site" },
       },
     }],

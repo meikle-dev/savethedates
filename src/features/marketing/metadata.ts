@@ -6,7 +6,7 @@ export const whatWeOfferPath = "/what-we-offer";
 export const offerPhonePath = (theme: string) => `${whatWeOfferPath}/phone/${theme}`;
 export const supportEmail = "hello@savethedates.co.uk";
 
-const defaultShareImage = { path: "/media/share", alt: "SaveTheDates — Your wedding website, beautifully done. Save the Date, invitation and RSVP. One £29 payment." };
+const defaultShareImage = { path: "/media/share", alt: "SaveTheDates — Your wedding website, beautifully done. Save the Date, invitation and RSVP. One £39 payment." };
 
 function indexedPage(path: string, title: string, description: string, image = defaultShareImage): Metadata {
   const origin = marketingOrigin();
@@ -16,11 +16,11 @@ function indexedPage(path: string, title: string, description: string, image = d
 }
 
 export function homeMetadata(): Metadata {
-  return indexedPage("/", "Digital save the date & wedding website with RSVP | SaveTheDates", "Your Save the Date, invitation, wedding details and RSVPs with meal choices and dietary requirements, on one beautiful wedding website. Free to build, £29 once.");
+  return indexedPage("/", "Digital save the date & wedding website with RSVP | SaveTheDates", "Your Save the Date, invitation, wedding details and RSVPs with meal choices and dietary requirements, on one beautiful wedding website. Free to build, £39 once.");
 }
 
 export function digitalSaveTheDateMetadata(): Metadata {
-  return indexedPage(digitalSaveTheDatePath, "Digital save the date with online RSVP | SaveTheDates", "A digital save the date your guests open from a link on WhatsApp, text or email, with your wedding details and RSVP. Twelve designs, £29 once.");
+  return indexedPage(digitalSaveTheDatePath, "Digital save the date with online RSVP | SaveTheDates", "A digital save the date your guests open from a link on WhatsApp, text or email, with your wedding details and RSVP. Twelve designs, £39 once.");
 }
 
 export function whatWeOfferMetadata(): Metadata {

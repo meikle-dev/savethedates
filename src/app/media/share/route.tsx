@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 // ?page=offer is the /what-we-offer card (F070); anything else gets the homepage card.
 const cards = {
-  home: { lines: ["Your wedding website,", "beautifully done."], footer: "Save the Date, invitation and RSVP. One £29 payment." },
+  home: { lines: ["Your wedding website,", "beautifully done."], footer: "Save the Date, invitation and RSVP. One £39 payment." },
   offer: { lines: ["Everything we offer,", "in twelve designs."], footer: "Save the Date, invitation, details and RSVP with meal choices." },
 };
 

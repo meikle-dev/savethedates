@@ -14,7 +14,7 @@ test("marketing leads to signup and accurately explains price, visibility and RS
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your wedding website,beautifully done.");
   await expect(page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: /Sign in/ })).toHaveAttribute("href", "/account/sign-in");
   await expect(page.getByRole("link", { name: /Your workspace/ })).toHaveCount(0);
-  await expect(page.locator(".price")).toContainText("£29");
+  await expect(page.locator(".price")).toContainText("£39");
   await expect(page.getByText("Private links for your Save the Date and Invitation", { exact: true })).toBeVisible();
   await expect(page.getByText("Online RSVPs with meal choices", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "RSVPs without the spreadsheet chaos." })).toBeVisible();
@@ -138,7 +138,7 @@ test("the digital save the date page is indexable, accurate and linked from the 
   await expect(createLinks).toHaveCount(2);
   for (const link of await createLinks.all()) await expect(link).toHaveAttribute("href", "/account/sign-up");
   await expect(page.getByRole("link", { name: "See the twelve designs" })).toHaveAttribute("href", "/#themes");
-  await expect(page.locator(".price")).toContainText("£29");
+  await expect(page.locator(".price")).toContainText("£39");
   await page.getByText("Can guests see each other’s replies?", { exact: true }).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("No. Responses are visible only in your account.")).toBeVisible();
@@ -156,7 +156,7 @@ test("the digital save the date page is indexable, accurate and linked from the 
 test("privacy, terms and refund pages are linked from the footer and beside sign-up", async ({ page, baseURL }) => {
   const pages = [
     { link: "Privacy", path: "/privacy", heading: "Privacy notice", text: "Google shares your name, email address and profile picture link" },
-    { link: "Terms", path: "/terms", heading: "Terms of service", text: "you pay £29 once for one wedding site" },
+    { link: "Terms", path: "/terms", heading: "Terms of service", text: "you pay £39 once for one wedding site" },
     { link: "Refunds", path: "/refunds", heading: "Refund policy", text: "within 14 days of paying and get a full refund" },
   ];
   for (const { link, path, heading, text } of pages) {

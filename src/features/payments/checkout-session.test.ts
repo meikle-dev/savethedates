@@ -22,6 +22,6 @@ describe("checkoutSessionParams", () => {
       success_url: "https://example.test/dashboard/publish?checkout=success",
       cancel_url: "https://example.test/dashboard/publish?checkout=cancelled",
     });
-    expect(params.line_items).toEqual([{ quantity: 1, price_data: { currency: "gbp", unit_amount: 2900, product_data: { name: "SaveTheDates wedding site" } } }]);
+    expect(params.line_items).toEqual([{ quantity: 1, price_data: { currency: "gbp", unit_amount: 3900, product_data: { name: "SaveTheDates wedding site" } } }]);
   });
 });
