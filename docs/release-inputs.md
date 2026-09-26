@@ -42,11 +42,11 @@ Needed securely at deployment time: project URL, publishable key, and service-ro
 - [ ] Support contact shown to customers: `hello@savethedates.co.uk (in the footer and legal pages). Forwarded by ImprovMX to the owner's Gmail; ImprovMX shows the domain Active and the MX records resolve (26 September 2026). Still to do: a test from an address other than the owner's Gmail, because Gmail hides forwarded copies of your own messages (F066)`
 Google sign-in (F055) was reopened for staging by the owner on 26 September 2026 (code was already built; see F055). The owner wants it at launch (25 September 2026).
 
-- [x] Address Google shows at sign-in (F063): `Supabase custom domain declined by the owner on 26 September 2026 when asked to confirm the $10/month price ("i dont want to pay that"); production stays on the default msrpxvlxojnnefezestn.supabase.co address, same as staging. Brand verification (F063 option 1) was submitted instead so the consent screen can show "SaveTheDates" regardless of domain, but it failed because Google's crawler can't reach https://savethedates.co.uk/ or /privacy through the APP_ENV=staging password lock ("unresponsive", "behind a login page"). That failure was on the older production image, where / and /privacy hung. Since the redeploy to d049053 they answer 200 without the lock, including to Googlebot's user agent (checked 26 September 2026). Re-submission was started by the browser agent on 26 September 2026, after the redeploy; record Google's result here`
+- [x] Address Google shows at sign-in (F063): `Supabase custom domain declined by the owner on 26 September 2026 when asked to confirm the $10/month price ("i dont want to pay that"); production stays on the default msrpxvlxojnnefezestn.supabase.co address, same as staging. Brand verification (F063 option 1) was submitted instead so the consent screen can show "SaveTheDates" regardless of domain, but it failed because Google's crawler can't reach https://savethedates.co.uk/ or /privacy through the APP_ENV=staging password lock ("unresponsive", "behind a login page"). That failure was on the older production image, where / and /privacy hung. Since the redeploy to d049053 they answer 200 without the lock, including to Googlebot's user agent (checked 26 September 2026). Resubmitted after the redeploy and approved on 26 September 2026; the owner published the verified branding`
 
 - [x] Google Cloud project and OAuth client owner (F055): `Ross (owner); Cloud project "SaveTheDates" (project ID savethedates)`
 - [x] Google OAuth clients created for staging and production: `both. Production's Supabase project has the Google provider enabled (public auth settings, checked 26 September 2026). Record the production client ID here`
-- [ ] Google consent screen name: `SaveTheDates. Published ("In production", reported by the browser agent on 26 September 2026), so any Google account can sign in. Brand verification is pending (see F063); until it passes, Google may show the msrpxvlxojnnefezestn.supabase.co address instead of the name`
+- [x] Google consent screen name: `SaveTheDates. Published ("In production"), and brand verification approved and published (owner, 26 September 2026)`
 - [ ] Google sign-in tested on staging with disposable Google accounts: `partly — the owner confirmed Google sign-in works on staging (25 September 2026); the individual checklist results below were not recorded`. Record each result in the F055 handoff:
   - a new Google user creates an account and reaches Basics; signing in again returns to the same wedding;
   - a confirmed email/password user signs in with Google (same email) and reaches their existing wedding, and their password still works;
@@ -59,7 +59,7 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` and `${APP_ORIGI
 ## 4. Stripe billing
 
 - [x] Stripe account/business owner: `Ross (owner). Reused the existing "Equimarket sandbox" account, renamed to SaveTheDates (Account Name field — Stripe had no separate Branding display name), rather than a new account`
-- [ ] Production price confirmed: `GBP 29 one-off / other: `
+- [x] Production price confirmed: `GBP 29 one-off (live purchase made by the owner, 26 September 2026)`
 - [x] Site lifetime confirmed (F022): `6 months after wedding date, fixed when checkout begins, for checkout attempts created after the F024 change is deployed. Purchases and checkout attempts already created retain their frozen 12-month expiry.`
 - [x] Refund policy approved: `/refunds (14-day full refund, then if the site doesn't work); approved by the owner, 25 September 2026`
 - [x] Production Stripe account is separate from test account: `one account; live mode serves production and test mode serves staging, with separate keys and webhooks`
@@ -68,7 +68,7 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` and `${APP_ORIGI
 - [x] Live secret key available securely: `yes — sk_live_ key in Render production STRIPE_SECRET_KEY only`
 - [x] Live webhook signing secret available securely: `yes — in Render production STRIPE_WEBHOOK_SECRET only`
 - [x] Test-mode staging checkout verified: `yes — owner completed a real Stripe test Checkout on staging, 25 September 2026 (after the F061 fixes)`
-- [ ] Refund/dispute handling verified: `not yet — the 26 September 2026 staging test refunded a different, older test payment, so nothing was revoked (correctly; see F067). Repeat on the site's own £29 payment from 25 September 2026, 21:55 UTC`
+- [x] Refund/dispute handling verified: `refunds, yes — the owner confirmed a live £29 purchase and refund on production, 26 September 2026 (the earlier staging test refunded an unrelated payment; see F067). Disputes not exercised`
 
 The webhook endpoint is `${APP_ORIGIN}/api/stripe/webhook`. Required events are documented in [operations.md](operations.md).
 
@@ -105,10 +105,10 @@ These choices are required before implementing and testing export/deletion. The 
 - [ ] Backup restore drill owner: `
 - [x] Staging journey tester: `Ross (owner); checklist run on staging on 26 September 2026, results in F041`
 - [ ] Independent release reviewer: `
-- [ ] Planned release window: `following the launch plan (docs/launch-plan.md): production is set up locked, reviewed by Stripe and Google, rehearsed by the owner, then opened. Date to be set`
-- [ ] Production dress rehearsal completed (launch plan stage 4): `
+- [x] Planned release window: `opened 26 September 2026, following the launch plan (docs/launch-plan.md)`
+- [ ] Production dress rehearsal completed (launch plan stage 4): `partly — live purchase and refund confirmed by the owner, 26 September 2026; other steps not recorded`
 - [ ] Rollback approver: `
-- [ ] Final production launch approval: `pending`
+- [x] Final production launch approval: `the owner, 26 September 2026 (lock removed; smoke passed at 14:12 UTC on image d049053…, digest sha256:73b8cd9f…5105)`
 
 The [21 September review follow-up](backlog.md#21-september-review-follow-up) is also a release gate: F013-F020 must be completed or explicitly deferred by the owner, and F021-F022 need recorded decision dispositions. Release inputs alone do not close those tickets.
 

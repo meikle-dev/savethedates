@@ -1,5 +1,7 @@
 # Launch plan: private review, then open
 
+> **Launched 26 September 2026.** SaveTheDates is public at `https://savethedates.co.uk`. The launch record, and what's still open after launch, are in [F009](backlog.md#f009---launch-and-operate-the-service). The sections below are kept as the record of how it was done, and for closing or rolling back.
+
 Agreed with the owner on 25 September 2026. This is how SaveTheDates goes from staging to a public, paid launch. It sets the order of work. [Release and operations](operations.md) holds the detailed procedures, [release inputs](release-inputs.md) the recorded values, and [the backlog](backlog.md) the state of each ticket.
 
 ## The approach
@@ -43,12 +45,14 @@ The owner ran the browser-agent prompt in [production-setup-prompt.md](productio
 
 The engineer (Claude Code) applied all 33 migrations in `supabase/migrations/` to the production project, the same way as staging.
 
-### 3. Private review
+### 3. Private review (done 26 September 2026)
 
 - **Stripe live activation (done 26 September 2026):** live mode is active, and the live secret key and webhook signing secret are on the Render production service.
-- **Google:** the consent screen is published ("In production"), so anyone can sign in with Google. Brand verification was resubmitted on 26 September 2026 (F063). Until Google approves it, its screens may show the Supabase address `msrpxvlxojnnefezestn.supabase.co`; afterwards they name "SaveTheDates". It doesn't block opening.
+- **Google:** the consent screen is published ("In production"), so anyone can sign in with Google. Brand verification was approved and published on 26 September 2026 (F063), so Google's screens name "SaveTheDates".
 
-### 4. Dress rehearsal on production
+### 4. Dress rehearsal on production (partly recorded)
+
+On 26 September 2026 the owner confirmed step 6 (a live purchase) and step 8 (the refund) on production before opening. The other steps weren't recorded; any still unchecked can be run now on the live site.
 
 The owner does this personally, logged in through the lock, using their own real accounts. Record each result, with the date and the image tag, in the F009 handoff.
 
@@ -81,9 +85,16 @@ Also still open (26 September 2026):
 - F067, and the repeated refund test on staging (F041);
 - recording F038's remaining Sentry checks.
 
-F009's release review decides what launch requires. [The backlog](backlog.md#f009---launch-and-operate-the-service) is authoritative.
+F009's release review decides what launch requires. [The backlog](backlog.md#f009---launch-and-operate-the-service) is authoritative. The owner opened the site on 26 September 2026 with the items above still open; F009 tracks them.
 
-### 6. Open to the public (launch)
+### 6. Open to the public (launch, 26 September 2026)
+
+Status:
+
+- Steps 1, 2 and 6 are done. The smoke test and the checks in step 2 passed at 14:12 UTC.
+- Step 3: confirm the sitemap was submitted in Search Console.
+- Step 4 (link previews, F047) is still to do.
+- Step 5 (watching Sentry and the logs) is ongoing.
 
 1. Render production: remove `APP_ENV`, `STAGING_USERNAME` and `STAGING_PASSWORD`, then **Save and deploy**.
 2. Check that `/robots.txt` now allows the homepage, that `/dashboard` redirects to sign-in rather than asking for the lock login, and that `npm run smoke -- https://savethedates.co.uk` passes.
