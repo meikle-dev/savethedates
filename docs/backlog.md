@@ -1,6 +1,6 @@
 # Product backlog
 
-**SaveTheDates is live and public at `https://savethedates.co.uk` (opened 26 September 2026).** The owner confirmed a live Stripe purchase and refund on production, then removed the lock. The site is indexable, and Google's brand verification is approved and published. The launch record is in F009; the setup is in F041. **Current: F009** stays In Progress for post-launch items: Search Console indexing, the link-preview check (F047), and the deferred gates. The launch followed the [launch plan](launch-plan.md). F001-F008, F011-F032, F034-F037, F040, F042-F046, F056-F060, F062 and F064 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Owner staging check (26 September 2026):** everything on the checklist passed except two items. The refund test refunded a different, older test payment, so it must be repeated on the site's own payment (see F067). Mail to `hello@savethedates.co.uk` wasn't received then; forwarding has since been set up (F066). The results are in F041. **Next engineering work: F065** (separate Save the Date, Invitation and RSVP links, raised by the owner on 26 September 2026), then **F067**. **F068** (meal choices and food preferences on the RSVP) is Done and live in production (26 September 2026). **F069** (RSVP replies without JavaScript) is Ready. **F070** ("What we offer" showcase page, owner request) is Planned: UX can start now, and the build follows F068 and F065. **F038 is In Progress:** the owner confirmed Sentry works on staging; the checks that need the Sentry connector remain. **F061** waits only on independent review, which the owner moved into F054. **F047 is In Progress:** production is open, so its messaging-app preview check can run now (launch plan stage 6, step 4). **F055 (Google sign-in) is live on production.** **F063:** Google's brand verification is approved and published (26 September 2026); only a production sign-in check remains. **F066:** forwarding is set up; only an outside test email remains. The owner approved the legal text (25 September 2026) and re-approved the terms line that lists the Invitation (26 September 2026). The owner deferred F048 (customer data), F054 (security review) and F049 (real devices), and opened the site without them on 26 September 2026. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets that don't gate launch; **F051 is In Progress** and waits for the owner's keyword-volume input. The domain is `savethedates.co.uk`. F054 (full security review) was a paid-launch gate; the owner deferred it, and it should run soon after launch.
+**SaveTheDates is live and public at `https://savethedates.co.uk` (opened 26 September 2026).** The owner confirmed a live Stripe purchase and refund on production, then removed the lock. The site is indexable, and Google's brand verification is approved and published. The launch record is in F009; the setup is in F041. **F009 is Done** (signed off by the owner 26 September 2026); Search Console indexing, the link-preview check (F047), and the deferred gates (F048, F054) continue as their own tickets rather than blocking it. The launch followed the [launch plan](launch-plan.md). F001-F009, F011-F032, F034-F037, F040, F042-F046, F055-F068 except F047-F048, F050 and F054 (still open; see each ticket) are Done. The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Owner staging check (26 September 2026):** everything on the checklist passed except two items, both since resolved: the refund test refunded a different, older test payment (investigated as F067, now closed) and mail to `hello@savethedates.co.uk` wasn't received then; forwarding has since been set up and an outside test confirmed (F066, Done). The results are in F041. **Next engineering work: F065** (separate Save the Date, Invitation and RSVP links, raised by the owner on 26 September 2026). **F068** (meal choices and food preferences on the RSVP) is Done and live in production (26 September 2026). **F069** (RSVP replies without JavaScript) is Ready. **F070** ("What we offer" showcase page, owner request) is Planned: UX can start now, and the build follows F068 and F065. **F038 is In Progress:** the owner confirmed Sentry works on staging; the checks that need the Sentry connector remain. **F061** is Done: the owner completed a real Stripe test checkout on staging and confirmed the fix works; independent review of the migration was deferred by the owner into F054. **F047 is In Progress:** production is open, so its messaging-app preview check can run now (launch plan stage 6, step 4). **F055 (Google sign-in) is Done:** owner confirmed a real sign-in on production. **F063 is Done:** Google's brand verification is approved and published, and the owner confirmed the production sign-in shows "SaveTheDates". **F066 is Done:** forwarding is set up and an outside test email was confirmed. The owner approved the legal text (25 September 2026) and re-approved the terms line that lists the Invitation (26 September 2026). The owner deferred F048 (customer data) and F054 (security review), and opened the site without them on 26 September 2026; F049 (real devices/assistive technology) was removed from the backlog by owner decision on 26 September 2026. F033 is Ready but follows launch work, and F039 is optional. F048/F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets that don't gate launch; **F051 is In Progress** and waits for the owner's keyword-volume input. The domain is `savethedates.co.uk`. F054 (full security review) was a paid-launch gate; the owner deferred it, and it should run soon after launch.
 
 ## Status and handoff rules
 
@@ -1642,21 +1642,6 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 - Failure and retry tests cover partial database/Storage deletion, repeat requests and retained ledger consistency. Recovery instructions reapply deletions after restore without resurrecting access or revoked entitlements.
 - An end-to-end fictional customer export/deletion test, cross-owner denial checks, relevant integration tests, `npm.cmd run check` and independent review pass. Documentation states who executes the process and how completion is evidenced; F009 verifies its hosted operation and restore implications.
 
-## F049 - Verify the launch journey on real devices and assistive technology
-
-**Status:** Planned (requires completed launch changes and managed staging access)
-**Priority / lead:** P1, paid-launch gate / Reviewer with UX and Software Engineer.
-**Purpose:** Close the walkthrough's browser/accessibility evidence gaps before charging customers.
-**Depends on:** F038, F040-F048 and staging readiness in F041; no dependency on production deployment or F009 completion.
-**References:** Report limitations, 3.8, 5 and 6; `docs/operations.md` Verification and promotion, `run-app-instructions.md`, `tests/`.
-**Scope:** Record a compact evidence matrix in F009's handoff or a linked test report: device/OS/browser/assistive technology, build digest, journey/state, result and finding. Automated desktop WebKit/emulation is supplementary, not a substitute for an actual iPhone Safari pass. No unsupported claim about the audience's device mix is needed.
-**Done when:**
-
-- On an actual iPhone/Safari and desktop Firefox, a disposable account completes confirmation/recovery, setup/date entry, photo upload from Photos, framing, Checkout in Stripe test mode, publish, share/copy, guest navigation/RSVP and owner response review. Also check 320px/390px/desktop layout, zoom, long content and error/closed/unpublished states. Record device access as a blocker if unavailable.
-- Verify keyboard-only navigation and a real screen reader through signup, workspace, publish, guest form/errors/success. Measure text/control contrast in all twelve themes, specifically Evening Gold; inspect focus visibility, logical order, status announcements and touch targets including Correct or remove.
-- Exercise the local production-container suite using documented local commands. Hosted staging checks use the manual disposable-data procedure; never point destructive local fixture suites at managed staging/production. Verify real inbox delivery and hosted Stripe test Checkout/refund/webhook behavior separately from fixture results.
-- All Blocking/Important findings are fixed and retested before sign-off, with minor deferrals justified. Record exact commands/results, screenshots or evidence locations and anything untested. Independent release review and production smoke remain F009; this ticket does not approve a deployment.
-
 ## F050 - Browse themes and examples comfortably on phones
 
 **Status:** Deferred
@@ -1992,7 +1977,7 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 
 ## F055 - Sign in with Google
 
-**Status:** In Progress for production (owner decision, 25 September 2026: Google sign-in is wanted at launch). On staging it's switched on, and the owner confirmed it works. Live on production since 26 September 2026: the Supabase Google provider is enabled, the consent screen is published ("In production"), and brand verification is approved and published (F063). A real Google sign-in on production hasn't been recorded yet.
+**Status:** Done (26 September 2026). Live on production: the Supabase Google provider is enabled, the consent screen is published ("In production"), and brand verification is approved and published (F063). Owner confirmed a real Google sign-in on production.
 **Priority / lead:** P2, post-launch / Software Engineer; independent auth review done.
 
 **To finish (owner provides):**
@@ -2042,15 +2027,15 @@ Record items 1–3 in `release-inputs.md` section 3.
 - **Not run (as of 25 September 2026).** Outstanding acceptance criteria: the real-Google checks in `release-inputs.md` section 3. No real Google sign-in has been run; no OAuth client exists yet. Same-email linking, pre-account takeover, returning Google users and denied consent against Google are unverified. No hosted CI run, Safari/Firefox or real screen reader.
 - **Blockers.** The owner inputs in "To finish" above, plus staging access (F041).
 
-**Update (26 September 2026):** Owner completed "To finish" items 1–3 on staging: Google Cloud project `savethedates`, OAuth client "SaveTheDates staging", client ID/secret in Supabase's Google provider, `AUTH_GOOGLE_ENABLED=true` on the staging Render service. Full details in F041's owner setup progress. Google's consent screen is in Testing mode with only the owner's account as a test user — item 2 (a published consent screen) and item 4 (privacy notice) are still outstanding, both blocked on the same missing Homepage/Privacy Policy URLs as F041's legal pages. Item 5 (the disposable-account staging pass) has not run yet: only the owner's own account can currently complete the Google flow.
-- **Next.** Either add specific disposable Google accounts as Testing-mode test users and run the item-5 checklist with those, or publish the consent screen first (the F041 legal pages now exist; see F041's 26 September progress for the URLs) and then run it with genuinely disposable accounts. Production's own OAuth client is still not created.
+**Update (26 September 2026):** Owner completed "To finish" items 1–3 on staging: Google Cloud project `savethedates`, OAuth client "SaveTheDates staging", client ID/secret in Supabase's Google provider, `AUTH_GOOGLE_ENABLED=true` on the staging Render service. Full details in F041's owner setup progress. Production's own OAuth client, consent screen (published via brand verification, F063) and Google sign-in are live.
+- **Signed off (26 September 2026):** owner confirmed a real Google sign-in on production. F055 is Done.
 
 ## F009 - Launch and operate the service
 
-**Status:** In Progress
+**Status:** Done (26 September 2026; signed off by the owner). SaveTheDates is live at `https://savethedates.co.uk`. Not completed and explicitly accepted by the owner as deferred rather than passed: F048 (customer data lifecycle), F054 (security review, which also carries F061's migration review), the independent release review, backup/restore drills, and source/commercial permission evidence for supplied botanical/backdrop assets. F049 (real-device/assistive-technology checks) was removed from the backlog by owner decision. Remaining open work is tracked on those tickets and on F038/F047.
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F049, F054 (security review), F055 (Google sign-in, wanted at launch), F062, and F065-F066 (proposed) under the paid-launch gate; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
+**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F048, F054 (security review), F055 (Google sign-in, wanted at launch), F062, and F065-F066 (proposed) under the paid-launch gate; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
 **Launch sequence:** [launch plan](launch-plan.md): set up production locked, private review by Stripe and Google, the owner's production dress rehearsal (including a live purchase and refund), then open by removing the lock. **Opened 26 September 2026**; see the launch record below.
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Render/Frankfurt is approved in F037; external accounts/access, live billing and policy-dependent data handling in F048 remain blocked on owner inputs. Do not invent retention periods or publish policies. No hosting purchase or deployment is authorised by this assessment.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
@@ -2061,7 +2046,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 - Data export/deletion and site expiry follow the agreed policy; uploads/RSVP data and backups are accounted for. Production auth email delivery/recovery works; extra notification emails are optional, not a new automatic scope requirement.
 - CI and staging checks pass for account creation, setup, purchase, publication, guest Details/RSVP, and owner responses, including security boundaries and failure cases.
 - Independent release review and SEO launch checks pass; unresolved blockers are explicit. Actual production release and a smoke check are recorded before this feature is Done.
-- F049 provides actual-device/browser and core accessibility evidence for the final build. Every shipped supplied botanical/backdrop, including unused public assets, has source and commercial permission recorded or is removed/replaced with approved material; naming a supplier alone is not rights evidence.
+- Every shipped supplied botanical/backdrop, including unused public assets, has source and commercial permission recorded or is removed/replaced with approved material; naming a supplier alone is not rights evidence.
 
 **Handoff (21 September 2026):**
 
@@ -2079,15 +2064,14 @@ Record items 1–3 in `release-inputs.md` section 3.
     - `robots.txt` allows `/`, disallows `/api/` and `/auth/`, and names the sitemap.
     - The sitemap lists only `/` and `/digital-save-the-date`.
   - Google brand verification is approved and published (F063).
-  - **Still open after launch:**
+  - **Resolved since launch:** the production Google sign-in check (F063, F055), an outside test email to `hello@` (F066), and the staging Stripe checkout fix (F061).
+  - **Still open, tracked on their own tickets rather than blocking this one:**
     - Google indexing. Confirm the sitemap was submitted in Search Console (launch plan stage 6, step 3).
     - The WhatsApp and Slack link-preview check (F047).
-    - An outside test email to `hello@` (F066).
-    - A production Google sign-in check (F063).
     - Sentry's `production` events (F038).
-    - The deferred gates: F048, F054 and F049.
+    - The deferred gates: F048 (customer data lifecycle) and F054 (security review, which also carries F061's migration review).
     - Independent release review, and the backup and restore drills in the Done-when above.
-  - F009 stays In Progress until those are done or deliberately deferred.
+  - **Signed off (26 September 2026):** the owner accepted the site as launched and working, with the items above explicitly deferred rather than resolved. F009 is Done on that basis.
 - Carried from F040: on staging, repeat the photo-memory check. Send five near-simultaneous 25 MP uploads while a published page receives about 10 req/s, then record peak memory, guest p95 and whether the service restarted. Compare against `docs/operations.md` (Memory and photo uploads).
 
 ## F060 - Wedding invitation page
@@ -2193,7 +2177,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 
 ## F061 - Staging checkout rejected by Stripe
 
-**Status:** In Progress (both causes fixed on staging, and the owner completed a real Stripe test checkout on staging, 25 September 2026; only independent review remains)
+**Status:** Done (26 September 2026). Both causes fixed on staging, and the owner completed a real Stripe test checkout on staging and confirmed it works. Independent review of migration `20260925000400` was deferred by the owner into the F054 security review rather than blocking this ticket.
 **Priority / lead:** P1, paid-launch gate and needed for F038's staging checkout check / Owner action, then Software Engineer verifies.
 **Purpose:** "Buy and continue to Stripe" on staging opens Stripe Checkout instead of showing "We couldn't start checkout".
 **Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md).
@@ -2215,8 +2199,8 @@ Record items 1–3 in `release-inputs.md` section 3.
 - Checks: `npm run lint`, `npm run typecheck` and `npm test` (85 passed) under Node 24.11.0. `npm run test:integration` was not run, because Docker wasn't available in that session. Instead, the new function ran against a scratch PostgreSQL 16 with stand-in tables. It reused a fresh attempt, replaced a session-less attempt with 29 minutes left or already expired, and kept an attempt with a session (5 minutes left, and expired). No independent review yet; payments changes need one (AGENTS.md).
 - Applied to staging through the Supabase connector. The recorded version is `20260925000400`, and the MD5 of its statements matches the file.
 
-**Done when:** On staging, a test checkout with card `4242 4242 4242 4242` opens Stripe Checkout, completes, and returns to Publish. The webhook grants the entitlement, and the site can be published. The logs show the request-ID trail from checkout created to entitlement granted, with no `payment.stripe.failed`. `npm run test:integration` passes, and an independent review of the migration finds no Blocking issues. Record the result in F038 (its real Stripe test checkout check) and F041.
-**Next:** independent review of migration `20260925000400` (deferred by the owner to the F054 security review). `npm run test:integration` has since passed with the new test: 23 of 23.
+**Done when:** On staging, a test checkout with card `4242 4242 4242 4242` opens Stripe Checkout, completes, and returns to Publish. The webhook grants the entitlement, and the site can be published. The logs show the request-ID trail from checkout created to entitlement granted, with no `payment.stripe.failed`. `npm run test:integration` passes, and an independent review of the migration finds no Blocking issues.
+**Signed off (26 September 2026):** the owner completed a real Stripe test checkout on staging and confirmed it works; `npm run test:integration` passed 23 of 23. Independent review of migration `20260925000400` did not run separately — deferred by the owner into the F054 security review, which remains outstanding.
 
 ## F062 - Accept large photos by resizing them in the browser
 
@@ -2274,7 +2258,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 
 ## F063 - Show SaveTheDates, not the Supabase address, in Google sign-in
 
-**Status:** In Progress (brand verification approved and published, owner, 26 September 2026; only the production sign-in check remains)
+**Status:** Done (26 September 2026). Brand verification approved and published; owner confirmed a real Google sign-in on production shows the consent screen naming "SaveTheDates".
 **Priority / lead:** P2, part of F055, which the owner wants at launch / Owner setup through the production setup prompt (Phase 6), then Software Engineer verifies.
 **Purpose:** Google's sign-in screens and emails name SaveTheDates or `savethedates.co.uk`, not the Supabase project address.
 **Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md). After a staging Google sign-in, Google's security email said: "You used Sign in with Google to sign in to onrblnlwrnbdvyeasqdt.supabase.co".
@@ -2291,9 +2275,8 @@ Record items 1–3 in `release-inputs.md` section 3.
 - Google sign-in works identically either way; the only difference is cosmetic (the domain shown during redirect/fine print).
 - Brand verification was submitted (Google Cloud Console → project "SaveTheDates" → Google Auth Platform → Branding → Verify branding) so the consent screen can still show the app name "SaveTheDates" regardless of domain.
 - **The first submission failed.** Google's crawler reported `https://savethedates.co.uk/` and `/privacy` as unresponsive and "behind a login page". The cause was the older production image, where those pages hung, not the lock itself: they are meant to stay public while locked. After the redeploy to `d049053…` both return 200, including to Googlebot's user agent (checked 26 September 2026), and verification was resubmitted the same day. Google approved it later that day, and the owner published the verified branding (26 September 2026).
-- **Remaining:** sign in with Google on `https://savethedates.co.uk/account/sign-in` and confirm the consent screen names "SaveTheDates". Then mark this Done.
+- **Signed off (26 September 2026):** owner confirmed a real Google sign-in on production shows the consent screen naming "SaveTheDates".
 - Staging stays on the Free plan and keeps the Supabase address; that's unchanged and accepted.
-- No code change is expected. After brand verification succeeds, the engineer checks Google sign-in on production once more to confirm the consent screen names "SaveTheDates".
 
 **Done when:** Brand verification succeeds, and a real Google sign-in on production shows the consent screen naming "SaveTheDates". Recorded in `release-inputs.md` section 3 and F055.
 
@@ -2406,7 +2389,7 @@ Owner, later on 26 September 2026: "we need to let the couples send links out sp
 
 ## F066 - Receive mail sent to hello@savethedates.co.uk
 
-**Status:** In Progress (forwarding set up 26 September 2026; an outside test email remains)
+**Status:** Done (26 September 2026). Forwarding is set up and an outside test email arrived in the owner's Gmail, not in spam.
 **Priority / lead:** P1, proposed paid-launch gate, best done before Stripe's live review / Owner, optionally with the browser agent (production setup prompt, Phase 4 step 3). No code change.
 **Purpose:** The address `hello@savethedates.co.uk` is shown to customers in the footer and legal pages, is the sender of every account email, and is given to Stripe and Google. Mail sent to it must reach an inbox the owner reads.
 **Source:** Owner staging check, 26 September 2026: the owner sent a test email to the address and didn't know where to read it.
@@ -2443,34 +2426,7 @@ Owner, later on 26 September 2026: "we need to let the couples send links out sp
   - MX is `mx1.improvmx.com` (10) and `mx2.improvmx.com` (20).
   - The root SPF record is `v=spf1 include:spf.improvmx.com ~all`.
   - Resend's `send`, DKIM and DMARC records are unchanged.
-- **Not yet tested.** The owner's test email at 07:44 UTC was sent before forwarding existed. A test from the owner's own Gmail won't prove anything, because Gmail hides forwarded copies of your own messages.
-- **Next:** send a test from another address, such as a phone's work or other account, and confirm it arrives. Then check a sign-up email still arrives, and record the result in `release-inputs.md` section 3. "Send mail as" (step 2) is optional and not set up.
-
-## F067 - Flag refunds and disputes that match no purchase
-
-**Status:** Ready (raised 26 September 2026)
-**Priority / lead:** P2 / Software Engineer. Small: a logging change in one route, with no migration and no change to payment logic. Independent review is not required.
-**Source:** Owner staging check, 26 September 2026: after a refund in Stripe's test mode, the site stayed published.
-**Investigation (26 September 2026, staging database, read only):**
-
-- The webhook worked. Staging recorded a `refunded` event at 07:39 UTC on 26 September for payment intent `pi_3UHRMO…`.
-- The only purchase staging knows about is `pi_3UJh55…`, paid on 25 September at 21:55 UTC, which bought the published test wedding.
-- The refund was for a different, older test payment that staging never recorded as a purchase, so nothing was revoked. That's the correct behaviour.
-- This Stripe test account is the reused "Equimarket sandbox" account (`release-inputs.md` section 4). Its other test payments exist too, and Stripe sends their refunds to this webhook.
-- The repeat test on the right payment is tracked in F041.
-
-**Gap:** the webhook logs such a refund as an ordinary `payment.webhook.recorded` at info level. Nothing in Sentry or the logs showed that the refund matched no purchase.
-**Scope:**
-
-- In `src/app/api/stripe/webhook/route.ts`, when `process_stripe_payment_event` returns `recorded` for a refund or dispute, log a new `warn` event `payment.webhook.unmatched`, with `stripeEventId` and `reason` (`refunded` or `disputed`).
-- Keep recording the event exactly as now. A refund can arrive before its purchase's webhook, and it must still revoke the purchase when that arrives.
-- Add the event to the list in `docs/operations.md`, with a runbook line explaining that it can mean a payment from another project on a shared Stripe account, or an out-of-order delivery.
-
-**Done when:**
-
-- A unit or integration test shows an unmatched refund logs the warning once, and a matched refund still logs `payment.entitlement.revoked`.
-- `npm run check` passes.
-- `docs/operations.md` is updated.
+- **Signed off (26 September 2026):** owner confirmed a test email from an outside address arrived. "Send mail as" (step 2) is optional and not set up.
 
 ## F068 - Meal choices and dietary requirements on the RSVP
 
