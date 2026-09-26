@@ -2428,7 +2428,12 @@ Owner, later on 26 September 2026: "we need to let the couples send links out sp
     - The history row was relabelled to the repo version `20260926000200`.
     - Until the new code is deployed, the old staging code 404s the Invitation page and refuses replies through the Save the Date link while the Invitation is on. Decision 8 accepts this on staging.
   - Committed by the owner as `6446618`. Not applied to production.
-- **Next step:** CI deploys the passing image to staging through the deploy hook. Check it on staging, then apply the migration to production before promoting the image. Apply it to production before promoting the image (production migrations first). Then mark Done.
+- **Staging deploy (26 September 2026):** image `6446618` went live on Render staging at 20:59 UTC through the deploy hook. `919a6a7` (docs only) deployed a moment earlier and was then replaced. Checked by Claude Code without the staging login:
+  - `/api/health` returns 200; a guest URL returns 401 behind the staging gate; `/terms` shows the approved wording.
+  - On staging's 3 test weddings, the database follows the table. Both published weddings have the Invitation off: their Save the Date links resolve as `save_the_date`, their Invitation links find nothing, neither link returns Invitation content, and Details comes only through the Save the Date link, where it is on.
+  - Not checked: the logged-in journey (sending the three links, the Invitation switched on, and replies) needs the staging login, so it is for the owner.
+- **Production migration (26 September 2026, 21:19 UTC):** applied with the Supabase connector, along with the pending `20260926000300_reserve_what_we_offer` (F070). Checked afterwards: the new column, guard trigger and functions exist; both of production's weddings (still unpublished) have a valid, distinct Invitation secret; guests can't call the generator and owners can; 36 of 36 repo migrations are recorded. Production's migration history keeps its own auto-generated version stamps, as before (see `release-inputs.md`).
+- **Next step:** the owner checks F065 on staging (switch the Invitation on, send each link, reply through the RSVP link), then promotes the tested image to production and marks F065 Done. Apply it to production before promoting the image (production migrations first). Then mark Done.
 
 ## F066 - Receive mail sent to hello@savethedates.co.uk
 
