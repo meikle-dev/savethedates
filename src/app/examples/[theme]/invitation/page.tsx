@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { isWeddingTheme, themes } from "@/features/weddings/themes";
-import { InvitationPageView } from "@/features/weddings/invitation-view";
-import { exampleInvitation, exampleRsvpClosesOn } from "@/features/marketing/example-data";
+import { ExamplePage } from "@/features/marketing/example-pages";
 
 export function generateStaticParams() { return themes.map(({ id }) => ({ theme: id })); }
 
@@ -15,6 +14,5 @@ export async function generateMetadata({ params }: { params: Promise<{ theme: st
 export default async function ExampleInvitationPage({ params }: { params: Promise<{ theme: string }> }) {
   const { theme } = await params;
   if (!isWeddingTheme(theme)) notFound();
-  return <InvitationPageView invitation={exampleInvitation(theme)} homeHref={`/examples/${theme}`} invitationHref={`/examples/${theme}/invitation`} detailsHref={`/examples/${theme}/details`}
-    reply={{ href: `/examples/${theme}/rsvp`, open: true, closesOn: exampleRsvpClosesOn }} />;
+  return <ExamplePage theme={theme} page="invitation" base={`/examples/${theme}`} />;
 }

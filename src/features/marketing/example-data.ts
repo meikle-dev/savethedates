@@ -1,6 +1,6 @@
 import type { Wedding } from "@/features/weddings/wedding";
 import type { WeddingTheme } from "@/features/weddings/themes";
-import { emptyDetails, type WeddingDetailsPage } from "@/features/weddings/details";
+import { emptyDetails, type WeddingDetailsPage } from "../weddings/details";
 import type { InvitationPage } from "@/features/weddings/invitation";
 import type { MealMenu } from "@/features/weddings/meal-menu";
 // Deliberately public fictional content; never load examples from customer data.

@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { isWeddingTheme, themes } from "@/features/weddings/themes";
-import { SaveTheDate } from "@/features/weddings/save-the-date";
-import { exampleWedding } from "@/features/marketing/example-data";
+import { ExamplePage } from "@/features/marketing/example-pages";
+
 export function generateStaticParams() { return themes.map(({ id }) => ({ theme: id })); }
-export default async function ExamplePage({ params }: { params: Promise<{ theme: string }> }) {
+
+export default async function ExampleSaveTheDatePage({ params }: { params: Promise<{ theme: string }> }) {
   const { theme } = await params;
   if (!isWeddingTheme(theme)) notFound();
-  return <SaveTheDate wedding={exampleWedding(theme)} homeHref={`/examples/${theme}`} invitationHref={`/examples/${theme}/invitation`} detailsHref={`/examples/${theme}/details`} rsvpHref={`/examples/${theme}/rsvp`} photoLabel="Your photo here" />;
+  return <ExamplePage theme={theme} page="save-the-date" base={`/examples/${theme}`} />;
 }

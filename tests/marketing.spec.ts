@@ -16,16 +16,20 @@ test("marketing leads to signup and accurately explains price, visibility and RS
   await expect(page.getByRole("link", { name: /Your workspace/ })).toHaveCount(0);
   await expect(page.locator(".price")).toContainText("£29");
   await expect(page.getByText("Private links for your Save the Date and Invitation", { exact: true })).toBeVisible();
+  await expect(page.getByText("Online RSVPs with meal choices", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "RSVPs without the spreadsheet chaos." })).toBeVisible();
+  await expect(page.getByText(/Example of the catering numbers in your account, with fictional replies/)).toBeVisible();
   await expect(page.getByText("Published until six months after your wedding date*", { exact: true })).toBeVisible();
   await page.getByText("Who can see our website?", { exact: true }).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText(/Once published, anyone with one of your guest links/)).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: test.info().outputPath("homepage.png"), fullPage: true });
-  for (const section of [".marketing-hero", ".theme-showcase", ".marketing-pricing", ".marketing-faq"]) {
+  for (const section of [".marketing-hero", ".theme-showcase", ".marketing-how", ".marketing-whole", ".marketing-rsvp", ".marketing-pricing", ".marketing-faq"]) {
     await page.locator(section).screenshot({ path: test.info().outputPath(`${section.slice(1)}.png`) });
   }
-  const createLinks = page.getByRole("link", { name: "Create your save the date", exact: true });
+  await expect(page.getByRole("link", { name: "Explore the designs" })).toHaveAttribute("href", "#themes");
+  const createLinks = page.getByRole("link", { name: "Start building for free", exact: true });
   await expect(createLinks).toHaveCount(2);
   for (const link of await createLinks.all()) {
     await expect(link).toHaveAttribute("href", "/account/sign-up");
@@ -45,13 +49,13 @@ test("all public examples use fictional content, working Details and RSVP, and n
   // its example and every example must be noindex, then one example is walked through.
   await page.goto("/#themes");
   for (const { id, name } of themes) {
-    await expect(page.getByRole("link", { name: new RegExp(`${name}.*Explore this example`) })).toHaveAttribute("href", `/examples/${id}`);
+    await expect(page.getByRole("link", { name: new RegExp(`${name}.*Preview this design`) })).toHaveAttribute("href", `/examples/${id}`);
   }
   for (const robots of await Promise.all(themes.map(({ id }) => servedRobots(page, `/examples/${id}`)))) expect(robots).toEqual(["noindex, nofollow"]);
   const { id: theme, name } = themes[0];
-  await page.getByRole("link", { name: new RegExp(`${name}.*Explore this example`) }).click();
+  await page.getByRole("link", { name: new RegExp(`${name}.*Preview this design`) }).click();
   await expect(page).toHaveURL(new RegExp(`/examples/${theme}$`));
-  await expect(page.getByRole("link", { name: "Create your save the date" })).toHaveAttribute("href", "/account/sign-up");
+  await expect(page.getByRole("link", { name: "Start building for free" })).toHaveAttribute("href", "/account/sign-up");
   await expect(page.getByText("Fictional wedding example")).toBeVisible();
   await expect(page.locator(".wedding-shell")).toHaveAttribute("data-theme", theme);
   await expect(page.getByRole("img")).toHaveJSProperty("naturalWidth", 1400);
@@ -75,7 +79,7 @@ test("all public examples use fictional content, working Details and RSVP, and n
   expect(await servedRobots(page, `/examples/${theme}/rsvp`)).toEqual(["noindex, nofollow"]);
   await page.getByRole("link", { name: "Save the date", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
-  await page.getByRole("link", { name: "All themes", exact: false }).click();
+  await page.getByRole("link", { name: "All designs", exact: false }).click();
   await expect(page).toHaveURL(/\/#themes$/);
   expect((await page.goto("/examples/unknown"))?.status()).toBe(404);
   expect((await page.goto("/examples/unknown/rsvp"))?.status()).toBe(404);
@@ -105,9 +109,11 @@ test("search and social metadata use the configured origin and only market publi
   for (const path of ["/digital-save-the-date", "/examples/minimal", "/account/sign-in", "/unknown-marketing-test-wedding"]) expect(await structuredData(page, path), path).toEqual([]);
   const sitemap = await request.get("/sitemap.xml");
   const xml = await sitemap.text();
-  expect(xml.match(/<loc>/g)).toHaveLength(2);
+  expect(xml.match(/<loc>/g)).toHaveLength(3);
   expect(xml).toContain(`<loc>${baseURL}</loc>`);
   expect(xml).toContain(`<loc>${baseURL}/digital-save-the-date</loc>`);
+  expect(xml).toContain(`<loc>${baseURL}/what-we-offer</loc>`);
+  expect(xml).not.toContain("/what-we-offer/phone");
   expect(xml).not.toMatch(/dashboard|examples|demo|account/);
   const robots = await request.get("/robots.txt");
   expect(await robots.text()).toContain(`Sitemap: ${baseURL}/sitemap.xml`);

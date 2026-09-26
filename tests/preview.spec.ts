@@ -58,5 +58,5 @@ test("homepage content is keyboard accessible", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/#main$/);
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Create your save the date" }).first()).toBeFocused();
+  await expect(page.getByRole("link", { name: "Start building for free" }).first()).toBeFocused();
 });

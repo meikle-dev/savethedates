@@ -137,6 +137,22 @@ A visitor should understand what SaveTheDates does within a few seconds.
 - The footer links to it, and so does the homepage FAQ answer "What is a digital save the date?".
 - Copy states only built features. It doesn't compare SaveTheDates with named competitors or promise refunds, retention or preview-card behaviour before those are approved.
 
+## Complete wedding website positioning (F071, 26 September 2026)
+
+- The product is the wedding website; the Save the Date is its first page. Marketing copy says "wedding website designs" and "your wedding website", and "Save the Date" only for that page.
+- The primary call to action is **Start building for free** (**Return to your workspace** when signed in); the price line beneath it is "Free to build and preview. £29 once when you're ready to publish." `/digital-save-the-date` keeps **Create your save the date**, which matches its search intent.
+- Homepage order: hero, designs, four steps ("Everything your guests need, in one place"), "One website. Your whole wedding.", "RSVPs without the spreadsheet chaos." (with a labelled example of catering numbers), pricing, FAQ.
+- The Save the Date and the Invitation have separate links (F065), so never promise one link from Save the Date to RSVP. Say "one private wedding website", and "private links for your Save the Date and Invitation".
+- Name dietary options as the RSVP does: vegetarian, vegan, gluten-free and other.
+
+## What we offer (F070, 26 September 2026)
+
+- `/what-we-offer` follows the fictional Olivia and James from Save the Date to the couple's catering numbers: a dark centred hero, a cream story section, a light "little things" grid, pricing and the footer. It reuses marketing tokens, buttons and kickers; there is no new visual language.
+- A sticky design switcher (a labelled radio group of the twelve theme swatches, with a short **Start free** button on phones) re-skins every phone at once. The phones are same-origin frames of `/what-we-offer/phone/<theme>/…`, the real example pages laid out in a 360px viewport and scaled into the phone. A theme change hides each old page until its replacement has loaded (a 250ms fade, none under reduced motion).
+- Steps 01-03 (Save the Date, Invitation, Details) sit beside inert phones, with an "Optional: switch it on if you need it" pill on optional parts and a link to the full example in the chosen theme. Steps 04-05 are the try-it block: the interactive RSVP phone beside the couple's side, which counts replies with the workspace's catering rules and announces changes politely. Nothing leaves the browser.
+- Without JavaScript the page reads in full, and the switcher shows a **Show this design** button that reloads with `?theme=`.
+- The homepage links to it with **See everything we offer**, under the hero buttons and under the four steps. The header and footer navigation both include **What we offer**.
+
 ---
 
 # Calls to Action

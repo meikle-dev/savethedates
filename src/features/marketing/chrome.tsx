@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { digitalSaveTheDatePath, supportEmail } from "./metadata";
+import { digitalSaveTheDatePath, supportEmail, whatWeOfferPath } from "./metadata";
 
 export function AccountAction({ href, label }: { href: string; label: string }) {
   return <Link className="marketing-button marketing-button-primary" href={href}>
@@ -9,7 +9,7 @@ export function AccountAction({ href, label }: { href: string; label: string }) 
 }
 
 export function PricingPanel({ id, accountHref, label }: { id?: string; accountHref: string; label: string }) {
-  return <div id={id} className="marketing-pricing"><div><p className="marketing-kicker">ONE WEDDING. ONE SIMPLE PRICE.</p><h2>Everything for your day.</h2><p className="price">£29 <span>GBP · one time</span></p><p>No subscription. Draft and preview for free.</p></div><ul><li>All twelve themes, with a photo of your choice</li><li>Save the Date, Invitation, Details and RSVP pages</li><li>Private links for your Save the Date and Invitation</li><li>A private response list and attendance totals</li><li>Published until six months after your wedding date*</li></ul><div className="pricing-action"><AccountAction href={accountHref} label={label} /><p>Make something worth sharing.</p></div><p className="pricing-footnote">*Based on the wedding date at checkout. Your expiry date is fixed when you start checkout.</p></div>;
+  return <div id={id} className="marketing-pricing"><div><p className="marketing-kicker">EVERYTHING YOU NEED. ONE SIMPLE PRICE.</p><h2>Your whole wedding website.</h2><p className="price">£29 <span>GBP · one time</span></p><p>Build and preview for free. Pay once when you’re ready to publish. No subscription.</p></div><ul><li>All twelve wedding website designs, with a photo of your choice</li><li>Save the Date and wedding invitation</li><li>Wedding details: times, venues, travel, where to stay and FAQs</li><li>Online RSVPs with meal choices</li><li>Dietary requirements collected with each RSVP</li><li>Private links for your Save the Date and Invitation</li><li>Private guest list, attendance totals and catering numbers</li><li>Published until six months after your wedding date*</li></ul><div className="pricing-action"><AccountAction href={accountHref} label={label} /><p>Make something worth sharing.</p></div><p className="pricing-footnote">*Based on the wedding date at checkout. Your expiry date is fixed when you start checkout.</p></div>;
 }
 
 export function JsonLd({ data }: { data: object }) {
@@ -20,11 +20,11 @@ export function JsonLd({ data }: { data: object }) {
 export function MarketingHeader({ isAuthenticated, sectionBase }: { isAuthenticated: boolean; sectionBase: "" | "/" }) {
   return <header className="marketing-nav marketing-width">
     <Link className="marketing-brand" href="/">SaveTheDates<span aria-hidden="true">FOR YOUR NEXT CHAPTER</span></Link>
-    <nav aria-label="Main navigation"><a href={`${sectionBase}#themes`}>Themes</a><a href={`${sectionBase}#pricing`}>Pricing</a><Link className="nav-signin" href={isAuthenticated ? "/dashboard" : "/account/sign-in"}>{isAuthenticated ? "Your workspace" : "Sign in"} <span aria-hidden="true">↗</span></Link></nav>
+    <nav aria-label="Main navigation"><Link href={whatWeOfferPath}>What we offer</Link><a href={`${sectionBase}#themes`}>Designs</a><a href={`${sectionBase}#pricing`}>Pricing</a><Link className="nav-signin" href={isAuthenticated ? "/dashboard" : "/account/sign-in"}>{isAuthenticated ? "Your workspace" : "Sign in"} <span aria-hidden="true">↗</span></Link></nav>
   </header>;
 }
 
 export function MarketingFooter({ isAuthenticated, sectionBase }: { isAuthenticated: boolean; sectionBase: "" | "/" }) {
-  return <footer className="marketing-footer marketing-width"><Link className="marketing-brand" href="/">SaveTheDates</Link><p>A beautiful beginning, shared.</p><nav aria-label="Footer navigation"><a href={`${sectionBase}#themes`}>Themes</a><a href={`${sectionBase}#pricing`}>Pricing</a><Link href={digitalSaveTheDatePath}>Digital save the dates</Link><Link href={isAuthenticated ? "/dashboard" : "/account/sign-in"}>{isAuthenticated ? "Your workspace" : "Sign in"}</Link></nav>
+  return <footer className="marketing-footer marketing-width"><Link className="marketing-brand" href="/">SaveTheDates</Link><p>A beautiful beginning, shared.</p><nav aria-label="Footer navigation"><Link href={whatWeOfferPath}>What we offer</Link><a href={`${sectionBase}#themes`}>Designs</a><a href={`${sectionBase}#pricing`}>Pricing</a><Link href={digitalSaveTheDatePath}>Digital save the dates</Link><Link href={isAuthenticated ? "/dashboard" : "/account/sign-in"}>{isAuthenticated ? "Your workspace" : "Sign in"}</Link></nav>
     <nav className="marketing-legal-nav" aria-label="Legal and contact"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/refunds">Refunds</Link><a href={`mailto:${supportEmail}`}>Contact: {supportEmail}</a></nav></footer>;
 }

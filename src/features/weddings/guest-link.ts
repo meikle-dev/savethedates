@@ -10,7 +10,7 @@ export const guestSecretPattern = /^[A-Za-z0-9_-]{43}$/;
 export const reservedNames = new Set([
   "account", "auth", "dashboard", "api", "media", "preview", "preview-photo", "demo", "demo-no-photo", "demo-long-names",
   "pricing", "features", "guides", "examples", "privacy", "terms", "support", "robots", "sitemap", "favicon",
-  "s", "contact", "refunds", "assets", "fonts", "digital-save-the-date",
+  "s", "contact", "refunds", "assets", "fonts", "digital-save-the-date", "what-we-offer",
 ]);
 
 export type GuestHrefs = { home: string; invitation: string; details: string; rsvp: string };
