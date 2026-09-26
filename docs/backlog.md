@@ -2581,8 +2581,13 @@ Owner, 26 September 2026: dietary answers are food preferences, not health data.
 - **Open items:**
   - Privacy paragraph approved by the owner, 26 September 2026 (recorded in `release-inputs.md`). The re-review confirmed all six fixes (pass).
   - The no-JavaScript limitation is tracked as F069.
-  - Staging and production migration: see below.
-- **Next step:** apply `20260926000100` to staging, deploy, and check it on staging; then production, in the usual order.
+- **Staging (26 September 2026):**
+  - Migration `20260926000100` was applied to `onrblnlwrnbdvyeasqdt` through the Supabase connector at about 16:27 UTC, before the code deploys. The previous staging code still works against it, because meal choices default to off.
+  - The recorded version is `20260926000100`. The recorded SQL's MD5 matches the committed file apart from its final newline.
+  - Staging's 3 weddings and 1 reply took the defaults.
+  - Security advisors: new anon-callable `guest_rsvp_menu` and `submit_shared_rsvp` (8 arguments) are intended, like the other secret-checked guest functions. The old 3-argument signature is gone.
+  - Code `fc45b5d` was pushed to `main`. CI run 36255555941 passed (verify, including the production-container E2E, and publish-image). The deploy hook put `ghcr.io/meikle-dev/savethedates:fc45b5d…` (digest `sha256:e19e1b8b…c4d9`) live on staging at 16:41 UTC (`dep-darvbd0jo6nc739je2ig`), and `/api/health` answers 200.
+- **Next step:** after the staging deploy, the owner checks the feature on staging: switch meal choices on, reply as a guest, and look at Guests. Then apply the migration to production (`msrpxvlxojnnefezestn`) before promoting the image, in the usual order.
 
 ## F069 - Guest RSVP replies fail without JavaScript
 
