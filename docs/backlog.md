@@ -2306,7 +2306,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 
 ## F065 - Separate Save the Date, Invitation and RSVP links
 
-**Status:** In Progress (built, independently reviewed and verified locally on 26 September 2026; waits for the owner to re-approve the `/terms` wording, then the staging migration and deploy. See handoff)
+**Status:** In Progress (built, independently reviewed and verified locally on 26 September 2026; `/terms` wording approved by the owner and migration applied to staging; waits for the staging deploy and check, then production. See handoff)
 **Priority / lead:** P1, proposed paid-launch gate (the owner may defer it) / UX for the sharing panels and navigation, then Software Engineer. Independent review is required: it adds a second guest secret, and changes which pages each link can open.
 **Purpose:** A Save the Date and an Invitation are sent at different times, usually months apart. Couples send each one on its own, and guests who have only the Save the Date don't see the Invitation.
 **Source:** Owner staging check, 26 September 2026: "currently when we send an invite link to guests it opens at the invitation page. I think we need two sections for sending links to guests - one should be "send save the date" and one should be "send invitation" the two things are seperate in their order, usually a save the date would come first, then an invite later". Also: "save the date should not nav to the invitation - the two are seperate". Switching the Invitation off made the shared link "page not found", which showed the problem.
@@ -2420,9 +2420,15 @@ Owner, later on 26 September 2026: "we need to let the couples send links out sp
   5. Leftover "guest link" wording: fixed.
   6. The secret generator was callable by guests: revoked from `public` and `anon`, with a test.
 - **Unresolved:**
-  - **Owner re-approval of `/terms`:** "one guest link" became "their guest links"; "anyone who has your guest link" became "anyone who has one of your guest links"; "Anyone with your guest link can see your pages, so share it…" became "Anyone with one of your guest links can see the pages it opens, so share them…". Reply "approved", or give the preferred wording.
-  - The migration isn't applied to staging or production, and nothing is committed yet.
-- **Next step:** once the owner approves the terms wording, commit, apply `20260926000200_separate_guest_links.sql` to staging, then deploy and check on staging. Apply it to production before promoting the image (production migrations first). Then mark Done.
+  - **`/terms` wording approved by the owner (26 September 2026):** "one guest link" became "their guest links"; "anyone who has your guest link" became "anyone who has one of your guest links"; "Anyone with your guest link can see your pages, so share it…" became "Anyone with one of your guest links can see the pages it opens, so share them…".
+  - **Staging migration applied (26 September 2026, 20:45 UTC)** with the Supabase connector. Checked afterwards:
+    - all 3 staging weddings have a valid Invitation secret that differs from their Save the Date secret;
+    - the guard trigger and all seven functions exist;
+    - guests can't execute the generator or the rotate function, and signed-in owners can.
+    - The history row was relabelled to the repo version `20260926000200`.
+    - Until the new code is deployed, the old staging code 404s the Invitation page and refuses replies through the Save the Date link while the Invitation is on. Decision 8 accepts this on staging.
+  - Committed by the owner as `6446618`. Not applied to production.
+- **Next step:** CI deploys the passing image to staging through the deploy hook. Check it on staging, then apply the migration to production before promoting the image. Apply it to production before promoting the image (production migrations first). Then mark Done.
 
 ## F066 - Receive mail sent to hello@savethedates.co.uk
 
