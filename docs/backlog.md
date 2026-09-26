@@ -1,6 +1,6 @@
 # Product backlog
 
-**Current: F009** remains In Progress with external release blockers. **Launch follows the [launch plan](launch-plan.md)** (owner, 25 September 2026): production is set up locked, using the [production setup prompt](production-setup-prompt.md). Stripe and Google review it, the owner rehearses the full journey on production, and only then is it opened. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056, F057 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **F038 is In Progress and next:** the code is reviewed, and Sentry is now set up (F041 step 6, 25 September 2026), so its staging checks can run. Its checkout check needs **F061**. F061-F064 were raised from the owner's [25 September notes](notes/25-09-2026.md); see the delivery order for where they sit. **F061 is In Progress:** both causes of the staging checkout failure are fixed (the Stripe key was replaced, and migration `20260925000400` is live on staging). The owner completed a real test checkout on staging; only independent review remains. **F062 is In Progress:** browser-side photo resizing is built and passes all automated checks. The owner's staging upload exposed a hosted-Storage photo-read bug, which migration `20260925000500` fixes. The owner confirmed photos now display on staging (25 September 2026). It waits only for the real-device checks. **F063** is Planned and needs an owner choice. **F064 is Done. F060 (optional wedding invitation page) is Done.** Its migration is on staging, and the owner needs to re-approve the terms line, which now lists the Invitation. **F047 is In Progress:** implementation and local checks are complete; actual messaging-app previews need a reachable staging link. **F055 (Google sign-in) is wanted at launch** (owner, 25 September 2026). It works on staging, and its production client and provider are part of the production setup. The owner approved the legal text on 25 September 2026. The owner deferred F048 (customer data), F054 (security review), F049 (real devices) and the support mailbox to later. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets (SEO audit, advertising strategy, homepage review) that don't gate launch. **F051 is In Progress:** the [SEO audit report](reports/2026-09-25-seo-audit.md) is written and triaged, and only the owner's keyword-volume input remains. The owner chose the domain `savethedates.co.uk` and asked for the SEO and speed work, which is delivered in **F058 and F059 (Done)**. F054 (full security review) is a paid-launch gate.
+**Current: F009** remains In Progress with external release blockers. **Launch follows the [launch plan](launch-plan.md)** (owner, 25 September 2026): production is set up locked, using the [production setup prompt](production-setup-prompt.md). Stripe and Google review it, the owner rehearses the full journey on production, and only then is it opened. F001-F008, F011-F032, F034-F037, F040, F042-F046, F056-F060, F062 and F064 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Owner staging check (26 September 2026):** everything on the checklist passed except two items. The refund test refunded a different, older test payment, so it must be repeated on the site's own payment (see F067). Mail to `hello@savethedates.co.uk` isn't received anywhere yet (F066). The results are in F041. **Next engineering work: F065** (separate Save the Date and Invitation links, raised by the owner on 26 September 2026), then **F067**. **F038 is In Progress:** the owner confirmed Sentry works on staging; the checks that need the Sentry connector remain. **F061** waits only on independent review, which the owner moved into F054. **F047 is In Progress:** its messaging-app preview check can only run once production is unlocked, because apps can't pass the lock (launch plan stage 6). **F055 (Google sign-in) is wanted at launch.** **F063 is decided:** a Supabase custom domain, so Google shows `savethedates.co.uk`; it's done during the production setup. **F066** is owner setup, best done before Stripe's review. The owner approved the legal text (25 September 2026) and re-approved the terms line that lists the Invitation (26 September 2026). The owner deferred F048 (customer data), F054 (security review) and F049 (real devices) to later. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets that don't gate launch; **F051 is In Progress** and waits for the owner's keyword-volume input. The domain is `savethedates.co.uk`. F054 (full security review) is a paid-launch gate.
 
 ## Status and handoff rules
 
@@ -996,7 +996,8 @@ Alternatives considered:
 - **Sentry set up (25 September 2026):** org `meikle`, project `savethedates`, EU (Germany). `SENTRY_DSN` and `SENTRY_ENVIRONMENT=staging` are set on the staging Render service, and `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` in GitHub. Details are in F041 step 6 and `operations.md` → "Set up Sentry (once)". `APP_RELEASE` needs no action; CI builds it in. The production service still needs its own values when it is created.
 - **Early staging evidence (25 September 2026):** Render's staging logs show structured `payment.stripe.failed` lines with release, environment, route, request ID and a scrubbed reason (`StripeAuthenticationError`). That found F061. Whether the same events reached Sentry was not checked, because no Sentry connector was attached to that session.
 - **Owner check (25 September 2026):** the owner reports Sentry "seems fine" on staging, and the real Stripe test checkout now works (F061). The specific checks above (a thrown Server Action error, a browser error with a resolved source map, a rejected-webhook log, the three MCP queries, and alert delivery and retention) were not individually recorded.
-- **Next:** record those checks (they need a session with the Sentry connector), then mark F038 Done.
+- **Owner check (26 September 2026):** after the staging checklist, the owner reports Sentry logs are working fine on staging.
+- **Next:** record the remaining specific checks (a thrown Server Action error, a browser error with a resolved source map, a rejected-webhook log and the three MCP queries). They need a session with the Sentry connector. Then mark F038 Done.
 
 ## F039 - Privacy-friendly visitor and funnel analytics
 
@@ -1108,7 +1109,7 @@ Alternatives considered:
 
 ## F041 - Production setup guide
 
-**Status:** Planned (owner accounts/access and policy inputs outstanding; CI/image and staging-protection scope is prepared and can be split for implementation if needed)
+**Status:** In Progress (staging is set up, and the owner ran the staging checklist on 26 September 2026; production setup is next)
 **Priority / lead:** P1, release gate for F009 / Owner for the setup steps; Software Engineer for the product updates.
 **Purpose:** One checklist of everything needed to run SaveTheDates in production.
 **Depends on:** F037 (Done), F038/F040 for final staging verification, and completed F042-F048 for the final hosted journey. F039 analytics is optional and never gates F041/F009. Independent CI/image and staging-protection preparation has no dependency on those UI features.
@@ -1146,11 +1147,11 @@ Alternatives considered:
 2. In each project, open **Authentication** and set:
    - **Sign in / Providers → Email:** enabled, Confirm email on, Secure email change on, minimum password length 12, email OTP expiry 3600 seconds.
    - **URL Configuration:** Site URL = that environment's `APP_ORIGIN`. Redirect URLs = `APP_ORIGIN/auth/confirm` and `APP_ORIGIN/auth/callback`.
-   - **Sign in / Providers → Google** (F055, deferred; skip for launch): set up after the Google client below.
+   - **Sign in / Providers → Google** (F055, wanted at launch): set up after the Google client below.
    - **Email Templates:**
      - Confirm signup: subject "Confirm your SaveTheDates account", body from `supabase/templates/confirmation.html`.
      - Reset password: subject "Reset your SaveTheDates password", body from `supabase/templates/recovery.html`.
-   - **Google sign-in** (F055, deferred by the owner; not needed for launch). When resuming it, do this once per environment, staging first:
+   - **Google sign-in** (F055, wanted at launch by the owner on 25 September 2026; production uses the custom domain from F063). Do this once per environment, staging first:
      1. In [Google Cloud Console](https://console.cloud.google.com/), create a project named `SaveTheDates` (one project covers both environments).
      2. Open **Google Auth Platform → Branding**. Set the app name `SaveTheDates` and the support email. Under **Authorised domains**, add the production domain and each Supabase project's domain (`<project-ref>.supabase.co`). Add the privacy and terms links once the F041 policy pages exist.
      3. **Audience:** choose External, then **Publish app**. Only the basic email and profile scopes are used. Until Google verifies the brand (free, needs the policy links and domain), its consent screen says "continue to `<project-ref>.supabase.co`". Record the chosen option in `release-inputs.md` section 3.
@@ -1230,7 +1231,7 @@ Alternatives considered:
 
 ### Product updates (Software Engineer)
 
-Updates 1, 2 and 4 are delivered by [F056](#f056---publish-the-tested-image-and-protect-staging). Update 3 is built with drafted text that awaits the owner's approval (26 September 2026, below).
+Updates 1, 2 and 4 are delivered by [F056](#f056---publish-the-tested-image-and-protect-staging). Update 3 is built, and the owner approved its text on 25 September 2026 (below).
 
 1. **CI publishes the image.** After all checks pass on `main`, CI pushes the production image to GHCR, tagged with the commit SHA (`packages: write`). Render deploys that tag. Rollback redeploys the previous tag from Render's deploy history.
 2. **Staging is protected.** When `APP_ENV=staging`:
@@ -1260,12 +1261,28 @@ These are already listed in `release-inputs.md` sections 5–6:
 - **Step 3 Email (Resend), staging done.** `savethedates.co.uk` added in Resend; its SPF/DKIM/DMARC records were added in GoDaddy and the domain shows Verified. One API key (`staging`) is set as the staging Supabase project's SMTP password (host `smtp.resend.com`, port 465, username `resend`, sender `SaveTheDates <hello@savethedates.co.uk>`). No production key yet.
 - **Step 4 Stripe, staging (test mode) done.** The former "Equimarket sandbox" account was renamed (Account Name, not a separate Branding display name) rather than replaced. Test-mode webhook endpoint registered at `https://savethedates-staging.onrender.com/api/stripe/webhook` for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `refund.created`, `charge.dispute.created`. `STRIPE_SECRET_KEY` (test) and `STRIPE_WEBHOOK_SECRET` set on the staging Render service and deployed. Live-mode activation (business/bank details) still untouched, correctly, since it needs a reviewable production site.
 - **F055 Google sign-in, staging configured (26 September 2026).** Google Cloud project "SaveTheDates" (project ID `savethedates`); OAuth client "SaveTheDates staging" (client ID `346083080041-kucgcqljqlh97couqc20u30g6p0vju4r.apps.googleusercontent.com`), JS origin and redirect URI matched to Supabase's Google callback. Client ID/secret set in Supabase's Google provider and enabled. `AUTH_GOOGLE_ENABLED=true` set on the staging Render service and deployed. **Consent screen is in Testing, not Published**: Google now requires Homepage and Privacy Policy URLs to publish externally, which don't exist yet (blocked on F041's legal pages). Only `rmeikle55@gmail.com` is added as a test user, so Google sign-in only works for the owner on staging until it's published. See F055's own handoff for the rest of that checklist (disposable-account staging pass, privacy notice wording) once publishing is possible.
-- **Verified by curl after the above deployed:** staging `/` returns 401 with no login and 200 with the staging login; `/api/health` returns 200. The actual sign-up/Google/Stripe-checkout journeys have not been exercised end-to-end yet — that's the F038 staging pass, still to do, and needs the migrations applied first.
+- **Verified by curl after the above deployed:** staging `/` returns 401 with no login and 200 with the staging login; `/api/health` returns 200. The journeys were exercised afterwards by the owner (25 and 26 September 2026, below).
 - **Staging migrations applied (26 September 2026).** The project was empty. The engineer applied all 30 files in order through the Supabase connector (`apply_migration`), with no errors. Each recorded statement's MD5 matches its file byte for byte, and the recorded versions were changed to the file timestamps (`20260918000100` … `20260925000300`), so `npx supabase migration list` shows them as applied. Result: 6 public tables, all with RLS on; the private `wedding-photos` bucket and its 4 storage policies; function grants as designed. Supabase advisors: the payment and attempt tables have RLS with no policies (intended: server-only); the secret-based guest functions are callable by `anon` (intended); leaked-password protection is off (an Auth setting, Pro plan only); three foreign keys lack an index and five indexes are unused on the empty database (informational).
 - **Legal pages built (26 September 2026, update 3).** `/privacy`, `/terms` and `/refunds` (`src/features/marketing/legal.tsx`) describe what the code does: data collected, providers and regions, cookies, retention, rights, the £29 price and six-month period, and refunds. They are linked in the footer (with `mailto:hello@savethedates.co.uk`) and beside sign-up and checkout (`legal-agreement.tsx`), and are indexable but not in the sitemap. On staging, `/`, `/privacy`, `/terms` and `/refunds` (exact paths) now open without the password, so Google's consent screen can reach them; everything else stays gated (`src/lib/staging-access.ts`, `docs/operations.md`). **Drafted by the engineer for the owner to approve, not legal advice.** Decisions made without owner input, each easy to change in `legal.tsx`: operator named as "Ross Meikle in the United Kingdom"; contact `hello@savethedates.co.uk` (Resend receiving is off, so this address must forward to a real inbox, for example through GoDaddy email forwarding); a 14-day no-questions refund, then refunds if the site doesn't work; deletion on request by email, including our copy of payment records (no self-service tool or deletion runbook yet, F048); logs 30 days and error reports up to 90 days (Sentry trial); governing law of the UK nation where the customer lives. An independent review found and fixed four false statements (a reply download that doesn't exist, six-year payment retention that account deletion would contradict, and the dispute and partial-refund wording) and added a technical-data bullet and the agreement line under Google sign-in.
-- **Outstanding:** the owner approves or edits the legal text and makes sure the contact address receives mail; then publishes the Google consent screen (Branding: Homepage `https://savethedates-staging.onrender.com/`, Privacy `…/privacy`, Terms `…/terms`, and add `savethedates-staging.onrender.com` to Authorised domains). Google may also ask to verify the staging host in Search Console; `/` is reachable for a meta-tag check.
+- **Superseded (25–26 September 2026):** the legal text is approved; the contact address is F066; Google's production setup is in the production setup prompt. The earlier plan was: publish the Google consent screen (Branding: Homepage `https://savethedates-staging.onrender.com/`, Privacy `…/privacy`, Terms `…/terms`, and add `savethedates-staging.onrender.com` to Authorised domains). Google may also ask to verify the staging host in Search Console; `/` is reachable for a meta-tag check.
 - **To update later (production): the Google URLs still point at staging.** They are temporary. When the production service and `savethedates.co.uk` are live, create the production OAuth client and set its Branding to Homepage `https://savethedates.co.uk/`, Privacy `https://savethedates.co.uk/privacy`, Terms `https://savethedates.co.uk/terms`, with `savethedates.co.uk` in Authorised domains (verified in Search Console, F041 step 7), then request brand verification. The same URLs go in Stripe's account activation (step 4) and anywhere else a policy link is asked for. Remove the staging URLs from any production listing. The legal pages are also the owner's to re-approve whenever the operator, contact address, refund or retention rules change (`src/features/marketing/legal.tsx`). Then run the F038/operations.md staging journey, including real Stripe test Checkout and a Google sign-in test with a disposable or the owner's test-user account. Production Supabase, Render and Stripe live mode remain not started, each blocked on payment/owner authorisation as before.
 - **Owner update (25 September 2026):** the legal text is approved as drafted (`release-inputs.md` section 5). The owner confirmed that a real Stripe test checkout, Google sign-in and a photo upload were exercised on staging. The photo upload exposed a hosted-Storage read bug, fixed in F062's handoff.
+- **Owner staging check (26 September 2026), against the checklist Claude Code prepared:**
+  - **Passed:**
+    - email sign-up with confirmation, password reset, and email delivery to new accounts (in the inbox, not spam);
+    - photo uploads (F062);
+    - guest pages and a guest RSVP, and a switched-off Invitation giving "page not found" (F060);
+    - test checkout, publish and the guest links;
+    - Sentry logs (F038);
+    - favicon and the 404 page (F047);
+    - the marketing examples, including the Invitation examples.
+  - **Not passed:**
+    - **Refund test.** The owner refunded a payment in Stripe's test mode, and the site stayed published. Staging's database shows the webhook worked, but the refund was for a different, older test payment that staging never recorded as a purchase, so correctly nothing was revoked (investigation in F067). **Repeat it:** in Stripe's test mode, refund the £29.00 payment made on 25 September 2026 at 21:55 UTC (22:55 UK time), whose metadata has the test wedding's `wedding_id`. The site should unpublish within a minute, and the guest link should stop working.
+    - **Support mailbox.** A test email to `hello@savethedates.co.uk` went nowhere, because nothing receives mail for the domain yet (F066).
+  - **Owner decisions:**
+    - the terms line listing the Invitation is re-approved;
+    - the Save the Date should not link to the Invitation, and the two need separate links (F065);
+    - Google should show `savethedates.co.uk` (F063, option 2).
 - **Next:** production setup, stage 2 of the [launch plan](launch-plan.md). The owner runs [production-setup-prompt.md](production-setup-prompt.md) with Claude computer use (Supabase, Resend, Render, GoDaddy, Google, Stripe and Sentry; production starts locked). The engineer applies the migrations to the new production project. Record the non-secret values in `release-inputs.md`.
 
 **Done when:**
@@ -1358,9 +1375,9 @@ These are already listed in `release-inputs.md` sections 5–6:
 - Account and Publish forms already validate on the server. B5 concerns presentation and error discoverability, not missing validation. The RSVP deadline really is UTC; changing its label alone would misstate the cutoff.
 - A walkthrough does not prove tenant isolation, legal compliance, or provider activation requirements. Self-service deletion plus RSVP CSV is not a complete data policy. Owner-approved policy and provider requirements remain F041/F048/F009 inputs; no new legal conclusion is adopted here.
 
-**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F055 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. **25 September additions (owner notes):** F061 goes with F038, because F038's staging checkout check needs it. F062 and F064 come next, before F047. F062 is a paid-launch gate; F064 is a small polish ticket that doesn't gate launch. F063 is done with F055's production setup and doesn't gate launch. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032 and F050 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment. **Owner decision (25 September 2026):** F055 (Google sign-in) is promoted from post-launch to a paid-launch gate.
+**Delivery order:** Resume any actionable F009 preparation first. Otherwise select the first eligible item in this queue: **F040 → F038 → F043 → F042 → F044 → F045 → F046 → F047 → F055 → F048 → F041 → F054 → F049 → F009 release**. Skip only genuinely blocked items and retain their blockers. **25 September additions (owner notes):** F061 goes with F038, because F038's staging checkout check needs it. F062 and F064 come next, before F047. F062 is a paid-launch gate; F064 is a small polish ticket that doesn't gate launch. F063 is done with F055's production setup and doesn't gate launch. F041's independent CI/staging preparation can proceed while owner inputs are pending; its hosted journey must verify the completed launch changes. Order does not imply a technical dependency where none is listed. F033, F039, F032 and F050 follow launch work. F051 (SEO audit) and F053 (homepage review) are report-only and may run alongside launch work without gating it; F052 (advertising strategy) follows F053. This assessment does not authorise implementation or deployment. **Owner decision (25 September 2026):** F055 (Google sign-in) is promoted from post-launch to a paid-launch gate. **26 September additions (owner staging check):** F065 is the next engineering ticket, then F067. F066 is owner setup, best done before Stripe's live review. F063 is done during the production setup.
 
-**Paid-launch gate:** F038, F040-F049, F054 (security review), F061, F062 and existing F009 gates must be Done (F055 Google sign-in was deferred by the owner on 25 September 2026 and no longer gates launch) with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
+**Paid-launch gate:** F038, F040-F049, F054 (security review), F055 (Google sign-in, wanted at launch by the owner on 25 September 2026), F061, F062, F065 and F066 (both proposed on 26 September 2026; the owner may defer them) and existing F009 gates must be Done with required evidence, or a specific scope deferral must be explicitly accepted by the owner. Policy, security, payment correctness and core accessibility failures cannot be described as passed through a UX deferral. F050 and F010 enhancements do not gate launch.
 
 | Report finding | Disposition |
 | --- | --- |
@@ -1589,7 +1606,7 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 
 - `npx.cmd playwright test tests/metadata.spec.ts tests/rsvp-preview.spec.ts --reporter=line` passed 6/6 desktop/mobile. Rendered-head checks cover valid Save the Date, Details and RSVP; draft, unpublished, expired, disabled Details, invalid and replaced links; card response, favicon, auth/example/preview titles, private headers and 404 recovery. The development server emitted `no-cache, must-revalidate`, which existing tests accept; the production proxy policy is `private, no-store`. Inspected 404 screenshots at 390px/mobile and 1440px/desktop with no overflow, and a representative theme card. `npm.cmd run check` passed: lint, typecheck, 77 unit tests and production build. `git diff --check` passed.
 - Independent reviewer found no Blocking or Important code issue and confirmed all twelve cards are 1200×630 JPEGs without EXIF data. No deployment or hosted/production-container browser check was run.
-- **Remaining acceptance check:** on a reachable staging URL, manually share a disposable published wedding link in WhatsApp and one app that fetches previews server-side (for example Slack); confirm names, date and static theme card only, and confirm an unavailable link gives generic metadata. Record the result here. Staging access is being prepared in F041. Do not mark F047 Done until this is verified. Next: perform that check when staging exists; eligible launch work may continue while it waits.
+- **Remaining acceptance check:** on a reachable staging URL, manually share a disposable published wedding link in WhatsApp and one app that fetches previews server-side (for example Slack); confirm names, date and static theme card only, and confirm an unavailable link gives generic metadata. Record the result here. Do not mark F047 Done until this is verified. **Blocker (26 September 2026):** staging and the locked production site both require a password, which messaging apps can't supply, so the preview can't be fetched. The owner confirmed the favicon and the 404 page on staging. Next: do the preview check right after production is unlocked (launch plan stage 6); eligible launch work may continue while it waits. F065 adds a second (Invitation) link, which gets the same check.
 
 ## F048 - Deliver the approved customer data lifecycle
 
@@ -2014,7 +2031,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 **Status:** In Progress
 **Purpose:** Make the implemented product deployable, recoverable, and supportable for real customers.
 **Description:** Prepare a container-capable production host and managed production integrations, verify the full journey, and record concise operating instructions. Complete preparatory work before asking for missing release authority.
-**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F049, F054 (security review) under the 24 September paid-launch gate (F055 deferred by the owner, 25 September 2026); F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
+**Depends on:** F008; F037 (host), F038 (monitoring), F040 (upload memory limits), F041 (production setup), F042-F049, F054 (security review), F055 (Google sign-in, wanted at launch), F062, and F065-F066 (proposed) under the paid-launch gate; F013-F020 and F024 completion, plus F021-F022 decision dispositions before final release review (see review gate above). Also F028-F031 completion (see the 23 September gate). F039/F050 are optional.
 **Launch sequence:** [launch plan](launch-plan.md): set up production locked, private review by Stripe and Google, the owner's production dress rehearsal (including a live purchase and refund), then open by removing the lock. Record the rehearsal and launch results in this entry.
 **Prepared scope:** Proceed with host-independent production-container verification and a focused operations runbook. Extend production CI to exercise existing account/recovery, payment, theme, publication, Details and RSVP checks. Prepare runtime configuration, migration/rollback, recovery, support and SEO launch steps. Render/Frankfurt is approved in F037; external accounts/access, live billing and policy-dependent data handling in F048 remain blocked on owner inputs. Do not invent retention periods or publish policies. No hosting purchase or deployment is authorised by this assessment.
 **References:** `docs/operations.md`, `run-app-instructions.md`, `.github/workflows/ci.yml`.
@@ -2129,11 +2146,12 @@ Record items 1–3 in `release-inputs.md` section 3.
   - The Important focus-ring finding is fixed, with a test.
   - The Important share-link finding is fixed: the message now links to the invitation.
   - The Minor findings are also fixed: offline statuses; a section-level refusal message; the link-preview title; the untested reply states and refusal (now tested); stale docs; and preview navigation parity.
-- **Owner decisions pending:**
-  - Re-approve the terms line, which now lists the Invitation in what £29 includes.
-  - Whether the Save the Date body should link to the Invitation. Not added, because the owner removed a body button from that page on 25 September 2026.
+- **Owner decisions (26 September 2026):**
+  - The terms line listing the Invitation in what £29 includes is re-approved.
+  - The Save the Date should not link to the Invitation: "the two are separate". This also covers the navigation, which is F065.
+- **Owner staging check (26 September 2026):** guest pages work; switching the Invitation off gave guests "page not found", as designed.
 - **Staging:** migration `20260925000600` was applied through the Supabase connector before the code deploys. The recorded version is `20260925000600`, and the statements' MD5 matches the file. The old staging code ignores the new column, so applying it first is safe.
-- **Next:** none for F060. The owner's two decisions above are independent of it.
+- **Next:** none for F060. Separate links for the Save the Date and the Invitation are F065.
 
 ## F061 - Staging checkout rejected by Stripe
 
@@ -2164,7 +2182,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 
 ## F062 - Accept large photos by resizing them in the browser
 
-**Status:** In Progress (started 25 September 2026; the owner approved the recommended approach)
+**Status:** Done (26 September 2026; the owner confirmed uploads on staging)
 **Priority / lead:** P1, paid-launch gate / Software Engineer. Independent review is not required: server validation, processing and storage don't change (the same reasoning as F040). Inspect the UI at mobile and desktop widths.
 **Purpose:** Couples can choose the photos they actually have, straight from a phone or camera, including 40 MB files. Uploads stay quick on mobile data and within the server's memory.
 **Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md): the 5 MB limit is too low, and the owner has photos of about 40 MB. Wanted: a clean, best-practice fix, with no hacks.
@@ -2213,12 +2231,13 @@ Record items 1–3 in `release-inputs.md` section 3.
   - Checked on staging by simulating the policies as the owner: reads are allowed under both operation names, and signing and listing stay denied. Anonymous reads are allowed only because the test wedding is published and paid for; anonymous listing is denied.
   - `npm run test:integration`: 23 passed. `tests/publication.spec.ts` and `tests/themes.spec.ts` passed at desktop and mobile. The themes test needed one rerun, because the dev server hit its 30-second limit under parallel load.
 - **Photo display confirmed (25 September 2026):** after migration `20260925000500`, the owner confirmed uploaded photos display on staging.
-- **Next:** for the real-device check, the owner uploads a large photo on staging from a phone (iPhone Safari and Android Chrome) and from a desktop browser other than Chrome, and checks it looks right. Then F062 can be marked Done.
+- **Owner check (26 September 2026):** the staging checklist asked for large photos from iPhone Safari, Android Chrome and a desktop browser other than Chrome, and the owner reported "photo upload works fine". The individual devices weren't listed separately.
+- **Next:** none.
 
 ## F063 - Show SaveTheDates, not the Supabase address, in Google sign-in
 
-**Status:** Planned (needs an owner choice; done with F055's production setup)
-**Priority / lead:** P2, doesn't gate launch because F055 is deferred for production / Owner setup, then Software Engineer verifies.
+**Status:** Ready for the production setup (the owner chose option 2 on 26 September 2026)
+**Priority / lead:** P2, part of F055, which the owner wants at launch / Owner setup through the production setup prompt (Phase 6), then Software Engineer verifies.
 **Purpose:** Google's sign-in screens and emails name SaveTheDates or `savethedates.co.uk`, not the Supabase project address.
 **Source:** [Owner notes, 25 September 2026](notes/25-09-2026.md). After a staging Google sign-in, Google's security email said: "You used Sign in with Google to sign in to onrblnlwrnbdvyeasqdt.supabase.co".
 **Cause:** With Supabase Auth, Google sends the user back to the Supabase project's callback, `https://<project-ref>.supabase.co/auth/v1/callback` (F041 step 2). So Google identifies the site by that address. On staging, the consent screen is also in Testing mode, and the brand isn't verified.
@@ -2228,6 +2247,14 @@ Record items 1–3 in `release-inputs.md` section 3.
 1. **Google brand verification (free; recommended first).** Publish the consent screen with Homepage, Privacy and Terms links on `savethedates.co.uk` (the F041 legal pages now exist), and verify the domain in Search Console (F041 step 7). The consent screen then shows "SaveTheDates". Check whether Google's security email also changes; this hasn't been confirmed.
 2. **Supabase custom domain (paid add-on).** For example `auth.savethedates.co.uk`. The callback moves to that domain, so every Google screen and email names `savethedates.co.uk`. It needs a paid Supabase plan plus the add-on's cost, and the Google client's redirect URI must be updated.
 3. **Accept it for now.** Keep the current wording.
+
+**Owner decision (26 September 2026):** option 2. "I want it to show the savethedates url not supabase."
+
+- Production uses a Supabase custom domain, `auth.savethedates.co.uk`. It needs the Pro plan (already planned for production) plus the Custom Domain add-on, about $10 a month; the owner confirms the price shown at setup.
+- Setup: add the domain in Supabase, add its CNAME and verification TXT records in GoDaddy, activate it, set Render production `SUPABASE_URL` to `https://auth.savethedates.co.uk`, and use `https://auth.savethedates.co.uk/auth/v1/callback` as the Google client's redirect URI. The steps are in the [production setup prompt](production-setup-prompt.md), Phase 6.
+- Option 1 (brand verification) is still done too, so the consent screen also names "SaveTheDates".
+- Staging stays on the Free plan and keeps the Supabase address; that's accepted.
+- No code change is expected. After setup, the engineer checks email sign-up, Google sign-in and photo display on production, because the app then reaches Supabase through the custom domain.
 
 **Done when:** The owner has picked an option, recorded in `release-inputs.md` section 3 and F055. On production, a Google sign-in's consent screen and Google's follow-up email name SaveTheDates or `savethedates.co.uk`, checked with a real sign-in.
 
@@ -2254,6 +2281,132 @@ Record items 1–3 in `release-inputs.md` section 3.
 - **Contrast (WCAG):** orange on the card is 5.40:1 and on the badge background 4.82:1. Green on the card is 6.19:1. The existing Published badge is 8.19:1.
 - **Checks:** `npm run check` passed (lint, typecheck, 92 unit tests, build). `tests/dashboard.spec.ts` passed 10 of 10 at desktop and mobile, with new colour assertions for Private draft (card and header), Published (card), and Offline (neither colour). Overview screenshots for draft and published were inspected at 390 px and 1440 px, with no overflow. On phones, the header hides the status badge, as before.
 - **Noticed, not changed (existing behaviour):** when a site is Offline (published, but the purchase has ended), the card says "Offline", but the header badge says "Private draft", because `layout.tsx` only distinguishes live from not live. With the new orange, the mismatch is more visible. The owner decides whether the header should say "Offline".
+
+## F065 - Separate Save the Date and Invitation links
+
+**Status:** Ready (raised by the owner on 26 September 2026; Product Manager decisions below)
+**Priority / lead:** P1, proposed paid-launch gate (the owner may defer it) / UX for the sharing panels and navigation, then Software Engineer. Independent review is required: it adds a second guest secret, and changes which pages each link can open.
+**Purpose:** A Save the Date and an Invitation are sent at different times, usually months apart. Couples send each one on its own, and guests who have only the Save the Date don't see the Invitation.
+**Source:** Owner staging check, 26 September 2026: "currently when we send an invite link to guests it opens at the invitation page. I think we need two sections for sending links to guests - one should be "send save the date" and one should be "send invitation" the two things are seperate in their order, usually a save the date would come first, then an invite later". Also: "save the date should not nav to the invitation - the two are seperate". Switching the Invitation off made the shared link "page not found", which showed the problem.
+**Today:**
+
+- One secret opens every guest page (F043).
+- While the Invitation is on, the suggested share message links to `/invitation` (`src/features/workspace/share-message.ts`), so couples can no longer send a plain Save the Date.
+- The Save the Date's navigation links to the Invitation, and anyone with the Save the Date link can reach `/invitation` by editing the URL.
+
+**Decisions (Product Manager, 26 September 2026):**
+
+1. **Two links, each with its own secret.**
+   - The Save the Date link keeps the current secret (`/<names>/<secret>`).
+   - A new, separate secret gives the Invitation link, which opens the Invitation first. Neither link can be worked out from the other.
+   - Rejected: one secret with a different starting page. A guest could reach the Invitation by editing the URL, and a shared Details page couldn't tell which navigation to show.
+2. **What each link opens:**
+
+   | Page | Save the Date link | Invitation link |
+   | --- | --- | --- |
+   | Save the Date | Yes (first page) | No |
+   | Invitation | Never | Yes (first page) |
+   | Details, while on | Yes | Yes |
+   | RSVP, while on | Only while the Invitation is off | Yes |
+
+   - With the Invitation off, the Save the Date link works exactly as today (Save the Date, Details and RSVP), so couples who don't use the Invitation lose nothing.
+   - Once the Invitation is on, replying belongs with it. This follows the 25 September decision that removed the RSVP button from the Save the Date.
+   - With the Invitation off, the Invitation link gives the same generic "page not found" as any unavailable page.
+3. **Workspace.** The single guest-link panel becomes two, "Send your Save the Date" and "Send your Invitation".
+   - Each has its own link, suggested message, Share, WhatsApp and Copy, and **Replace link**.
+   - The Invitation panel is offered only while the Invitation is on and the site is live; otherwise it says how to switch the Invitation on.
+   - Replacing one link doesn't change the other.
+   - Replies through either link go to the same guest list.
+4. **Messages.**
+   - The Save the Date message stays "Save the date! …" with its link, and mentions RSVP only while the Save the Date link offers it.
+   - The Invitation message is "You're invited! …" with the Invitation link.
+5. **Link previews (F047).** The Invitation link's preview names the Invitation rather than the Save the Date. The rules are unchanged: names and date only, and a static theme card.
+6. **Owner previews.** The Save the Date preview's navigation matches the Save the Date link, and the Invitation preview matches the Invitation link.
+7. **Wording.** Replace "one link" wording with two links sent at different times, wherever it appears:
+   - the homepage, the digital save the date page, the FAQ and pricing;
+   - the workspace help;
+   - `/terms` (the owner re-approves any change to it).
+8. **No customer migration.** There are no production customers yet. On staging, an `/invitation` URL under the Save the Date secret stops working, which is acceptable before launch.
+
+**Done when:**
+
+- Each link opens only its pages in the table above.
+  - This is checked for every combination of Invitation, Details and RSVP switched on or off, at mobile and desktop widths.
+  - An Invitation URL under the Save the Date secret, and a Save the Date URL under the Invitation secret, give the generic "page not found".
+- The server enforces the table. Invitation content is returned only for the Invitation secret, and RSVP accepts a reply only through a link that shows RSVP. Integration tests cover:
+  - wrong, replaced and other weddings' secrets;
+  - cross-owner denial.
+- Replacing either link stops only that link, and existing responses are kept.
+- The workspace shows both panels with the right messages. E2E covers sending both links, and the Invitation switched off.
+- Each link's metadata and preview meet F047's rules.
+- The wording above is updated.
+- `npm run check`, the integration tests and E2E pass, and independent review passes.
+- The docs are updated (`docs/ux/template-ui-summary.md`, and `docs/overview/architecture.md` if the routes change).
+
+**References:** F042 (share panel), F043 (guest URL), F044, F047, F060. Code:
+
+- `src/features/weddings/guest-link.ts`
+- `src/features/workspace/share-message.ts`, `guest-link-panel.tsx`, `workspace-data.ts`
+- `src/app/[names]/[secret]/`
+- `supabase/migrations/20260925000600_wedding_invitation.sql`
+
+## F066 - Receive mail sent to hello@savethedates.co.uk
+
+**Status:** Planned (owner setup; raised 26 September 2026)
+**Priority / lead:** P1, proposed paid-launch gate, best done before Stripe's live review / Owner, optionally with the browser agent (production setup prompt, Phase 4 step 3). No code change.
+**Purpose:** The address `hello@savethedates.co.uk` is shown to customers in the footer and legal pages, is the sender of every account email, and is given to Stripe and Google. Mail sent to it must reach an inbox the owner reads.
+**Source:** Owner staging check, 26 September 2026: the owner sent a test email to the address and didn't know where to read it.
+**Cause:**
+
+- Nothing receives mail for the domain yet.
+- Resend is set up only to send (its records are on the `send` subdomain), and Resend receiving is off.
+- The test email wasn't delivered anywhere. Gmail may show a bounce ("delivery failure") for it.
+- DNS couldn't be checked from Claude Code's session.
+
+**Decision (Product Manager, recommended): forward to the owner's Gmail, with no new mailbox subscription.**
+
+1. **Set up free forwarding** from `hello@savethedates.co.uk` to `rmeikle55@gmail.com`.
+   - Use GoDaddy's email forwarding if it's included free with the domain; otherwise use a free forwarding service such as ImprovMX.
+   - Either one adds mail (MX) records to the root domain.
+   - Don't change the Resend records: `send` MX and TXT, `resend._domainkey` and `_dmarc`.
+   - If the forwarder asks for an SPF record on the root domain, add it to an existing one rather than creating a second.
+2. **Optional: reply as hello@.** In Gmail → Settings → Accounts → **Send mail as**, add `hello@savethedates.co.uk` using Resend's SMTP: `smtp.resend.com`, port 465, username `resend`, and a new Resend API key named `gmail-support` with sending access only.
+3. **A paid mailbox is not needed at launch.** Google Workspace or Microsoft 365 (about £5–6 a month) is only worth it if the owner wants a separate inbox.
+
+**Done when:**
+
+- A test email from an outside address to `hello@savethedates.co.uk` arrives in the owner's Gmail, not in spam.
+- The option chosen and the records added are recorded in `release-inputs.md` section 3.
+- A sign-up email still arrives, which shows sending wasn't broken.
+- If "Send mail as" is set up, a reply sent as hello@ arrives without a spoofing warning.
+
+**Relationship:** this replaces the "support mailbox" item the owner deferred on 25 September 2026 in the launch plan.
+
+## F067 - Flag refunds and disputes that match no purchase
+
+**Status:** Ready (raised 26 September 2026)
+**Priority / lead:** P2 / Software Engineer. Small: a logging change in one route, with no migration and no change to payment logic. Independent review is not required.
+**Source:** Owner staging check, 26 September 2026: after a refund in Stripe's test mode, the site stayed published.
+**Investigation (26 September 2026, staging database, read only):**
+
+- The webhook worked. Staging recorded a `refunded` event at 07:39 UTC on 26 September for payment intent `pi_3UHRMO…`.
+- The only purchase staging knows about is `pi_3UJh55…`, paid on 25 September at 21:55 UTC, which bought the published test wedding.
+- The refund was for a different, older test payment that staging never recorded as a purchase, so nothing was revoked. That's the correct behaviour.
+- This Stripe test account is the reused "Equimarket sandbox" account (`release-inputs.md` section 4). Its other test payments exist too, and Stripe sends their refunds to this webhook.
+- The repeat test on the right payment is tracked in F041.
+
+**Gap:** the webhook logs such a refund as an ordinary `payment.webhook.recorded` at info level. Nothing in Sentry or the logs showed that the refund matched no purchase.
+**Scope:**
+
+- In `src/app/api/stripe/webhook/route.ts`, when `process_stripe_payment_event` returns `recorded` for a refund or dispute, log a new `warn` event `payment.webhook.unmatched`, with `stripeEventId` and `reason` (`refunded` or `disputed`).
+- Keep recording the event exactly as now. A refund can arrive before its purchase's webhook, and it must still revoke the purchase when that arrives.
+- Add the event to the list in `docs/operations.md`, with a runbook line explaining that it can mean a payment from another project on a shared Stripe account, or an out-of-order delivery.
+
+**Done when:**
+
+- A unit or integration test shows an unmatched refund logs the warning once, and a matched refund still logs `payment.entitlement.revoked`.
+- `npm run check` passes.
+- `docs/operations.md` is updated.
 
 ## F010 - Post-launch extensions
 

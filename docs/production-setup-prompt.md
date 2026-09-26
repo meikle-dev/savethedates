@@ -33,6 +33,7 @@ Some steps also need me to pay, or to prove my identity. Those are marked **⏸ 
 | Supabase | **Pro plan, $25/month**, on a new organisation just for production (Pro includes enough compute credit for one small project). Needs my card | Phase 1 |
 | Render | The production web service on the **Starter** instance, **$7/month** (the workspace itself stays on the free Hobby plan). Needs my card on the workspace | Phase 3 |
 | GoDaddy | DNS changes are free. Email forwarding for `hello@savethedates.co.uk` may be free; if it needs a purchase, ask me | Phase 4 |
+| Supabase custom domain | **Custom Domain add-on, about $10/month** (needs Pro), so Google's sign-in screens show `auth.savethedates.co.uk` instead of the Supabase address. I've decided to buy it (F063) | Phase 6 |
 | Google Cloud | Free. Brand verification is free but reviewed by Google, usually taking a few working days | Phase 6 |
 | Stripe | No monthly fee, only per-payment fees. **Live-mode activation needs me:** legal name, date of birth, home address, phone, business type (probably individual / sole trader), a UK bank account for payouts, and possibly an ID document or proof of address. Stripe also reviews the website | Phase 7 |
 | Resend, Sentry | Free plans; nothing to pay | Phases 2, 8 |
@@ -85,7 +86,7 @@ The Google **client ID** isn't secret. It goes in Supabase's Google provider (Cl
 
 ## Phase 1 — Supabase production project  ⏸ PAUSE: Ross pays for Pro
 
-1. Plans are per *organisation*, so to keep staging free, create a **new organisation** named `SaveTheDates Production`. **⏸ PAUSE: Ross** selects the **Pro** plan and enters card details. Keep the spend cap **on**. Don't buy PITR or other add-ons.
+1. Plans are per *organisation*, so to keep staging free, create a **new organisation** named `SaveTheDates Production`. **⏸ PAUSE: Ross** selects the **Pro** plan and enters card details. Keep the spend cap **on**. Don't buy PITR or other add-ons here; the Custom Domain add-on is bought in Phase 6.
 2. In the new organisation, create project `savethedates-production`:
    - region **Central EU (Frankfurt)** (`eu-central-1`);
    - default compute.
@@ -153,7 +154,7 @@ The Google **client ID** isn't secret. It goes in Supabase's Google provider (Cl
    | --- | --- |
    | `PORT` | `3000` |
    | `APP_ORIGIN` | `https://savethedates.co.uk`, exactly, with no trailing slash |
-   | `SUPABASE_URL` | `https://<production ref>.supabase.co` |
+   | `SUPABASE_URL` | `https://<production ref>.supabase.co` (changed to the custom domain in Phase 6) |
    | `SUPABASE_PUBLISHABLE_KEY` | production publishable key |
    | `SUPABASE_SERVICE_ROLE_KEY` | production service-role / secret key |
    | `SENTRY_DSN` | the Sentry DSN (same as staging's) |
@@ -180,9 +181,10 @@ The Google **client ID** isn't secret. It goes in Supabase's Google provider (Cl
 
    Replace a conflicting default "parked" `@` A record, or a `www` record, only if one exists. **Don't touch** the Resend records: SPF TXT, DKIM `resend._domainkey`, DMARC `_dmarc`, and the `send` MX/TXT records. Don't enable GoDaddy domain forwarding.
 2. In Render, wait until both domains are **Verified** and the certificate is **issued** (minutes to an hour).
-3. **Support mailbox (ask me first):** the site, Stripe and Google show `hello@savethedates.co.uk` to customers, but nothing receives mail sent to it yet (Resend receiving is off). I had planned to do this later, so **ask me whether to set it up now**. I recommend doing it before Stripe's review in Phase 7. If I say yes:
-   - Set up **email forwarding** from `hello@savethedates.co.uk` to `rmeikle55@gmail.com` (GoDaddy's forwarding, if it's included free).
-   - If it needs a purchase or new root MX records, **⏸ PAUSE: Ross**.
+3. **Support mailbox (F066; I want this now):** the site, Stripe and Google show `hello@savethedates.co.uk` to customers, but nothing receives mail sent to it yet (Resend receiving is off). Do it before Stripe's review in Phase 7. If it's already set up (check the MX records on `@`), just test it.
+   - Set up **email forwarding** from `hello@savethedates.co.uk` to `rmeikle55@gmail.com`: GoDaddy's forwarding if it's included free, otherwise a free forwarder such as ImprovMX.
+   - It adds MX records on `@`. If it asks for an SPF record on `@`, merge it into any existing one; never create a second SPF record.
+   - If it needs a purchase, **⏸ PAUSE: Ross**.
    - Never change the `send` subdomain's records.
    - Afterwards, ask me to send a test email to `hello@savethedates.co.uk` and confirm it arrives.
 
@@ -197,7 +199,16 @@ Confirm all of these before Phases 6 and 7:
 - `/api/health` shows `ok`.
 - The migrations have been applied (ask me if you don't know).
 
-## Phase 6 — Google sign-in for production (free; brand review takes days)
+## Phase 6 — Google sign-in for production (custom domain about $10/month; brand review takes days)
+
+0. **Custom sign-in domain `auth.savethedates.co.uk`** (my decision, F063). It makes Google's screens and emails show `savethedates.co.uk` instead of `<ref>.supabase.co`.
+   - **⏸ PAUSE: Ross** approves the **Custom Domain** add-on on the production organisation. Tell me the price shown first.
+   - Supabase **production** → Project Settings → **Custom Domains** (it may be under General or Add-ons): enter `auth.savethedates.co.uk`.
+   - In GoDaddy, add exactly the records Supabase asks for, alongside the existing ones. This is usually a **CNAME** `auth` pointing to `<production ref>.supabase.co`, plus a **TXT** record for verification.
+   - Wait until Supabase shows the domain verified, then **activate** it.
+   - Render production → Environment: change `SUPABASE_URL` to `https://auth.savethedates.co.uk`, then **Save and deploy**. Check that `/api/health` shows `ok` and that `/account/sign-in` loads (enter the lock login).
+   - Supabase's Google **Callback URL** should now read `https://auth.savethedates.co.uk/auth/v1/callback`; use it in step 3.
+   - If Supabase's process differs from this, stop and ask me. Log the domain status.
 
 1. **Verify the domain with Google.** In **Google Search Console**, add a **Domain** property `savethedates.co.uk` and verify it with the DNS **TXT** record it gives. Add that TXT record in GoDaddy alongside the existing records, without replacing any TXT record. Don't submit a sitemap yet; that's a launch-day step.
 2. **Google Cloud Console** → project "SaveTheDates" → **Google Auth Platform → Branding**:
@@ -206,18 +217,18 @@ Confirm all of these before Phases 6 and 7:
    - Application home page `https://savethedates.co.uk/`
    - Privacy policy `https://savethedates.co.uk/privacy`
    - Terms of service `https://savethedates.co.uk/terms`
-   - **Authorised domains:** `savethedates.co.uk` and the production Supabase domain `<production ref>.supabase.co`. Keep any staging entries already there, such as `onrblnlwrnbdvyeasqdt.supabase.co`.
+   - **Authorised domains:** `savethedates.co.uk`, which also covers `auth.savethedates.co.uk`. Keep any staging entries already there, such as `onrblnlwrnbdvyeasqdt.supabase.co`.
    - Developer contact email `rmeikle55@gmail.com`.
    - Replace any temporary `savethedates-staging.onrender.com` homepage, privacy or terms URLs with the production ones above. The one consent screen serves both environments.
 3. **Clients → Create client → Web application**, named `SaveTheDates production`:
    - Authorised JavaScript origin: `https://savethedates.co.uk`
-   - Authorised redirect URI: the **Callback URL** shown in Supabase **production** → Authentication → Sign In / Providers → Google (`https://<production ref>.supabase.co/auth/v1/callback`). Copy it from Supabase exactly.
+   - Authorised redirect URI: the **Callback URL** shown in Supabase **production** → Authentication → Sign In / Providers → Google. After step 0 that's `https://auth.savethedates.co.uk/auth/v1/callback`. Copy it from Supabase exactly.
 
    Log the **client ID**. Copy the **client secret** straight into step 4.
 4. Supabase **production** → Authentication → Sign In / Providers → **Google**: enable it, then paste the client ID and client secret. Save. (The `/auth/callback` redirect URL was already added in Phase 1.)
 5. Render production → Environment → add `AUTH_GOOGLE_ENABLED` = `true`, then **Save and deploy** ("Save only" doesn't apply it).
 6. **Google Auth Platform → Audience:** user type **External**, then **Publish app** (move it from Testing to In production). The app requests only the basic scopes (email, profile, openid), so no sensitive-scope verification is needed. Confirm that no sensitive or restricted scopes are listed under Data Access.
-7. **Brand verification:** submit it if Google offers it (Branding or Verification Center). Until it's approved, Google's screen may say "continue to `<ref>.supabase.co`" instead of "SaveTheDates". That's expected; tell me the status. A paid Supabase custom domain would change the address shown; **don't buy it**. It's my decision later.
+7. **Brand verification:** submit it if Google offers it (Branding or Verification Center). Until it's approved, Google's screen names `auth.savethedates.co.uk` rather than "SaveTheDates". That's expected; tell me the status.
 8. **Quick check, only if I say yes:** on `https://savethedates.co.uk/account/sign-in` (enter the lock login), click **Continue with Google** and confirm Google's account chooser appears. Stop there unless I ask you to finish signing in; finishing creates a real account in production.
 
 ## Phase 7 — Stripe live mode  ⏸ PAUSE: Ross completes activation and verification
@@ -260,7 +271,7 @@ Confirm all of these before Phases 6 and 7:
 2. `/dashboard` asks for the lock login, and `/robots.txt` disallows everything.
 3. `/account/sign-in` (after the lock login) shows **Continue with Google**.
 4. Render production: the deploy is live on your chosen image tag, the logs show no repeating errors, and the env vars are all present (names only). The full list is `PORT`, `APP_ORIGIN`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `APP_ENV`, `STAGING_USERNAME`, `STAGING_PASSWORD` and `AUTH_GOOGLE_ENABLED`, plus the two Stripe ones if Phase 7 finished.
-5. Supabase production: custom SMTP is on (sender `hello@savethedates.co.uk`), the Google provider is enabled, and the Site URL and redirect URLs are as set.
+5. Supabase production: custom SMTP is on (sender `hello@savethedates.co.uk`), the Google provider is enabled, the Site URL and redirect URLs are as set, and the custom domain `auth.savethedates.co.uk` is active. Render's `SUPABASE_URL` uses it.
 6. Stripe live: the webhook endpoint exists with the five events.
 7. Google: the consent screen is **In production**, and the brand verification status is noted.
 
@@ -269,7 +280,7 @@ Confirm all of these before Phases 6 and 7:
 Reply with:
 
 - **Done:** each phase, with the non-secret values from your log:
-  - Supabase: production org name, project ref, region and the kind of key used;
+  - Supabase: production org name, project ref, region, the kind of key used, and the custom domain status;
   - Resend key name;
   - Render: service name, ID and `onrender.com` URL, image tag, instance, and domain and certificate status;
   - GoDaddy records added or replaced (type, host, value), including the Search Console TXT;

@@ -15,7 +15,7 @@ CI builds the Dockerfile's `production` target, tests it and publishes that same
 | Runtime variable | Production value |
 | --- | --- |
 | `APP_ORIGIN` | Exact public HTTPS origin, without path or trailing slash; used for auth, checkout returns, search metadata and the guest links couples copy and share |
-| `SUPABASE_URL` | Chosen managed project's HTTPS API URL |
+| `SUPABASE_URL` | Chosen managed project's HTTPS API URL. Production uses its custom domain, `https://auth.savethedates.co.uk` (F063), so Google sign-in shows `savethedates.co.uk`; staging uses `https://<ref>.supabase.co` |
 | `SUPABASE_PUBLISHABLE_KEY` | Publishable key for that same project |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same project's server-only service-role key, used by the verified webhook |
 | `STRIPE_SECRET_KEY` | Test key on staging; live key only for the approved production release |

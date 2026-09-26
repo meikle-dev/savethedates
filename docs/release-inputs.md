@@ -37,10 +37,12 @@ Needed securely at deployment time: project URL, publishable key, and service-ro
 - [x] Sending domain configured and verified: `yes (Resend, verified 26 September 2026; SPF/DKIM/DMARC added in GoDaddy)`
 - [x] SMTP provider: `Resend`
 - [x] SMTP credentials available securely: `yes — staging API key set as the staging Supabase project's SMTP password. No production key yet`
-- [ ] Signup confirmation tested in a real inbox: `no — SMTP is configured but not yet exercised`
-- [ ] Password recovery tested in a real inbox: `no — not yet exercised`
-- [ ] Support contact shown to customers: `hello@savethedates.co.uk (drafted in the footer and legal pages, 26 September 2026; must forward to a real inbox, since Resend receiving is off)`
-Google sign-in (F055) was reopened for staging by the owner on 26 September 2026 (code was already built; see F055). Not yet published or needed for launch.
+- [x] Signup confirmation tested in a real inbox: `yes — owner, on staging, 26 September 2026 (in the inbox, not spam)`
+- [x] Password recovery tested in a real inbox: `yes — owner, on staging, 26 September 2026`
+- [ ] Support contact shown to customers: `hello@savethedates.co.uk (in the footer and legal pages). Not receiving mail yet: an owner test email on 26 September 2026 went nowhere. F066 sets up forwarding to the owner's Gmail`
+Google sign-in (F055) was reopened for staging by the owner on 26 September 2026 (code was already built; see F055). The owner wants it at launch (25 September 2026).
+
+- [x] Address Google shows at sign-in (F063): `savethedates.co.uk, through a Supabase custom domain auth.savethedates.co.uk on production (owner, 26 September 2026; about $10/month add-on). Staging keeps the Supabase address`
 
 - [x] Google Cloud project and OAuth client owner (F055): `Ross (owner); Cloud project "SaveTheDates" (project ID savethedates)`
 - [ ] Google OAuth clients created for staging and production: `staging only (client "SaveTheDates staging"); no production client`
@@ -66,13 +68,13 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` and `${APP_ORIGI
 - [ ] Live secret key available securely: `n/a — not created`
 - [ ] Live webhook signing secret available securely: `n/a — not created`
 - [x] Test-mode staging checkout verified: `yes — owner completed a real Stripe test Checkout on staging, 25 September 2026 (after the F061 fixes)`
-- [ ] Refund/dispute handling verified: `yes / no`
+- [ ] Refund/dispute handling verified: `not yet — the 26 September 2026 staging test refunded a different, older test payment, so nothing was revoked (correctly; see F067). Repeat on the site's own £29 payment from 25 September 2026, 21:55 UTC`
 
 The webhook endpoint is `${APP_ORIGIN}/api/stripe/webhook`. Required events are documented in [operations.md](operations.md).
 
 ## 5. Customer and legal policies
 
-- [x] Terms of service approved: `/terms, approved by the owner, 25 September 2026`
+- [x] Terms of service approved: `/terms, approved by the owner, 25 September 2026; the line listing the Invitation re-approved on 26 September 2026`
 - [x] Privacy notice approved: `/privacy, includes the Google sign-in wording; approved by the owner, 25 September 2026`
 - [x] Data controller/business identity: `Ross Meikle in the United Kingdom (approved with the legal text, 25 September 2026)`
 - [ ] Support process and response target: `
@@ -101,7 +103,7 @@ These choices are required before implementing and testing export/deletion. The 
 - [ ] Recovery point objective (maximum acceptable data loss): `
 - [ ] Recovery time objective (maximum acceptable outage): `
 - [ ] Backup restore drill owner: `
-- [ ] Staging journey tester: `
+- [x] Staging journey tester: `Ross (owner); checklist run on staging on 26 September 2026, results in F041`
 - [ ] Independent release reviewer: `
 - [ ] Planned release window: `following the launch plan (docs/launch-plan.md): production is set up locked, reviewed by Stripe and Google, rehearsed by the owner, then opened. Date to be set`
 - [ ] Production dress rehearsal completed (launch plan stage 4): `
