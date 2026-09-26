@@ -1,6 +1,6 @@
 # Product backlog
 
-**SaveTheDates is live and public at `https://savethedates.co.uk` (opened 26 September 2026).** The owner confirmed a live Stripe purchase and refund on production, then removed the lock. The site is indexable, and Google's brand verification is approved and published. The launch record is in F009; the setup is in F041. **Current: F009** stays In Progress for post-launch items: Search Console indexing, the link-preview check (F047), and the deferred gates. The launch followed the [launch plan](launch-plan.md). F001-F008, F011-F032, F034-F037, F040, F042-F046, F056-F060, F062 and F064 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Owner staging check (26 September 2026):** everything on the checklist passed except two items. The refund test refunded a different, older test payment, so it must be repeated on the site's own payment (see F067). Mail to `hello@savethedates.co.uk` wasn't received then; forwarding has since been set up (F066). The results are in F041. **Next engineering work: F065** (separate Save the Date and Invitation links, raised by the owner on 26 September 2026), then **F067**. **F068** (meal choices and food preferences on the RSVP) was moved ahead by the owner and is In Progress: built, reviewed and privacy wording approved; staging, then production, remain. **F069** (RSVP replies without JavaScript) is Ready. **F038 is In Progress:** the owner confirmed Sentry works on staging; the checks that need the Sentry connector remain. **F061** waits only on independent review, which the owner moved into F054. **F047 is In Progress:** production is open, so its messaging-app preview check can run now (launch plan stage 6, step 4). **F055 (Google sign-in) is live on production.** **F063:** Google's brand verification is approved and published (26 September 2026); only a production sign-in check remains. **F066:** forwarding is set up; only an outside test email remains. The owner approved the legal text (25 September 2026) and re-approved the terms line that lists the Invitation (26 September 2026). The owner deferred F048 (customer data), F054 (security review) and F049 (real devices), and opened the site without them on 26 September 2026. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets that don't gate launch; **F051 is In Progress** and waits for the owner's keyword-volume input. The domain is `savethedates.co.uk`. F054 (full security review) was a paid-launch gate; the owner deferred it, and it should run soon after launch.
+**SaveTheDates is live and public at `https://savethedates.co.uk` (opened 26 September 2026).** The owner confirmed a live Stripe purchase and refund on production, then removed the lock. The site is indexable, and Google's brand verification is approved and published. The launch record is in F009; the setup is in F041. **Current: F009** stays In Progress for post-launch items: Search Console indexing, the link-preview check (F047), and the deferred gates. The launch followed the [launch plan](launch-plan.md). F001-F008, F011-F032, F034-F037, F040, F042-F046, F056-F060, F062 and F064 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Owner staging check (26 September 2026):** everything on the checklist passed except two items. The refund test refunded a different, older test payment, so it must be repeated on the site's own payment (see F067). Mail to `hello@savethedates.co.uk` wasn't received then; forwarding has since been set up (F066). The results are in F041. **Next engineering work: F065** (separate Save the Date, Invitation and RSVP links, raised by the owner on 26 September 2026), then **F067**. **F068** (meal choices and food preferences on the RSVP) was moved ahead by the owner and is In Progress: built, reviewed and privacy wording approved; staging, then production, remain. **F069** (RSVP replies without JavaScript) is Ready. **F070** ("What we offer" showcase page, owner request) is Planned: UX can start now, and the build follows F068 and F065. **F038 is In Progress:** the owner confirmed Sentry works on staging; the checks that need the Sentry connector remain. **F061** waits only on independent review, which the owner moved into F054. **F047 is In Progress:** production is open, so its messaging-app preview check can run now (launch plan stage 6, step 4). **F055 (Google sign-in) is live on production.** **F063:** Google's brand verification is approved and published (26 September 2026); only a production sign-in check remains. **F066:** forwarding is set up; only an outside test email remains. The owner approved the legal text (25 September 2026) and re-approved the terms line that lists the Invitation (26 September 2026). The owner deferred F048 (customer data), F054 (security review) and F049 (real devices), and opened the site without them on 26 September 2026. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets that don't gate launch; **F051 is In Progress** and waits for the owner's keyword-volume input. The domain is `savethedates.co.uk`. F054 (full security review) was a paid-launch gate; the owner deferred it, and it should run soon after launch.
 
 ## Status and handoff rules
 
@@ -2321,12 +2321,13 @@ Record items 1–3 in `release-inputs.md` section 3.
 - **Checks:** `npm run check` passed (lint, typecheck, 92 unit tests, build). `tests/dashboard.spec.ts` passed 10 of 10 at desktop and mobile, with new colour assertions for Private draft (card and header), Published (card), and Offline (neither colour). Overview screenshots for draft and published were inspected at 390 px and 1440 px, with no overflow. On phones, the header hides the status badge, as before.
 - **Noticed, not changed (existing behaviour):** when a site is Offline (published, but the purchase has ended), the card says "Offline", but the header badge says "Private draft", because `layout.tsx` only distinguishes live from not live. With the new orange, the mismatch is more visible. The owner decides whether the header should say "Offline".
 
-## F065 - Separate Save the Date and Invitation links
+## F065 - Separate Save the Date, Invitation and RSVP links
 
-**Status:** Ready (raised by the owner on 26 September 2026; Product Manager decisions below)
+**Status:** Ready (raised by the owner on 26 September 2026; RSVP link added the same day; Product Manager decisions below)
 **Priority / lead:** P1, proposed paid-launch gate (the owner may defer it) / UX for the sharing panels and navigation, then Software Engineer. Independent review is required: it adds a second guest secret, and changes which pages each link can open.
 **Purpose:** A Save the Date and an Invitation are sent at different times, usually months apart. Couples send each one on its own, and guests who have only the Save the Date don't see the Invitation.
 **Source:** Owner staging check, 26 September 2026: "currently when we send an invite link to guests it opens at the invitation page. I think we need two sections for sending links to guests - one should be "send save the date" and one should be "send invitation" the two things are seperate in their order, usually a save the date would come first, then an invite later". Also: "save the date should not nav to the invitation - the two are seperate". Switching the Invitation off made the shared link "page not found", which showed the problem.
+Owner, later on 26 September 2026: "we need to let the couples send links out specifically to RSVP, or to the wedding invite page" (decision 9).
 **Today:**
 
 - One secret opens every guest page (F043).
@@ -2351,7 +2352,7 @@ Record items 1–3 in `release-inputs.md` section 3.
    - With the Invitation off, the Save the Date link works exactly as today (Save the Date, Details and RSVP), so couples who don't use the Invitation lose nothing.
    - Once the Invitation is on, replying belongs with it. This follows the 25 September decision that removed the RSVP button from the Save the Date.
    - With the Invitation off, the Invitation link gives the same generic "page not found" as any unavailable page.
-3. **Workspace.** The single guest-link panel becomes two, "Send your Save the Date" and "Send your Invitation".
+3. **Workspace.** The single guest-link panel becomes two, "Send your Save the Date" and "Send your Invitation", plus the RSVP link panel in decision 9.
    - Each has its own link, suggested message, Share, WhatsApp and Copy, and **Replace link**.
    - The Invitation panel is offered only while the Invitation is on and the site is live; otherwise it says how to switch the Invitation on.
    - Replacing one link doesn't change the other.
@@ -2365,7 +2366,20 @@ Record items 1–3 in `release-inputs.md` section 3.
    - the homepage, the digital save the date page, the FAQ and pricing;
    - the workspace help;
    - `/terms` (the owner re-approves any change to it).
-8. **No customer migration.** There are no production customers yet. On staging, an `/invitation` URL under the Save the Date secret stops working, which is acceptable before launch.
+8. **No customer migration.** There were no production customers when this was written. Check again before building: if live sites exist, keep their current Save the Date links working. On staging, an `/invitation` URL under the Save the Date secret stops working, which is acceptable.
+9. **An RSVP link that opens the reply form directly** (added 26 September 2026).
+   - Couples use it to ask for replies, chase late ones, or send to guests who already have the other pages.
+   - It isn't a third secret. It's the RSVP page under whichever link currently offers RSVP (table above):
+     - `/<names>/<invitation secret>/rsvp` while the Invitation is on;
+     - `/<names>/<save the date secret>/rsvp` while it's off.
+   - A guest who opens it sees the RSVP page first and can reach the same pages as that link.
+   - Replacing the underlying link replaces the RSVP link too. The panel says so.
+   - **Workspace:** a third panel, "Send your RSVP link", with its own link, message, Share, WhatsApp and Copy.
+     - It's shown only while RSVP is on and open. Otherwise it says how to switch RSVP on, or that replies have closed.
+     - It has no Replace button of its own; it points to the panel whose link it uses.
+   - **Message:** "Please let us know if you can come by <closing date>: <link>". When no closing date is set, it drops "by <closing date>".
+   - **Preview (F047):** names the RSVP ("RSVP for <names>' wedding") and keeps the same rules.
+   - While RSVP is off or closed, the link shows the existing closed or "not found" states, the same as the RSVP page today.
 
 **Done when:**
 
@@ -2376,6 +2390,7 @@ Record items 1–3 in `release-inputs.md` section 3.
   - wrong, replaced and other weddings' secrets;
   - cross-owner denial.
 - Replacing either link stops only that link, and existing responses are kept.
+- The RSVP link opens the reply form directly, under the Invitation link while the Invitation is on and under the Save the Date link otherwise. Its panel appears only while RSVP is on and open. After the Invitation is switched on or off, or a link is replaced, the panel shows the right link. E2E covers sending it and a reply through it.
 - The workspace shows both panels with the right messages. E2E covers sending both links, and the Invitation switched off.
 - Each link's metadata and preview meet F047's rules.
 - The wording above is updated.
@@ -2596,6 +2611,71 @@ Owner, 26 September 2026: dietary answers are food preferences, not health data.
 **Problem:** Guest pages send `Referrer-Policy: no-referrer`, so a form POST before hydration, or with JavaScript off, carries `Origin: null`. Next.js 16 treats that as an origin mismatch and aborts the Server Action with a 500 (`action-handler.js`), so nothing is saved. The F068 reviewer confirmed this in a real browser: with JavaScript off the reply returns 500; with it on, 200. It affects every RSVP reply, including a guest who taps Send before the page finishes loading.
 **Scope:** Let the guest RSVP form submit without JavaScript while keeping guest secrets out of referrers. Candidates: a `Referrer-Policy` that still sends the origin on same-origin requests (for example `same-origin` or `strict-origin` on the RSVP route), or a meta/form-level policy, checked against how the secret URL could leak. Keep the same-origin check; don't disable Next.js origin protection.
 **Done when:** An E2E test with JavaScript disabled sends a reply and it is saved; secret URLs still don't leak in `Referer` to other origins (test it); `npm run check`, integration and E2E pass; independent review passes.
+
+## F070 - "What we offer" showcase page
+
+**Status:** Planned (raised by the owner on 26 September 2026). UX can start now. The build waits for F068 and F065, because the page shows meal choices and the separate links.
+**Priority / lead:** P1, owner request / UX/UI Designer (new page and interaction), SEO & Growth (copy, metadata, search), then Software Engineer. The owner approves the final copy before release. Independent review isn't required for the page itself: it's public marketing with no auth or payment changes. The path-reservation migration (decision 7) gets a short review.
+**Purpose:** Sell the whole product on one page. Visitors see everything a couple can make, switch it into any theme, and try it as a guest would.
+**Source:** Owner, 26 September 2026: "We also need a full 'What we offer' page. A button to this on the home page, then a dedicated page to show it off. It should allow the user to swap between themes, show all the optional things that are available and possible, save the dates, wedding invitations, rsvps, meal choices and menus, and details of the day. It should be good marketing, and show off what we do well in a clever way that really sells itself."
+**Today:**
+
+- The homepage shows theme phones (screenshots in `public/media/themes/`) and links to `/examples/<theme>`.
+- The example pages (F050, delivered early) show one theme's Save the Date, Invitation, Details and RSVP, with a non-submitting RSVP.
+- Nothing shows the whole product in one place, or the couple's side (guest list and catering numbers).
+
+**Decisions (Product Manager, 26 September 2026):**
+
+1. **The idea: one wedding, told in order, in the visitor's choice of theme.**
+   - The page follows the fictional couple from the examples (Olivia and James) through a wedding year:
+     1. **Save the Date** (about a year out);
+     2. **Invitation** (a few months out, sent separately: F065);
+     3. **Details of the day**: venue, times, travel and FAQs;
+     4. **RSVP**, with **meal choices and food preferences** (F068);
+     5. **The couple's side**: replies coming into their guest list and catering numbers.
+   - Each step shows a phone with the real page next to a short headline and two or three plain lines on what it does and why it helps. Each optional part carries an "Optional: switch it on if you need it" label.
+2. **One theme switcher re-skins the whole page.**
+   - A sticky, compact control for all twelve themes, as swatches with names. Changing it re-skins every phone on the page at once, with a short cross-fade (none under reduced motion).
+   - The phones show the real guest page renderers with fictional data, not screenshots, so the page always matches what couples get and stays up to date as themes change.
+   - Reuse the existing theme list and example data. Don't build a new picker or copy renderers (F050's rule).
+3. **Try it as a guest: the part that sells itself.**
+   - In the RSVP step, the visitor can fill in the example reply: attending, a starter, main and dessert, and a food preference.
+   - As they choose, the couple's view beside it (or below it on phones) updates live: a new row in the guest list, and the catering numbers ticking up.
+   - All of it stays in the browser. Nothing is sent or saved, and the page says so, like the example RSVP note today.
+4. **Also show, briefly:**
+   - the private guest links and one-tap sharing (WhatsApp, copy);
+   - that guest pages aren't in search results;
+   - the one-off £29 price and how long the site stays online;
+   - making changes any time.
+   - Mention only what's built and live when the page ships. No testimonials, customer counts or invented claims (AGENTS.md).
+5. **Calls to action.**
+   - A **Create your save the date** button (the existing sign-up path) after the story and in the sticky header on phones.
+   - Each step links to its full example page (`/examples/<theme>/...`) in the chosen theme.
+6. **Homepage button.** Add a clear secondary button, **See everything we offer**, next to or under the hero's main call to action. Also add a link from the homepage's features section. The main call to action stays the primary one.
+7. **Route and SEO.**
+   - Path: `/what-we-offer`. SEO & Growth may propose a better path before the build; the owner decides.
+   - Couples' sites use `/<names>/...`, so the path must be reserved: update `reservedNames` (`src/features/weddings/guest-link.ts`) and the `wedding_slug_valid` constraint in a new migration, as `20260925000300_reserve_digital_save_the_date.sql` did, including renaming any existing site using that name. That makes it a database change, so apply it to staging, then production, in the usual order.
+   - The page is indexable and listed in `sitemap.ts`. It needs its own title, description, canonical and Open Graph image; one `h1`; and all text rendered on the server, so it reads fully without JavaScript. The interactive parts add to that.
+   - Add it to the marketing header or footer navigation.
+8. **Performance and access.**
+   - Mobile-first; no sideways scrolling at 320px.
+   - Phones below the first screen render lazily. Keep the page fast on a mid-range phone: coordinate with F051's checks.
+   - The theme switcher is a labelled radio group that works with the keyboard. The guest-to-couple updates are announced politely, and colour never carries meaning alone.
+
+**Depends on:** F068 Done (meal choices) and F065 Done (separate links). UX and copy can proceed now. If the owner wants the page sooner, it can ship without the links section and gain it when F065 is Done, but never describe a feature before it's live.
+**Relationship:** F053 (homepage review) may suggest changes to the homepage button; it doesn't block this. F050's remaining scope (compact mobile browsing) stays separate. F051 and F052 should use this page once it's live.
+
+**Done when:**
+
+- The homepage has the **See everything we offer** button and link. `/what-we-offer` shows all five steps with the theme switcher, and all twelve themes re-skin every phone.
+- The guest-to-couple demo updates the guest list and catering numbers, and makes no network request when used (tested).
+- Every feature shown is live in production. The owner has approved the copy.
+- The path is reserved in code and the database, and tested. The migration is on staging and production.
+- The metadata, canonical, sitemap entry and indexability are tested, and the page reads fully without JavaScript.
+- Screenshots are inspected at 320, 390, 768 and 1440px, in at least four themes including a split-layout one. Reduced motion and keyboard use are checked.
+- `npm run check` and E2E pass. `docs/overview/site-ui.md` (marketing section) and `docs/overview/architecture.md` (routes) are updated.
+
+**References:** `src/app/page.tsx`, `src/features/marketing/home.tsx`, `marketing.css`, `phone-preview.tsx`, `example-data.ts`, `src/app/examples/[theme]/`, `src/app/sitemap.ts`, `src/features/weddings/guest-link.ts`, `supabase/migrations/20260925000300_reserve_digital_save_the_date.sql`, `docs/overview/site-ui.md`, `docs/ux/template-ui-summary.md`, F050, F051, F053, F065, F068.
 
 ## F010 - Post-launch extensions
 
