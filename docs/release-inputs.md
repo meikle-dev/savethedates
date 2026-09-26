@@ -5,10 +5,10 @@ Fill in the non-secret decisions and identifiers below when they are available. 
 ## 1. Production ownership and hosting
 
 - [x] Production host/provider: `Render (Hobby workspace; production on a Starter web service, deployed from the GHCR image) — approved 24 September 2026, see F037`
-- [ ] Hosting account/project identifier: `Staging: savethedates-staging (srv-darbpap7lnhs73cp2t50). Production: not created yet (Render needs a payment card)`
+- [x] Hosting account/project identifier: `Production: savethedates-production (srv-darodugjo6nc738q0n9g, Frankfurt, Starter, health check /api/health, https://savethedates-production.onrender.com), created 26 September 2026, running image ghcr.io/meikle-dev/savethedates:d0490538e871950ef9bf80aa9a8fcb46fc70e467 with no registry credential. Staging: savethedates-staging (srv-darbpap7lnhs73cp2t50) on adb44b2; the two tags differ only in docs, so both run the same code`
 - [x] Deployment region: `Frankfurt (EU Central)`
 - [x] Production domain: `savethedates.co.uk` (owner, 25 September 2026). Canonical origin `https://savethedates.co.uk` (`APP_ORIGIN`); `www.savethedates.co.uk` redirects to it with a 301.
-- [ ] DNS access available: `yes / no`
+- [x] DNS access available: `yes — GoDaddy. Root and www point at Render (HTTPS works, www returns 301 to the root, checked 26 September 2026). MX records point to ImprovMX (mx1/mx2.improvmx.com) with SPF v=spf1 include:spf.improvmx.com ~all; Google Search Console verification TXT present; Resend's send/DKIM/DMARC records unchanged`
 - [x] TLS/HTTPS will be managed by: `Render (automatic certificates for custom domains)`
 - [ ] Monthly spending limit or approval: `
 - [x] Staging host/domain, if separate: `https://savethedates-staging.onrender.com` (Render free instance, password-protected; created 25 September 2026)
@@ -18,10 +18,10 @@ The host must run the existing Docker production image, support HTTPS, environme
 
 ## 2. Supabase production project
 
-- [ ] Managed Supabase project reference: `Staging only: onrblnlwrnbdvyeasqdt (savethedates-staging, Frankfurt, Free). Production not created — Pro is paid and deferred by the owner (26 September 2026)`
+- [x] Managed Supabase project reference: `Production: msrpxvlxojnnefezestn (Frankfurt). Staging: onrblnlwrnbdvyeasqdt (savethedates-staging, Frankfurt, Free). All 33 migrations in supabase/migrations/ applied to production in order on 26 September 2026 (about 09:00 UTC); checked against the repo with the Supabase connector's list_migrations the same day`
 - [x] Supabase organisation/project owner: `Ross (owner)`
-- [ ] Production project is separate from local and staging: `n/a — no production project yet`
-- [x] Database region: `Central EU (Frankfurt), to sit next to the app; production on Supabase Pro, staging on Free`
+- [x] Production project is separate from local and staging: `yes — msrpxvlxojnnefezestn, separate from staging's onrblnlwrnbdvyeasqdt`
+- [x] Database region: `Central EU (Frankfurt), to sit next to the app; production on Supabase Pro (organisation "SaveTheDates Production", checked 26 September 2026), staging on Free`
 - [ ] Supabase plan supports the expected usage: `yes / no / review needed`
 - [ ] Database backup/PITR plan selected: `
 - [ ] Storage backup destination selected: `
@@ -31,22 +31,22 @@ Needed securely at deployment time: project URL, publishable key, and service-ro
 
 ## 3. Authentication and email
 
-- [ ] Production `APP_ORIGIN` (exact HTTPS origin): `Staging only for now: https://savethedates-staging.onrender.com`
+- [x] Production `APP_ORIGIN` (exact HTTPS origin): `https://savethedates.co.uk` (staging: https://savethedates-staging.onrender.com)
 - [x] Auth email sender name: `SaveTheDates`
 - [x] Auth email sender address: `hello@savethedates.co.uk`
 - [x] Sending domain configured and verified: `yes (Resend, verified 26 September 2026; SPF/DKIM/DMARC added in GoDaddy)`
 - [x] SMTP provider: `Resend`
-- [x] SMTP credentials available securely: `yes — staging API key set as the staging Supabase project's SMTP password. No production key yet`
+- [x] SMTP credentials available securely: `yes — Resend keys "staging" and "production" (created 26 September 2026), each set as its own Supabase project's SMTP password during setup. Production's SMTP settings weren't independently checked; the dress rehearsal's sign-up email confirms them`
 - [x] Signup confirmation tested in a real inbox: `yes — owner, on staging, 26 September 2026 (in the inbox, not spam)`
 - [x] Password recovery tested in a real inbox: `yes — owner, on staging, 26 September 2026`
-- [ ] Support contact shown to customers: `hello@savethedates.co.uk (in the footer and legal pages). Not receiving mail yet: an owner test email on 26 September 2026 went nowhere. F066 sets up forwarding to the owner's Gmail`
+- [ ] Support contact shown to customers: `hello@savethedates.co.uk (in the footer and legal pages). Forwarded by ImprovMX to the owner's Gmail; ImprovMX shows the domain Active and the MX records resolve (26 September 2026). Still to do: a test from an address other than the owner's Gmail, because Gmail hides forwarded copies of your own messages (F066)`
 Google sign-in (F055) was reopened for staging by the owner on 26 September 2026 (code was already built; see F055). The owner wants it at launch (25 September 2026).
 
-- [x] Address Google shows at sign-in (F063): `Supabase custom domain declined by the owner on 26 September 2026 when asked to confirm the $10/month price ("i dont want to pay that"); production stays on the default msrpxvlxojnnefezestn.supabase.co address, same as staging. Brand verification (F063 option 1) was submitted instead so the consent screen can show "SaveTheDates" regardless of domain, but it failed because Google's crawler can't reach https://savethedates.co.uk/ or /privacy through the APP_ENV=staging password lock ("unresponsive", "behind a login page"). TODO: re-submit brand verification (Google Cloud Console → project "SaveTheDates" → Google Auth Platform → Branding → Verify branding) once the site is unlocked at launch`
+- [x] Address Google shows at sign-in (F063): `Supabase custom domain declined by the owner on 26 September 2026 when asked to confirm the $10/month price ("i dont want to pay that"); production stays on the default msrpxvlxojnnefezestn.supabase.co address, same as staging. Brand verification (F063 option 1) was submitted instead so the consent screen can show "SaveTheDates" regardless of domain, but it failed because Google's crawler can't reach https://savethedates.co.uk/ or /privacy through the APP_ENV=staging password lock ("unresponsive", "behind a login page"). That failure was on the older production image, where / and /privacy hung. Since the redeploy to d049053 they answer 200 without the lock, including to Googlebot's user agent (checked 26 September 2026). Re-submission was started by the browser agent on 26 September 2026, after the redeploy; record Google's result here`
 
 - [x] Google Cloud project and OAuth client owner (F055): `Ross (owner); Cloud project "SaveTheDates" (project ID savethedates)`
-- [ ] Google OAuth clients created for staging and production: `staging only (client "SaveTheDates staging"); no production client`
-- [ ] Google consent screen name: `Testing mode, not published. Only rmeikle55@gmail.com is added as a test user. Staging URLs to enter (temporary): Homepage https://savethedates-staging.onrender.com/, Privacy https://savethedates-staging.onrender.com/privacy, Terms https://savethedates-staging.onrender.com/terms. For production, replace them with https://savethedates.co.uk/, /privacy and /terms (see F041, "To update later")`
+- [x] Google OAuth clients created for staging and production: `both. Production's Supabase project has the Google provider enabled (public auth settings, checked 26 September 2026). Record the production client ID here`
+- [ ] Google consent screen name: `SaveTheDates. Published ("In production", reported by the browser agent on 26 September 2026), so any Google account can sign in. Brand verification is pending (see F063); until it passes, Google may show the msrpxvlxojnnefezestn.supabase.co address instead of the name`
 - [ ] Google sign-in tested on staging with disposable Google accounts: `partly — the owner confirmed Google sign-in works on staging (25 September 2026); the individual checklist results below were not recorded`. Record each result in the F055 handoff:
   - a new Google user creates an account and reaches Basics; signing in again returns to the same wedding;
   - a confirmed email/password user signs in with Google (same email) and reaches their existing wedding, and their password still works;
@@ -62,11 +62,11 @@ Supabase Auth must allow the exact `${APP_ORIGIN}/auth/confirm` and `${APP_ORIGI
 - [ ] Production price confirmed: `GBP 29 one-off / other: `
 - [x] Site lifetime confirmed (F022): `6 months after wedding date, fixed when checkout begins, for checkout attempts created after the F024 change is deployed. Purchases and checkout attempts already created retain their frozen 12-month expiry.`
 - [x] Refund policy approved: `/refunds (14-day full refund, then if the site doesn't work); approved by the owner, 25 September 2026`
-- [ ] Production Stripe account is separate from test account: `n/a — still one account, live mode not activated`
-- [x] Webhook endpoint domain: `Staging (test mode) only: https://savethedates-staging.onrender.com/api/stripe/webhook. No live-mode endpoint yet`
-- [ ] Live Checkout activation authorised: `no — deferred until there's a reviewable production site`
-- [ ] Live secret key available securely: `n/a — not created`
-- [ ] Live webhook signing secret available securely: `n/a — not created`
+- [x] Production Stripe account is separate from test account: `one account; live mode serves production and test mode serves staging, with separate keys and webhooks`
+- [x] Webhook endpoint domain: `Live: https://savethedates.co.uk/api/stripe/webhook ("SaveTheDates production", Active, the five required events). Test: https://savethedates-staging.onrender.com/api/stripe/webhook`
+- [x] Live Checkout activation authorised: `yes — live mode active; the browser agent saw the live keys in use on 26 September 2026 (about 14:20 UTC)`
+- [x] Live secret key available securely: `yes — sk_live_ key in Render production STRIPE_SECRET_KEY only`
+- [x] Live webhook signing secret available securely: `yes — in Render production STRIPE_WEBHOOK_SECRET only`
 - [x] Test-mode staging checkout verified: `yes — owner completed a real Stripe test Checkout on staging, 25 September 2026 (after the F061 fixes)`
 - [ ] Refund/dispute handling verified: `not yet — the 26 September 2026 staging test refunded a different, older test payment, so nothing was revoked (correctly; see F067). Repeat on the site's own £29 payment from 25 September 2026, 21:55 UTC`
 
@@ -99,7 +99,7 @@ These choices are required before implementing and testing export/deletion. The 
 - [ ] Incident contact email/phone: `
 - [x] Monitoring/alert destination: `rmeikle55@gmail.com (Sentry and Render alerts)`
 - [x] Log retention period: `30 days`
-- [ ] Sentry project created and values set: `org meikle, project savethedates, EU (Germany); set on staging and in GitHub on 25 September 2026. Production Render service still to be created and configured. Retention still to be checked after the trial ends (about 9 October 2026)`
+- [ ] Sentry project created and values set: `org meikle, project savethedates, EU (Germany); set on staging and in GitHub on 25 September 2026. Production's SENTRY_DSN and SENTRY_ENVIRONMENT=production are part of the production setup; confirm events arrive during the dress rehearsal. Retention still to be checked after the trial ends (about 9 October 2026)`
 - [ ] Recovery point objective (maximum acceptable data loss): `
 - [ ] Recovery time objective (maximum acceptable outage): `
 - [ ] Backup restore drill owner: `

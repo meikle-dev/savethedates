@@ -32,19 +32,21 @@ When checking the lock in a browser, a locked path shows the browser's own login
 - Sentry reports from staging.
 - **Owner staging checklist (26 September 2026):** everything passed except two items, with results in F041:
   - the refund test refunded a different, older test payment, so it must be repeated on the site's own payment (F041, F067);
-  - `hello@savethedates.co.uk` doesn't receive mail yet (F066).
-- The owner also asked for separate Save the Date and Invitation links (F065), and chose a custom sign-in domain so Google shows `savethedates.co.uk` (F063).
+  - `hello@savethedates.co.uk` didn't receive mail (F066; forwarding set up in stage 2).
+- The owner also asked for separate Save the Date and Invitation links (F065). The owner first chose a custom sign-in domain (F063), then declined its $10/month cost on 26 September 2026; Google brand verification is used instead.
 
-### 2. Set up production
+### 2. Set up production (done 26 September 2026)
 
-The owner runs the browser-agent prompt in [production-setup-prompt.md](production-setup-prompt.md) with Claude computer use. It sets up the production Supabase project, Resend SMTP, the Render service (locked), GoDaddy DNS, the support-mailbox forwarding (F066), the custom sign-in domain `auth.savethedates.co.uk` (F063), the Google production client and Stripe live mode, and checks Sentry. It pauses wherever the owner needs to pay or verify their identity. It keeps secrets out of chat and docs, and records non-secret values to copy into `release-inputs.md`.
+Production is set up and locked. The results, including what was checked directly and what the browser agent reported, are in [F041's production handoff](backlog.md#f041---production-setup-guide), and the values are in `release-inputs.md`. Not checked yet: production's Supabase email settings (the rehearsal's emails prove them), Sentry's `production` events, and Render's failure notifications.
 
-The engineer (Claude Code) applies every migration in `supabase/migrations/` to the new production project, the same way as staging.
+The owner ran the browser-agent prompt in [production-setup-prompt.md](production-setup-prompt.md) with Claude computer use. It set up the production Supabase project, Resend SMTP, the Render service (locked), GoDaddy DNS, the support-mailbox forwarding (F066, through ImprovMX), the Google production client and Stripe live mode, and checks Sentry. The custom sign-in domain was skipped (F063). It pauses wherever the owner needs to pay or verify their identity. It keeps secrets out of chat and docs, and records non-secret values to copy into `release-inputs.md`.
 
-### 3. Private review (usually a few days)
+The engineer (Claude Code) applied all 33 migrations in `supabase/migrations/` to the production project, the same way as staging.
 
-- **Stripe live activation:** the owner completes the business, bank and identity details, and Stripe reviews the site. Once approved, the live secret key and webhook signing secret go on the Render production service.
-- **Google:** the consent screen is published and brand verification submitted. With the custom domain (F063), Google's screens show `auth.savethedates.co.uk` rather than the Supabase address, and once brand verification is approved they also name "SaveTheDates".
+### 3. Private review
+
+- **Stripe live activation (done 26 September 2026):** live mode is active, and the live secret key and webhook signing secret are on the Render production service.
+- **Google:** the consent screen is published ("In production"), so anyone can sign in with Google. Brand verification was resubmitted on 26 September 2026 (F063). Until Google approves it, its screens may show the Supabase address `msrpxvlxojnnefezestn.supabase.co`; afterwards they name "SaveTheDates". It doesn't block opening.
 
 ### 4. Dress rehearsal on production
 
@@ -74,7 +76,8 @@ The owner decides which remaining launch-gate items must be finished before open
 Also still open (26 September 2026):
 
 - F065, separate Save the Date and Invitation links (proposed launch gate);
-- F066, receiving mail at `hello@savethedates.co.uk`, best done before Stripe's review (it replaces the support-mailbox item deferred on 25 September);
+- F066, receiving mail at `hello@savethedates.co.uk`: forwarding is set up, and only a test from an outside address remains;
+- F063, Google brand verification, waiting on Google (doesn't block opening);
 - F067, and the repeated refund test on staging (F041);
 - recording F038's remaining Sentry checks.
 

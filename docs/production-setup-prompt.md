@@ -1,5 +1,7 @@
 # Task: set up SaveTheDates production (Supabase, Resend, Render, GoDaddy, Google sign-in, Stripe, Sentry)
 
+> **Completed 26 September 2026.** This prompt has been run, and production exists. Don't run it again. The results are in [F041's production handoff](backlog.md#f041---production-setup-guide) and `release-inputs.md`. It's kept as a record of how production was set up.
+
 You are operating my Chrome browser to set up the production environment for my web app, SaveTheDates (a wedding "save the date" website builder). I am Ross, the owner of every account involved, and I'm logged in to them in this browser. Staging already exists and works; production does not exist yet. Your job is to create production so it mirrors staging, with production-only projects, keys, OAuth clients and webhooks, and to keep it locked (password-protected) until I approve launch.
 
 **The order below matters; follow it.** Some services check others before they'll work:
