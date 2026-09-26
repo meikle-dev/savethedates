@@ -190,6 +190,65 @@ F019 makes the guest RSVP an editorial invitation. A small rule and heart lead i
 
 F025 extends this to three distinct RSVP designs chosen by the existing whole-site theme. Modern Minimal uses an olive-and-linen paper photograph, a spaced editorial heading and a fine double-rule ivory card, with its vector olive sprig above the introduction. Warm & Romantic retains its rose photograph and centred invitation. Modern & Bold uses dark sculptural foliage, a citrus heading and a split desktop layout with the introduction to the left of an offset pale response panel; its action is citrus with dark teal text. At 900px and below, both new designs return to a single column with solid colours and lightweight vector artwork; none of the three desktop raster backdrops is requested. Opaque cards protect the form if artwork fails. All invitation states use these same compositions. The private RSVP preview uses the shared preview toolbar to switch designs, distinguishes current from unapplied themes, and reuses Apply theme to persist the whole-site choice with the existing live-update notice. Preview controls never submit guest responses.
 
+## RSVP meal choices and dietary requirements (F068, 26 September 2026)
+
+Scope and rules are in [F068](../backlog.md#f068---meal-choices-and-dietary-requirements-on-the-rsvp); the workspace editor and the Guests view are in [site-ui.md](../overview/site-ui.md#rsvp-meal-choices-and-catering-numbers-f068-26-september-2026). All twelve themes share `rsvp-page.tsx`, so this is built once. New controls use only the card tokens (`--theme-text/accent/muted/line/tint/radius`), so every theme, including Evening Gold's re-tokenised card, inherits them without per-theme markup.
+
+**Order inside the card** after "Can you attend?":
+
+1. One fieldset per shown course, in Starter, Main, Dessert order. A course appears only while meal choices are on and it has options. Legends: "Choose your starter", "Choose your main", "Choose your dessert". Options are radios, labelled with the couple's text and listed in their order. Nothing is preselected.
+2. Food preferences fieldset, always shown to attending guests. Legend: "Any food preferences?" Hint: "Tick any that apply, or leave blank if none." Then the privacy line "Only <first name> and <second name> will see this." Checkboxes: Vegetarian, Vegan, Gluten-free, Other. These are food preferences, not health information (owner decision, 26 September 2026).
+3. Other ticked: a text box appears directly under it. Label: "Your other food preference". Hint: "For example ‘no pork’ or ‘no mushrooms’." It asks only about food preferences, never allergies or medical conditions. It has a 200-character limit (`maxLength`) and `autocomplete="off"`.
+4. Then the existing error message, **Send RSVP** and the private-link note, unchanged.
+
+**Reveal**
+
+- The food block (courses and dietary) is hidden until "Joyfully accepts" is selected. "Regretfully declines", or no choice yet, hides it.
+- The reveal is CSS-first (`:has(input[value="yes"]:checked)`), so it works before hydration. Once hydrated, hidden blocks are also `disabled`, so a "No" reply sends no food answers. Other's text box follows the same rule.
+- Focus never moves on reveal. The new fields follow the control just used in DOM order, and Tab reaches them next. There's no live announcement.
+- Switching to declines only hides the answers; the browser keeps them, so switching back restores them. Nothing is sent with a "No", so the guest needs no message.
+- No-JS edge: a guest switches to No after choosing meals, and the server rejects the reply. The form comes back with No kept and the food answers cleared. Message: "You’re not attending, so we’ve cleared your meal choices. Send your reply again."
+
+**Layout**
+
+- A fine `--theme-line` rule separates the food block from attendance, with the same 27px rhythm as `.rsvp-attendance`.
+- Meal options are always one column, because an option can be 80 characters.
+- Option and dietary rows reuse the `.rsvp-choice` look, including checked, focus and 20px inputs, with these changes:
+  - body font at 16px, not the heading font at 19px;
+  - a minimum height of 52px;
+  - text wraps.
+- Dietary checkboxes are one column on phones and 2×2 from 901px.
+- Heather keeps its pill radius on the attendance choices and submit only; meal and dietary rows use a 16px radius.
+- Check the split desktop layouts (Bold, Terracotta, Alcantara, Countryside, Evening Gold) with a full three-course menu showing: the card grows, and nothing sticks or clips.
+
+**Errors**, shown under the affected fieldset's options, using the existing pattern: the fieldset gets `aria-invalid` and `aria-describedby` pointing to the error.
+
+- No choice for a course: "Choose a starter." / "Choose a main." / "Choose a dessert."
+- Other with no text: "Tell us your other food preference, or untick Other." This goes under the text box, which gets `aria-invalid`.
+- Menu changed while the page was open (an unknown or removed option, or meal choices switched off): the form re-renders with the current menu. It keeps the name, attendance, dietary answers and still-valid choices, and clears invalid ones. The course error is "The menu has changed. Choose your <course> again." The top message is "The couple has updated their menu. Please check your meal choices."
+- The top message stays "Check the highlighted fields." (`role="alert"`). After a rejected submit, focus moves to the first invalid control. A rejection refills all of the guest's unsaved answers, food included.
+
+**Confirmation**
+
+- The existing "Thank you" state adds a compact "Your choices" list under the notice, for accepted replies only. It shows each course ("Main: Pan-roasted hake"), then "Dietary: Vegan, Other (no mushrooms)" or "Dietary: none".
+- The list is built from the accepted submission, never read back from the database.
+- A declined reply shows no food lines.
+
+**Returning guests and corrections:** unchanged. The link can't show or edit a saved reply, so a guest never sees an old or removed choice. Changes go through the couple.
+
+**Previews and examples**
+
+- The owner preview shows the couple's saved menu, or dietary only when meal choices are off, and never submits.
+- Marketing examples (`/examples/[theme]/rsvp`) use this fictional menu, behind the same reveal:
+  - Starter: "Leek and potato soup", "Smoked salmon with wheaten bread"
+  - Main: "Roast sirloin of beef", "Pan-roasted hake with lemon butter", "Wild mushroom risotto"
+  - Dessert: "Sticky toffee pudding", "Lemon posset with shortbread"
+- The example privacy line reads "Only Olivia and James will see this."
+
+**Accessibility:** every radio and checkbox is wrapped in its label, and the whole row is the target, 52px or taller. Legends use the card's `.field-label` style. The dietary fieldset's `aria-describedby` points to the hint and the privacy line. Focus rings match `.rsvp-choice:has(:focus-visible)`, and colour never marks the checked state on its own.
+
+**Built (26 September 2026):** `rsvp-page.tsx` and the F068 block in `wedding.css`, with the Heather 16px override in `wedding-themes.css`. The meal and dietary rows reuse `.rsvp-choice` plus `.rsvp-option`, so each theme's choice colours apply. The Other text box sits directly under the checkboxes (under Other on phones; under the 2×2 grid from 901px). The confirmation's list has the heading "Your choices". The CSS reveal works without JavaScript, but a guest page can't currently send a reply without JavaScript: its `Referrer-Policy: no-referrer` makes the browser send `Origin: null` on a plain form post, which Next.js refuses. That applies to every RSVP reply, not only food, and predates F068. The server still refuses food sent with a "No" and returns the cleared form with the message above.
+
 ## Wedding invitation (F060, 25 September 2026)
 
 The Invitation is an optional fourth guest page, off until the couple switches it on. It has no photo: it's a formal card, and it reuses each theme's RSVP surround (`rsvp-shell`, `rsvp-main`, `rsvp-card`), so every theme's backdrop, paper card, borders and botanical accents apply unchanged. A couple can change theme without touching their invitation.

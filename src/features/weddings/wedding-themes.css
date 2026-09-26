@@ -142,6 +142,8 @@
 .rsvp-shell[data-theme="heather"] .rsvp-card { border-radius: 16px; box-shadow: 0 18px 50px #6b4e711a; }
 .rsvp-shell[data-theme="heather"] :is(.rsvp-choice, .rsvp-submit) { border-radius: 999px; }
 .rsvp-shell[data-theme="heather"] .rsvp-choice { padding-inline: 22px; }
+/* F068: the pill shape stays on attendance and submit; meal and dietary rows wrap long text, so they use 16px. */
+.rsvp-shell[data-theme="heather"] .rsvp-card .rsvp-option { border-radius: 16px; padding-inline: 16px; }
 
 /* Desktop RSVP backdrops: requested only here; content sits clear of each decorated edge. */
 @media (min-width: 901px) {

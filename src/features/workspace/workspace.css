@@ -213,3 +213,47 @@
 .ws-page-dot[data-on="true"] { border-color: var(--sage); background: var(--sage); }
 .ws-page-status { margin-left: auto; color: var(--muted); font-size: 0.8125rem; text-align: right; }
 .ws-row-link > .ws-page-status + svg:last-child { margin-left: 0; }
+
+/* F068: meal choices editor (RSVP section). Same row layout on phones and desktop; no drag. */
+.meal-course { min-width: 0; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+.meal-course legend { float: left; width: 100%; margin-bottom: 0.5rem; font-size: 1rem; font-weight: 600; }
+.meal-course legend + * { clear: left; }
+.meal-course-empty { display: grid; gap: 0.75rem; justify-items: start; color: var(--muted); font-size: 0.875rem; line-height: 1.6; }
+.meal-options { display: grid; gap: 0.9rem; }
+.meal-option { min-width: 0; }
+.meal-option-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem; }
+.meal-option-head .field-label { margin-bottom: 0; }
+.meal-option-actions { display: flex; gap: 0.25rem; }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--control-line); border-radius: 10px; background: var(--control-surface); color: var(--control-ink); cursor: pointer; }
+.icon-button svg { width: 1.1rem; height: 1.1rem; }
+.icon-button:not(:disabled):hover { border-color: var(--control-line-strong); background: var(--control-hover); }
+.icon-button:disabled { opacity: 0.4; cursor: not-allowed; }
+.icon-button:focus-visible { outline: 2px solid var(--control-focus); outline-offset: 2px; }
+
+/* F068: catering numbers (Guests), counted over every attending reply. */
+.catering-grid { display: grid; gap: 1.25rem; margin-top: 1.25rem; }
+.catering-block { min-width: 0; padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: 14px; background: white; }
+.catering-block h3 { font-family: Georgia, serif; font-size: 1.15rem; font-weight: 400; }
+.catering-list { display: grid; gap: 0.4rem; margin-top: 0.75rem; font-size: 0.9375rem; }
+.catering-list > div { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.catering-list dt { min-width: 0; overflow-wrap: anywhere; }
+.catering-list dd { font-variant-numeric: tabular-nums; font-weight: 600; }
+.catering-list .catering-muted { color: var(--muted); font-style: italic; }
+.catering-help { margin-top: 0.6rem; color: var(--muted); font-size: 0.8125rem; line-height: 1.5; }
+.catering-other { margin-top: 0.9rem; font-size: 0.875rem; line-height: 1.55; }
+.catering-other h4 { font-weight: 600; }
+.catering-other ul { margin-top: 0.35rem; display: grid; gap: 0.25rem; overflow-wrap: anywhere; }
+.catering-other summary { margin-top: 0.5rem; }
+@media (min-width: 768px) {
+  .catering-grid { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+}
+
+/* F068: an attending reply's answers, inside the Name cell so the table gains no columns. */
+.guest-food { margin-top: 0.3rem; color: var(--muted); font-size: 0.8125rem; font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
+.guest-food > div { display: block; }
+.guest-food dt, .guest-food dd { display: inline; }
+.guest-food em { font-style: italic; }
+@media (min-width: 640px) {
+  .guest-food > div { display: inline; }
+  .guest-food > div + div::before { content: " · "; }
+}

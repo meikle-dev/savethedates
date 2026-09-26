@@ -2,6 +2,7 @@ import type { Wedding } from "@/features/weddings/wedding";
 import type { WeddingTheme } from "@/features/weddings/themes";
 import { emptyDetails, type WeddingDetailsPage } from "@/features/weddings/details";
 import type { InvitationPage } from "@/features/weddings/invitation";
+import type { MealMenu } from "@/features/weddings/meal-menu";
 // Deliberately public fictional content; never load examples from customer data.
 export function exampleWedding(theme: WeddingTheme): Wedding {
   return { theme, names: ["Olivia", "James"], date: "2027-06-14", location: "Lake Como, Italy", message: "A day by the lake. A lifetime together. We can’t wait to celebrate with you.", image: { src: "/media/lake-como-editorial.webp", alt: "An imagined Italian lakeside villa, framed by olive branches and sunlit mountains." }, photoFraming: { [theme]: { saveTheDate: { x: 46, y: 52, zoom: 1.05 }, details: { x: 54, y: 58, zoom: 1.1 } } } };
@@ -18,3 +19,20 @@ export function exampleInvitation(theme: WeddingTheme): InvitationPage {
 
 /** A fixed, fictional closing date for the example RSVP and the invitation's reply line. */
 export const exampleRsvpClosesOn = "2027-05-01";
+
+/** F068: the fictional sample menu on the example RSVP pages, behind the same "Joyfully accepts" reveal. */
+export const exampleMealMenu: MealMenu = {
+  starter: [
+    { id: "00000000-0000-4000-8000-000000000001", label: "Leek and potato soup" },
+    { id: "00000000-0000-4000-8000-000000000002", label: "Smoked salmon with wheaten bread" },
+  ],
+  main: [
+    { id: "00000000-0000-4000-8000-000000000003", label: "Roast sirloin of beef" },
+    { id: "00000000-0000-4000-8000-000000000004", label: "Pan-roasted hake with lemon butter" },
+    { id: "00000000-0000-4000-8000-000000000005", label: "Wild mushroom risotto" },
+  ],
+  dessert: [
+    { id: "00000000-0000-4000-8000-000000000006", label: "Sticky toffee pudding" },
+    { id: "00000000-0000-4000-8000-000000000007", label: "Lemon posset with shortbread" },
+  ],
+};

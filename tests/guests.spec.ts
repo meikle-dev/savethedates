@@ -34,7 +34,7 @@ function guests(page: Page) {
   return {
     panel,
     rows: panel.locator("tbody tr.guest-row"),
-    names: () => panel.locator("tbody tr.guest-row th").allTextContents(),
+    names: () => panel.locator("tbody tr.guest-row th .guest-name-text").allTextContents(),
     showing: panel.getByRole("navigation", { name: "Guest response pages" }).locator("p"),
     summary: page.getByRole("group", { name: "RSVP summary" }),
   };
@@ -119,6 +119,8 @@ test("guest responses are paginated, filtered, searched and corrected per owner"
     await expect(list.summary).toContainText("312Responses");
     await page.reload();
     await expect(list.showing).toHaveText("Showing 1–5 of 5");
+    // Going back before the reloaded page hydrates can beat the router's popstate handler, leaving stale results.
+    await expect(page.locator("html")).toHaveAttribute("data-motion-ready", "true");
     await page.goBack();
     await expect(page).toHaveURL(/\/dashboard\/guests\?filter=attending$/);
     await expect(list.showing).toHaveText("Showing 1–25 of 156");

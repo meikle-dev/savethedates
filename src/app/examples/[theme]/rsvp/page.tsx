@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { isWeddingTheme, themes } from "@/features/weddings/themes";
 import { RsvpPage } from "@/features/weddings/rsvp-page";
-import { exampleRsvpClosesOn } from "@/features/marketing/example-data";
+import { exampleMealMenu, exampleRsvpClosesOn } from "@/features/marketing/example-data";
 
 export function generateStaticParams() { return themes.map(({ id }) => ({ theme: id })); }
 
@@ -20,6 +20,6 @@ export default async function ExampleRsvpPage({ params }: { params: Promise<{ th
   return <RsvpPage
     wedding={{ first_name: "Olivia", second_name: "James", theme, details_enabled: true, rsvp_enabled: true, invitation_enabled: true }}
     hrefs={{ home, invitation: `${home}/invitation`, details: `${home}/details`, rsvp: `${home}/rsvp` }}
-    open closesOn={exampleRsvpClosesOn} secret={null}
+    open closesOn={exampleRsvpClosesOn} secret={null} menu={exampleMealMenu}
     previewNote="Example only. Nothing you enter here is sent or saved." />;
 }

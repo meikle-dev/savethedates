@@ -306,6 +306,71 @@ A new account lands on Basics ("Start with your story.") with no section navigat
   - The phone sticky save area is the same as Details.
 - **Tablet navigation:** all eight sections stay on one row from 768 px, with no sideways scrolling.
 
+### RSVP meal choices and catering numbers (F068, 26 September 2026)
+
+Rules are in [F068](../backlog.md#f068---meal-choices-and-dietary-requirements-on-the-rsvp), and the guest form is in [template-ui-summary.md](../ux/template-ui-summary.md#rsvp-meal-choices-and-dietary-requirements-f068-26-september-2026).
+
+**Meal choices panel (RSVP section).** It's a third `ws-panel`, after RSVP settings and before **Preview RSVP page**, and it has its own form. It follows the FAQ editor pattern: client state, one hidden JSON field and one save for the whole menu.
+
+- **Head:** "Meal choices", with a badge showing the saved state: "On" (`badge-positive`) or "Off".
+- **Intro (saved state):**
+  - Off: "Guests who accept are asked about food preferences. Add a menu if you’d also like them to choose their meal."
+  - On: "Guests who accept choose their <starter, main and dessert>." Only the configured courses are listed.
+- **Switch** (`details-toggle`, at the top because it governs everything below): "Ask guests to choose their meal". Help: "Switching this off hides the menu from guests but keeps it, and any choices already made."
+- **Courses:** three fieldsets, with legends "Starter", "Main" and "Dessert". They can be edited while the switch is off, so a couple can prepare a menu first.
+  - **Empty course:** "No starter options. Guests won’t be asked about starters." Then **Add starter options**, which adds two empty rows and focuses the first, so a course never starts with a single option.
+  - **Option rows:**
+    - A label line: "Option 1" on the left; on the right, 44px icon buttons **Move up**, **Move down** and **Remove**. Their accessible names read "Move starter option 1 up".
+    - The full-width input on the next line, with an 80-character limit.
+    - This layout is the same on phones and desktop, and there's no drag.
+    - The first row's Move up and the last row's Move down are disabled, not hidden, so the buttons don't shift.
+  - **Adding:** below the rows, **Add another starter option** appears while there are fewer than six options. At six it's replaced by "Six options is the most for one course."
+  - **Focus and announcements** (one polite status line per panel):
+    - After a move, focus stays on the same button in the row's new position. If that button is now disabled, focus goes to the other move button. The panel announces "Moved to position 1 of 3."
+    - After a remove, focus goes to the next row's input, or the previous one if there's no next row. If the course is now empty, focus goes to **Add starter options**. The panel announces "Option removed."
+  - **Help under the courses:** "Renaming or removing an option doesn’t change replies already sent. In Guests, those replies are marked ‘no longer on the menu’. Check your menu before you share your link."
+- **Save area** (at the end, in the form flow, with no sticky bar):
+  - **Save meal choices** (pending: "Saving…").
+  - When the form is changed but not saved: "Save to apply your changes."
+  - On success: "Meal choices saved." followed by the new intro sentence (`role="status"`).
+  - On failure: "Check the meal choices marked below." (`role="alert"`). Focus moves to the first invalid field.
+  - On a server error: "We couldn’t save your meal choices. Please retry."
+- **Validation** is server-enforced and always applies, even while the switch is off, so a saved menu is always valid.
+  - A course with one option: "Add a second starter option, or remove this one to skip starters." The error sits under that course's rows, and its fieldset gets `aria-invalid` and `aria-describedby`.
+  - A blank option: "Enter this option, or remove it." The error sits on the input.
+  - A duplicate within a course, compared trimmed and case-insensitively: "This option is already in your starters."
+  - An option over 80 characters: "Keep each option to 80 characters or fewer."
+  - Switch on with no course filled: "Add at least two options to one course, or switch meal choices off." The error sits under the switch.
+
+**Guests section**
+
+- **Catering numbers panel:**
+  - It sits between the totals and Guest responses, and appears once at least one attending reply exists.
+  - Its counts cover every attending reply. Filter, search and page don't change them.
+  - Intro: "From <n> attending guests. Replies from guests who aren’t attending aren’t counted."
+  - One block per course that's on the current menu or that any attending reply chose from:
+    - an `h3` ("Starter");
+    - the options in menu order, each with its count in tabular figures;
+    - then "No longer on the menu", and "No choice" (attending replies with no answer for that course: older replies, or ones sent while meal choices were off), each shown only when above zero.
+    - A reply counts under an option only when both the option and its saved text still match. Other replies count as "No longer on the menu".
+  - The "Food preferences" block:
+    - counts for Vegetarian, Vegan, Gluten-free and Other;
+    - help text: "A guest can have more than one, so these may not add up to the attending total.";
+    - an "Other preferences" list of “no mushrooms” — Sam Jones, which shows 10 entries and then a native **Show all <n> other preferences** disclosure.
+  - Blocks form one column on phones and an auto-fit grid (min 14rem) from 768px.
+- **Each reply:** attending replies get a small muted `dl` under the name, inside the Name cell, so the table gains no columns.
+  - Meal lines are shown while meal choices are on or any reply has one: "Starter: Leek and potato soup".
+  - A removed or renamed choice keeps the guest's text, followed by "(no longer on the menu)" in italic words, not colour alone.
+  - A course on the menu with no answer shows "Main: no choice".
+  - A reply with no meal answers at all shows the single line "No meal choice".
+  - Dietary: "Dietary: Vegan, Gluten-free, Other: “no mushrooms”", or "Dietary: none given".
+  - Below 640px each item is its own line. From 640px items run inline, separated by " · ", and wrap. Long text uses `overflow-wrap: anywhere`.
+  - Not-attending replies show no food lines.
+- **Correction panel:**
+  - When the reply has food answers, the Attendance fieldset describes: "Changing to Not attending also removes their meal choices and food preferences."
+  - The success message after that change adds: "Their meal choices and food preferences were removed."
+  - Owners can't edit food answers (not in scope). While meal choices are on, the panel adds: "To change a meal choice or food preference, ask the guest to send a new reply, then remove this one."
+
 ## Guest link and sharing (F042, 25 September 2026)
 
 The F043 URL is always called **Your guest link** and is the only link the workspace presents. It is shown as the full absolute URL on the configured `APP_ORIGIN` (never the request host), in a box that wraps rather than scrolls and selects the whole link on one tap.

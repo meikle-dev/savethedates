@@ -164,7 +164,7 @@ test("workspace keeps its shell, menu and correction controls usable with normal
       if (!reduced) await expect.poll(() => page.evaluate(() => (window as unknown as { reveals: string[] }).reveals)).toContain(".guest-panel form");
       await field.fill("Corrected Guest");
       await page.getByRole("button", { name: "Save correction", exact: true }).click();
-      await expect(page.locator(".guest-name")).toHaveText("Corrected Guest", { timeout: 15_000 });
+      await expect(page.locator(".guest-name-text")).toHaveText("Corrected Guest", { timeout: 15_000 });
       if (!reduced) await expect.poll(() => page.evaluate(() => (window as unknown as { reveals: string[] }).reveals)).toContain(".form-notice");
       const close = page.getByRole("button", { name: "Correct or remove response from Corrected Guest" });
       await close.click();
@@ -175,7 +175,7 @@ test("workspace keeps its shell, menu and correction controls usable with normal
       await close.click();
       await field.fill("Test Guest");
       await page.getByRole("button", { name: "Save correction", exact: true }).click();
-      await expect(page.locator(".guest-name")).toHaveText("Test Guest", { timeout: 15_000 });
+      await expect(page.locator(".guest-name-text")).toHaveText("Test Guest", { timeout: 15_000 });
       if (reduced) expect(await page.evaluate(() => (window as unknown as { reveals: string[] }).reveals)).toEqual([]);
     }
     await page.setViewportSize({ width: 320, height: 740 });

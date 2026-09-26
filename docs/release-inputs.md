@@ -75,7 +75,7 @@ The webhook endpoint is `${APP_ORIGIN}/api/stripe/webhook`. Required events are 
 ## 5. Customer and legal policies
 
 - [x] Terms of service approved: `/terms, approved by the owner, 25 September 2026; the line listing the Invitation re-approved on 26 September 2026`
-- [x] Privacy notice approved: `/privacy, includes the Google sign-in wording; approved by the owner, 25 September 2026`
+- [x] Privacy notice approved: `/privacy, includes the Google sign-in wording; approved by the owner, 25 September 2026; the guest paragraph on meal choices and food preferences (F068) approved on 26 September 2026`
 - [x] Data controller/business identity: `Ross Meikle in the United Kingdom (approved with the legal text, 25 September 2026)`
 - [ ] Support process and response target: `
 - [ ] Site expiry wording approved: `

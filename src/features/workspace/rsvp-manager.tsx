@@ -7,11 +7,13 @@ import { rotateSharedRsvp, saveRsvpSettings } from "./rsvp-actions";
 import { CopyLinkButton } from "./copy-link-button";
 import { Icon } from "./workspace-icons";
 import type { RsvpReadiness } from "./workspace-data";
+import type { MealMenu } from "@/features/weddings/meal-menu";
+import { MealChoicesForm } from "./meal-choices-form";
 
 // The RSVP section shows the same current guest link as Publish and the Overview. It keeps RSVP settings and link
 // replacement; replacing refreshes every workspace page, so this display comes from the page's props alone. `status`
 // is computed on the server from saved settings, so it is already current when a save's notice appears.
-export function RsvpManager({ enabled, closesOn, guestUrl, live, status }: { enabled: boolean; closesOn: string | null; guestUrl: string; live: boolean; status: RsvpReadiness }) {
+export function RsvpManager({ enabled, closesOn, guestUrl, live, status, meals }: { enabled: boolean; closesOn: string | null; guestUrl: string; live: boolean; status: RsvpReadiness; meals: { enabled: boolean; menu: MealMenu } }) {
   const [settings, settingsAction, settingsPending] = useActionState<RsvpState, FormData>(saveRsvpSettings, {});
   const [rotated, rotateAction, rotatePending] = useActionState<RsvpState, FormData>(rotateSharedRsvp, {});
 
@@ -44,6 +46,7 @@ export function RsvpManager({ enabled, closesOn, guestUrl, live, status }: { ena
         <button className="button button-primary mt-5" disabled={settingsPending}>{settingsPending ? "Saving…" : "Save RSVP settings"}</button>
       </form>
     </section>
+    <MealChoicesForm enabled={meals.enabled} menu={meals.menu} />
     <div><Link href="/dashboard/preview/rsvp" prefetch={false} className="button button-secondary"><Icon name="eye" />Preview RSVP page</Link><p className="field-help">Preview your saved names and wedding style. {status.availability === "offline" ? "The guest link above is offline until you purchase a new site period." : "Your guest link above opens the live pages once published."}</p></div>
   </div>;
 }

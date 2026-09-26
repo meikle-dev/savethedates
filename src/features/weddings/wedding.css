@@ -176,6 +176,27 @@
 .rsvp-again:hover { background: var(--theme-tint); }
 .rsvp-next-link { display: inline-flex; min-height: 44px; align-items: center; color: inherit; font-size: 15px; text-decoration: underline; text-underline-offset: 5px; }
 .rsvp-next-link:hover { text-decoration-thickness: 2px; }
+/* F068: meal choices and food preferences, built from the card tokens so every theme inherits them. The block is
+   revealed by CSS alone, so it works before hydration and without JavaScript. */
+.rsvp-food { display: none; margin-top: 27px; padding-top: 27px; border-top: 1px solid var(--theme-line); }
+.rsvp-card form:has(input[name="attending"][value="yes"]:checked) .rsvp-food { display: block; }
+.rsvp-food > fieldset + fieldset { margin-top: 27px; }
+.rsvp-options { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.rsvp-card .rsvp-option { min-height: 52px; padding-block: 12px; font-family: var(--theme-body); font-size: 16px; line-height: 1.35; overflow-wrap: anywhere; }
+.rsvp-card .rsvp-option span { min-width: 0; }
+.rsvp-dietary-hint { margin: -2px 0 0; }
+.rsvp-dietary .rsvp-field-help + .rsvp-field-help { margin-top: 2px; }
+.rsvp-dietary .rsvp-options { margin-top: 14px; }
+.rsvp-other { display: none; margin-top: 14px; }
+.rsvp-dietary:has(input[value="other"]:checked) .rsvp-other { display: block; }
+.rsvp-other-label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: 600; }
+.rsvp-card .field-error { overflow-wrap: anywhere; }
+.rsvp-your-choices { margin-top: 18px; text-align: left; }
+.rsvp-your-choices h3 { font-family: var(--theme-heading); font-size: 20px; font-weight: 400; }
+.rsvp-your-choices ul { margin-top: 8px; padding-left: 1.1em; list-style: disc; font-size: 15px; line-height: 1.55; overflow-wrap: anywhere; }
+@media (min-width: 901px) {
+  .rsvp-dietary-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .rsvp-shell[data-theme="romantic"] .rsvp-main { background: #fff4eb; }
 .rsvp-shell[data-theme="romantic"] .rsvp-card { background: #fffaf5; border-color: #b98280; box-shadow: 0 0 0 5px #fffaf5, 0 20px 60px #582b3930; }
 .rsvp-shell[data-theme="romantic"] .rsvp-choice { background: #fffaf5; }

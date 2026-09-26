@@ -8,6 +8,7 @@ import { detailsSchema, type WeddingDetailsPage } from "./details";
 import type { InvitationPage } from "./invitation";
 import { guestHrefs, guestSecretPattern } from "./guest-link";
 import { parsePhotoFraming, type PhotoFraming } from "./photo-framing";
+import { guestMenu, parseMealMenu, type MealMenu } from "./meal-menu";
 
 export type WeddingContent = { first_name: string; second_name: string; wedding_date: string; location: string; message: string; photo_path: string | null; photo_framing: unknown; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean };
 // rsvp_closes_on is projected only while RSVP is enabled (null otherwise), so guests are never shown an inactive date.
@@ -65,4 +66,12 @@ export const guestWeddingInvitation = cache(async (secret: string): Promise<Gues
   const { data, error } = await publicClient().rpc("guest_wedding_invitation", { requested_secret: secret }).maybeSingle<GuestInvitationRow>();
   if (error) throw new Error("Unable to load wedding invitation.");
   return data;
+});
+
+/** F068: the menu guests choose from, or null unless the site is live, RSVP is open and meal choices are on. */
+export const guestRsvpMenu = cache(async (secret: string): Promise<MealMenu | null> => {
+  if (!guestSecretPattern.test(secret) || !configured()) return null;
+  const { data, error } = await publicClient().rpc("guest_rsvp_menu", { requested_secret: secret });
+  if (error) throw new Error("Unable to load the RSVP menu.");
+  return data ? guestMenu(parseMealMenu(data)) : null;
 });

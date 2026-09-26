@@ -3,7 +3,10 @@ import Form from "next/form";
 import Link from "next/link";
 import { guestHref, guestPageSize, parseGuestQuery, filteredCount, type GuestFilter, type GuestQuery } from "@/features/workspace/guest-list";
 import { GuestTable } from "@/features/workspace/guest-responses";
-import { loadGuestPage } from "@/features/workspace/workspace-data";
+import { loadCateringSummary, loadGuestPage, requireWedding } from "@/features/workspace/workspace-data";
+import { CateringPanel } from "@/features/workspace/catering-panel";
+import { showMealLines } from "@/features/workspace/catering";
+import { parseMealMenu } from "@/features/weddings/meal-menu";
 import { WorkspacePage } from "@/features/workspace/workspace-page";
 
 export const metadata: Metadata = { title: "Guests · SaveTheDates" };
@@ -28,6 +31,11 @@ function Pager({ query, count, pages, from, to }: { query: GuestQuery; count: nu
 export default async function Guests({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const query = parseGuestQuery(await searchParams);
   const { totals, matches, count, pagination, rows } = await loadGuestPage(query);
+  const { wedding } = await requireWedding();
+  const menu = parseMealMenu(wedding.meal_menu);
+  const mealsOn = wedding.meal_choices_enabled;
+  const summary = totals.attending > 0 ? await loadCateringSummary() : null;
+  const food = { menu, mealsOn, showMeals: showMealLines(mealsOn, menu, summary) };
   const reset = guestHref({ filter: "all", q: "", page: 1 });
 
   let body: React.ReactNode;
@@ -39,7 +47,7 @@ export default async function Guests({ searchParams }: { searchParams: Promise<R
     body = <EmptyState title="Page out of range">There are only {pagination.pages} {pagination.pages === 1 ? "page" : "pages"} of responses. <Link href={guestHref({ ...query, page: pagination.pages })} className="text-link">Go to the last page</Link></EmptyState>;
   } else {
     body = <>
-      <GuestTable caption={`Guest responses, newest first, page ${query.page} of ${pagination.pages}`} rows={rows.map((response) => ({ response, date: dateFormat.format(new Date(response.responded_at)) }))} />
+      <GuestTable food={food} caption={`Guest responses, newest first, page ${query.page} of ${pagination.pages}`} rows={rows.map((response) => ({ response, date: dateFormat.format(new Date(response.responded_at)) }))} />
       <Pager query={query} count={count} {...pagination} />
     </>;
   }
@@ -47,6 +55,7 @@ export default async function Guests({ searchParams }: { searchParams: Promise<R
   return <WorkspacePage id="guests-title" eyebrow="Guests" title="Who’s coming" wide intro={<>Everyone who has replied, with private corrections if plans change. Share your link from the <Link href="/dashboard/rsvp" className="text-link">RSVP section</Link>.</>}>
     <div className="ws-stack">
       <div className="rsvp-summary" role="group" aria-label="RSVP summary"><div><strong>{totals.total}</strong><span>Responses</span></div><div><strong>{totals.attending}</strong><span>Attending</span></div><div><strong>{totals.declined}</strong><span>Not attending</span></div></div>
+      {summary && summary.attending > 0 && <CateringPanel summary={summary} menu={menu} enabled={mealsOn} />}
       <section className="ws-panel" aria-labelledby="responses-title">
         <h2 id="responses-title">Guest responses</h2>
         <p className="ws-panel-intro">Each submission appears separately, even if two guests enter the same name. Contact guests to resolve duplicates or changes. {guestPageSize} responses per page, newest first.</p>

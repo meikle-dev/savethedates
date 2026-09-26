@@ -1,6 +1,6 @@
 # Product backlog
 
-**SaveTheDates is live and public at `https://savethedates.co.uk` (opened 26 September 2026).** The owner confirmed a live Stripe purchase and refund on production, then removed the lock. The site is indexable, and Google's brand verification is approved and published. The launch record is in F009; the setup is in F041. **Current: F009** stays In Progress for post-launch items: Search Console indexing, the link-preview check (F047), and the deferred gates. The launch followed the [launch plan](launch-plan.md). F001-F008, F011-F032, F034-F037, F040, F042-F046, F056-F060, F062 and F064 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Owner staging check (26 September 2026):** everything on the checklist passed except two items. The refund test refunded a different, older test payment, so it must be repeated on the site's own payment (see F067). Mail to `hello@savethedates.co.uk` wasn't received then; forwarding has since been set up (F066). The results are in F041. **Next engineering work: F065** (separate Save the Date and Invitation links, raised by the owner on 26 September 2026), then **F067**, then **F068** (meal choices and dietary requirements on the RSVP; the owner may reorder it). **F038 is In Progress:** the owner confirmed Sentry works on staging; the checks that need the Sentry connector remain. **F061** waits only on independent review, which the owner moved into F054. **F047 is In Progress:** production is open, so its messaging-app preview check can run now (launch plan stage 6, step 4). **F055 (Google sign-in) is live on production.** **F063:** Google's brand verification is approved and published (26 September 2026); only a production sign-in check remains. **F066:** forwarding is set up; only an outside test email remains. The owner approved the legal text (25 September 2026) and re-approved the terms line that lists the Invitation (26 September 2026). The owner deferred F048 (customer data), F054 (security review) and F049 (real devices), and opened the site without them on 26 September 2026. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets that don't gate launch; **F051 is In Progress** and waits for the owner's keyword-volume input. The domain is `savethedates.co.uk`. F054 (full security review) was a paid-launch gate; the owner deferred it, and it should run soon after launch.
+**SaveTheDates is live and public at `https://savethedates.co.uk` (opened 26 September 2026).** The owner confirmed a live Stripe purchase and refund on production, then removed the lock. The site is indexable, and Google's brand verification is approved and published. The launch record is in F009; the setup is in F041. **Current: F009** stays In Progress for post-launch items: Search Console indexing, the link-preview check (F047), and the deferred gates. The launch followed the [launch plan](launch-plan.md). F001-F008, F011-F032, F034-F037, F040, F042-F046, F056-F060, F062 and F064 are Done (F040's staging re-check is carried to F009). The [24 September assessment and delivery order](#24-september-walkthrough-assessment) takes precedence over the historical placement of entries below. **Owner staging check (26 September 2026):** everything on the checklist passed except two items. The refund test refunded a different, older test payment, so it must be repeated on the site's own payment (see F067). Mail to `hello@savethedates.co.uk` wasn't received then; forwarding has since been set up (F066). The results are in F041. **Next engineering work: F065** (separate Save the Date and Invitation links, raised by the owner on 26 September 2026), then **F067**. **F068** (meal choices and food preferences on the RSVP) was moved ahead by the owner and is In Progress: built, reviewed and privacy wording approved; staging, then production, remain. **F069** (RSVP replies without JavaScript) is Ready. **F038 is In Progress:** the owner confirmed Sentry works on staging; the checks that need the Sentry connector remain. **F061** waits only on independent review, which the owner moved into F054. **F047 is In Progress:** production is open, so its messaging-app preview check can run now (launch plan stage 6, step 4). **F055 (Google sign-in) is live on production.** **F063:** Google's brand verification is approved and published (26 September 2026); only a production sign-in check remains. **F066:** forwarding is set up; only an outside test email remains. The owner approved the legal text (25 September 2026) and re-approved the terms line that lists the Invitation (26 September 2026). The owner deferred F048 (customer data), F054 (security review) and F049 (real devices), and opened the site without them on 26 September 2026. F033 is Ready but follows launch work, and F039 is optional. F048-F050 are assessed tickets, not implemented fixes. F051-F053 are report-only growth tickets that don't gate launch; **F051 is In Progress** and waits for the owner's keyword-volume input. The domain is `savethedates.co.uk`. F054 (full security review) was a paid-launch gate; the owner deferred it, and it should run soon after launch.
 
 ## Status and handoff rules
 
@@ -1633,7 +1633,7 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 **Priority / lead:** P1, paid-launch gate / Product Manager with owner, then Software Engineer; independent security/database review required.
 **Purpose:** Deliver and verify the export, deletion and retention process already required by F009.
 **Depends on:** Existing owner/response/storage/payment features (Done); decisions in `release-inputs.md` section 5. Hosted restore evidence stays in F009.
-**References:** Report 3.8/6.1; `docs/operations.md` Recovery and data handling, `docs/release-inputs.md`, `src/features/workspace/guest-responses.tsx`, `supabase/migrations/`.
+**References:** Report 3.8/6.1; `docs/operations.md` Recovery and data handling, `docs/release-inputs.md`, `src/features/workspace/guest-responses.tsx`, `supabase/migrations/`. Since F068 each reply row (`shared_rsvp_responses`) also holds meal choices and dietary requirements, which can be health information: they are deleted with the reply (and by the wedding/account cascade), and any response export must include them.
 **Before Ready:** Owner approves scope, delivery/identity checks, retention by data category, payment-record exceptions, backup/log treatment and whether the process is self-service or support-assisted. Record the policy in release inputs; do not infer legal periods or treat a catering CSV as a complete data-rights export.
 **Done when:**
 
@@ -2459,7 +2459,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 
 ## F068 - Meal choices and dietary requirements on the RSVP
 
-**Status:** Ready (raised by the owner on 26 September 2026; Product Manager decisions below)
+**Status:** In Progress (owner moved it ahead of F065/F067 on 26 September 2026; UX and engineering done, and independent review passed with fixes, 26 September 2026; owner privacy re-approval and hosted migration outstanding)
 **Priority / lead:** P1, not a launch gate unless the owner makes it one / UX for the workspace menu editor and the RSVP form in every theme, then Software Engineer. Independent review is required: it changes the schema and the guest RSVP write path, and it collects dietary information, which can be health information.
 **Purpose:** A wedding invitation usually comes with a meal. Couples need each attending guest's meal choices and dietary requirements in one place, so they can give their caterer numbers.
 **Source:** Owner, 26 September 2026: "we need a method for couples on their workspace to be able to configure food if they have it. It's optional and it should only be displayed on the RSVPs if it's actually been provided and it's been turned on." The default courses are starter, main and dessert. Each is shown only if the couple configured it, with the options they chose. Also: "dietary requirements must be on the rsvp form for guests, vegetarian, vegan, caeliac or other with input if its other".
@@ -2502,6 +2502,13 @@ Record items 1–3 in `release-inputs.md` section 3.
 8. **Every theme is functionally equivalent.** All RSVP designs (F025, and the themes added since) show the same questions with the same validation, at mobile and desktop widths. The public theme examples' RSVP preview shows a sample menu, so visitors can see the feature.
 9. **Existing replies stay valid.** Replies made before this feature, or while meal choices were off, show "No meal choice" in Guests and don't count in the totals.
 
+Owner, 26 September 2026: dietary answers are food preferences, not health data. 'Coeliac (gluten-free)' is relabelled 'Gluten-free', and Other asks only about food preferences, to avoid collecting special category data. Residual risk: guests may still type allergies into Other; the couple sees only what the guest chooses to write.
+
+**UX (26 September 2026):** resolved in [template-ui-summary.md](ux/template-ui-summary.md#rsvp-meal-choices-and-dietary-requirements-f068-26-september-2026) (guest form in every theme, and the example menu) and [site-ui.md](overview/site-ui.md#rsvp-meal-choices-and-catering-numbers-f068-26-september-2026) (workspace menu editor, Guests catering numbers and reply lines). Two refinements:
+
+- A renamed option counts as "no longer on the menu", like a removed one, because a rename can change what was ordered. Counts group by the saved option and its text.
+- Owners can't edit food answers when correcting a reply. The guest sends a new reply instead.
+
 **Done when:**
 
 - Workspace:
@@ -2537,6 +2544,53 @@ Record items 1–3 in `release-inputs.md` section 3.
 - the workspace RSVP settings
 - `src/features/marketing/legal.tsx`
 - `supabase/migrations/20260923000200_shared_rsvp.sql`, `20260923000400_shared_rsvp_capacity.sql`
+
+
+**Handoff (26 September 2026):**
+
+- **What exists:**
+  - Migration `supabase/migrations/20260926000100_rsvp_meal_choices.sql`. It adds `weddings.meal_choices_enabled` and `meal_menu`, validated by `valid_meal_menu` and a rule that meal choices can only be on while a course has options. Replies gain `meal_choices`, `dietary_vegetarian/vegan/gluten_free` and `dietary_other`. A constraint allows food answers only on attending replies, and a trigger clears them when a reply becomes not attending.
+  - Guests read the menu through `guest_rsvp_menu(secret)`, and only while the site is live, RSVP is open and meal choices are on.
+  - `submit_shared_rsvp` now has eight parameters. The food parameters have defaults, so the previous release's three-argument call still resolves. Owners read catering numbers through `rsvp_catering_summary`, which runs as the caller, so RLS applies. The data model is in [architecture.md](overview/architecture.md).
+  - Code: `src/features/weddings/meal-menu.ts` holds the shared rules. The guest form is in `rsvp-page.tsx` and `wedding.css`, with the Heather override in `wedding-themes.css`. The workspace editor is `meal-choices-form.tsx`, placed in the RSVP section, and saved by `saveMealChoices` in `rsvp-actions.ts`. Guests uses `catering.ts`, `catering-panel.tsx` and `guest-responses.tsx`. `/examples/[theme]/rsvp` shows the fictional sample menu, and the owner preview shows the saved menu. The privacy notice's "If you are a guest" section (`legal.tsx`) has a new paragraph.
+  - Data rights: food answers live on the reply row, so they are deleted with the reply and by the existing wedding and account cascade. There is no export tooling yet; F048's references now say any response export must include them.
+- **Review (26 September 2026):** pass with fixes, nothing Blocking. All six Minor findings are fixed:
+  - Hidden questions are now disabled from the form's real checked state, on mount, on `change` and on `pageshow`, so a restored "Joyfully accepts" keeps them usable. An E2E test covers this.
+  - `dietary_other` must have no leading or trailing whitespace and at least one visible character, in both the constraint and the RPC. Integration tests cover this.
+  - The RPC now returns `meal_missing`, separate from `invalid_meals`, and the two are logged as `meal_missing` and `menu_mismatch` (see `operations.md`).
+  - A failed menu re-read after a meal rejection now falls back to field errors instead of a 500. The RPC still returns text, so the previous release keeps working during deployment.
+  - The migration comments now explain why `authenticated` must keep EXECUTE on the validators. Nothing extra was revoked.
+  - `guests.spec.ts` now waits for hydration before `goBack()`. That race was the flake.
+
+  The Important legal-basis finding went to the owner, who decided the answers are food preferences (see the owner line under the decisions). "Coeliac (gluten-free)" became "Gluten-free", including the `dietary_gluten_free` column and the `requested_gluten_free` parameter. Other now asks only about food preferences, and the privacy paragraph was reworded to match. The migration was edited in place and the local database reset.
+- **Checks, run once after the last change:**
+  - `npm.cmd run check`: pass. Lint, typecheck and build were clean; Vitest ran 21 files and 115 tests.
+  - `npm.cmd run test:integration`: 8 files, 38 tests, all pass.
+  - `npm.cmd run test:e2e`: 138 passed, 12 skipped and 2 failed. Both failures are `marketing.spec.ts:119` (`/digital-save-the-date` sends `cache-control: no-cache, must-revalidate`, not `no-store`). They predate F068: they fail the same way on HEAD with this work stashed.
+  - `npm.cmd run test:monitoring`: 2 passed.
+  - Before the final run, `guests.spec.ts` and `meal-choices.spec.ts` passed with `--repeat-each=5` (80 of 80).
+- **Screenshots inspected:**
+  - The RSVP form with a full three-course menu at 1440px for Bold, Terracotta, Alcantara, Countryside, Evening Gold and Romantic.
+  - At 390px for Heather and Minimal, and at 320px for Terracotta.
+  - The workspace menu editor at 1440px and 320px, and the Guests catering panel and reply lines at 1440px and 390px.
+  - No clipping or sideways scrolling was found. All 12 themes are also checked automatically at both project widths and at 320px.
+- **Deviations from the UX spec:**
+  - Without JavaScript, the reveal works but a guest page can't send a reply at all. The pages' `Referrer-Policy: no-referrer` makes the browser send `Origin: null`, and Next.js refuses the action. This affects every RSVP reply and predates F068. The server-side "No sent with food" rejection and the cleared form are tested by re-enabling the hidden fields.
+  - The Other text box sits under the whole 2×2 grid from 901px.
+  - The editor's option labels have a visually hidden course prefix, so each reads "Starter Option 1".
+- **Open items:**
+  - Privacy paragraph approved by the owner, 26 September 2026 (recorded in `release-inputs.md`). The re-review confirmed all six fixes (pass).
+  - The no-JavaScript limitation is tracked as F069.
+  - Staging and production migration: see below.
+- **Next step:** apply `20260926000100` to staging, deploy, and check it on staging; then production, in the usual order.
+
+## F069 - Guest RSVP replies fail without JavaScript
+
+**Status:** Ready (found during F068, 26 September 2026)
+**Priority / lead:** P2 / Software Engineer. Independent review is required: it touches a security header and the Server Action origin check on the guest write path.
+**Problem:** Guest pages send `Referrer-Policy: no-referrer`, so a form POST before hydration, or with JavaScript off, carries `Origin: null`. Next.js 16 treats that as an origin mismatch and aborts the Server Action with a 500 (`action-handler.js`), so nothing is saved. The F068 reviewer confirmed this in a real browser: with JavaScript off the reply returns 500; with it on, 200. It affects every RSVP reply, including a guest who taps Send before the page finishes loading.
+**Scope:** Let the guest RSVP form submit without JavaScript while keeping guest secrets out of referrers. Candidates: a `Referrer-Policy` that still sends the origin on same-origin requests (for example `same-origin` or `strict-origin` on the RSVP route), or a meta/form-level policy, checked against how the secret URL could leak. Keep the same-origin check; don't disable Next.js origin protection.
+**Done when:** An E2E test with JavaScript disabled sends a reply and it is saved; secret URLs still don't leak in `Referer` to other origins (test it); `npm run check`, integration and E2E pass; independent review passes.
 
 ## F010 - Post-launch extensions
 

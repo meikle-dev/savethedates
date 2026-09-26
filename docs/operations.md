@@ -125,7 +125,7 @@ Reading one request ID should tell the story of that request (F038).
 | `account.signout.failed` | error | Sign-out failed |
 | `account.google.failed` | error | Could not start Google sign-in (Supabase error or fault) |
 | `account.google_callback.succeeded` / `.rejected` / `.failed` | info / warn / error | Google sign-in completed / cancelled (`access_denied`), provider error, rejected or missing code / fault |
-| `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, invitation, theme, photo_framing, rsvp_settings, guest_link) / concurrent change / fault |
+| `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, invitation, theme, photo_framing, rsvp_settings, meal_choices, guest_link) / concurrent change / fault |
 | `workspace.ownership.denied` | warn | No session or no saved wedding for this owner |
 | `photo.upload.accepted` | info | Photo processed and stored; `durationMs` is processing time, including any wait for the processing slot |
 | `photo.upload.rejected` / `.failed` | warn / error | `reason` size, type, pixels, unreadable, busy (F040) or concurrent_change / Storage or database fault |
@@ -137,7 +137,7 @@ Reading one request ID should tell the story of that request (F038).
 | `payment.checkout.expired` | info | Signed expiry event processed |
 | `payment.webhook.received` / `.rejected` / `.duplicate` / `.recorded` / `.failed` | info / warn / info / info / error | Verified event (`stripeEventId`, `eventType`) / missing or invalid signature or incomplete event / already processed / revocation stored before its payment / database fault |
 | `payment.entitlement.granted` / `.revoked` | info | Entitlement granted / revoked by refund or dispute |
-| `rsvp.submit.accepted` / `.rejected` / `.failed` | info / warn / error | Guest response saved / `reason` closed, rate_limited, capacity, invalid_link or invalid_input / fault |
+| `rsvp.submit.accepted` / `.rejected` / `.failed` | info / warn / error | Guest response saved / `reason` closed, rate_limited, capacity, invalid_link, menu_mismatch (a meal choice doesn't match the current menu, or answers a course guests aren't shown), meal_missing (a course guests are shown was left unanswered) or invalid_input / fault. A failed menu re-read after a meal rejection is logged as `.failed` and the guest sees the form's field errors |
 | `rsvp.link.rotated` / `.rejected` / `.failed` | info / warn / error | Shared link replaced / invalid shared link opened / fault |
 | `rsvp.response.corrected` / `.removed` / `.rejected` / `.failed` | info / info / warn / error | Owner corrected or removed a response / response not found / fault |
 

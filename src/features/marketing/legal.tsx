@@ -43,6 +43,7 @@ export function PrivacyNotice() {
       <p>We use this information to provide the service you asked for (our contract with you), and payment records also to meet tax and accounting law.</p></section>
     <section aria-labelledby="guests"><h2 id="guests">If you are a guest</h2>
       <p>When you reply to an RSVP, we store the name you enter, whether you are attending and when you replied. Our hosting provider also records technical details such as your IP address. Only the couple can see replies. We keep them for the couple, who decide what to do with them. Guests don’t need an account and we don’t ask for contact details.</p>
+      <p>If you’re attending, the couple may ask you to choose your meal, and you can tell them your food preferences, such as vegetarian or gluten-free. Food preferences are optional. Only the couple can see these answers, and they’re deleted with the rest of the replies.</p>
       <p>Wedding pages open for anyone who has the couple’s link. They are marked not to appear in search results, but they are not password-protected.</p></section>
     <section aria-labelledby="providers"><h2 id="providers">Who helps us run the service</h2>
       <p>We share information only with providers that run parts of the service for us, under their data processing terms:</p>

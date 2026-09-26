@@ -77,12 +77,16 @@ test("shared-link RSVP, auth confirmation and checkout return send no secrets or
   const password = `Pw-${crypto.randomUUID()}`;
   const slug = `monitoring-e2e-${crypto.randomUUID().slice(0, 8)}`;
   const guestName = `Quentin Fairweather ${crypto.randomUUID().slice(0, 6)}`;
+  // F068: food answers are form contents too; unique values prove none reach Sentry.
+  const dietaryOther = `no marzipan ${crypto.randomUUID().slice(0, 6)}`;
+  const mealLabel = `Beetroot tart ${crypto.randomUUID().slice(0, 6)}`;
+  const mealMenu = { starter: [], main: [{ id: crypto.randomUUID(), label: mealLabel }, { id: crypto.randomUUID(), label: "Roast beef" }], dessert: [] };
   const signup = await local.admin.auth.admin.generateLink({ type: "signup", email, password });
   if (signup.error || !signup.data.user) throw new Error("Cannot create monitoring test owner");
   const ownerId = signup.data.user.id;
   const tokenHash = signup.data.properties.hashed_token;
   try {
-    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug, rsvp_enabled: true }).select("id, rsvp_share_secret").single();
+    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug, rsvp_enabled: true, meal_choices_enabled: true, meal_menu: mealMenu }).select("id, rsvp_share_secret").single();
     expect(wedding.error).toBeNull();
     expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
     expect((await local.admin.from("weddings").update({ published: true }).eq("id", wedding.data!.id)).error).toBeNull();
@@ -103,10 +107,15 @@ test("shared-link RSVP, auth confirmation and checkout return send no secrets or
     await expect(page).toHaveURL(new RegExp(`/${slug}/${secret}/rsvp$`));
     await page.getByLabel("Your name").fill(guestName);
     await page.getByLabel("Joyfully accepts").check();
+    await page.getByLabel(mealLabel).check();
+    await page.getByLabel("Gluten-free").check();
+    await page.getByRole("checkbox", { name: "Other" }).check();
+    await page.getByLabel("Your other food preference").fill(dietaryOther);
     const submitted = page.waitForResponse((response) => response.request().method() === "POST" && response.url().includes(`/${secret}/`));
     await page.getByRole("button", { name: "Send RSVP" }).click();
     const rsvpRequestId = (await submitted).headers()["x-request-id"];
     await expect(page.getByRole("status")).toContainText(guestName);
+    await expect(page.getByText(`Dietary: Gluten-free, Other (${dietaryOther})`)).toBeVisible();
     await throwInBrowser(page, "e2e-shared-rsvp-error");
     await waitForServerLog("rsvp.submit.accepted", rsvpRequestId);
 
@@ -132,7 +141,7 @@ test("shared-link RSVP, auth confirmation and checkout return send no secrets or
 
     const everything = received.map(({ body }) => body).join("\n");
     await writeFile(test.info().outputPath("sentry-payloads.txt"), everything);
-    for (const value of [secret, encodeURIComponent(secret), secret.slice(0, 20), tokenHash, guestName, encodeURIComponent(guestName), email, password, "wedding-auth", "?share=", "token_hash=", "checkout=success"]) {
+    for (const value of [secret, encodeURIComponent(secret), secret.slice(0, 20), tokenHash, guestName, encodeURIComponent(guestName), dietaryOther, encodeURIComponent(dietaryOther), mealLabel, mealMenu.main[0].id, email, password, "wedding-auth", "?share=", "token_hash=", "checkout=success"]) {
       expect(everything, `Sentry payloads must not contain ${value}`).not.toContain(value);
     }
     expect(everything).toContain(`/${slug}/[secret]`);
