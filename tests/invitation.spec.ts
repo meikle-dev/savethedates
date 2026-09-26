@@ -147,4 +147,6 @@ test("every theme's example invitation reads well on phones and desktops", async
   await page.goto("/examples/minimal");
   await page.getByRole("navigation", { name: "Wedding site" }).getByRole("link", { name: "Invitation" }).click();
   await expect(page).toHaveURL(/\/examples\/minimal\/invitation$/);
+  await page.getByRole("link", { name: /Reply online/ }).click();
+  await expect(page).toHaveURL(/\/examples\/minimal\/rsvp$/);
 });

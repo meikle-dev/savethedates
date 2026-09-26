@@ -1374,7 +1374,7 @@ These are already listed in `release-inputs.md` sections 5–6:
 | B6; missing icon; unhelpful 404; link previews | F047: preview card with names and date, no photo (owner approved) |
 | Sign-up/checkout/footer legal/support links | Existing F041; approved policy input, no placeholder pages |
 | Data retention/export/deletion; guest CSV | F048; print and optional catering export remain F010 |
-| Theme gallery/preview height; example RSVP and theme navigation | F050, Deferred |
+| Theme gallery/preview height; example RSVP and theme navigation | F050, Deferred (the example RSVP was delivered on 26 September 2026) |
 | Overview duplicate previews, mobile density, optional theme checklist; framing scroll; repeated address guidance | F010, Deferred; no new tracking fields or dashboard redesign |
 | Household/plus-one/dietary/note fields; editable decorative lines | Owner confirmed one reply per person (24 September); these are F010, Deferred |
 | Calendar downloads and QR codes | F010, Deferred; sharing works without them |
@@ -1630,6 +1630,11 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 **References:** Report 3.4/5; `preview-toolbar.tsx`, `src/app/dashboard/(workspace)/design/page.tsx`, `src/app/examples/[theme]/`, `src/features/marketing/phone-preview.tsx`.
 **Scope when promoted:** Reuse the existing thumbnail assets and named controls for visual browsing; compact mobile preview/example headers while retaining saved-vs-candidate state, explicit Apply, keyboard access and all twelve themes. Add a clearly fictional, non-submitting RSVP example and previous/next navigation across example pages. Do not add another picker implementation or stored theme-review checklist flag.
 **Done when promoted:** UX confirms the compact layout against current screens; all three page examples and theme navigation work at mobile/desktop widths, previews cannot create responses or mutate themes, and relevant visual/accessibility checks and `npm.cmd run check` pass. No implementation authorised by this Deferred entry.
+**Delivered early (26 September 2026, owner request):**
+- The example RSVP now exists: `/examples/<theme>/rsvp` for all twelve themes. It reuses the RSVP page's no-secret preview mode, so the form can be filled in but never submits, and its note reads "Example only. Nothing you enter here is sent or saved."
+- Every example page links Save the date, Invitation, Details and RSVP, and the example invitation's **Reply online** opens it.
+- Checked by `tests/marketing.spec.ts` (disabled send, no POST requests, `noindex`) and `tests/invitation.spec.ts` at desktop and mobile. Screenshots were inspected.
+- The rest of F050 (compact mobile browsing, and previous/next navigation across examples) stays Deferred.
 
 ## F051 - Full SEO audit and search-visibility report
 

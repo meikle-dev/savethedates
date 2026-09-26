@@ -11,12 +11,15 @@ import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
 import { BotanicalArt } from "./wedding-art";
 
 type RsvpWedding = { first_name: string; second_name: string; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean; invitation_enabled: boolean };
-type InvitationProps = { wedding: RsvpWedding; hrefs: GuestHrefs; open: boolean; closesOn: string | null; secret: string | null; focusName: boolean; onReplyAgain: () => void };
+type InvitationProps = { wedding: RsvpWedding; hrefs: GuestHrefs; open: boolean; closesOn: string | null; secret: string | null; previewNote: string; focusName: boolean; onReplyAgain: () => void };
+
+const ownerPreviewNote = "Preview only. No response will be saved. Open your guest link from the workspace to see the guest page.";
 
 // Guests reach this page only through a valid guest link (other links are 404), so it shows the form or a closed
 // state. The owner preview passes no secret and never submits. `closesOn` is the saved closing date while RSVP is
 // enabled (null when there is none); `open` is the database's own verdict, so the page never uses the visitor's clock.
-export function RsvpPage({ wedding, hrefs, open, closesOn = null, secret }: { wedding: RsvpWedding; hrefs: GuestHrefs; open: boolean; closesOn?: string | null; secret: string | null }) {
+// Marketing examples also pass no secret, with their own `previewNote`.
+export function RsvpPage({ wedding, hrefs, open, closesOn = null, secret, previewNote = ownerPreviewNote }: { wedding: RsvpWedding; hrefs: GuestHrefs; open: boolean; closesOn?: string | null; secret: string | null; previewNote?: string }) {
   // "Reply for someone else" remounts the invitation: a fresh, empty form with no memory of the previous reply.
   const [attempt, setAttempt] = useState(0);
   const preview = secret === null;
@@ -25,13 +28,13 @@ export function RsvpPage({ wedding, hrefs, open, closesOn = null, secret }: { we
   return <WeddingFrame theme={wedding.theme} className="details-shell rsvp-shell">
     <WeddingHeader names={names} homeHref={hrefs.home} invitationHref={wedding.invitation_enabled ? hrefs.invitation : undefined} detailsHref={wedding.details_enabled ? hrefs.details : undefined} rsvpHref={rsvpHref} current="rsvp" />
     <main id="main" className="rsvp-main">
-      <RsvpInvitation key={attempt} wedding={wedding} hrefs={hrefs} open={open} closesOn={closesOn} secret={secret} focusName={attempt > 0} onReplyAgain={() => setAttempt((value) => value + 1)} />
+      <RsvpInvitation key={attempt} wedding={wedding} hrefs={hrefs} open={open} closesOn={closesOn} secret={secret} previewNote={previewNote} focusName={attempt > 0} onReplyAgain={() => setAttempt((value) => value + 1)} />
     </main>
     <WeddingFooter names={names} />
   </WeddingFrame>;
 }
 
-function RsvpInvitation({ wedding, hrefs, open, closesOn, secret, focusName, onReplyAgain }: InvitationProps) {
+function RsvpInvitation({ wedding, hrefs, open, closesOn, secret, previewNote, focusName, onReplyAgain }: InvitationProps) {
   const [state, action, pending] = useActionState<RsvpState, FormData>(submitSharedRsvp, {});
   const preview = secret === null;
   const deadline = closesOn ? rsvpDeadline(closesOn) : null;
@@ -88,7 +91,7 @@ function RsvpInvitation({ wedding, hrefs, open, closesOn, secret, focusName, onR
         </fieldset>
         {state.message && <p className="mt-5 form-error" role="alert">{state.message}</p>}
         <button className="rsvp-submit" disabled={pending || preview} aria-busy={pending || undefined}>{pending ? "Saving…" : "Send RSVP"}<span aria-hidden="true">→</span></button>
-        <p className="rsvp-privacy">{preview ? "Preview only. No response will be saved. Open your guest link from the workspace to see the guest page." : "Your answer is private to the couple. Contact them to correct it; this link cannot show or edit saved answers."}</p>
+        <p className="rsvp-privacy">{preview ? previewNote : "Your answer is private to the couple. Contact them to correct it; this link cannot show or edit saved answers."}</p>
       </form>}
     </section>
   </>;

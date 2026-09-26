@@ -15,3 +15,6 @@ export function exampleInvitation(theme: WeddingTheme): InvitationPage {
     invitation_host_line: "Together with their families", invitation_wording: "", invitation_afterwards: "followed by dinner and dancing by the water",
     ceremony_time: details.ceremony_time, ceremony_venue: details.ceremony_venue, ceremony_address: details.ceremony_address };
 }
+
+/** A fixed, fictional closing date for the example RSVP and the invitation's reply line. */
+export const exampleRsvpClosesOn = "2027-05-01";

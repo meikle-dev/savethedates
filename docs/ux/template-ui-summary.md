@@ -208,7 +208,7 @@ The Invitation is an optional fourth guest page, off until the couple switches i
 - **Details link:** while Details is on, a quiet underlined "Travel, accommodation and more" link to it closes the card. It sits inside the card because some themes' surrounds are dark or photographic.
 - **Layout:** phones use one column with full-width actions; desktop keeps the centred card at the RSVP card's width. Themes that place the RSVP card beside a desktop backdrop (Alcantara, Countryside) do the same here. Empty optional lines are omitted without leaving gaps.
 - **Navigation:** the order is Save the date · Invitation · Details · RSVP, with each link shown only while its page is on. The Save the Date page has no reply button of its own.
-- **Examples:** marketing examples show the invitation with fictional wording, and the owner preview matches the guest page exactly.
+- **Examples:** marketing examples show the invitation with fictional wording, and the owner preview matches the guest page exactly. Since 26 September 2026 each theme also has a fictional RSVP example. It uses RSVP's no-secret preview mode, so it never submits, and its note reads "Example only. Nothing you enter here is sent or saved." The example invitation's **Reply online** leads to it.
 
 ## Additional themes (F034)
 

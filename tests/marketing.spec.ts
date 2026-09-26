@@ -40,7 +40,7 @@ test("marketing leads to signup and accurately explains price, visibility and RS
   await expect(page).toHaveURL(/\/account\/sign-in$/);
 });
 
-test("all public examples use fictional content, working Details and noindex", async ({ page }) => {
+test("all public examples use fictional content, working Details and RSVP, and noindex", async ({ page }) => {
   // Themes share one implementation; theme-design.spec.ts renders every example. Here every homepage card must link to
   // its example and every example must be noindex, then one example is walked through.
   await page.goto("/#themes");
@@ -60,12 +60,25 @@ test("all public examples use fictional content, working Details and noindex", a
   await expect(page.getByRole("heading", { name: "Wedding details" })).toBeVisible();
   await expect(page.getByText(/fictional venue/)).toBeVisible();
   await expect(page.getByRole("button")).toHaveCount(0);
+  // The RSVP example can be filled in but never submits, so a visitor can't create a response.
+  let posted = 0;
+  page.on("request", (request) => { if (request.method() === "POST") posted += 1; });
+  await page.getByRole("link", { name: "RSVP", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/examples/${theme}/rsvp$`));
+  await expect(page.getByRole("heading", { name: "RSVP", level: 1 })).toBeVisible();
+  await expect(page.getByText("Please reply by 1 May 2027.")).toBeVisible();
+  await page.getByLabel("Your name").fill("A visitor");
+  await page.getByText("Joyfully accepts").click();
+  await expect(page.getByRole("button", { name: /Send RSVP/ })).toBeDisabled();
+  await expect(page.getByText("Example only. Nothing you enter here is sent or saved.")).toBeVisible();
+  expect(posted).toBe(0);
+  expect(await servedRobots(page, `/examples/${theme}/rsvp`)).toEqual(["noindex, nofollow"]);
   await page.getByRole("link", { name: "Save the date", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Save the Date" })).toBeVisible();
   await page.getByRole("link", { name: "All themes", exact: false }).click();
   await expect(page).toHaveURL(/\/#themes$/);
   expect((await page.goto("/examples/unknown"))?.status()).toBe(404);
-  expect((await page.goto("/examples/minimal/rsvp"))?.status()).toBe(404);
+  expect((await page.goto("/examples/unknown/rsvp"))?.status()).toBe(404);
 });
 
 async function structuredData(page: Page, path: string) {
