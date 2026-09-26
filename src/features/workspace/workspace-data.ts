@@ -4,16 +4,16 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { appOrigin } from "@/lib/supabase/config";
-import { currentNames, guestUrl } from "@/features/weddings/guest-link";
+import { currentNames, guestUrl, rsvpLink } from "@/features/weddings/guest-link";
 import type { Entitlement } from "@/features/payments/purchase-panel";
 import { responseFoodColumns, type GuestListResponse, type SharedResponse } from "@/features/weddings/rsvp";
 import { parseCateringSummary } from "./catering";
 import { filteredCount, guestPagination, namePattern, type GuestQuery } from "./guest-list";
-import type { GuestLinkShare } from "./guest-link-panel";
+import type { GuestShares } from "./guest-link-panel";
 import { rsvpShareStatus, shareMessage } from "./share-message";
 import { collectResponses, rsvpAvailability, todayUtc } from "./workspace-summary";
 
-const weddingColumns = "id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on, rsvp_share_secret, invitation_enabled, invitation_host_line, invitation_wording, invitation_afterwards, meal_choices_enabled, meal_menu";
+const weddingColumns = "id, first_name, second_name, wedding_date, location, message, slug, published, first_published_at, photo_path, photo_framing, theme, details_enabled, ceremony_time, ceremony_venue, ceremony_address, ceremony_url, reception_time, reception_venue, reception_address, reception_url, travel, travel_url, accommodation, accommodation_url, dress_code, faqs, rsvp_enabled, rsvp_closes_on, rsvp_share_secret, invitation_share_secret, invitation_enabled, invitation_host_line, invitation_wording, invitation_afterwards, meal_choices_enabled, meal_menu";
 
 const noEntitlement: Entitlement = { active: false, expires_at: null, revoked_reason: null };
 
@@ -39,11 +39,20 @@ export async function requireWedding() {
   return { ...workspace, wedding: workspace.wedding };
 }
 
-type ShareableWedding = { slug: string | null; first_name: string; second_name: string; wedding_date: string; location: string; rsvp_enabled: boolean; rsvp_closes_on: string | null; rsvp_share_secret: string; invitation_enabled: boolean };
+type ShareableWedding = { slug: string | null; first_name: string; second_name: string; wedding_date: string; location: string; details_enabled: boolean; rsvp_enabled: boolean; rsvp_closes_on: string | null; rsvp_share_secret: string; invitation_share_secret: string; invitation_enabled: boolean };
 
-/** The absolute guest link on the configured origin; shown by the RSVP section in every state. */
-export function currentGuestUrl(wedding: ShareableWedding) {
-  return guestUrl(appOrigin(), currentNames(wedding), wedding.rsvp_share_secret);
+/**
+ * F065: the absolute links on the configured origin. The Invitation link opens at the Invitation, and the RSVP link is
+ * the RSVP page under whichever link currently offers RSVP.
+ */
+export function currentGuestLinks(wedding: ShareableWedding) {
+  const names = currentNames(wedding);
+  const secrets = { save_the_date: wedding.rsvp_share_secret, invitation: wedding.invitation_share_secret };
+  return {
+    saveTheDate: guestUrl(appOrigin(), names, wedding.rsvp_share_secret),
+    invitation: guestUrl(appOrigin(), names, wedding.invitation_share_secret, "invitation"),
+    rsvp: guestUrl(appOrigin(), names, secrets[rsvpLink(wedding)], "rsvp"),
+  };
 }
 
 /** RSVP readiness in words, from saved data and the current UTC date, for every owner view that states it. */
@@ -54,14 +63,25 @@ export function rsvpReadiness(wedding: { rsvp_enabled: boolean; rsvp_closes_on: 
 
 export type RsvpReadiness = ReturnType<typeof rsvpReadiness>;
 
-/** F042: the live guest link with its suggested (never stored) message. Null unless the site is live, so drafts,
- * unpublished and expired sites are never offered a link that looks shareable. */
-export function guestLinkShare(wedding: ShareableWedding, live: boolean): GuestLinkShare | null {
+/** F042/F065: the live links with their suggested (never stored) messages. Null unless the site is live, so drafts,
+ * unpublished and expired sites are never offered a link that looks shareable. The Invitation is null while it is off,
+ * and the RSVP link is null unless guests can reply. */
+export function guestLinkShares(wedding: ShareableWedding, live: boolean): GuestShares | null {
   if (!live) return null;
-  const url = currentGuestUrl(wedding);
+  const links = currentGuestLinks(wedding);
   const availability = rsvpAvailability(wedding.rsvp_enabled, wedding.rsvp_closes_on, todayUtc(), live);
-  const message = shareMessage({ firstName: wedding.first_name, secondName: wedding.second_name, date: wedding.wedding_date, location: wedding.location, url, rsvpOpen: availability === "open", invitation: wedding.invitation_enabled });
-  return { url, message, availability, closesOn: wedding.rsvp_closes_on };
+  const open = availability === "open";
+  const about = { firstName: wedding.first_name, secondName: wedding.second_name, date: wedding.wedding_date, location: wedding.location, closesOn: wedding.rsvp_closes_on };
+  const share = (link: "save_the_date" | "invitation" | "rsvp", url: string, rsvpOpen: boolean) => ({ url, message: shareMessage(link, { ...about, url, rsvpOpen }) });
+  return {
+    availability,
+    closesOn: wedding.rsvp_closes_on,
+    rsvpVia: rsvpLink(wedding),
+    on: { details: wedding.details_enabled, rsvp: wedding.rsvp_enabled },
+    saveTheDate: share("save_the_date", links.saveTheDate, open && !wedding.invitation_enabled),
+    invitation: wedding.invitation_enabled ? share("invitation", links.invitation, open) : null,
+    rsvp: open ? share("rsvp", links.rsvp, true) : null,
+  };
 }
 
 type ResponseCounts = { total: number; attending: number };

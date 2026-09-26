@@ -9,7 +9,7 @@ type Reply = { href: string; open: boolean; closesOn: string | null };
 // A formal card inside each theme's RSVP surround (rsvp-shell, rsvp-main, rsvp-card), so every theme's backdrop and
 // paper card apply. `reply` is present only while RSVPs are on; the invitation never opens them.
 export function InvitationPageView({ invitation, homeHref, invitationHref, detailsHref, reply, rsvpHref = reply?.href }: {
-  invitation: InvitationPage; homeHref: string; invitationHref: string; detailsHref?: string; reply?: Reply; rsvpHref?: string;
+  invitation: InvitationPage; homeHref?: string; invitationHref: string; detailsHref?: string; reply?: Reply; rsvpHref?: string;
 }) {
   const names = [invitation.first_name, invitation.second_name] as const;
   const place = invitationPlace(invitation);

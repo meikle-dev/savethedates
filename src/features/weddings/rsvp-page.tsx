@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
-import type { GuestHrefs } from "./guest-link";
+import { linkNavigation, type GuestHrefs, type GuestLinkKind } from "./guest-link";
 import type { RsvpState } from "./rsvp";
 import { courseWords, dietaryChoices, maxDietaryOtherLength, maxMealOptionLength, mealErrorKey, shownCourses, type MealMenu } from "./meal-menu";
 import type { WeddingTheme } from "./themes";
@@ -14,21 +14,25 @@ import { BotanicalArt } from "./wedding-art";
 type RsvpWedding = { first_name: string; second_name: string; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean; invitation_enabled: boolean };
 type InvitationProps = { wedding: RsvpWedding; hrefs: GuestHrefs; open: boolean; closesOn: string | null; secret: string | null; menu: MealMenu | null; previewNote: string; focusName: boolean; onReplyAgain: () => void };
 
-const ownerPreviewNote = "Preview only. No response will be saved. Open your guest link from the workspace to see the guest page.";
+const ownerPreviewNote = "Preview only. No response will be saved. Open your RSVP link from the workspace to see the guest page.";
 
 // Guests reach this page only through a valid guest link (other links are 404), so it shows the form or a closed
 // state. The owner preview passes no secret and never submits. `closesOn` is the saved closing date while RSVP is
 // enabled (null when there is none); `open` is the database's own verdict, so the page never uses the visitor's clock.
 // Marketing examples also pass no secret, with their own `previewNote`. `menu` holds only the courses guests choose
 // from (null while meal choices are off); food preferences are always asked of attending guests.
-export function RsvpPage({ wedding, hrefs, open, closesOn = null, secret, menu = null, previewNote = ownerPreviewNote }: { wedding: RsvpWedding; hrefs: GuestHrefs; open: boolean; closesOn?: string | null; secret: string | null; menu?: MealMenu | null; previewNote?: string }) {
+// `link` is the guest link the page was opened with (F065), which decides the navigation. Marketing examples pass
+// none and show every page that is on.
+export function RsvpPage({ wedding, link, hrefs, open, closesOn = null, secret, menu = null, previewNote = ownerPreviewNote }: { wedding: RsvpWedding; link?: GuestLinkKind; hrefs: GuestHrefs; open: boolean; closesOn?: string | null; secret: string | null; menu?: MealMenu | null; previewNote?: string }) {
   // "Reply for someone else" remounts the invitation: a fresh, empty form with no memory of the previous reply.
   const [attempt, setAttempt] = useState(0);
   const preview = secret === null;
   const rsvpHref = preview || wedding.rsvp_enabled ? hrefs.rsvp : undefined;
   const names = [wedding.first_name, wedding.second_name] as const;
+  const navigation = link ? linkNavigation(link, wedding, hrefs)
+    : { homeHref: hrefs.home, invitationHref: wedding.invitation_enabled ? hrefs.invitation : undefined, detailsHref: wedding.details_enabled ? hrefs.details : undefined };
   return <WeddingFrame theme={wedding.theme} className="details-shell rsvp-shell">
-    <WeddingHeader names={names} homeHref={hrefs.home} invitationHref={wedding.invitation_enabled ? hrefs.invitation : undefined} detailsHref={wedding.details_enabled ? hrefs.details : undefined} rsvpHref={rsvpHref} current="rsvp" />
+    <WeddingHeader names={names} {...navigation} rsvpHref={rsvpHref} current="rsvp" />
     <main id="main" className="rsvp-main">
       <RsvpInvitation key={attempt} wedding={wedding} hrefs={hrefs} open={open} closesOn={closesOn} secret={secret} menu={menu} previewNote={previewNote} focusName={attempt > 0} onReplyAgain={() => setAttempt((value) => value + 1)} />
     </main>
@@ -85,7 +89,7 @@ function RsvpInvitation({ wedding, hrefs, open, closesOn, secret, menu: pageMenu
   const context = !open ? (closedByDate ? "Replies have now closed." : "Replies aren’t open.")
     : done ? "Your reply has been sent."
     : deadline ? `Please reply by ${deadline.date}.`
-    : preview ? "Guests enter their own name to reply with your guest link." : "Please let us know if you can join us.";
+    : preview ? "Guests enter their own name to reply with your RSVP link." : "Please let us know if you can join us.";
   const nameErrors = state.errors?.responding_name;
   return <>
     <div className="rsvp-intro">

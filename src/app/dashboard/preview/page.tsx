@@ -5,6 +5,7 @@ import { SaveTheDate } from "@/features/weddings/save-the-date";
 import { toWedding } from "@/features/weddings/published";
 
 import { isWeddingTheme } from "@/features/weddings/themes";
+import { linkNavigation, previewHrefs } from "@/features/weddings/guest-link";
 import { PreviewToolbar } from "@/features/workspace/preview-toolbar";
 
 export const metadata: Metadata = { title: "Save the Date preview | SaveTheDates" };
@@ -21,6 +22,6 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
   const candidate = isWeddingTheme(params.theme) ? params.theme : data.theme;
   return <>
     <PreviewToolbar label="Save the Date" path="/dashboard/preview" backHref="/dashboard" theme={candidate} savedTheme={data.theme} published={data.published && !!entitlement?.active} />
-    <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} homeHref={`/dashboard/preview?theme=${candidate}`} invitationHref={data.invitation_enabled ? `/dashboard/preview/invitation?theme=${candidate}` : undefined} detailsHref={data.details_enabled ? `/dashboard/preview/details?theme=${candidate}` : undefined} rsvpHref={`/dashboard/preview/rsvp?theme=${candidate}`} />
+    <SaveTheDate wedding={{ ...toWedding(data, "/dashboard/photo"), theme: candidate }} {...linkNavigation("save_the_date", data, previewHrefs(candidate, "save_the_date"))} />
   </>;
 }

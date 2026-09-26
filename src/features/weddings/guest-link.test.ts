@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { reservedNames, suggestedNames } from "./guest-link";
+import { guestHrefs, linkNavigation, linkPages, reservedNames, rsvpLink, suggestedNames } from "./guest-link";
 
 const root = path.resolve(import.meta.dirname, "../../..");
 const conventionFiles = new Set(["layout", "page", "not-found", "error", "global-error", "loading", "template", "default", "route"]);
@@ -48,5 +48,32 @@ describe("guest link", () => {
     expect(suggestedNames("Alexandra-Marguerite", "Christopher-Alexander Montgomery-Smythe").length).toBeLessThanOrEqual(63);
     expect(suggestedNames("李", "王")).toBe("our-wedding");
     expect(suggestedNames("Demo", "")).toBe("our-wedding");
+  });
+});
+
+describe("F065 link pages", () => {
+  const flags = (invitation: boolean, details: boolean, rsvp: boolean) => ({ invitation_enabled: invitation, details_enabled: details, rsvp_enabled: rsvp });
+  const opened = (link: "save_the_date" | "invitation", invitation: boolean, details: boolean, rsvp: boolean) =>
+    Object.entries(linkPages(link, flags(invitation, details, rsvp))).filter(([, on]) => on).map(([page]) => page);
+
+  it("opens only the table's pages for every combination of switches", () => {
+    for (const invitation of [false, true]) for (const details of [false, true]) for (const rsvp of [false, true]) {
+      const d = details ? ["details"] : [];
+      // Save the Date link: never the Invitation; RSVP only while the Invitation is off.
+      expect(opened("save_the_date", invitation, details, rsvp)).toEqual(["home", ...d, ...(rsvp && !invitation ? ["rsvp"] : [])]);
+      // Invitation link: nothing while the Invitation is off; never the Save the Date.
+      expect(opened("invitation", invitation, details, rsvp)).toEqual(invitation ? ["invitation", ...d, ...(rsvp ? ["rsvp"] : [])] : []);
+    }
+  });
+
+  it("puts RSVP under the Invitation link only while the Invitation is on", () => {
+    expect(rsvpLink({ invitation_enabled: true })).toBe("invitation");
+    expect(rsvpLink({ invitation_enabled: false })).toBe("save_the_date");
+  });
+
+  it("links only the pages a link opens", () => {
+    const hrefs = guestHrefs("a-and-b", "x".repeat(43));
+    expect(linkNavigation("invitation", flags(true, true, true), hrefs)).toEqual({ homeHref: undefined, invitationHref: hrefs.invitation, detailsHref: hrefs.details, rsvpHref: hrefs.rsvp });
+    expect(linkNavigation("save_the_date", flags(true, true, true), hrefs)).toEqual({ homeHref: hrefs.home, invitationHref: undefined, detailsHref: hrefs.details, rsvpHref: undefined });
   });
 });

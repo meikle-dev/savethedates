@@ -297,14 +297,18 @@ test("overview summarises the owner's own wedding and every section is reachable
     await page.reload();
     await expect(overview.getByRole("article", { name: "Site status" })).toContainText("Published");
     await expect(siteStatusValue(overview)).toHaveCSS("color", published);
-    await expect(overview.getByRole("article", { name: "Site status" }).getByRole("link", { name: "Share your guest link" })).toHaveAttribute("href", "#guest-link");
+    await expect(overview.getByRole("article", { name: "Site status" }).getByRole("link", { name: "Send your links" })).toHaveAttribute("href", "#guest-link");
     await expect(overview.getByRole("article", { name: /RSVPs · open/ })).toContainText("3 responses");
     await expect(overview.getByRole("region", { name: "Setup checklist" })).toHaveCount(0);
     // F042: the live Overview leads with the same absolute guest link and share actions as Publish.
     const guestLink = `${new URL(baseURL!).origin}/${slug}/${wedding.data!.rsvp_share_secret}`;
     const panel = page.locator("#guest-link");
+    const rsvpPanel = page.locator("#rsvp-link");
     await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
-    await expect(panel.getByText("RSVPs open", { exact: true })).toBeVisible();
+    await expect(rsvpPanel.getByText("RSVPs open", { exact: true })).toBeVisible();
+    // F065: the Invitation is off, so RSVP belongs to the Save the Date link and the Invitation panel says how to switch it on.
+    await expect(rsvpPanel.getByText(`${guestLink}/rsvp`, { exact: true })).toBeVisible();
+    await expect(page.locator("#invitation-link").getByRole("link", { name: "switch on your Invitation" })).toHaveAttribute("href", "/dashboard/invitation");
     const message = `Save the date! Alex & Morgan are getting married on ${formatWeddingDate(daysFromToday(120))} at Bath. Details and RSVP here: ${guestLink}`;
     await expect(panel.getByLabel("Message to send")).toHaveValue(message);
     const share = panel.getByRole("button", { name: "Share", exact: true });
@@ -331,8 +335,8 @@ test("overview summarises the owner's own wedding and every section is reachable
     // A past closing date keeps the link shareable, with the closed status stated explicitly.
     expect((await local.admin.from("weddings").update({ rsvp_closes_on: daysFromToday(-2) }).eq("id", wedding.data!.id)).error).toBeNull();
     await page.reload();
-    await expect(panel.getByText("RSVPs closed", { exact: true })).toBeVisible();
-    await expect(panel).toContainText(`RSVPs closed at ${rsvpDeadline(daysFromToday(-2)).exact}. Guests can still view your site but can’t reply.`);
+    await expect(rsvpPanel.getByText("RSVPs closed", { exact: true })).toBeVisible();
+    await expect(rsvpPanel).toContainText(`RSVPs closed at ${rsvpDeadline(daysFromToday(-2)).exact}. Guests can still view your site but can’t reply.`);
     await expect(panel.getByLabel("Message to send")).toHaveValue(message.replace("Details and RSVP here", "Find out more"));
     await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
     for (const width of [390, 1440]) {
@@ -342,7 +346,7 @@ test("overview summarises the owner's own wedding and every section is reachable
     }
     await openWorkspaceSection(page, "Publish");
     await expect(page.getByRole("heading", { level: 1, name: "Share your site" })).toBeVisible();
-    await expect(panel.getByText("RSVPs closed", { exact: true })).toBeVisible();
+    await expect(rsvpPanel.getByText("RSVPs closed", { exact: true })).toBeVisible();
     await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("publish-closed.png"), fullPage: true });
 
@@ -395,7 +399,7 @@ test("the guest link uses the configured origin, not the request host", async ({
       expect(await page.content()).not.toContain(`localhost:${configured.port}/${slug}`);
     }
     await page.goto("/dashboard/rsvp");
-    await expect(page.locator("#rsvp-guest-link")).toHaveText(guestLink);
+    await expect(page.locator("#rsvp-guest-link")).toHaveText(`${guestLink}/rsvp`);
   } finally {
     await context.close();
     await local.admin.auth.admin.deleteUser(ownerId);

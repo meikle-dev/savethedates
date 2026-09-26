@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { detailsSchema } from "@/features/weddings/details";
 import { formatWeddingDate } from "@/features/weddings/wedding";
 import { AttendanceBadge } from "@/features/workspace/attendance-badge";
-import { GuestLinkPanel } from "@/features/workspace/guest-link-panel";
+import { GuestLinkPanels } from "@/features/workspace/guest-link-panel";
 import { Icon } from "@/features/workspace/workspace-icons";
-import { guestLinkShare, loadLatestResponses, loadResponseTotals, loadWorkspace, rsvpReadiness } from "@/features/workspace/workspace-data";
+import { guestLinkShares, loadLatestResponses, loadResponseTotals, loadWorkspace, rsvpReadiness } from "@/features/workspace/workspace-data";
 import { daysUntil, guestPageStatuses, setupSteps, todayUtc, type RsvpAvailability } from "@/features/workspace/workspace-summary";
 
 export const metadata: Metadata = { title: "Overview · SaveTheDates" };
@@ -15,7 +15,7 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "sh
 
 const rsvpLabels: Record<RsvpAvailability, string> = { open: "open", closed: "closed", off: "not accepting", "not-live": "opens when published", offline: "site offline" };
 const emptyResponses: Record<RsvpAvailability, string> = {
-  open: "No responses yet. Share your guest link to start collecting replies.",
+  open: "No responses yet. Send your RSVP link to start collecting replies.",
   closed: "No responses yet, and RSVPs are closed.",
   off: "No responses yet. Open RSVPs when you’re ready to collect replies.",
   "not-live": "No responses yet. Guests can reply once your site is published.",
@@ -36,8 +36,8 @@ export default async function Overview() {
   const pages = guestPageStatuses(wedding, availability, live, offline);
   const completed = steps.filter((step) => step.done).length;
   const setupComplete = steps.every((step) => step.done || step.optional);
-  // The guest link only works while the site is live, so drafts and expired sites get no share panel.
-  const share = guestLinkShare(wedding, live);
+  // Guest links only work while the site is live, so drafts and expired sites get no share panels.
+  const shares = guestLinkShares(wedding, live);
   const expiry = live && entitlement.expires_at ? formatWeddingDate(entitlement.expires_at.slice(0, 10)) : null;
 
   return <section aria-labelledby="overview-title">
@@ -52,8 +52,8 @@ export default async function Overview() {
         <span className="ws-stat-icon"><Icon name={live ? "globe" : "lock"} /></span>
         <h2 id="stat-site" className="ws-stat-label">Site status</h2>
         <p className="ws-stat-value">{live ? "Published" : offline ? "Offline" : "Private draft"}</p>
-        <p className="ws-stat-note">{share
-          ? <><a href="#guest-link">Share your guest link</a>{expiry && <> · online until {expiry}</>}</>
+        <p className="ws-stat-note">{shares
+          ? <><a href="#guest-link">Send your links</a>{expiry && <> · online until {expiry}</>}</>
           : <Link href="/dashboard/publish">{entitlement.active ? "Ready to publish" : "Purchase and publish"}</Link>}</p>
       </article>
       <article className="ws-stat" aria-labelledby="stat-countdown">
@@ -69,13 +69,13 @@ export default async function Overview() {
         <div>
           {totals.total > 0 && <div className="ws-meter" aria-hidden="true"><span className="is-attending" style={{ width: `${(totals.attending / totals.total) * 100}%` }} /><span className="is-declined" style={{ width: `${(totals.declined / totals.total) * 100}%` }} /></div>}
           <p className="ws-stat-note mt-2">{totals.attending} attending · {totals.declined} not attending</p>
-          {/* Live sites state this in the guest link panel below; otherwise say it here so a closed RSVP is never missed. */}
-          {!share && (availability === "off" || availability === "closed") && <p className="ws-stat-note mt-2">{rsvp.note} <Link href="/dashboard/rsvp">RSVP settings</Link></p>}
+          {/* Live sites state this in the RSVP link panel below; otherwise say it here so a closed RSVP is never missed. */}
+          {!shares && (availability === "off" || availability === "closed") && <p className="ws-stat-note mt-2">{rsvp.note} <Link href="/dashboard/rsvp">RSVP settings</Link></p>}
         </div>
       </article>
     </div>
 
-    {share && <div className="mt-5"><GuestLinkPanel {...share} /></div>}
+    {shares && <div className="mt-5"><GuestLinkPanels shares={shares} /></div>}
 
     <div className="ws-overview-grid">
       <div className="ws-stack">
@@ -107,7 +107,7 @@ export default async function Overview() {
       <div className="ws-stack">
         <section aria-labelledby="pages-title" className="ws-panel">
           <h2 id="pages-title">Guest pages</h2>
-          <p className="ws-panel-intro">Your guest link opens every page that’s on. Only Save the Date is required.</p>
+          <p className="ws-panel-intro">Only Save the Date is required. Your Save the Date and Invitation each have their own link, so you can send them at different times.</p>
           <ul className="ws-checklist">
             {pages.map((page) => <li key={page.id}>
               <Link href={page.href} className="ws-row-link">

@@ -36,7 +36,7 @@ function Guidance({ title, text, url, linkLabel, icon }: { title: string; text: 
   </section>;
 }
 
-export function WeddingDetailsPageView({ details, image, photoFraming, homeHref, invitationHref, detailsHref, rsvpHref, previewEmpty = false, photoLabel }: { details: WeddingDetailsPage; image?: Wedding["image"]; photoFraming?: PhotoFraming; homeHref: string; invitationHref?: string; detailsHref: string; rsvpHref?: string; previewEmpty?: boolean; photoLabel?: string }) {
+export function WeddingDetailsPageView({ details, image, photoFraming, homeHref, invitationHref, detailsHref, rsvpHref, previewEmpty = false, photoLabel }: { details: WeddingDetailsPage; image?: Wedding["image"]; photoFraming?: PhotoFraming; homeHref?: string; invitationHref?: string; detailsHref: string; rsvpHref?: string; previewEmpty?: boolean; photoLabel?: string }) {
   const hasContent = hasVenue(details, "ceremony") || hasVenue(details, "reception") || details.travel || details.travel_url || details.accommodation || details.accommodation_url || details.dress_code || details.faqs.length;
   const names = [details.first_name, details.second_name] as const;
   return <WeddingFrame theme={details.theme} className="details-shell">

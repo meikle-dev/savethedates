@@ -10,6 +10,7 @@ let weddingId = "";
 let otherWeddingId = "";
 let secret = "";
 let otherSecret = "";
+let saveTheDateSecret = "";
 
 beforeAll(async () => {
   for (const [client, assign] of [[owner, (id: string) => { ownerId = id; }], [other, (id: string) => { otherId = id; }]] as const) {
@@ -20,14 +21,16 @@ beforeAll(async () => {
     assign(created.data.user.id);
     expect((await client.auth.signInWithPassword({ email, password })).error).toBeNull();
   }
-  const inserted = await owner.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug: `invitation-${crypto.randomUUID()}` }).select("id, rsvp_share_secret").single();
+  const inserted = await owner.from("weddings").insert({ owner_id: ownerId, first_name: "Alex", second_name: "Morgan", wedding_date: "2027-09-18", location: "Bath", slug: `invitation-${crypto.randomUUID()}` }).select("id, rsvp_share_secret, invitation_share_secret").single();
   expect(inserted.error).toBeNull();
   weddingId = inserted.data!.id;
-  secret = inserted.data!.rsvp_share_secret;
-  const otherInserted = await other.from("weddings").insert({ owner_id: otherId, first_name: "Other", second_name: "Couple", wedding_date: "2027-10-02", location: "York", slug: `invitation-${crypto.randomUUID()}` }).select("id, rsvp_share_secret").single();
+  // F065: the Invitation has its own secret; the Save the Date secret never returns it.
+  secret = inserted.data!.invitation_share_secret;
+  saveTheDateSecret = inserted.data!.rsvp_share_secret;
+  const otherInserted = await other.from("weddings").insert({ owner_id: otherId, first_name: "Other", second_name: "Couple", wedding_date: "2027-10-02", location: "York", slug: `invitation-${crypto.randomUUID()}` }).select("id, invitation_share_secret").single();
   expect(otherInserted.error).toBeNull();
   otherWeddingId = otherInserted.data!.id;
-  otherSecret = otherInserted.data!.rsvp_share_secret;
+  otherSecret = otherInserted.data!.invitation_share_secret;
   for (const [id, userId] of [[weddingId, ownerId], [otherWeddingId, otherId]]) expect((await local.grantEntitlement(id, userId)).error).toBeNull();
 });
 
@@ -79,9 +82,11 @@ it("shows guests the invitation only while it is on, published and paid for", as
     ceremony_venue: "The Old Hall",
     ceremony_address: "1 High Street, Bath",
   });
+  expect((await invitation(saveTheDateSecret)).data).toBeNull();
   const wedding = await local.anonymous().rpc("guest_wedding", { requested_secret: secret }).maybeSingle<{ invitation_enabled: boolean; slug: string }>();
-  expect(wedding.data).toMatchObject({ invitation_enabled: true });
+  expect(wedding.data).toMatchObject({ invitation_enabled: true, link: "invitation" });
   expect(Object.keys(wedding.data!)).not.toContain("rsvp_share_secret");
+  expect(Object.keys(wedding.data!)).not.toContain("invitation_share_secret");
 
   // Another wedding's secret never returns this invitation; the other wedding's own page is off.
   expect((await invitation(otherSecret, other)).data).toBeNull();
@@ -90,7 +95,9 @@ it("shows guests the invitation only while it is on, published and paid for", as
 
   expect((await owner.from("weddings").update({ invitation_enabled: false }).eq("id", weddingId)).error).toBeNull();
   expect((await invitation(secret)).data).toBeNull();
-  expect((await local.anonymous().rpc("guest_wedding", { requested_secret: secret }).maybeSingle<{ invitation_enabled: boolean }>()).data?.invitation_enabled).toBe(false);
+  // With the Invitation off, its link finds nothing; the Save the Date link still works and reports it off.
+  expect((await local.anonymous().rpc("guest_wedding", { requested_secret: secret }).maybeSingle()).data).toBeNull();
+  expect((await local.anonymous().rpc("guest_wedding", { requested_secret: saveTheDateSecret }).maybeSingle<{ invitation_enabled: boolean }>()).data?.invitation_enabled).toBe(false);
 
   expect((await owner.from("weddings").update({ invitation_enabled: true }).eq("id", weddingId)).error).toBeNull();
   expect((await local.admin.from("stripe_payments").update({ expires_at: new Date(Date.now() - 60_000).toISOString() }).eq("wedding_id", weddingId)).error).toBeNull();

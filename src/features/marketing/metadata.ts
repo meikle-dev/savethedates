@@ -11,11 +11,11 @@ function indexedPage(path: string, title: string, description: string): Metadata
 }
 
 export function homeMetadata(): Metadata {
-  return indexedPage("/", "Digital save the date & wedding website with RSVP | SaveTheDates", "Send your save the date by WhatsApp, text or email. One link opens your invitation, wedding details and online RSVP. Twelve themes, one £29 payment, free to preview.");
+  return indexedPage("/", "Digital save the date & wedding website with RSVP | SaveTheDates", "Send your save the date by WhatsApp, text or email, then your invitation, wedding details and online RSVP. Twelve themes, one £29 payment, free to preview.");
 }
 
 export function digitalSaveTheDateMetadata(): Metadata {
-  return indexedPage(digitalSaveTheDatePath, "Digital save the date with online RSVP | SaveTheDates", "A digital save the date your guests open from one link on WhatsApp, text or email, with your wedding details and RSVP. Twelve designs, £29 once.");
+  return indexedPage(digitalSaveTheDatePath, "Digital save the date with online RSVP | SaveTheDates", "A digital save the date your guests open from a link on WhatsApp, text or email, with your wedding details and RSVP. Twelve designs, £29 once.");
 }
 
 /** Site name and publisher for Google; only on the homepage, which Google reads for the site name. */

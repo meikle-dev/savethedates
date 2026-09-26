@@ -34,7 +34,8 @@ test("guest heads show only published names, date and a static theme card", asyn
       const response = await page.goto(`${home}${suffix}`);
       expect(response?.status()).toBe(200);
       await expect(page).toHaveTitle(`${title} · Alex & Morgan | SaveTheDates`);
-      await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", "Alex & Morgan · Save the Date");
+      // F065: the RSVP link previews as the RSVP; other pages as the link they're under.
+      await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", suffix === "/rsvp" ? "RSVP for Alex & Morgan’s wedding" : "Alex & Morgan · Save the Date");
       await expect(page.locator('meta[property="og:description"]')).toHaveAttribute("content", "18 September 2027");
       await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", `${new URL(baseURL!).origin}/assets/share/romantic.jpg`);
       await expect(page.locator('link[rel="canonical"], meta[property="og:url"]')).toHaveCount(0);

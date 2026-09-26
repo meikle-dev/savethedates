@@ -23,7 +23,8 @@ function Field({ name, label, value, max, error, help, multiline = false, placeh
   </div>;
 }
 
-export function InvitationForm({ initial, published }: { initial: InvitationSettings; published: boolean }) {
+// `rsvpOn`: RSVP is switched on, so switching the Invitation on or off moves replies between the two links (F065).
+export function InvitationForm({ initial, published, rsvpOn }: { initial: InvitationSettings; published: boolean; rsvpOn: boolean }) {
   const [state, action, pending] = useActionState<InvitationFormState, FormData>(saveInvitation, {});
   const [values, setValues] = useState(state.values ?? initial);
   const [dirty, setDirty] = useState(false);
@@ -75,6 +76,9 @@ export function InvitationForm({ initial, published }: { initial: InvitationSett
       </label>
       <p className="details-saved-status mt-2 text-sm" role="status">{savedVisibility}</p>
       {values.invitation_enabled !== savedVisible && <p className="field-help">Save to apply this visibility change.</p>}
+      {published && values.invitation_enabled !== savedVisible && (values.invitation_enabled
+        ? rsvpOn && <p className="form-warning mt-3" role="note">Switching this on moves replies to your Invitation link. RSVP links you sent with your Save the Date will stop working, and your Save the Date will no longer offer RSVP.</p>
+        : <p className="form-warning mt-3" role="note">Switching this off stops your Invitation link working, so guests who have it will see “page not found”.{rsvpOn ? " Replies move back to your Save the Date link, and RSVP links you sent with your Invitation will stop working." : ""}</p>)}
       <div className="details-save-action mt-3">
         <button className="button button-primary sm:min-w-44" disabled={pending}>{pending ? "Saving…" : published ? "Save live Invitation" : "Save Invitation"}</button>
         {dirty && <p className="text-sm text-[var(--muted)]">You have unsaved Invitation changes.</p>}

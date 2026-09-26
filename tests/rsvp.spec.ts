@@ -39,19 +39,19 @@ test("one shared link collects separate named responses and can be replaced", as
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await openSection(page, "RSVP");
     const section = page.getByRole("region", { name: "RSVP", exact: true });
-    await expect(section.getByRole("heading", { name: "Your guest link" })).toBeVisible();
-    // The RSVP section shows the same absolute guest link as Publish and the Overview.
+    await expect(section.getByRole("heading", { name: "Your RSVP link" })).toBeVisible();
+    // F065: the RSVP section shows the RSVP link, under the Save the Date link while the Invitation is off.
     const origin = new URL(baseURL!).origin;
     const displayedLink = section.locator("#rsvp-guest-link");
-    const oldHome = (await displayedLink.textContent())!;
-    expect(oldHome.startsWith(`${origin}/${slug}/`)).toBe(true);
-    expect(oldHome.slice(`${origin}/${slug}/`.length)).toMatch(/^[A-Za-z0-9_-]{43}$/);
-    const shareUrl = `${oldHome}/rsvp`;
+    const shareUrl = (await displayedLink.textContent())!;
+    expect(shareUrl).toMatch(new RegExp(`^${origin}/${slug}/[A-Za-z0-9_-]{43}/rsvp$`));
+    const oldHome = shareUrl.slice(0, -"/rsvp".length);
+    await expect(section).toContainText("It’s part of your Save the Date link, so replacing that link replaces this one too.");
     await expect(section.getByRole("link", { name: /Open RSVP page/ })).toHaveAttribute("href", shareUrl);
     await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin });
     await section.getByRole("button", { name: "Copy link" }).click();
     await expect(section.getByRole("status").filter({ hasText: "Link copied." })).toBeVisible();
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(oldHome);
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(shareUrl);
     await page.screenshot({ path: test.info().outputPath("shared-rsvp-workspace.png"), fullPage: true });
 
     expectPrivate(await guestPage.goto(shareUrl));
@@ -115,14 +115,20 @@ test("one shared link collects separate named responses and can be replaced", as
     await expect(updated.getByRole("status").filter({ hasText: "RSVP settings saved. Existing responses remain in Guests. Guests can view your site but can’t reply until you open RSVPs." })).toBeVisible();
     await guestPage.reload();
     await expect(guestPage.getByRole("heading", { name: "RSVPs aren’t open" })).toBeVisible();
-    await expect(updated.getByText("Every link you shared before stops working, including your Save the Date.")).toBeVisible();
-    await updated.getByLabel("Replace my guest link and stop every previously shared link from working").check();
-    await updated.getByRole("button", { name: "Replace guest link" }).click();
-    await expect(updated.getByRole("status").filter({ hasText: "including your Save the Date, no longer works" })).toBeVisible();
-    await expect(displayedLink).not.toHaveText(oldHome);
-    const newHome = (await displayedLink.textContent())!;
+    // F065: links are replaced from their own panel on the Overview.
+    await openSection(page, "Overview");
+    const stdPanel = page.locator("#guest-link");
+    await stdPanel.getByText("Replace this link").click();
+    await expect(stdPanel.getByText("so the one you sent before stops working")).toBeVisible();
+    await stdPanel.getByLabel("Replace my Save the Date link and stop the old one working").check();
+    await stdPanel.getByRole("button", { name: "Replace Save the Date link" }).click();
+    await expect(stdPanel.getByRole("status").filter({ hasText: "Save the Date link replaced. The one you sent before no longer works. Your Invitation link hasn’t changed." })).toBeVisible();
+    await expect(stdPanel.getByText(oldHome, { exact: true })).toHaveCount(0);
+    const newHome = (await stdPanel.locator(".guest-link-url").textContent())!;
     expect(newHome.slice(`${origin}/${slug}/`.length)).toMatch(/^[A-Za-z0-9_-]{43}$/);
     const replacement = `${newHome}/rsvp`;
+    await openSection(page, "RSVP");
+    await expect(displayedLink).toHaveText(replacement);
     // Replacing refreshes every owner display of the link, including the suggested share message.
     for (const [name, heading] of [["Overview", "Alex & Morgan"], ["Publish", "Share your site"]]) {
       await openSection(page, name);
@@ -130,7 +136,7 @@ test("one shared link collects separate named responses and can be replaced", as
       await page.screenshot({ path: test.info().outputPath(`replaced-${name.toLowerCase()}.png`), fullPage: true });
       const panel = page.locator("#guest-link");
       await expect(panel.getByText(newHome, { exact: true })).toBeVisible();
-      await expect(panel.getByText("RSVPs off", { exact: true })).toBeVisible();
+      await expect(page.locator("#rsvp-link").getByText("RSVPs off", { exact: true })).toBeVisible();
       expect(await panel.getByLabel("Message to send").inputValue()).toContain(newHome);
       expect(new URL((await panel.getByRole("link", { name: /Share on WhatsApp/ }).getAttribute("href"))!).searchParams.get("text")).toContain(newHome);
       await expect(page.getByText(oldHome)).toHaveCount(0);
@@ -224,14 +230,14 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await expect(warning).toContainText("RSVPs are off. After you publish, guests can view your site but can’t reply until you open RSVPs.");
     await expect(warning.getByRole("link", { name: "Open RSVP settings" })).toHaveAttribute("href", "/dashboard/rsvp");
     await expect(warning).toContainText("or publish as an announcement only");
-    await expect(page.getByText("can view your site and reply")).toHaveCount(0);
+    await expect(page.getByText("can view its pages and reply")).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("f044-publish-warning.png"), fullPage: true });
     await openSection(page, "Overview");
     await expect(page.getByRole("article", { name: /RSVPs/ })).toContainText("RSVPs are off. After you publish");
     await openSection(page, "RSVP");
     const section = page.getByRole("region", { name: "RSVP", exact: true });
     await expect(section.getByText("RSVPs off", { exact: true })).toBeVisible();
-    await expect(section.getByText("This will be your guest link. It works once your site is published; share it then.", { exact: false })).toBeVisible();
+    await expect(section.getByText("This will be your RSVP link. It works once your site is published.", { exact: false })).toBeVisible();
     await expect(section.getByText("Share this one link with everyone", { exact: false })).toHaveCount(0);
 
     // Turning RSVPs on with a summer closing date explains the exact cutoff, before publishing.
@@ -244,7 +250,7 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await openSection(page, "Publish");
     await expect(page.getByRole("note")).toHaveCount(0);
     await expect(page.getByText("RSVPs open when published", { exact: true })).toBeVisible();
-    await expect(page.getByText("anyone who has it can view your site and reply", { exact: false })).toBeVisible();
+    await expect(page.getByText("anyone who has a link can view its pages and reply", { exact: false })).toBeVisible();
 
     // Published: the owner and the guest see the same cutoff.
     expect((await local.grantEntitlement(weddingId, ownerId)).error).toBeNull();
@@ -348,10 +354,10 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await openSection(page, "RSVP");
     await expect(section.getByText("RSVPs closed", { exact: true })).toBeVisible();
     await expect(section).toContainText(`RSVPs closed at ${rsvpDeadline(yesterday).exact}. Guests can still view your site but can’t reply.`);
-    await expect(section).toContainText("They can view your site, but cannot reply while RSVPs aren’t open.");
+    await expect(section).toContainText("Guests can’t reply while RSVPs aren’t open.");
     await openSection(page, "Publish");
-    await expect(page.locator("#guest-link")).toContainText("Anyone who has it can view your site, so share it only with your guests.");
-    await expect(page.locator("#guest-link")).not.toContainText("can view your site and reply");
+    await expect(page.locator("#guest-link")).toContainText("Anyone who has it can view these pages, so share it only with your guests.");
+    await expect(page.locator("#guest-link")).not.toContainText("can view these pages and reply");
 
     // Disabled: no date is shown and no RSVP navigation or action is offered.
     await update({ rsvp_enabled: false });
@@ -370,12 +376,12 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await openSection(page, "RSVP");
     await expect(section.getByText("Site offline", { exact: true })).toBeVisible();
     await expect(section).toContainText("Your site is no longer online, so guests can’t view it or reply.");
-    await expect(section).toContainText("This is your existing guest link. It will work again if you purchase a new site period.");
+    await expect(section).toContainText("This is your existing RSVP link. It will work again if you purchase a new site period.");
     await expect(section.getByText("Currently offline", { exact: true })).toBeVisible();
     await openSection(page, "Publish");
     await expect(page.getByText("Your published site is offline because its purchase is no longer active.")).toBeVisible();
-    await expect(page.getByText("This is your existing guest link. It will work again if you purchase a new site period.", { exact: false })).toBeVisible();
-    await expect(page.getByText("Works once published")).toHaveCount(0);
+    await expect(page.getByText("These are your existing links. They will work again if you purchase a new site period.", { exact: false })).toBeVisible();
+    await expect(page.getByText("Work once published")).toHaveCount(0);
     expect((await responses()).length).toBe(4);
   } finally {
     await guest.close();

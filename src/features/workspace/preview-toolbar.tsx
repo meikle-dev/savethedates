@@ -4,13 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { swatchBackground, themes, type WeddingTheme } from "@/features/weddings/themes";
+import type { GuestLinkKind } from "@/features/weddings/guest-link";
 import { ThemeApplyForm } from "./theme-apply-form";
 import { Icon } from "./workspace-icons";
 
-type Props = { label: string; note?: string; path: string; backHref: string; theme: WeddingTheme; savedTheme: WeddingTheme; published: boolean };
+type Props = { label: string; note?: string; path: string; link?: GuestLinkKind; backHref: string; theme: WeddingTheme; savedTheme: WeddingTheme; published: boolean };
 
 // Choosing a theme only changes the previewed URL; Apply theme is the sole way to save it.
-export function PreviewToolbar({ label, note, path, backHref, theme, savedTheme, published }: Props) {
+export function PreviewToolbar({ label, note, path, link, backHref, theme, savedTheme, published }: Props) {
+  // The link a Details or RSVP preview was opened from survives a theme change.
+  const linkQuery = link === "invitation" ? "&link=invitation" : "";
   const router = useRouter();
   const [selected, setSelected] = useState(theme);
   const [pending, startTransition] = useTransition();
@@ -19,8 +22,8 @@ export function PreviewToolbar({ label, note, path, backHref, theme, savedTheme,
   // Prefetch both neighbours so arrow cycling feels instant.
   useEffect(() => {
     const at = themes.findIndex((option) => option.id === selected);
-    for (const offset of [-1, 1]) router.prefetch(`${path}?theme=${themes[(at + offset + themes.length) % themes.length].id}`);
-  }, [router, path, selected]);
+    for (const offset of [-1, 1]) router.prefetch(`${path}?theme=${themes[(at + offset + themes.length) % themes.length].id}${linkQuery}`);
+  }, [router, path, linkQuery, selected]);
   const index = themes.findIndex((option) => option.id === selected);
   const current = themes[index];
   // Arrows wrap around so owners can cycle through every theme in either direction.
@@ -28,7 +31,7 @@ export function PreviewToolbar({ label, note, path, backHref, theme, savedTheme,
   const choose = (id: WeddingTheme) => {
     if (id === selected) return;
     setSelected(id);
-    startTransition(() => router.replace(`${path}?theme=${id}`, { scroll: false }));
+    startTransition(() => router.replace(`${path}?theme=${id}${linkQuery}`, { scroll: false }));
   };
   return <section aria-label="Preview controls" className="platform preview-bar" data-pending={pending || undefined}>
     <div className="preview-bar-inner">
@@ -38,6 +41,7 @@ export function PreviewToolbar({ label, note, path, backHref, theme, savedTheme,
       </div>
       <div className="preview-bar-main">
         <form action={path} className="preview-themes">
+          {linkQuery && <input type="hidden" name="link" value="invitation" />}
           <fieldset>
             <legend className="preview-bar-legend">Theme <span className="preview-bar-count">{index + 1} of {themes.length}</span>{pending ? <span className="preview-bar-loading" role="status"> · Loading preview…</span> : null}</legend>
             <div className="theme-stepper">

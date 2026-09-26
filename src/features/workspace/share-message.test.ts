@@ -13,23 +13,35 @@ describe("share message", () => {
   });
 
   it("is built from saved names, date and location and ends with the full link", () => {
-    expect(shareMessage(base)).toBe(`Save the date! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Details and RSVP here: ${url}`);
-    expect(shareMessage({ ...base, location: " Bath, England. ", rsvpOpen: false })).toBe(`Save the date! Sarah & James are getting married on 12 June 2027 at Bath, England. Find out more: ${url}`);
+    expect(shareMessage("save_the_date", base)).toBe(`Save the date! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Details and RSVP here: ${url}`);
+    expect(shareMessage("save_the_date", { ...base, location: " Bath, England. ", rsvpOpen: false })).toBe(`Save the date! Sarah & James are getting married on 12 June 2027 at Bath, England. Find out more: ${url}`);
   });
 
-  it("invites rather than announces while the Invitation page is on", () => {
-    expect(shareMessage({ ...base, invitation: true })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation and RSVP: ${url}/invitation`);
-    expect(shareMessage({ ...base, invitation: true, rsvpOpen: false })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation: ${url}/invitation`);
+  it("invites with the Invitation link", () => {
+    const invitation = `https://savethedates.example/sarah-and-james/${"Zz9-_".repeat(8)}xyz/invitation`;
+    expect(shareMessage("invitation", { ...base, url: invitation })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation and RSVP: ${invitation}`);
+    expect(shareMessage("invitation", { ...base, url: invitation, rsvpOpen: false })).toBe(`You’re invited! Sarah & James are getting married on 12 June 2027 at Mount Stewart. Your invitation: ${invitation}`);
+  });
+
+  it("asks for replies with the RSVP link, by the closing date when there is one", () => {
+    const rsvp = `${url}/rsvp`;
+    expect(shareMessage("rsvp", { ...base, url: rsvp, closesOn: "2027-05-01" })).toBe(`Please let us know if you can come by 1 May 2027: ${rsvp}`);
+    expect(shareMessage("rsvp", { ...base, url: rsvp, closesOn: null })).toBe(`Please let us know if you can come: ${rsvp}`);
   });
 
   it("always shares the full link, even when the couple edits it out or alters it", () => {
     expect(withGuestLink(`See you there ${url} !`, url)).toBe(`See you there ${url} !`);
-    expect(withGuestLink("See you there", url)).toBe(`See you there\n${url}`);
-    expect(withGuestLink(`Broken ${url.slice(0, -1)}`, url)).toBe(`Broken ${url.slice(0, -1)}\n${url}`);
-    expect(withGuestLink(`Altered ${url}x`, url)).toBe(`Altered ${url}x\n${url}`);
+    expect(withGuestLink("See you there", url)).toBe(`See you there
+${url}`);
+    expect(withGuestLink(`Broken ${url.slice(0, -1)}`, url)).toBe(`Broken ${url.slice(0, -1)}
+${url}`);
+    expect(withGuestLink(`Altered ${url}x`, url)).toBe(`Altered ${url}x
+${url}`);
     expect(withGuestLink("   ", url)).toBe(url);
-    expect(withGuestLink(`Invitation: ${url}/invitation`, url)).toBe(`Invitation: ${url}/invitation`);
-    expect(withGuestLink(`Altered ${url}/invitationx`, url)).toBe(`Altered ${url}/invitationx\n${url}`);
+    // Each panel shares one exact link: a different page under the same secret is not that link.
+    expect(withGuestLink(`Details: ${url}/details`, url)).toBe(`Details: ${url}/details
+${url}`);
+    expect(withGuestLink(`Invitation: ${url}/invitation`, `${url}/invitation`)).toBe(`Invitation: ${url}/invitation`);
   });
 
   it("encodes the whole message for WhatsApp's own share link", () => {

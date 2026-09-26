@@ -6,13 +6,14 @@ import type { WeddingTheme } from "./themes";
 import type { Wedding } from "./wedding";
 import { detailsSchema, type WeddingDetailsPage } from "./details";
 import type { InvitationPage } from "./invitation";
-import { guestHrefs, guestSecretPattern } from "./guest-link";
+import { guestHrefs, guestSecretPattern, linkPages, rsvpLink, type GuestLinkKind, type GuestPage } from "./guest-link";
 import { parsePhotoFraming, type PhotoFraming } from "./photo-framing";
 import { guestMenu, parseMealMenu, type MealMenu } from "./meal-menu";
 
 export type WeddingContent = { first_name: string; second_name: string; wedding_date: string; location: string; message: string; photo_path: string | null; photo_framing: unknown; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean };
 // rsvp_closes_on is projected only while RSVP is enabled (null otherwise), so guests are never shown an inactive date.
-export type GuestWedding = WeddingContent & { slug: string; rsvp_open: boolean; rsvp_closes_on: string | null; invitation_enabled: boolean };
+// `link` is the link the secret belongs to (F065); the Invitation link is found only while the Invitation is on.
+export type GuestWedding = WeddingContent & { slug: string; rsvp_open: boolean; rsvp_closes_on: string | null; invitation_enabled: boolean; link: GuestLinkKind };
 
 export function toWedding(row: WeddingContent, photoUrl: string): Wedding {
   return { theme: row.theme, names: [row.first_name, row.second_name], date: row.wedding_date, location: row.location, message: row.message,
@@ -30,13 +31,25 @@ export const guestWedding = cache(async (secret: string): Promise<GuestWedding |
 });
 
 /**
- * Resolves a guest page. Unknown, replaced, unpublished and expired links all give the same 404; an outdated or
- * altered names part redirects to the current one so renaming never breaks a shared link.
+ * Whether this link opens the page (F065). RSVP stays reachable while it is off or closed, to show that state, but
+ * only under the link that offers it.
  */
-export async function requireGuestWedding(names: string, secret: string, page: "home" | "invitation" | "details" | "rsvp", onRejected?: (reason: "malformed_secret" | "unknown_secret") => void) {
+export function guestPageAvailable(wedding: GuestWedding, page: GuestPage) {
+  return page === "rsvp" ? rsvpLink(wedding) === wedding.link : linkPages(wedding.link, wedding)[page];
+}
+
+/**
+ * Resolves a guest page. Unknown, replaced, unpublished and expired links, and pages the link doesn't open, all give
+ * the same 404; an outdated or altered names part redirects to the current one so renaming never breaks a shared link.
+ */
+export async function requireGuestWedding(names: string, secret: string, page: GuestPage, onRejected?: (reason: "malformed_secret" | "unknown_secret" | "wrong_link") => void) {
   const wedding = await guestWedding(secret);
   if (!wedding) {
     onRejected?.(guestSecretPattern.test(secret) ? "unknown_secret" : "malformed_secret");
+    notFound();
+  }
+  if (!guestPageAvailable(wedding, page)) {
+    onRejected?.("wrong_link");
     notFound();
   }
   const hrefs = guestHrefs(wedding.slug, secret);

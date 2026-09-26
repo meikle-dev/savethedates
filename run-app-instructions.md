@@ -49,7 +49,7 @@ npm run db:start
 npx supabase migration up --local
 ```
 
-Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, and preview saved content. Preview theme does not save changes; Apply theme persists the previewed choice. **Preview RSVP page** opens the saved couple/theme presentation without saving a response, including before publication. Each wedding has one private guest link, `/<names>/<secret>`, shown in Publish. The names part is suggested from the couple's names and can be changed at any time; it is not unique. A verified £29 test-mode purchase is required before publishing. Published edits take effect when saved. Once live, Publish and Overview show the absolute guest link (on `APP_ORIGIN`) with an editable share message, native Share where supported, Share on WhatsApp, Copy message and Copy link. The RSVP section can enable or close responses, set up optional meal choices (F068), copy the guest link, replace the link (every earlier link, including the Save the Date, stops working) and show attendance totals. Guests can submit separate responses through that link; owners correct or remove them in Guests. Unpublishing hides the page, photo, and RSVP on new requests; copies already downloaded cannot be recalled.
+Create an account at `/account/sign-up`, confirm it using Mailpit, and save required details at `/dashboard`. Then add an optional photo, choose a theme under Your wedding style, and preview saved content. Preview theme does not save changes; Apply theme persists the previewed choice. **Preview RSVP page** opens the saved couple/theme presentation without saving a response, including before publication. Each wedding has two private guest links (F065), a Save the Date link `/<names>/<secret>` and an Invitation link `/<names>/<invitation secret>/invitation`, shown in Publish. The names part is suggested from the couple's names and can be changed at any time; it is not unique. A verified £29 test-mode purchase is required before publishing. Published edits take effect when saved. Once live, Publish and Overview show the Save the Date, Invitation and RSVP links (on `APP_ORIGIN`), each with an editable share message, native Share where supported, Share on WhatsApp, Copy message and Copy link, and Replace for the first two. The RSVP section can enable or close responses, set up optional meal choices (F068), copy the RSVP link and show attendance totals. Guests can submit separate responses through that link; owners correct or remove them in Guests. Unpublishing hides the page, photo, and RSVP on new requests; copies already downloaded cannot be recalled.
 
 ## Google sign-in (optional)
 
@@ -104,9 +104,10 @@ Development routes:
 | `/demo-no-photo` | No photo or optional message |
 | `/demo-long-names` | Long names and no photo |
 | `/preview-photo` | Development-only photo response |
-| `/[names]/[secret]` | Published Save the Date page: the guest link |
+| `/[names]/[secret]` | Published Save the Date page: the Save the Date link (F065) |
+| `/[names]/[secret]/invitation` | Published Invitation page, only under the Invitation link |
 | `/[names]/[secret]/details` | Enabled published Details page |
-| `/[names]/[secret]/rsvp` | RSVP page where guests submit separate responses |
+| `/[names]/[secret]/rsvp` | RSVP page where guests submit separate responses, only under the link that offers RSVP |
 | `/[names]/[secret]/photo` | Published wedding photo |
 
 The wedding is found by its secret only; an outdated names part redirects to the current one. `/[names]` alone, unknown or replaced secrets, and unpublished or expired weddings return the same 404. Only the marketing homepage permits indexing and appears in `/sitemap.xml`; wedding, account and example pages remain noindex. All fixtures are fictional. Production returns 404 for every demo route and the fixture photo route. Accounts, private preview, publication, Details, and RSVP work with configured Supabase.

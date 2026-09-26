@@ -24,9 +24,11 @@ test("couples write, preview and share an optional invitation that follows their
   const ownerId = created.data.user!.id;
   const slug = `invitation-${crypto.randomUUID().slice(0, 8)}`;
   const closesOn = daysFromToday(60);
-  const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alexandra-Marguerite", second_name: "Christopher-Alexander", wedding_date: "2027-09-18", location: "Bath, England", slug, rsvp_enabled: true, rsvp_closes_on: closesOn }).select("id, rsvp_share_secret").single();
+  const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Alexandra-Marguerite", second_name: "Christopher-Alexander", wedding_date: "2027-09-18", location: "Bath, England", slug, rsvp_enabled: true, rsvp_closes_on: closesOn }).select("id, rsvp_share_secret, invitation_share_secret").single();
   expect(wedding.error).toBeNull();
   const home = `/${slug}/${wedding.data!.rsvp_share_secret}`;
+  // F065: the Invitation has its own link.
+  const invitationHome = `/${slug}/${wedding.data!.invitation_share_secret}`;
   const guest = await browser.newContext({ baseURL, viewport: page.viewportSize() });
   const guestPage = await guest.newPage();
   try {
@@ -71,12 +73,12 @@ test("couples write, preview and share an optional invitation that follows their
     await expect(page.getByText("Saturday 18 September 2027")).toBeVisible();
     await expect(page.getByRole("link", { name: /Reply online/ })).toHaveAttribute("href", /\/dashboard\/preview\/rsvp/);
 
-    // Published and paid for: guests find the invitation from the navigation.
+    // Published and paid for: guests open the invitation from its own link. The Save the Date link never leads to it.
     expect((await local.grantEntitlement(wedding.data!.id, ownerId)).error).toBeNull();
     expect((await local.admin.from("weddings").update({ published: true, first_published_at: new Date().toISOString() }).eq("id", wedding.data!.id)).error).toBeNull();
     await guestPage.goto(home);
-    await guestPage.getByRole("navigation", { name: "Wedding site" }).getByRole("link", { name: "Invitation" }).click();
-    await expect(guestPage).toHaveURL(new RegExp(`${home}/invitation$`));
+    await expect(guestPage.getByRole("link", { name: "Invitation" })).toHaveCount(0);
+    await guestPage.goto(`${invitationHome}/invitation`);
     await expect(guestPage).toHaveTitle(/^Invitation · /);
     const card = guestPage.getByRole("article");
     await expect(card.getByText("Together with their families")).toBeVisible();
@@ -85,7 +87,7 @@ test("couples write, preview and share an optional invitation that follows their
     await expect(card.getByText("1 High Street, Bath BA1 1AA")).toBeVisible();
     await expect(card.getByText("followed by dinner and dancing")).toBeVisible();
     await expect(card.getByText(/^Kindly reply by /)).toBeVisible();
-    await expect(card.getByRole("link", { name: /Reply online/ })).toHaveAttribute("href", `${home}/rsvp`);
+    await expect(card.getByRole("link", { name: /Reply online/ })).toHaveAttribute("href", `${invitationHome}/rsvp`);
     // The action is a link styled as a light-text button: its keyboard focus ring must use the theme accent, not white.
     // Reach it by keyboard: after a mouse click, Chromium doesn't treat programmatic focus as :focus-visible.
     const reply = card.getByRole("link", { name: /Reply online/ });
@@ -118,12 +120,12 @@ test("couples write, preview and share an optional invitation that follows their
     await page.goto("/dashboard");
     await expect(pages.getByRole("link", { name: /Invitation\s*On/ })).toBeVisible();
 
-    // Switched off: guests get the same 404 as any unavailable page, and the link leaves the navigation.
+    // Switched off: every page under the Invitation link gives the same 404 as any unavailable page.
     await openWorkspaceSection(page, "Invitation");
     await page.getByLabel(/Show Invitation page/).uncheck();
     await page.getByRole("button", { name: "Save live Invitation" }).click();
     await expect(page.getByRole("status").filter({ hasText: "saved and hidden from guests" })).toBeVisible();
-    expect((await guest.request.get(`${home}/invitation`)).status()).toBe(404);
+    for (const path of [`${invitationHome}/invitation`, `${invitationHome}/rsvp`, `${home}/invitation`]) expect((await guest.request.get(path)).status()).toBe(404);
     await guestPage.goto(home);
     await expect(guestPage.getByRole("navigation", { name: "Wedding site" })).toHaveCount(0);
   } finally {

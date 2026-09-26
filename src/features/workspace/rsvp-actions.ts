@@ -116,23 +116,32 @@ export async function saveMealChoices(_: MealChoicesState, form: FormData): Prom
   });
 }
 
-export async function rotateSharedRsvp(_: RsvpState, form: FormData): Promise<RsvpState> {
-  return withLogging("rsvp.link", "/dashboard/rsvp", async () => {
-    if (form.get("confirm_rotate") !== "yes") return { message: "Confirm that you want to replace your guest link." };
+const replaceable = {
+  save_the_date: { rpc: "rotate_shared_rsvp_secret", name: "Save the Date link", other: "Invitation link" },
+  invitation: { rpc: "rotate_invitation_share_secret", name: "Invitation link", other: "Save the Date link" },
+} as const;
+
+/** F065: replaces one guest link. The other link and every saved reply are unchanged. */
+export async function rotateGuestLink(_: RsvpState, form: FormData): Promise<RsvpState> {
+  return withLogging("rsvp.link", "/dashboard", async () => {
+    const link = z.enum(["save_the_date", "invitation"]).safeParse(form.get("link"));
+    if (!link.success) return { message: "We couldn’t tell which link to replace. Reload and retry." };
+    const { rpc, name, other } = replaceable[link.data];
+    if (form.get("confirm_rotate") !== "yes") return { message: `Confirm that you want to replace your ${name}.` };
     try {
       const { client, wedding } = await ownerWorkspace();
-      const { data, error } = await client.rpc("rotate_shared_rsvp_secret", { requested_wedding_id: wedding.id });
+      const { data, error } = await client.rpc(rpc, { requested_wedding_id: wedding.id });
       if (error || !data) {
         log.error("rsvp.link.failed", { reason: error ? errorReason(error) : "no_secret" });
-        return { message: "We couldn’t replace your guest link. Please retry." };
+        return { message: `We couldn’t replace your ${name}. Please retry.` };
       }
       refreshRsvp();
       log.info("rsvp.link.rotated");
       // The refreshed pages show the new link everywhere; the secret is not returned or logged here.
-      return { success: true, message: "Guest link replaced. Every link you shared before, including your Save the Date, no longer works." };
+      return { success: true, message: `${name} replaced. The one you sent before no longer works. Your ${other} hasn’t changed.` };
     } catch (error) {
       if (!(error instanceof WorkspaceAccessError)) log.error("rsvp.link.failed", { reason: errorReason(error) });
-      return { message: "We couldn’t replace your guest link. Please retry." };
+      return { message: `We couldn’t replace your ${name}. Please retry.` };
     }
   });
 }

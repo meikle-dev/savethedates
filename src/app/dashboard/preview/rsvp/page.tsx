@@ -5,10 +5,11 @@ import { RsvpPage } from "@/features/weddings/rsvp-page";
 import { isWeddingTheme } from "@/features/weddings/themes";
 import { guestMenu, parseMealMenu } from "@/features/weddings/meal-menu";
 import { PreviewToolbar } from "@/features/workspace/preview-toolbar";
+import { previewHrefs, rsvpLink } from "@/features/weddings/guest-link";
 
 export const metadata: Metadata = { title: "RSVP preview | SaveTheDates" };
 
-export default async function RsvpPreview({ searchParams }: { searchParams: Promise<{ theme?: string }> }) {
+export default async function RsvpPreview({ searchParams }: { searchParams: Promise<{ theme?: string; link?: string }> }) {
   const client = await createClient();
   const { data: { user } } = await client.auth.getUser();
   if (!user) redirect("/account/sign-in");
@@ -18,9 +19,10 @@ export default async function RsvpPreview({ searchParams }: { searchParams: Prom
   const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();
   const params = await searchParams;
   const theme = isWeddingTheme(params.theme) ? params.theme : data.theme;
-  const query = `?theme=${theme}`;
+  // Opened from the Invitation preview, RSVP keeps its navigation; otherwise it follows the link that offers RSVP.
+  const link = params.link === "invitation" ? "invitation" : rsvpLink(data);
   return <>
-    <PreviewToolbar label="RSVP" note="no responses are saved" path="/dashboard/preview/rsvp" backHref="/dashboard/rsvp" theme={theme} savedTheme={data.theme} published={data.published && !!entitlement?.active} />
-    <RsvpPage key={theme} wedding={{ first_name: data.first_name, second_name: data.second_name, details_enabled: data.details_enabled, rsvp_enabled: data.rsvp_enabled, invitation_enabled: data.invitation_enabled, theme }} open closesOn={data.rsvp_enabled ? data.rsvp_closes_on : null} secret={null} menu={data.meal_choices_enabled ? guestMenu(parseMealMenu(data.meal_menu)) : null} hrefs={{ home: `/dashboard/preview${query}`, invitation: `/dashboard/preview/invitation${query}`, details: `/dashboard/preview/details${query}`, rsvp: `/dashboard/preview/rsvp${query}` }} />
+    <PreviewToolbar label="RSVP" note="no responses are saved" path="/dashboard/preview/rsvp" backHref="/dashboard/rsvp" link={link} theme={theme} savedTheme={data.theme} published={data.published && !!entitlement?.active} />
+    <RsvpPage key={theme} wedding={{ first_name: data.first_name, second_name: data.second_name, details_enabled: data.details_enabled, rsvp_enabled: data.rsvp_enabled, invitation_enabled: data.invitation_enabled || link === "invitation", theme }} link={link} open closesOn={data.rsvp_enabled ? data.rsvp_closes_on : null} secret={null} menu={data.meal_choices_enabled ? guestMenu(parseMealMenu(data.meal_menu)) : null} hrefs={previewHrefs(theme, link)} />
   </>;
 }

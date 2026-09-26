@@ -248,7 +248,7 @@ test("owner publishes, shares, updates and unpublishes a wedding", async ({ page
     await expect(namesField).toHaveValue("alex-and-morgan");
     const origin = new URL(baseURL!).origin;
     const guestLink = `${origin}${home}`;
-    await expect(page.getByText("Works once published")).toBeVisible();
+    await expect(page.getByText("Work once published")).toBeVisible();
     await expect(page.getByText(`${origin}/alex-and-morgan/${secret}`, { exact: true })).toBeVisible();
     // A draft shows the future link as not yet working, with no share panel or share and copy actions.
     await expect(page.locator("#guest-link")).toHaveCount(0);
@@ -258,26 +258,26 @@ test("owner publishes, shares, updates and unpublishes a wedding", async ({ page
     await namesField.fill("dashboard");
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
     await expect(page.locator("#slug-error")).toContainText("used by SaveTheDates pages");
-    await expect(page.locator("#visibility-error")).toContainText("Confirm that anyone with your guest link can view your site.");
+    await expect(page.locator("#visibility-error")).toContainText("Confirm that anyone with one of your guest links can view your site.");
     await expect(namesField).toHaveAttribute("aria-invalid", "true");
     await expect(namesField).toHaveAttribute("aria-describedby", /slug-error/);
     await expect(page.getByText(`/dashboard/${secret}`)).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("publish-errors.png"), fullPage: true });
-    await page.getByRole("checkbox", { name: /I understand that anyone with our guest link/ }).check();
+    await page.getByRole("checkbox", { name: /I understand that anyone with one of our guest links/ }).check();
     await namesField.fill(` ${slug.toUpperCase()} `);
     await expect(page.getByText(guestLink, { exact: true })).toBeVisible();
     await page.screenshot({ path: test.info().outputPath("private-workspace.png"), fullPage: true });
     expect((await guest.request.get(home)).status()).toBe(404);
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Your site is live for anyone with your guest link.")).toBeVisible();
+    await expect(page.getByText("Your site is live for anyone with your guest links.")).toBeVisible();
     // F042: publishing leads straight to the share panel, with the absolute guest link on the configured origin.
     const panel = page.locator("#guest-link");
     await expect(panel.getByRole("status").filter({ hasText: "Your wedding site is published" })).toBeVisible();
-    await expect(panel.getByRole("heading", { name: "Your guest link" })).toBeFocused();
+    await expect(panel.getByRole("heading", { name: "Send your Save the Date" })).toBeFocused();
     await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
-    await expect(panel.getByRole("link", { name: /Open your site/ })).toHaveAttribute("href", guestLink);
-    // Publishing never opens RSVP; the panel says RSVPs are off.
-    await expect(panel.getByText("RSVPs off", { exact: true })).toBeVisible();
+    await expect(panel.getByRole("link", { name: /Open this link/ })).toHaveAttribute("href", guestLink);
+    // Publishing never opens RSVP; the RSVP panel says RSVPs are off.
+    await expect(page.locator("#rsvp-link").getByText("RSVPs off", { exact: true })).toBeVisible();
     expect((await local.admin.from("weddings").select("rsvp_enabled").eq("id", weddingId).single()).data!.rsvp_enabled).toBe(false);
     const message = `Save the date! Alex & Morgan are getting married on 18 September 2027 at Bath, England. Find out more: ${guestLink}`;
     const messageField = panel.getByLabel("Message to send");
@@ -399,10 +399,10 @@ test("owner publishes, shares, updates and unpublishes a wedding", async ({ page
     expect((await page.request.get("/dashboard/photo")).status()).toBe(404);
     await openSection("Publish");
     await expect(page.getByLabel("Names in your guest link")).toHaveValue(slug);
-    await page.getByRole("checkbox", { name: /I understand that anyone with our guest link/ }).check();
+    await page.getByRole("checkbox", { name: /I understand that anyone with one of our guest links/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Your site is live for anyone with your guest link.")).toBeVisible();
-    await expect(panel.getByRole("heading", { name: "Your guest link" })).toBeFocused();
+    await expect(page.getByText("Your site is live for anyone with your guest links.")).toBeVisible();
+    await expect(panel.getByRole("heading", { name: "Send your Save the Date" })).toBeFocused();
     await expect(panel.getByText(guestLink, { exact: true })).toBeVisible();
     await expectHeaderStatus("Published");
     expect((await guest.request.get(home)).status()).toBe(200);

@@ -79,6 +79,10 @@ test("owners can preview saved RSVP content without granting guest access or sav
     const theme = "bold";
     await page.goto(`/dashboard/preview?theme=${theme}`);
     await expect(page).toHaveTitle("Save the Date preview | SaveTheDates");
+    // F065: the preview's navigation matches the Save the Date link, so RSVP appears only once it's on.
+    await expect(page.getByRole("link", { name: "RSVP", exact: true })).toHaveCount(0);
+    expect((await local.admin.from("weddings").update({ rsvp_enabled: true }).eq("id", weddingId)).error).toBeNull();
+    await page.reload();
     await page.getByRole("link", { name: "RSVP", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`/dashboard/preview/rsvp\\?theme=${theme}$`));
     await expect(page).toHaveTitle("RSVP preview | SaveTheDates");

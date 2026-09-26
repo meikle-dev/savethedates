@@ -42,7 +42,7 @@ export async function saveGuestLinkNames(_: FormState, form: FormData): Promise<
       }
       refresh();
       log.info("workspace.save.succeeded", { section: "guest_link" });
-      return { success: true, message: wedding.published ? "Your guest link is updated. Links you already shared still work." : "Your guest link names are saved." };
+      return { success: true, message: wedding.published ? "Your guest links are updated. Links you already shared still work." : "Your guest link names are saved." };
     } catch (error) {
       if (!(error instanceof WorkspaceAccessError)) log.error("workspace.save.failed", { section: "guest_link", reason: errorReason(error) });
       return { message: error instanceof Error ? error.message : "We couldn’t save your guest link. Please retry." };
@@ -57,7 +57,7 @@ export async function publishWedding(_: FormState, form: FormData): Promise<Form
       // Both problems are reported together, next to their fields.
       if (!slug.success || !consent) return { message: "Check the highlighted fields.", errors: {
         slug: slugError(slug),
-        visibility: consent ? undefined : ["Confirm that anyone with your guest link can view your site."],
+        visibility: consent ? undefined : ["Confirm that anyone with one of your guest links can view your site."],
       } };
       const { client, wedding } = await workspace();
       const { data: entitlement } = await client.rpc("owner_entitlement").maybeSingle<{ active: boolean }>();

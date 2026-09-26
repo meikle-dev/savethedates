@@ -1,25 +1,27 @@
-// F042: the pre-written message couples can edit before sharing their guest link. Built from saved data and never stored.
+// F042: the pre-written messages couples can edit before sharing their guest links. Built from saved data and never stored.
 import { formatWeddingDate, rsvpDeadline } from "../weddings/wedding";
 import type { RsvpAvailability } from "./workspace-summary";
 
-type MessageInput = { firstName: string; secondName: string; date: string; location: string; url: string; rsvpOpen: boolean; invitation?: boolean };
+export type ShareLinkKind = "save_the_date" | "invitation" | "rsvp";
+type MessageInput = { firstName: string; secondName: string; date: string; location: string; url: string; rsvpOpen: boolean; closesOn?: string | null };
 
-// F060: while the Invitation page is on, the suggested message invites rather than announces.
-export function shareMessage({ firstName, secondName, date, location, url, rsvpOpen, invitation = false }: MessageInput) {
+/**
+ * F065: each link has its own message, ending with that link. `rsvpOpen` says whether guests can reply through it.
+ * The RSVP link's message gives the closing date when there is one.
+ */
+export function shareMessage(link: ShareLinkKind, { firstName, secondName, date, location, url, rsvpOpen, closesOn = null }: MessageInput) {
+  if (link === "rsvp") return `Please let us know if you can come${closesOn ? ` by ${rsvpDeadline(closesOn).date}` : ""}: ${url}`;
   const place = location.trim().replace(/[\s.]+$/, "");
   const news = `${firstName} & ${secondName} are getting married on ${formatWeddingDate(date)}${place ? ` at ${place}` : ""}.`;
-  if (invitation) return `You’re invited! ${news} ${rsvpOpen ? "Your invitation and RSVP" : "Your invitation"}: ${url}/invitation`;
+  if (link === "invitation") return `You’re invited! ${news} ${rsvpOpen ? "Your invitation and RSVP" : "Your invitation"}: ${url}`;
   return `Save the date! ${news} ${rsvpOpen ? "Details and RSVP here" : "Find out more"}: ${url}`;
 }
 
 const escaped = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/**
- * The text actually shared or copied: the couple's edit, with the full guest link appended if they removed or altered it.
- * A link to one of the guest pages under it (such as /invitation) counts as the guest link.
- */
+/** The text actually shared or copied: the couple's edit, with the full link appended if they removed or altered it. */
 export function withGuestLink(message: string, url: string) {
-  if (new RegExp(`${escaped(url)}(?:/(?:invitation|details|rsvp))?(?![A-Za-z0-9_/-])`).test(message)) return message;
+  if (new RegExp(`${escaped(url)}(?![A-Za-z0-9_/-])`).test(message)) return message;
   const text = message.trim();
   return text ? `${text}\n${url}` : url;
 }

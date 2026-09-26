@@ -104,6 +104,11 @@
 .guest-share-message { resize: vertical; line-height: 1.5; }
 .guest-share-actions { display: grid; gap: 0.625rem; margin-top: 1rem; }
 #guest-link-title:focus { outline: none; }
+/* F065: Replace sits quietly at the foot of a link's panel until opened. */
+.guest-link-replace { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.guest-link-replace summary { display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--muted); font-size: 0.875rem; cursor: pointer; }
+.guest-link-replace summary:hover { color: var(--navy); }
+.guest-link-replace form { margin-top: 0.5rem; }
 
 .ws-actions { display: grid; gap: 0.5rem; margin-top: 1rem; }
 .ws-actions .button { justify-content: flex-start; width: 100%; }

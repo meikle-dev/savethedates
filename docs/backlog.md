@@ -2306,7 +2306,7 @@ Record items 1–3 in `release-inputs.md` section 3.
 
 ## F065 - Separate Save the Date, Invitation and RSVP links
 
-**Status:** Ready (raised by the owner on 26 September 2026; RSVP link added the same day; Product Manager decisions below)
+**Status:** In Progress (built, independently reviewed and verified locally on 26 September 2026; waits for the owner to re-approve the `/terms` wording, then the staging migration and deploy. See handoff)
 **Priority / lead:** P1, proposed paid-launch gate (the owner may defer it) / UX for the sharing panels and navigation, then Software Engineer. Independent review is required: it adds a second guest secret, and changes which pages each link can open.
 **Purpose:** A Save the Date and an Invitation are sent at different times, usually months apart. Couples send each one on its own, and guests who have only the Save the Date don't see the Invitation.
 **Source:** Owner staging check, 26 September 2026: "currently when we send an invite link to guests it opens at the invitation page. I think we need two sections for sending links to guests - one should be "send save the date" and one should be "send invitation" the two things are seperate in their order, usually a save the date would come first, then an invite later". Also: "save the date should not nav to the invitation - the two are seperate". Switching the Invitation off made the shared link "page not found", which showed the problem.
@@ -2364,6 +2364,16 @@ Owner, later on 26 September 2026: "we need to let the couples send links out sp
    - **Preview (F047):** names the RSVP ("RSVP for <names>' wedding") and keeps the same rules.
    - While RSVP is off or closed, the link shows the existing closed or "not found" states, the same as the RSVP page today.
 
+**UX decisions (UX/UI Designer, 26 September 2026):**
+
+- **Invitation link address:** `/<names>/<invitation secret>/invitation`, so the link itself says what it is. Nothing is served at `/<names>/<invitation secret>` (the Save the Date URL under that secret), matching "Done when".
+- **Guest navigation** lists only the pages that link opens, in guest order. The Invitation link's navigation starts at "Invitation" and has no "Save the date". Navigation is hidden when a link opens only one page, as today.
+- **Workspace sharing** (Overview and Publish, while live): three panels in sending order: Save the Date, Invitation, RSVP. The Invitation and RSVP panels shrink to a short note with a link to the right section when they can't be sent, so the page stays short.
+- **Replace link** sits at the foot of the Save the Date and Invitation panels, behind a "Replace this link" disclosure with the existing confirm tick box, so it's available but not prominent. The RSVP section keeps the RSVP settings and shows the RSVP link with Copy and Open, pointing to the Overview for the ready-made message. Before publishing (and while offline), Publish lists the future links with the same Replace control, so a leaked link can still be replaced before going live again.
+- **Owner previews:** the Save the Date preview's navigation matches the Save the Date link, and the Invitation preview's matches the Invitation link. Details and RSVP previews follow the link they were opened from (`link=invitation`); opened on their own, RSVP follows the link that currently offers RSVP and Details follows the Save the Date link.
+- **Marketing examples** (`/examples/<theme>`) keep showing every page together, since they demonstrate the pages rather than a link. Not changed.
+- **Security addition (engineering):** owners hold a table-wide update grant on `weddings`, so today they can write their own secret. With two secret columns, an owner who knew another wedding's secret could copy it into their row and break that link. A trigger now keeps both secrets server-generated; only the rotate functions (and the service role) can change them.
+
 **Done when:**
 
 - Each link opens only its pages in the table above.
@@ -2386,6 +2396,33 @@ Owner, later on 26 September 2026: "we need to let the couples send links out sp
 - `src/features/workspace/share-message.ts`, `guest-link-panel.tsx`, `workspace-data.ts`
 - `src/app/[names]/[secret]/`
 - `supabase/migrations/20260925000600_wedding_invitation.sql`
+
+**Handoff (26 September 2026):**
+
+- **Decision 8 checked:** production had 2 weddings, none published (counts-only query, 26 September 2026). No shared link breaks, so there is no compatibility redirect.
+- **Built:**
+  - Migration `20260926000200_separate_guest_links.sql`: `invitation_share_secret` (unique, differs from the Save the Date secret); `guard_guest_link_secrets` trigger (owners can't choose or copy a secret); `guest_wedding` returns `link`; Details, Invitation, RSVP menu and `submit_shared_rsvp` follow the table; `rotate_invitation_share_secret`.
+  - `linkPages`, `linkNavigation`, `rsvpLink` and `previewHrefs` in `guest-link.ts`. `requireGuestWedding` and metadata 404 pages a link doesn't open. Guest pages and owner previews use the link's navigation. Link previews name the link ("RSVP for A & B’s wedding" on RSVP).
+  - Workspace: three panels (`GuestLinkPanels`), per-link Replace (`rotateGuestLink`), the RSVP section shows the RSVP link, and Publish lists future links with Replace before publishing and while offline.
+  - The Invitation switch warns, while live, which sent links stop working when it is switched on or off (review finding 1).
+  - Wording (decision 7): homepage hero, how-it-works and FAQ; digital save the date page; pricing list; SEO descriptions; workspace help; `/terms` (three sentences, see below).
+  - Docs: `architecture.md`, `product-overview.md`, `site-ui.md`, `template-ui-summary.md`, `run-app-instructions.md`.
+- **Checks (final, after the last change):**
+  - `npm run check`: passed (lint, typecheck, 119 unit tests, build).
+  - `npm run test:integration`: 45 of 45 passed, including 7 new tests in `tests/integration/guest-links.test.ts` covering the table, wrong, replaced and other weddings' secrets, cross-owner denial, secret guarding and per-link replacement.
+  - `npx playwright test` (full suite, desktop and mobile): 142 passed, 12 skipped, 2 failed. Both failures are `marketing.spec.ts:119`: the dev server sends `no-cache, must-revalidate` instead of `no-store` on `/digital-save-the-date`. The same test fails on the committed code without F065 (checked by stashing), so it predates this feature and needs its own fix. After the review fixes, the affected specs (`guest-links`, `invitation`, `rsvp`, `rsvp-preview`, `payments`, `marketing`) were rerun: 28 passed and the same 2 failed.
+  - New `tests/guest-links.spec.ts` covers sending all three links, a reply through the RSVP link, Invitation replacement, the switch warning, the Invitation and RSVP switched off, and all 8 combinations of switches. The Overview was inspected at 390 px and 1440 px with no overflow.
+- **Independent review:** pass with fixes. Findings:
+  1. Missing warning when switching the Invitation: fixed.
+  2. Decision 8 unverified: already checked (above).
+  3. RSVP menu test proved nothing: fixed.
+  4. The switch-combination E2E derives expectations from `linkPages`: deferred. The unit test in `guest-link.test.ts` hard-codes the table independently, and the integration tests assert fixed results.
+  5. Leftover "guest link" wording: fixed.
+  6. The secret generator was callable by guests: revoked from `public` and `anon`, with a test.
+- **Unresolved:**
+  - **Owner re-approval of `/terms`:** "one guest link" became "their guest links"; "anyone who has your guest link" became "anyone who has one of your guest links"; "Anyone with your guest link can see your pages, so share it…" became "Anyone with one of your guest links can see the pages it opens, so share them…". Reply "approved", or give the preferred wording.
+  - The migration isn't applied to staging or production, and nothing is committed yet.
+- **Next step:** once the owner approves the terms wording, commit, apply `20260926000200_separate_guest_links.sql` to staging, then deploy and check on staging. Apply it to production before promoting the image (production migrations first). Then mark Done.
 
 ## F066 - Receive mail sent to hello@savethedates.co.uk
 

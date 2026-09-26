@@ -46,7 +46,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await expect(page.getByText("By buying you agree to our terms and refund policy", { exact: false }).getByRole("link", { name: "refund policy" })).toHaveAttribute("href", "/refunds");
     // The names part of the guest link can be chosen before payment; publishing cannot.
     await expect(page.getByRole("button", { name: "Publish site" })).toHaveCount(0);
-    await expect(page.getByText("Works once published")).toBeVisible();
+    await expect(page.getByText("Work once published")).toBeVisible();
     await page.getByLabel("Names in your guest link").fill(slug);
     await page.getByRole("button", { name: "Save link names" }).click();
     await expect(page.getByRole("status").filter({ hasText: "guest link names are saved" })).toBeVisible();
@@ -97,9 +97,9 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.reload();
     await expect(page.getByText("Payment confirmed", { exact: false })).toBeVisible();
     await expect(page.getByLabel("Names in your guest link")).toHaveValue(slug);
-    await page.getByRole("checkbox", { name: /I understand that anyone with our guest link/ }).check();
+    await page.getByRole("checkbox", { name: /I understand that anyone with one of our guest links/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
-    await expect(page.getByText("Your site is live for anyone with your guest link.")).toBeVisible();
+    await expect(page.getByText("Your site is live for anyone with your guest links.")).toBeVisible();
     await expect(page.locator("#guest-link").getByText(new URL(home, baseURL).href, { exact: true })).toBeVisible();
     expect((await guest.request.get(home)).status()).toBe(200);
 
