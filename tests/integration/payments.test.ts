@@ -234,6 +234,35 @@ it("reports the latest purchase outcome after an older entitlement expires", asy
   expect((await other.rpc("owner_entitlement")).data?.[0]).toMatchObject({ active: false, revoked_reason: "refunded" });
 });
 
+it("a late payment for an older session keeps the current checkout attempt", async () => {
+  const email = `payment-${crypto.randomUUID()}@example.test`;
+  const password = crypto.randomUUID();
+  const created = await local.admin.auth.admin.createUser({ email, password, email_confirm: true });
+  const userId = created.data.user!.id;
+  const client = local.anonymous();
+  try {
+    expect((await client.auth.signInWithPassword({ email, password })).error).toBeNull();
+    const wedding = await client.from("weddings").insert({ owner_id: userId, first_name: "Sam", second_name: "Rivers", wedding_date: "2027-09-18", location: "Derry" }).select("id").single();
+    const attempt = (await client.rpc("begin_checkout_attempt")).data![0];
+    expect((await client.rpc("attach_checkout_session", {
+      requested_attempt_id: attempt.attempt_id,
+      requested_session_id: "cs_test_current",
+      requested_checkout_url: "https://checkout.stripe.com/c/pay/current",
+    })).data).toBe(true);
+    const attempts = () => local.admin.from("stripe_checkout_attempts").select("stripe_checkout_session_id").eq("wedding_id", wedding.data!.id);
+
+    const staleIntent = `pi_${crypto.randomUUID()}`;
+    expect((await paymentEvent({ id: `evt_${crypto.randomUUID()}`, type: "paid", intent: staleIntent, session: "cs_test_stale", wedding: wedding.data!.id, owner: userId })).data).toBe("granted");
+    expect((await attempts()).data).toEqual([{ stripe_checkout_session_id: "cs_test_current" }]);
+    expect((await local.admin.from("stripe_payments").select("amount_total").eq("payment_intent_id", staleIntent).single()).data?.amount_total).toBe(3900);
+
+    expect((await paymentEvent({ id: `evt_${crypto.randomUUID()}`, type: "paid", intent: `pi_${crypto.randomUUID()}`, session: "cs_test_current", wedding: wedding.data!.id, owner: userId })).data).toBe("granted");
+    expect((await attempts()).data).toEqual([]);
+  } finally {
+    await local.admin.auth.admin.deleteUser(userId);
+  }
+});
+
 it("retains a twelve-month expiry snapshot from a checkout started before the policy change", async () => {
   const intent = `pi_${crypto.randomUUID()}`;
   const legacyExpiry = "2028-09-18T00:00:00.000Z";
