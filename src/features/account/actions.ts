@@ -114,6 +114,9 @@ export async function resendConfirmation(_: FormState, form: FormData): Promise<
   });
 }
 
+const recoverySent = "If an account uses that email, a password reset link is on its way. Check your inbox, and wait a minute before asking for another.";
+const recoveryRateLimits = new Set(["over_email_send_rate_limit", "over_request_rate_limit"]);
+
 export async function requestRecovery(_: FormState, form: FormData): Promise<FormState> {
   return withLogging("account.recovery", "/account/[screen]", async () => {
     const input = emailSchema.safeParse(form.get("email"));
@@ -121,12 +124,18 @@ export async function requestRecovery(_: FormState, form: FormData): Promise<For
     try {
       const client = await createClient();
       const { error } = await client.auth.resetPasswordForEmail(input.data, { redirectTo: `${appOrigin()}/auth/confirm` });
+      // Supabase throttles repeat requests for an address that was just sent a link. That is an expected refusal,
+      // and answering it differently would reveal that the address has an account.
+      if (error && recoveryRateLimits.has(errorReason(error))) {
+        log.warn("account.recovery.rejected", { reason: errorReason(error) });
+        return { success: true, message: recoverySent };
+      }
       if (error) {
         log.error("account.recovery.failed", { reason: errorReason(error) });
         return { message: "We couldn’t process that request. Please wait a moment and try again." };
       }
       log.info("account.recovery.requested");
-      return { success: true, message: "If an account uses that email, a password reset link is on its way. Check your inbox." };
+      return { success: true, message: recoverySent };
     } catch (error) {
       log.error("account.recovery.failed", { reason: errorReason(error) });
       return { message: "Password recovery is temporarily unavailable. Please try again." };

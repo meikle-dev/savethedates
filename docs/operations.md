@@ -122,7 +122,7 @@ Reading one request ID should tell the story of that request (F038).
 | `account.signup.requested` / `.failed` | info / error | Confirmation email requested (also for an existing email, which is not revealed) / Auth or email failure |
 | `account.confirm.succeeded` / `.rejected` / `.failed` | info / warn / error | Email link confirmed (`eventType` signup or recovery) / invalid, expired or malformed link / fault |
 | `account.signin.rejected` / `.failed` | warn / error | Wrong credentials or unconfirmed email (`reason` is the Auth code, never the email) / fault |
-| `account.recovery.requested` / `.failed` | info / error | Recovery email requested / fault |
+| `account.recovery.requested` / `.rejected` / `.failed` | info / warn / error | Recovery email requested / Supabase rate limit (`over_email_send_rate_limit`, `over_request_rate_limit`; the owner sees the normal reply) / fault |
 | `account.password.updated` / `.rejected` / `.failed` | info / warn / error | Password changed / expired link or refused password / fault |
 | `account.signout.failed` | error | Sign-out failed |
 | `account.google.failed` | error | Could not start Google sign-in (Supabase error or fault) |

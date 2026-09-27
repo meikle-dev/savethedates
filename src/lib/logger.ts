@@ -23,7 +23,7 @@ export const logEvents = [
   "account.confirmation_resend.requested", "account.confirmation_resend.rejected", "account.confirmation_resend.failed",
   "account.confirm.succeeded", "account.confirm.rejected", "account.confirm.failed",
   "account.signin.rejected", "account.signin.failed",
-  "account.recovery.requested", "account.recovery.failed",
+  "account.recovery.requested", "account.recovery.rejected", "account.recovery.failed",
   "account.password.updated", "account.password.rejected", "account.password.failed",
   "account.signout.failed",
   "account.google.failed", "account.google_callback.succeeded", "account.google_callback.rejected", "account.google_callback.failed",
