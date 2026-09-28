@@ -51,4 +51,4 @@ Add `?utm_source=pinterest&utm_medium=social` to each link.
 
 ## Paid (later)
 
-Pinterest ads can promote the best-performing pins. Wait until organic pins show which designs get saved most, and until the botanical licence is confirmed.
+Pinterest ads can promote the best-performing pins. Wait until organic pins show which designs get saved most.

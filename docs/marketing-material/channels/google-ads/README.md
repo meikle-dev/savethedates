@@ -67,7 +67,7 @@ Free to build and preview. Pay £39 once when you're ready to publish. No subscr
 
 **Structured snippet** (header "Styles"): the twelve design names, e.g. `Modern Minimal`, `Velvet`, `Riviera`, `Evening Gold`, `Heather`, `Countryside`.
 
-## 2. Performance Max (later, once the botanical licence is confirmed)
+## 2. Performance Max (after a few weeks of Search)
 
 Upload these into one asset group:
 - **Images:** all of `display-images/`
@@ -82,5 +82,3 @@ Upload these into one asset group:
 
 - Upload `youtube/savethedates-launch-film-1080p.mp4` to the channel with `launch-film-thumbnail-1280x720.jpg` as the thumbnail. It can also run as a skippable in-stream ad.
 - Upload `youtube/savethedates-ad-9x16-10s.mp4` as a **Short**.
-
-**Don't run image or video ads until the botanical artwork licence is confirmed.** Search ads are text only, so they can start now.

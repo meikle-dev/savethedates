@@ -66,7 +66,7 @@ The Reel has original music, so it's safe to post from a business account. If yo
 
 ## Paid ads (Meta Ads Manager)
 
-Instagram and Facebook ads are set up together in Meta Ads Manager. **Don't start paid ads until the botanical artwork licence is confirmed** (see the [setup guide](../../marketing-setup-guide.md)).
+Instagram and Facebook ads are set up together in Meta Ads Manager. Read the [setup guide](../../marketing-setup-guide.md) first, especially the measuring section.
 
 | Placement | Upload |
 | --- | --- |

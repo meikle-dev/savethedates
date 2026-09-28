@@ -39,4 +39,4 @@ Facebook and Instagram ads run from the same campaign in Meta Ads Manager. Follo
 - **Square** (`ads/images/square-1080x1080/`) for the right column, Marketplace and search results.
 - **Landscape** (`ads/images/landscape-1200x628/`) if you run a link-click ad.
 
-Use `utm_source=facebook` in the website URL. **Don't start paid ads until the botanical artwork licence is confirmed.**
+Use `utm_source=facebook` in the website URL.

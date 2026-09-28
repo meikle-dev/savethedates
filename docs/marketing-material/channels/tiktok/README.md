@@ -23,4 +23,4 @@ TikTok rewards a regular stream of native, casual videos. This polished clip is 
 
 ## Paid (later)
 
-TikTok Ads Manager can promote the same video. Start only after Meta and Google show which messages work, and after the botanical artwork licence is confirmed.
+TikTok Ads Manager can promote the same video. Start once Meta and Google show which messages work.
