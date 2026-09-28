@@ -165,6 +165,22 @@ Its first test proves the prebuilt image, including the prerendered `/examples/m
 
 Source maps are built with debug IDs inside the Docker build and removed from the production image. To inspect them locally, run `docker build --target sourcemaps --output type=local,dest=sourcemaps .` (the `sourcemaps/` folder is ignored by Git). CI uploads them to Sentry only when the `SENTRY_AUTH_TOKEN` secret exists.
 
+## Owner admin dashboard (local only)
+
+A read-only list of every account and couple, with payment, site and feature status. It runs on your computer only and is never deployed.
+
+1. In Supabase, open the **production** project > Project Settings > API Keys and copy a secret key (`sb_secret_…`, or the legacy `service_role` key).
+2. Create `.env.admin` in the project root (it is git-ignored):
+
+   ```
+   ADMIN_SUPABASE_URL=https://msrpxvlxojnnefezestn.supabase.co
+   ADMIN_SUPABASE_SECRET_KEY=paste-the-secret-key-here
+   ```
+
+3. Run `npm run admin` and open http://localhost:4400. Press **Refresh** to fetch the latest data.
+
+The secret key bypasses database security, so keep `.env.admin` on this computer only. The dashboard only reads data, listens on 127.0.0.1 only and never sends the key to the browser. It shows names, emails, dates, statuses, on/off settings and reply counts, but never guest names or link secrets. Use another port with `ADMIN_PORT=4500`. For local Supabase, use the URL and service-role key from `.env.local`.
+
 ## Homepage theme previews
 
 The phones on the marketing homepage are screenshots of the fictional `/examples/[theme]` pages, stored in `public/media/themes/`. After changing a theme's Save the Date design, restart the app from the current code (a rebuilt container, or `npm run dev`). Then run `npm run marketing:previews -- http://127.0.0.1:3000`, or pass another origin, and commit the regenerated images.

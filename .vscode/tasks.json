@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "run dashboard",
+      "detail": "Local read-only owner dashboard at http://localhost:4400 (needs .env.admin)",
+      "type": "process",
+      "command": "node",
+      "args": ["scripts/admin-dashboard.mjs"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    }
+  ]
+}

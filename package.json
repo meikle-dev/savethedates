@@ -26,7 +26,8 @@
     "local:env": "node scripts/local-env.mjs",
     "local:demo-account": "node scripts/local-demo-account.mjs",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "test:persistence": "node scripts/verify-persistence.mjs"
+    "test:persistence": "node scripts/verify-persistence.mjs",
+    "admin": "node scripts/admin-dashboard.mjs"
   },
   "dependencies": {
     "@sentry/nextjs": "10.75.3",
