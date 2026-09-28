@@ -24,6 +24,7 @@ Role files are instructions to read when needed, not automatically running agent
 - `.agents/ux-ui-designer.md`: new flows or unresolved visual decisions; skip when already documented.
 - `.agents/reviewer.md`: independent review for significant features, auth, tenant isolation, payments, important database/architecture changes, and release readiness.
 - `.agents/seo-growth.md`: indexed marketing, content, search, and launch only.
+- `.agents/marketer.md`: all marketing outside the site: social channels, posting, campaigns, paid ads and marketing results. Holds the current marketing picture.
 
 Use one main agent for sequential product, UX, and engineering work. Spawn a separate reviewer for the review cases above when supported; give it the feature ID, relevant paths, changed files, and validation results rather than the entire conversation. Parallel agents are optional only for concrete independent work with clear file ownership. Do not create a full team for every feature. If independent review is unavailable, record that fact and leave required review outstanding for a later session; do not describe self-review as independent.
 

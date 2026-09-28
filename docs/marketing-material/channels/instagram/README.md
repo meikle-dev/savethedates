@@ -2,6 +2,16 @@
 
 Everything here is ready to upload: feed images at 1080×1350 (4:5), Stories and Reels at 1080×1920 (9:16).
 
+## Status (28 September 2026)
+
+- **Account:** `@savethedatesuk`, now a Business account (category: Wedding planning service, shown on profile; no contact details shown). Name "SaveTheDates", profile picture and bio are set.
+- **Posted:** carousel `1-twelve-designs` (14 slides, 4:5, caption as below) and the Reel (`savethedates-ad-9x16-10s.mp4`, original 9:16 crop, the supplied cover). The Reel caption is "Your wedding website, beautifully done.", then the approved supporting line about Save the Date, invitation, details and RSVPs, free to build, £39 once, then the hashtags. "Share to Facebook" and the AI label were off for both: the photo is from Unsplash and the botanicals are illustrations.
+- **Still to do:**
+  1. **Website link:** add `https://savethedates.co.uk` in the mobile app (Edit profile → Links). It can't be edited on the web.
+  2. **Pin** the Reel, the carousel and later the price post. Pinning is only in the mobile app.
+  3. **Link a Facebook Page** for SaveTheDates. The only Page on the account is unrelated ("Donaghadee Digital"). Meta Business Suite scheduling and ads need a SaveTheDates Page.
+  4. **Week 2:** carousel `2-save-the-date-first`, then the price post and the Stories (Stories are app-only).
+
 ## What's here
 
 | Folder | Use |
