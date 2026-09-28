@@ -237,7 +237,8 @@ test("RSVP readiness, closing date and completion are clear in every state", asy
     await openSection(page, "RSVP");
     const section = page.getByRole("region", { name: "RSVP", exact: true });
     await expect(section.getByText("RSVPs off", { exact: true })).toBeVisible();
-    await expect(section.getByText("This will be your RSVP link. It works once your site is published.", { exact: false })).toBeVisible();
+    await expect(section.getByText("Your RSVP link appears here once your site is published.", { exact: false })).toBeVisible();
+    await expect(section.locator("#rsvp-guest-link")).toHaveCount(0);
     await expect(section.getByText("Share this one link with everyone", { exact: false })).toHaveCount(0);
 
     // Turning RSVPs on with a summer closing date explains the exact cutoff, before publishing.

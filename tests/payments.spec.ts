@@ -50,7 +50,8 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByLabel("Names in your guest link").fill(slug);
     await page.getByRole("button", { name: "Save link names" }).click();
     await expect(page.getByRole("status").filter({ hasText: "guest link names are saved" })).toBeVisible();
-    await expect(page.getByText(new URL(home, baseURL).href, { exact: true })).toBeVisible();
+    // The URL itself is withheld until publication, so it can’t be copied while it still 404s.
+    await expect(page.getByText(new URL(home, baseURL).href, { exact: true })).toHaveCount(0);
     await expect(page.locator("#guest-link")).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("payment-required.png"), fullPage: true });
     await page.goto("/dashboard/publish?checkout=cancelled");
@@ -98,6 +99,8 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.reload();
     await expect(page.getByText("Payment confirmed", { exact: false })).toBeVisible();
     await expect(page.getByLabel("Names in your guest link")).toHaveValue(slug);
+    // Paid but not yet published: still no URL to copy.
+    await expect(page.getByText(new URL(home, baseURL).href, { exact: true })).toHaveCount(0);
     await page.getByRole("checkbox", { name: /I understand that anyone with one of our guest links/ }).check();
     await page.getByRole("button", { name: "Publish site", exact: true }).click();
     await expect(page.getByText("Your site is live for anyone with your guest links.")).toBeVisible();

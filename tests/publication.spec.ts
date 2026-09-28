@@ -243,14 +243,14 @@ test("owner publishes, shares, updates and unpublishes a wedding", async ({ page
     const framing = { minimal: { saveTheDate: { x: 20, y: 70, zoom: 1.3 }, details: { x: 80, y: 30, zoom: 1.2 } } };
     expect((await local.admin.from("weddings").update({ photo_framing: framing }).eq("id", weddingId)).error).toBeNull();
     await openSection("Publish");
-    // The names part is suggested from the couple's names, and the future guest link is shown before publication.
+    // The names part is suggested from the couple's names; the future guest link is named but its URL is withheld until publication.
     const namesField = page.getByLabel("Names in your guest link");
     await expect(namesField).toHaveValue("alex-and-morgan");
     const origin = new URL(baseURL!).origin;
     const guestLink = `${origin}${home}`;
     await expect(page.getByText("Work once published")).toBeVisible();
-    await expect(page.getByText(`${origin}/alex-and-morgan/${secret}`, { exact: true })).toBeVisible();
-    // A draft shows the future link as not yet working, with no share panel or share and copy actions.
+    await expect(page.getByText(`${origin}/alex-and-morgan/${secret}`)).toHaveCount(0);
+    // A draft marks the future link as not yet working, with no share panel or share and copy actions.
     await expect(page.locator("#guest-link")).toHaveCount(0);
     await expect(page.getByRole("link", { name: /Share on WhatsApp/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^(Share|Copy)/ })).toHaveCount(0);
@@ -265,7 +265,7 @@ test("owner publishes, shares, updates and unpublishes a wedding", async ({ page
     await page.screenshot({ path: test.info().outputPath("publish-errors.png"), fullPage: true });
     await page.getByRole("checkbox", { name: /I understand that anyone with one of our guest links/ }).check();
     await namesField.fill(` ${slug.toUpperCase()} `);
-    await expect(page.getByText(guestLink, { exact: true })).toBeVisible();
+    await expect(page.getByText(guestLink)).toHaveCount(0);
     await page.screenshot({ path: test.info().outputPath("private-workspace.png"), fullPage: true });
     expect((await guest.request.get(home)).status()).toBe(404);
     await page.getByRole("button", { name: "Publish site", exact: true }).click();

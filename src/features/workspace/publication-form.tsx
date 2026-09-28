@@ -16,8 +16,9 @@ function Notice({ state }: { state: FormState }) {
 
 // The names part can be saved at any time; before publication the same field is submitted with the consent.
 // Validation is server-side and shown as field messages, so no browser pop-up hides another error.
-// While live, the share panels lead the page (F042/F065); before that only the future links are shown, marked as not
-// yet working, each with its Replace control so a leaked link can be replaced before the site is online again. `origin` is the configured APP_ORIGIN, never the request host.
+// While live, the share panels lead the page (F042/F065). Before publication the URLs are withheld, so nobody copies a
+// link that still 404s; each link keeps its Replace control so a leaked link can be replaced before the site is online
+// again. An offline site still lists the existing links its guests already have. `origin` is the configured APP_ORIGIN, never the request host.
 // Before publishing, RSVP readiness is stated next to the future link; publishing never changes RSVP settings, and an
 // announcement-only site (RSVPs off) can still be published deliberately.
 // `secrets.invitation` is null while the Invitation is off.
@@ -55,10 +56,10 @@ export function PublicationForm({ origin, names, secrets, published, offline, en
       {!published && <section className="mt-6" aria-labelledby="future-link-title">
         <h3 id="future-link-title" className="text-lg font-medium">Your guest links</h3>
         <p className="field-help"><span className="badge"><Icon name="lock" />{offline ? "Currently offline" : "Work once published"}</span></p>
-        <p className="field-help">{offline ? "These are your existing links. They will work again if you purchase a new site period. Guests cannot use them while the site is offline." : <>Your Save the Date{secrets.invitation ? " and Invitation each have their own" : " has its own"} private link, so you can send them at different times. Once published, anyone who has a link can view its pages{rsvp.availability === "not-live" ? " and reply" : ""}. You can share them after publishing.</>}</p>
+        <p className="field-help">{offline ? "These are your existing links. They will work again if you purchase a new site period. Guests cannot use them while the site is offline." : <>Your Save the Date{secrets.invitation ? " and Invitation each have their own" : " has its own"} private link, so you can send them at different times. Once published, anyone who has a link can view its pages{rsvp.availability === "not-live" ? " and reply" : ""}. Your links appear here when you publish.</>}</p>
         {futureLinks.map(({ link, title, url }) => <div key={link} className="mt-4">
           <h4 className="field-label">{title}</h4>
-          <p className="guest-link-url font-mono" data-pending="" translate="no">{url}</p>
+          {offline && <p className="guest-link-url font-mono" data-pending="" translate="no">{url}</p>}
           <ReplaceLinkForm link={link} />
         </div>)}
         {rsvp.availability === "not-live"

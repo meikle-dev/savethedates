@@ -21,8 +21,8 @@ export function RsvpManager({ enabled, closesOn, rsvpUrl, via, live, status, mea
   return <div className="ws-stack">
     <section className="ws-panel" aria-labelledby="rsvp-link-title">
       <h2 id="rsvp-link-title">Your RSVP link</h2>
-      <p className="ws-panel-intro">{status.availability === "offline" ? "This is your existing RSVP link. It will work again if you purchase a new site period. Guests cannot view the site or reply while it is offline." : live ? `This link opens your RSVP page directly. ${status.availability === "open" ? "Guests enter their own names and send one reply each; only you can see responses." : "Guests can’t reply while RSVPs aren’t open."}` : "This will be your RSVP link. It works once your site is published."} It’s part of your {linkName}{via === "invitation" ? ", because your Invitation is on" : ""}, so replacing that link replaces this one too.</p>
-      <p id="rsvp-guest-link" className="guest-link-url font-mono" data-pending={live ? undefined : ""} translate="no">{rsvpUrl}</p>
+      <p className="ws-panel-intro">{status.availability === "offline" ? "This is your existing RSVP link. It will work again if you purchase a new site period. Guests cannot view the site or reply while it is offline." : live ? `This link opens your RSVP page directly. ${status.availability === "open" ? "Guests enter their own names and send one reply each; only you can see responses." : "Guests can’t reply while RSVPs aren’t open."}` : "Your RSVP link appears here once your site is published."} It’s part of your {linkName}{via === "invitation" ? ", because your Invitation is on" : ""}, so replacing that link replaces this one too.</p>
+      {(live || status.availability === "offline") && <p id="rsvp-guest-link" className="guest-link-url font-mono" data-pending={live ? undefined : ""} translate="no">{rsvpUrl}</p>}
       {live
         ? <>
           <div className="mt-3 flex flex-wrap gap-3">
