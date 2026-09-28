@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>SaveTheDates static images</title>
+<style>
+@font-face{font-family:"Cormorant";src:url(assets/cormorant-garamond-latin-regular.woff2) format("woff2");font-style:normal;font-weight:300 700}
+@font-face{font-family:"Cormorant";src:url(assets/cormorant-garamond-latin-italic.woff2) format("woff2");font-style:italic;font-weight:300 700}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0B2A3D;overflow:hidden}
+#stage{position:absolute;left:0;top:0;overflow:hidden}
+#base{position:absolute;left:0;top:0;transform-origin:0 0;overflow:hidden;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}
+.t{position:absolute}
+.serif{font-family:Georgia,"Times New Roman",serif;font-weight:400}
+.corm{font-family:"Cormorant",Georgia,serif}
+.eyebrow{font:700 17px/1.2 Arial,sans-serif;letter-spacing:.32em;text-transform:uppercase}
+.phone{position:absolute;width:418px;height:918px;border-radius:68px;
+  background:linear-gradient(150deg,#3a4852 0%,#141d24 22%,#0c1318 60%,#27343d 100%);
+  box-shadow:inset 0 0 0 1.5px #6b7b86,inset 0 0 0 5px #10181e,0 60px 120px -30px rgba(0,0,0,.55),0 24px 50px -16px rgba(0,0,0,.4)}
+.phone .screen{position:absolute;left:14px;top:14px;width:390px;height:890px;border-radius:54px;overflow:hidden;background:#fff}
+.phone .island{position:absolute;left:50%;top:27px;width:116px;height:33px;margin-left:-58px;border-radius:20px;background:#04070a;z-index:5}
+.phone .glare{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 32%,rgba(255,255,255,0) 70%,rgba(255,255,255,.05) 100%);z-index:4}
+.phone .side{position:absolute;width:4px;border-radius:2px;background:#2a353d}
+.status{position:absolute;left:0;top:0;width:390px;height:46px;display:flex;justify-content:space-between;align-items:center;padding:4px 36px 0 44px;font:700 16px/1 "Segoe UI",Arial,sans-serif;color:#15191c;z-index:2}
+.status.dark{color:#f3efe6}
+.shot{position:absolute;left:0;top:46px;width:390px;height:844px;overflow:hidden}
+.shot img{position:absolute;left:0;top:0;width:390px;display:block}
+.mini{position:absolute;width:210px;height:458px;border-radius:34px;background:#0e161c;box-shadow:inset 0 0 0 1.5px #56646e,0 30px 60px -20px rgba(0,0,0,.6);padding:7px}
+.mini .in{width:100%;height:100%;border-radius:28px;overflow:hidden;position:relative}
+.mini .in i{position:absolute;left:0;top:0;right:0;height:22px}
+.mini img{position:absolute;left:0;top:22px;width:196px}
+.shotcard{position:absolute;border-radius:22px;overflow:hidden;box-shadow:0 40px 80px -24px rgba(11,42,61,.45),0 0 0 1px rgba(11,42,61,.08);background:#fff}
+.shotcard img{display:block;width:100%}
+.btn{display:inline-flex;align-items:center;gap:22px;background:#F4F0E6;border-radius:8px;padding:0 12px 0 32px;height:78px;font:700 25px/1 Arial;color:#0B2A3D;white-space:nowrap}
+.btn span{width:54px;height:54px;border-radius:6px;background:#0F4C5C;display:flex;align-items:center;justify-content:center}
+.check{display:flex;align-items:flex-start;gap:18px}
+.check b{flex:0 0 auto;font-weight:400}
+.strike{position:relative;display:inline-block}
+.strike:after{content:"";position:absolute;left:-6px;right:-6px;top:55%;height:4px;background:#E0A58F}
+</style>
+</head>
+<body>
+<div id="stage"><div id="base"></div></div>
+<script>
+"use strict";
+const NAVY = "#0B2A3D", PAPER = "#F8F6F0", CREAM = "#F7F4EC", MIST = "#D8E0DA", TEAL = "#0F4C5C", SAGE = "#2F6B4F";
+const KIND = { P45: [1080, 1350], P916: [1080, 1920], P23: [1000, 1500], SQ: [1080, 1080], LS: [1200, 628], YT: [1280, 720], COVER: [1640, 924], LOGO: [1200, 300] };
+const TH = {
+  "01-minimal": { name: "Modern Minimal", desc: "Calm sage, warm paper and timeless typography.", bar: "#f5f1e8", c: "#56684F" },
+  "02-romantic": { name: "Warm & Romantic", desc: "Soft cream, muted rose and intimate photography.", bar: "#fff4eb", c: "#733747" },
+  "03-bold": { name: "Modern & Bold", desc: "Deep teal, strong photography and editorial type.", bar: "#f1f3e9", c: "#133F3E" },
+  "04-terracotta": { name: "Terracotta", desc: "Sun-baked clay, olive branches and linen.", bar: "#fbf6f0", c: "#A9502F" },
+  "05-heather": { name: "Heather", desc: "Misty lilac, moorland heather and slate.", bar: "#faf8fb", c: "#655781" },
+  "06-coastal": { name: "Coastal", desc: "Sea glass, driftwood and sea holly.", bar: "#f5f7f4", c: "#3F6C73" },
+  "07-riviera": { name: "Riviera", desc: "Linen, Riviera blue stripes and lemons.", bar: "#fbf7ef", c: "#27468A" },
+  "08-alcantara": { name: "Alcantara", desc: "Soft suede, cognac and deep espresso.", bar: "#f7f2ec", c: "#6F4330" },
+  "09-countryside": { name: "Countryside", desc: "Oatmeal tweed, loden green and bracken.", bar: "#f6f1e6", c: "#3B4431" },
+  "10-velvet": { name: "Velvet", desc: "Claret velvet, blush paper and gold ribbon.", bar: "#faf5f1", c: "#641F2A" },
+  "11-black-tie": { name: "Black Tie", desc: "Black grosgrain, ivory letterpress and orchids.", bar: "#fbfaf7", c: "#161616" },
+  "12-evening-gold": { name: "Evening Gold", desc: "Midnight navy, candlelight and champagne.", bar: "#1c2533", c: "#141B26", dark: true },
+};
+const IDS = Object.keys(TH);
+const A = (f) => `assets/${f}`;
+const STATUS_ICONS = `<span style="display:flex;gap:6px;align-items:center"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2.5" y="2.5" width="19" height="8" rx="2" fill="currentColor"/></svg></span>`;
+const ARROW = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M6 18 18 6M8 6h10v10"/></svg>`;
+
+function el(tag, cls, html, parent, css) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html != null) e.innerHTML = html;
+  if (css) e.style.cssText = css;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const shotOf = (id, page, full) => ({ src: A(`${id}-${page}${full ? "-full" : ""}.jpg`), bar: TH[id].bar, dark: TH[id].dark });
+function phone(p, o) {
+  const root = el("div", "phone", `<div class="screen"><div class="status${o.dark ? " dark" : ""}" style="background:${o.bar}"><span>9:41</span>${STATUS_ICONS}</div><div class="shot"><img src="${o.src}" style="top:${-(o.scroll || 0)}px"></div><div class="glare"></div></div><div class="island"></div><div class="side" style="left:-3px;top:170px;height:34px"></div><div class="side" style="left:-3px;top:230px;height:64px"></div><div class="side" style="right:-3px;top:250px;height:100px"></div>`, p,
+    `left:${o.x - 209}px;top:${o.y - 459}px;transform:rotate(${o.r || 0}deg) scale(${o.s});z-index:${o.z || 2}`);
+  return root;
+}
+function ring(p, cx, cy, r, color = "#8fb1bd", op = 0.4, dots = false) {
+  const g = el("div", "t", `<svg width="${2 * r + 40}" height="${2 * r + 40}" style="overflow:visible"><circle cx="${r + 20}" cy="${r + 20}" r="${r}" fill="none" stroke="${color}" stroke-opacity="${op}" stroke-width="1.6"/></svg>`, p, `left:${cx - r - 20}px;top:${cy - r - 20}px;z-index:1`);
+  if (dots) IDS.forEach((id, i) => {
+    const a = (-90 + i * 30) * Math.PI / 180, d = Math.max(12, r * 0.05);
+    el("div", "t", null, g, `left:${r + 20 + r * Math.cos(a) - d / 2}px;top:${r + 20 + r * Math.sin(a) - d / 2}px;width:${d}px;height:${d}px;border-radius:50%;background:${TH[id].c};box-shadow:0 0 0 1.5px rgba(244,240,230,.6)`);
+  });
+  return g;
+}
+function glow(p, x, y, color = "#15485c", size = 60) {
+  el("div", "t", null, p, `inset:0;background:radial-gradient(circle at ${x}% ${y}%,${color} 0%,rgba(11,42,61,0) ${size}%)`);
+}
+function vignette(p, strength = 0.22) {
+  el("div", "t", null, p, `inset:0;z-index:40;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 60%,rgba(0,0,0,${strength}) 100%)`);
+}
+function shotcard(p, src, x, y, w, rot = 0, z = 5) {
+  return el("div", "shotcard", `<img src="${src}">`, p, `left:${x}px;top:${y}px;width:${w}px;transform:rotate(${rot}deg);z-index:${z}`);
+}
+
+/* ---------------- generic frame ----------------
+   Portrait kinds: text on top, visual in the middle, footer at the bottom.
+   Square and landscape: text on the left, visual on the right. */
+const PORTRAIT = (k) => k === "P45" || k === "P916" || k === "P23";
+const SIZES = {
+  P45: { top: 84, head: 82, sub: 25, eb: 16, side: 70 },
+  P23: { top: 96, head: 80, sub: 25, eb: 16, side: 64 },
+  P916: { top: 262, head: 92, sub: 28, eb: 18, side: 76 },
+  SQ: { head: 64, sub: 22, eb: 14, side: 72 },
+  LS: { head: 50, sub: 19, eb: 12, side: 52 },
+  YT: { head: 60, sub: 22, eb: 14, side: 70 },
+};
+function footer(base, kind, dark, example) {
+  const [W, H] = KIND[kind];
+  const ink = dark ? CREAM : NAVY, soft = dark ? "rgba(244,240,230,.7)" : "rgba(11,42,61,.72)";
+  const row = { P45: H - 96, P23: H - 104, P916: 1508, SQ: H - 84, LS: H - 50, YT: H - 60 }[kind];
+  const big = { LS: 26, YT: 30 }[kind] || 36, small = { LS: 16, YT: 18 }[kind] || 21, side = SIZES[kind].side;
+  el("div", "t serif", "SaveTheDates", base, `left:${side}px;top:${row}px;font-size:${big}px;letter-spacing:-.04em;color:${ink};z-index:30`);
+  el("div", "t", "savethedates.co.uk", base, `right:${side}px;top:${row + big * 0.28}px;font-size:${small}px;color:${soft};z-index:30`);
+  if (example) {
+    const y = { P45: H - 34, P23: H - 38, P916: 1576, SQ: H - 30, LS: H - 18, YT: H - 22 }[kind];
+    el("div", "t", "Example wedding · fictional names", base, `left:0;width:${W}px;top:${y}px;text-align:center;font:700 ${kind === "LS" ? 9 : 11}px/1 Arial;letter-spacing:.22em;text-transform:uppercase;color:${soft};opacity:.75;z-index:30`);
+  }
+  return row;
+}
+function textBlock(base, o, kind, align) {
+  const S = SIZES[kind], ink = o.dark ? CREAM : NAVY, accent = o.dark ? MIST : (o.accent || TEAL);
+  const b = el("div", "t", null, base, `left:${o.tx ?? S.side}px;width:${o.tw ?? KIND[kind][0] - 2 * S.side}px;text-align:${align};z-index:20`);
+  if (o.eyebrow) el("div", "eyebrow", o.eyebrow, b, `font-size:${S.eb}px;color:${o.dark ? "#a9c3cc" : (o.accent || SAGE)};margin-bottom:${S.eb * 1.3}px`);
+  if (o.head) el("div", "serif", o.head.replace(/<i>/g, `<i style="color:${accent}">`), b, `font-size:${(o.headScale || 1) * S.head}px;line-height:1.05;letter-spacing:-.035em;color:${ink}`);
+  if (o.italic) el("div", "corm", `<i>${o.italic}</i>`, b, `font-size:${S.head * 0.56}px;line-height:1.25;color:${o.dark ? "rgba(244,240,230,.88)" : "rgba(11,42,61,.85)"};margin-top:${S.head * 0.18}px`);
+  if (o.sub) el("div", null, o.sub, b, `font:400 ${S.sub}px/1.45 Arial;color:${o.dark ? "rgba(244,240,230,.82)" : "rgba(16,40,58,.82)"};margin-top:${S.sub * 0.8}px`);
+  return b;
+}
+function frame(kind, o) {
+  const base = setup(kind, o.bg || NAVY);
+  const [W, H] = KIND[kind];
+  if (o.backdrop) o.backdrop(base, kind);
+  const fTop = o.footer === false ? H : footer(base, kind, o.dark, o.example);
+  if (PORTRAIT(kind)) {
+    const S = SIZES[kind];
+    const tb = textBlock(base, o, kind, "center");
+    tb.style.top = S.top + "px";
+    const y0 = S.top + tb.offsetHeight + (o.gap ?? 44);
+    if (o.visual) o.visual(base, { x: 0, y: y0, w: W, h: fTop - 36 - y0 }, kind);
+  } else {
+    const S = SIZES[kind];
+    const tw = Math.round(W * (kind === "SQ" ? 0.45 : 0.44));
+    const tb = textBlock(base, { ...o, tw }, kind, "left");
+    const avail = fTop - 20;
+    tb.style.top = Math.max(30, (avail - tb.offsetHeight) / 2) + "px";
+    const x0 = S.side + tw + 16;
+    if (o.visual) o.visual(base, { x: x0, y: 16, w: W - x0 - 10, h: fTop - 26 }, kind);
+  }
+  vignette(base, o.dark ? 0.24 : 0.1);
+  return base;
+}
+function setup(kind, bg) {
+  const [W, H] = KIND[kind];
+  const base = document.getElementById("base");
+  base.innerHTML = "";
+  base.style.width = W + "px"; base.style.height = H + "px"; base.style.background = bg;
+  return base;
+}
+
+/* ---------------- visuals ---------------- */
+function vHero(base, b) {
+  const s = Math.min(b.h * 0.93 / 918, b.w * 0.86 / (418 * 1.85));
+  const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+  ring(base, cx + 418 * s * 0.05, cy, 918 * s * 0.55);
+  phone(base, { ...shotOf("03-bold", "save-the-date"), x: cx - 418 * s * 0.4, y: cy + 918 * s * 0.035, s: s * 0.88, r: -9, z: 3 });
+  phone(base, { ...shotOf("01-minimal", "save-the-date"), x: cx + 418 * s * 0.42, y: cy, s, r: 6, z: 4 });
+}
+function vOne(id, page, opt = {}) {
+  return (base, b) => {
+    const s = Math.min(b.h * 0.97 / 918, b.w * 0.8 / 418) * (opt.scale || 1);
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+    if (opt.ring) ring(base, cx, cy, 918 * s * 0.56, opt.ringColor || "#ffffff", 0.3);
+    const src = opt.src ? { src: A(opt.src), bar: opt.bar || "#f5f1e8" } : shotOf(id, page, opt.full);
+    phone(base, { ...src, x: cx, y: cy, s, r: opt.rot || 0, scroll: opt.scroll, z: 4 });
+  };
+}
+function vRsvp(base, b, kind) {
+  const wide = b.w / b.h > 1.05;
+  const s = Math.min(b.h * 0.9 / 918, b.w * (wide ? 0.42 : 0.5) / 418);
+  const px = b.x + (wide ? b.w * 0.26 : b.w * 0.33), cy = b.y + b.h / 2;
+  phone(base, { src: A("journey-rsvp-filled.jpg"), bar: "#fffdf7", x: px, y: cy, s, r: -3, z: 4 });
+  const cw = Math.min(b.w * (wide ? 0.66 : 0.6), (b.h * 0.6) * 1400 / 968);
+  shotcard(base, A("crop-guests-catering-numbers.jpg"), b.x + b.w - cw - b.w * 0.03, cy - (cw * 968 / 1400) * 0.28, cw, 2, 6);
+}
+function vShare(base, b) {
+  const cw = Math.min(b.w * 0.82, b.h * 0.62 * 1400 / 848);
+  const ch = cw * 848 / 1400;
+  const s = Math.min(b.h * 0.8 / 918, b.w * 0.36 / 418);
+  const top = b.y + (b.h - Math.max(ch, 918 * s)) / 2;
+  shotcard(base, A("crop-share-save-the-date-panel.jpg"), b.x + b.w * 0.06, top + b.h * 0.02, cw, -2, 5);
+  phone(base, { ...shotOf("01-minimal", "save-the-date"), x: b.x + b.w * 0.8, y: b.y + b.h * 0.6, s, r: 5, z: 6 });
+}
+function vPages(themeId, labels = true, dark = false) {
+  return (base, b) => {
+    const pages = [["save-the-date", "Save the Date"], ["invitation", "Invitation"], ["details", "Details"], ["rsvp", "RSVP"]];
+    const lab = labels ? Math.max(44, b.h * 0.09) : 0;
+    const s = Math.min((b.h - lab) * 0.95 / 918, b.w * 0.96 / (4 * 418 * 1.04));
+    const step = 418 * s * 1.04, x0 = b.x + b.w / 2 - 1.5 * step, cy = b.y + (b.h - lab) / 2;
+    pages.forEach(([p, name], i) => {
+      phone(base, { ...shotOf(themeId, p, p === "details"), x: x0 + i * step, y: cy + (i % 2 ? 918 * s * 0.03 : 0), s, z: 4, scroll: p === "details" ? 260 : 0 });
+      if (labels) el("div", "t serif", name, base, `left:${x0 + i * step - step / 2}px;width:${step}px;top:${cy + 459 * s + lab * 0.25}px;text-align:center;font-size:${Math.max(16, lab * 0.42)}px;color:${dark ? CREAM : NAVY};z-index:5`);
+    });
+  };
+}
+function wall(base, kind, o = {}) {
+  const [W, H] = KIND[kind];
+  const wrap = el("div", "t", null, base, `inset:0;perspective:2600px;overflow:hidden;z-index:0`);
+  const wl = el("div", "t", null, wrap, `left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;transform:rotateX(28deg) rotateZ(-17deg) scale(${o.scale || Math.max(W, H) / 1500})`);
+  const pages = ["save-the-date", "invitation", "rsvp", "details"];
+  const COLS = 11, ROWS = 7, CW = 246, RH = 494;
+  for (let c = 0; c < COLS; c++) {
+    const col = el("div", "t", null, wl, `left:${(c - (COLS - 1) / 2) * CW - 105}px;top:${-(ROWS / 2) * RH + (c % 2 ? 120 : -60)}px;width:210px;height:${ROWS * RH}px`);
+    for (let r = 0; r < ROWS; r++) {
+      const id = IDS[(c * 5 + r * 7) % 12], pg = pages[(c + r * 3) % 4];
+      el("div", "mini", `<div class="in" style="background:${TH[id].bar}"><i style="background:${TH[id].bar}"></i><img src="${A(`${id}-${pg}-sm.jpg`)}"></div>`, col, `left:0;top:${r * RH}px`);
+    }
+  }
+  if (o.shade !== false) el("div", "t", null, base, `inset:0;z-index:1;background:radial-gradient(ellipse ${o.shadeW || 62}% ${o.shadeH || 44}% at 50% ${o.shadeY || 50}%,rgba(11,42,61,.94) 0%,rgba(11,42,61,.74) 50%,rgba(11,42,61,.12) 100%)`);
+}
+
+/* ---------------- templates ---------------- */
+const T = {};
+T.hero = (kind) => frame(kind, {
+  dark: true, example: true, eyebrow: "From Save the Date to final RSVP",
+  head: kind === "LS" || kind === "SQ" || kind === "YT" ? "Your wedding website, <i>beautifully done.</i>" : "Your wedding website,<br><i>beautifully done.</i>",
+  sub: PORTRAIT(kind) ? "Save the Date, invitation, details and RSVPs with meal choices, on one private wedding website." : "Free to build and preview. £39 once when you’re ready to publish.",
+  backdrop: (b) => glow(b, PORTRAIT(kind) ? 50 : 72, PORTRAIT(kind) ? 64 : 50), visual: vHero,
+});
+T.designs = (kind) => {
+  const [W, H] = KIND[kind];
+  const base = setup(kind, NAVY);
+  wall(base, kind, { shadeW: PORTRAIT(kind) ? 80 : 60, shadeH: PORTRAIT(kind) ? 30 : 52 });
+  const S = SIZES[kind];
+  const b = el("div", "t", null, base, `left:0;width:${W}px;text-align:center;z-index:20`);
+  el("div", "eyebrow", "Each with a matching Save the Date, Invitation, Details and RSVP", b, `font-size:${S.eb * (kind === "LS" ? 0.9 : 0.85)}px;color:#a9c3cc;margin-bottom:${S.eb * 1.6}px;letter-spacing:.24em;white-space:normal;padding:0 ${S.side}px`);
+  el("div", "serif", "Twelve designs.", b, `font-size:${S.head * 1.5}px;line-height:1;letter-spacing:-.04em;color:${CREAM}`);
+  el("div", "corm", "<i>Find your kind of beautiful.</i>", b, `font-size:${S.head * 0.7}px;color:${MIST};margin-top:${S.head * 0.2}px`);
+  b.style.top = (H - b.offsetHeight) / 2 - (PORTRAIT(kind) ? H * 0.02 : 10) + "px";
+  el("div", "t", null, base, `left:0;right:0;bottom:0;height:${PORTRAIT(kind) ? 26 : 30}%;z-index:2;background:linear-gradient(to top,rgba(11,42,61,.96) 0%,rgba(11,42,61,.8) 45%,rgba(11,42,61,0) 100%)`);
+  footer(base, kind, true, true);
+  vignette(base, 0.3);
+};
+T.rsvp = (kind) => frame(kind, {
+  bg: PAPER, eyebrow: "Online RSVP with meal choices", accent: SAGE, example: true,
+  head: PORTRAIT(kind) ? "RSVPs without the<br><i>spreadsheet chaos.</i>" : "RSVPs without the <i>spreadsheet chaos.</i>",
+  sub: PORTRAIT(kind) ? "Guests choose their starter, main and dessert and tell you about dietary requirements. Meal numbers ready to send to your caterer." : "Starter, main, dessert and dietary needs with every reply. Meal numbers ready for your caterer.",
+  visual: vRsvp,
+});
+T.share = (kind) => frame(kind, {
+  dark: true, example: true, eyebrow: "Send each by WhatsApp, text or email",
+  head: "Simple to share.<br><i>Private to you.</i>",
+  sub: "Each link comes with a ready-written message. No envelopes, stamps or postal addresses.",
+  backdrop: (b) => glow(b, 60, 70), visual: vShare,
+});
+T.envelopes = (kind) => frame(kind, {
+  dark: true, example: true,
+  head: `<span class="strike">Envelopes.</span><br><span class="strike">Stamps.</span><br><span class="strike">Postal addresses.</span><br><i>Just a link.</i>`,
+  headScale: 0.9, sub: "Send your Save the Date by WhatsApp, text or email. Guests open it on their phone, with nothing to download.",
+  backdrop: (b) => glow(b, 50, 78), visual: vOne("01-minimal", "save-the-date", { ring: true, ringColor: "#8fb1bd", rot: 4 }),
+});
+T.sdf = (kind) => frame(kind, {
+  bg: PAPER, example: true, eyebrow: "Four pages · one design",
+  head: kind === "LS" ? "Save the date first. <i>Invite them later.</i>" : "Save the date first.<br><i>Invite them later.</i>",
+  sub: "Send your Save the Date now and your invitation months later, each on its own link.",
+  visual: vPages("10-velvet"),
+});
+const INCLUDED = ["All twelve wedding website designs, with a photo of your choice", "Save the Date and wedding invitation", "Wedding details: times, venues, travel, where to stay and FAQs", "Online RSVPs with meal choices", "Dietary requirements collected with each RSVP", "Private links for your Save the Date and Invitation", "Private guest list, attendance totals and catering numbers", "Published until six months after your wedding date*"];
+T.price = (kind) => {
+  const [W, H] = KIND[kind];
+  const base = setup(kind, NAVY);
+  glow(base, 50, 26, "#15485c", 55);
+  const S = SIZES[kind];
+  if (PORTRAIT(kind)) {
+    const tall = kind === "P916";
+    const b = el("div", "t", null, base, `left:${S.side}px;width:${W - 2 * S.side}px;top:${S.top}px;z-index:20`);
+    el("div", "eyebrow", "Everything you need. One simple price.", b, `font-size:${S.eb}px;color:#a9c3cc;text-align:center`);
+    el("div", "serif", `£39<span class="corm" style="font-size:.4em;font-style:italic;color:${MIST};letter-spacing:0;margin-left:.2em">once.</span>`, b, `font-size:${tall ? 300 : 250}px;line-height:1.05;letter-spacing:-.04em;color:${CREAM};text-align:center;margin-top:${tall ? 30 : 16}px`);
+    el("div", null, "Build and preview for free. Pay once when you’re ready to publish. No subscription.", b, `font:400 ${S.sub}px/1.45 Arial;color:rgba(244,240,230,.85);text-align:center;margin:${tall ? 18 : 8}px auto 0;max-width:${W * 0.8}px`);
+    const list = el("div", null, null, b, `margin:${tall ? 58 : 40}px auto 0;max-width:${W * 0.82}px`);
+    INCLUDED.forEach((t) => el("div", "check", `<b style="color:#8fb1bd">✓</b><span>${t}</span>`, list, `font:400 ${tall ? 29 : 24}px/1.35 Arial;color:${CREAM};margin-top:${tall ? 22 : 14}px`));
+    el("div", null, "*Based on the wedding date at checkout. Your expiry date is fixed when you start checkout.", b, `font:400 ${tall ? 17 : 15}px/1.4 Arial;color:rgba(244,240,230,.6);margin:${tall ? 34 : 22}px auto 0;max-width:${W * 0.82}px`);
+    footer(base, kind, true, false);
+  } else {
+    const b = el("div", "t", null, base, `left:${S.side}px;width:${W - 2 * S.side}px;z-index:20;text-align:center`);
+    el("div", "eyebrow", "Everything you need. One simple price.", b, `font-size:${S.eb}px;color:#a9c3cc`);
+    el("div", "serif", `£39<span class="corm" style="font-size:.4em;font-style:italic;color:${MIST};letter-spacing:0;margin-left:.2em">once.</span>`, b, `font-size:${kind === "LS" ? 150 : 230}px;line-height:1.05;letter-spacing:-.04em;color:${CREAM};margin-top:10px`);
+    el("div", null, "Free to build and preview. £39 once when you’re ready to publish.", b, `font:400 ${S.sub * 1.1}px/1.4 Arial;color:rgba(244,240,230,.85);margin-top:6px`);
+    const pills = el("div", null, null, b, `display:flex;flex-wrap:wrap;justify-content:center;gap:${kind === "LS" ? 10 : 14}px;margin-top:${kind === "LS" ? 22 : 38}px`);
+    ["No subscription", "No app or login for guests", "Twelve designs", "Full refund within 14 days"].forEach((p) => el("div", null, p, pills, `border:1.5px solid #3f6173;border-radius:40px;padding:${kind === "LS" ? "10px 18px" : "15px 26px"};font:400 ${kind === "LS" ? 15 : 21}px/1 Arial;color:#E6EEF1;white-space:nowrap`));
+    b.style.top = (H - (kind === "LS" ? 40 : 80) - b.offsetHeight) / 2 + "px";
+    footer(base, kind, true, false);
+  }
+  vignette(base, 0.26);
+};
+T.cta = (kind, o = {}) => {
+  const [W, H] = KIND[kind];
+  const base = setup(kind, NAVY);
+  glow(base, 50, 40, "#154a5e", 52);
+  const tall = kind === "P916", sq = kind === "SQ";
+  const cy = tall ? 760 : sq ? 430 : 520, r = tall ? 440 : sq ? 330 : 400;
+  ring(base, W / 2, cy, r, "#8fb1bd", 0.4, true);
+  if (o.line) el("div", "t corm", `<i>${o.line}</i>`, base, `left:0;width:${W}px;top:${cy - r * 0.44}px;text-align:center;font-size:${tall ? 38 : sq ? 30 : 34}px;color:${MIST};z-index:5`);
+  el("div", "t serif", "SaveTheDates", base, `left:0;width:${W}px;top:${cy - (tall ? 90 : sq ? 70 : 80)}px;text-align:center;font-size:${tall ? 142 : sq ? 110 : 128}px;letter-spacing:-.045em;color:${CREAM};z-index:5`);
+  el("div", "t eyebrow", "For your next chapter", base, `left:0;width:${W}px;top:${cy + (tall ? 92 : sq ? 70 : 82)}px;text-align:center;color:#a9c3cc;font-size:${tall ? 19 : 16}px;letter-spacing:.42em;z-index:5`);
+  const below = cy + r + (tall ? 70 : sq ? 44 : 60);
+  el("div", "t serif", o.price || "Free to build. <i style='color:#D8E0DA'>£39 once.</i>", base, `left:0;width:${W}px;top:${below}px;text-align:center;font-size:${tall ? 62 : sq ? 44 : 54}px;letter-spacing:-.03em;color:${CREAM};z-index:5`);
+  el("div", "t", `<div class="btn" style="${sq ? "height:66px;font-size:21px" : ""}">Start building for free<span>${ARROW}</span></div>`, base, `left:0;width:${W}px;top:${below + (tall ? 110 : sq ? 76 : 96)}px;text-align:center;z-index:5`);
+  el("div", "t serif", "savethedates.co.uk", base, `left:0;width:${W}px;top:${below + (tall ? 226 : sq ? 162 : 200)}px;text-align:center;font-size:${tall ? 40 : sq ? 30 : 36}px;color:${MIST};z-index:5`);
+  vignette(base, 0.26);
+};
+// Carousel: twelve designs
+T.twCover = (kind) => {
+  const [W, H] = KIND[kind];
+  const base = setup(kind, NAVY);
+  glow(base, 50, 72, "#15485c", 60);
+  const S = SIZES[kind];
+  const b = el("div", "t", null, base, `left:0;width:${W}px;top:${S.top + 10}px;text-align:center;z-index:20`);
+  el("div", "eyebrow", "Swipe to see them all →", b, `font-size:${S.eb}px;color:#a9c3cc`);
+  el("div", "serif", "Twelve designs.", b, `font-size:${S.head * 1.35}px;letter-spacing:-.04em;color:${CREAM};margin-top:22px;line-height:1.05`);
+  el("div", "corm", "<i>Which one’s you?</i>", b, `font-size:${S.head * 0.78}px;color:${MIST}`);
+  const fan = ["02-romantic", "07-riviera", "03-bold", "10-velvet", "12-evening-gold"];
+  const s = kind === "P23" ? 0.64 : 0.6, cy = H * 0.66;
+  fan.forEach((id, i) => {
+    const k = i - 2;
+    phone(base, { ...shotOf(id, "save-the-date"), x: W / 2 + k * 190, y: cy + Math.abs(k) * 46, s: s * (1 - Math.abs(k) * 0.06), r: k * 8, z: 10 - Math.abs(k) });
+  });
+  footer(base, kind, true, true);
+  vignette(base, 0.26);
+};
+T.twDesign = (kind, i) => {
+  const id = IDS[i], t = TH[id];
+  frame(kind, {
+    bg: t.c, dark: true, example: true, eyebrow: `Design ${String(i + 1).padStart(2, "0")} of 12`,
+    head: t.name, italic: t.desc,
+    sub: kind === "P23" ? "Matching Save the Date, Invitation, Details and RSVP. Try it free with your own words and photo." : null,
+    gap: 30,
+    backdrop: (b) => { glow(b, 50, 70, "rgba(255,255,255,.14)", 55); el("div", "t serif", String(i + 1).padStart(2, "0"), b, `right:-40px;bottom:${kind === "P23" ? 60 : 30}px;font-size:${kind === "P23" ? 560 : 520}px;line-height:1;letter-spacing:-.06em;color:rgba(255,255,255,.07)`); },
+    visual: vOne(id, "save-the-date", {}),
+  });
+};
+// Carousel: save the date first
+const SDF = [
+  ["save-the-date", "01 · Save the Date", "Send it the day<br>the date is set.", "Share it by WhatsApp, text or email. Guests open it on their phone, with nothing to download."],
+  ["invitation", "02 · Invitation", "Invite them later,<br><i>on its own link.</i>", "Your own wording, the date, time and venue, and a link to RSVP. Posting printed invitations instead? Leave this page off."],
+  ["details", "03 · Details", "The questions guests<br><i>always ask.</i>", "Times, venues, travel, where to stay, dress code and FAQs. Update it once and everyone sees the latest version."],
+  ["rsvp", "04 · RSVP", "Replies with meal<br><i>choices built in.</i>", "Starter, main, dessert and dietary requirements, collected with every reply. No app or login for guests."],
+];
+T.sdfSlide = (kind, i) => {
+  const [page, eyebrow, head, sub] = SDF[i];
+  frame(kind, { bg: PAPER, example: true, eyebrow, head, sub, gap: 34, visual: vOne("10-velvet", page, { full: page === "details", scroll: page === "details" ? 120 : 0 }) });
+};
+// Carousel: RSVPs
+T.rsvpGuest = (kind) => frame(kind, { bg: PAPER, example: true, accent: SAGE, eyebrow: "For your guests", head: "Guests reply<br><i>in a minute.</i>", sub: "Joyfully accepts or regretfully declines, then starter, main, dessert and dietary needs. No app or login.", gap: 34, visual: vOne(null, null, { src: "journey-rsvp-filled.jpg", bar: "#fffdf7" }) });
+T.rsvpThanks = (kind) => frame(kind, { bg: PAPER, example: true, accent: SAGE, eyebrow: "Private to you", head: "Every reply lands<br><i>in your guest list.</i>", sub: "Only you can see replies. Guests can’t see each other’s answers.", gap: 34, visual: vOne(null, null, { src: "journey-rsvp-sent.jpg", bar: "#f5f1e8" }) });
+T.rsvpNumbers = (kind) => frame(kind, {
+  bg: "#EAF2F6", example: true, eyebrow: "For your caterer", head: "Meal numbers,<br><i>counted for you.</i>", sub: "A count of every starter, main and dessert, plus dietary needs, ready to send to your caterer.", gap: 40,
+  visual: (base, b) => {
+    const w = Math.min(b.w - 120, b.h * 0.8 * 1400 / 968);
+    const sh = w * 288 / 1400, ch = w * 968 / 1400, top = b.y + (b.h - sh - ch - 24) / 2;
+    shotcard(base, A("crop-overview-status-countdown-rsvp-cards.jpg"), (KIND[kind][0] - w) / 2, top, w, 0, 5);
+    shotcard(base, A("crop-guests-catering-numbers.jpg"), (KIND[kind][0] - w) / 2, top + sh + 24, w, 0, 5);
+  },
+});
+// Google display: image-only (no overlaid text), per Google's guidance
+T.clean = (kind, which) => {
+  const [W, H] = KIND[kind];
+  const pad = Math.min(W, H) * 0.07;
+  const box = { x: pad, y: pad, w: W - 2 * pad, h: H - 2 * pad };
+  if (which === "hero") { const b = setup(kind, NAVY); glow(b, 50, 50); vHero(b, box); vignette(b, 0.24); }
+  if (which === "designs") { const b = setup(kind, NAVY); wall(b, kind, { shade: false }); vignette(b, 0.35); }
+  if (which === "rsvp") { const b = setup(kind, PAPER); vRsvp(b, box, kind); vignette(b, 0.08); }
+  if (which === "pages") { const b = setup(kind, PAPER); vPages("10-velvet", false)(b, box); vignette(b, 0.08); }
+  if (which === "velvet") { const b = setup(kind, TH["10-velvet"].c); glow(b, 50, 50, "rgba(255,255,255,.14)", 55); vOne("10-velvet", "invitation", { ring: true })(b, box); vignette(b, 0.24); }
+};
+T.cover = () => {
+  const base = setup("COVER", NAVY);
+  glow(base, 74, 50, "#15485c", 50);
+  el("div", "t eyebrow", "From Save the Date to final RSVP", base, "left:120px;top:300px;color:#a9c3cc;font-size:16px;z-index:20");
+  el("div", "t serif", `Your wedding website,<br><i style="color:${MIST}">beautifully done.</i>`, base, `left:114px;top:338px;font-size:78px;line-height:1.05;letter-spacing:-.035em;color:${CREAM};z-index:20`);
+  el("div", "t", "Save the Date · Invitation · Details · RSVP", base, "left:120px;top:540px;font:400 24px/1 Arial;color:rgba(244,240,230,.8);z-index:20");
+  el("div", "t", "savethedates.co.uk", base, "left:120px;top:590px;font:400 22px/1 Georgia;color:#a9c3cc;z-index:20");
+  ring(base, 1290, 470, 300);
+  [["02-romantic", 1115, 505, -10, 0.54], ["12-evening-gold", 1465, 505, 10, 0.54], ["01-minimal", 1290, 470, 0, 0.6]].forEach(([id, x, y, r, s], i) => phone(base, { ...shotOf(id, "save-the-date"), x, y, r, s, z: 3 + i }));
+  el("div", "t", "Example wedding · fictional names", base, "right:40px;top:760px;font:700 11px/1 Arial;letter-spacing:.22em;text-transform:uppercase;color:rgba(244,240,230,.5);z-index:30");
+  vignette(base, 0.2);
+};
+T.logoWide = (bg) => {
+  const base = setup("LOGO", bg);
+  const dark = bg !== "#FFFFFF";
+  el("div", "t", `<img src="${A("icon-512.png")}" style="width:200px;height:200px;display:block">`, base, "left:70px;top:50px");
+  el("div", "t serif", "SaveTheDates", base, `left:300px;top:92px;font-size:104px;letter-spacing:-.045em;color:${dark ? CREAM : NAVY}`);
+};
+
+/* ---------------- registry: every file written to docs/marketing-material/channels ---------------- */
+const R = [];
+const add = (out, kind, fn, fmt = "jpg", size) => R.push({ out, kind, fn, fmt, size: size || KIND[kind] });
+const slug = (s) => s.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+// Instagram
+const IGC = "instagram/feed-carousels";
+add(`${IGC}/1-twelve-designs/01-cover.jpg`, "P45", () => T.twCover("P45"));
+IDS.forEach((id, i) => add(`${IGC}/1-twelve-designs/${String(i + 2).padStart(2, "0")}-${slug(TH[id].name)}.jpg`, "P45", () => T.twDesign("P45", i)));
+add(`${IGC}/1-twelve-designs/14-try-them-free.jpg`, "P45", () => T.cta("P45", { line: "Try every design with your own words and photo" }));
+add(`${IGC}/2-save-the-date-first/01-cover.jpg`, "P45", () => T.sdf("P45"));
+SDF.forEach((s, i) => add(`${IGC}/2-save-the-date-first/0${i + 2}-${s[0]}.jpg`, "P45", () => T.sdfSlide("P45", i)));
+add(`${IGC}/2-save-the-date-first/06-start-free.jpg`, "P45", () => T.cta("P45", { line: "One design, start to finish" }));
+add(`${IGC}/3-rsvps-and-catering/01-cover.jpg`, "P45", () => T.rsvp("P45"));
+add(`${IGC}/3-rsvps-and-catering/02-guests-reply.jpg`, "P45", () => T.rsvpGuest("P45"));
+add(`${IGC}/3-rsvps-and-catering/03-private-replies.jpg`, "P45", () => T.rsvpThanks("P45"));
+add(`${IGC}/3-rsvps-and-catering/04-catering-numbers.jpg`, "P45", () => T.rsvpNumbers("P45"));
+add(`${IGC}/3-rsvps-and-catering/05-start-free.jpg`, "P45", () => T.cta("P45", { line: "RSVPs without the spreadsheet chaos" }));
+const POSTS = [["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-without-the-chaos", "rsvp"], ["04-price-39-once", "price"], ["05-simple-to-share", "share"], ["06-no-envelopes", "envelopes"]];
+POSTS.forEach(([n, t]) => add(`instagram/feed-posts/${n}.jpg`, "P45", () => T[t]("P45")));
+[["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-without-the-chaos", "rsvp"], ["04-simple-to-share", "share"], ["05-price-39-once", "price"], ["06-start-building-free", "cta"]]
+  .forEach(([n, t]) => add(`instagram/stories/${n}.jpg`, "P916", () => T[t]("P916")));
+// Facebook
+add("facebook/page-setup/cover-photo-1640x924.jpg", "COVER", () => T.cover());
+[["hero", "01-your-wedding-website"], ["designs", "02-twelve-designs"], ["rsvp", "03-rsvps-without-the-chaos"], ["price", "04-price-39-once"]].forEach(([t, n]) => {
+  add(`facebook/ads/images/square-1080x1080/${n}.jpg`, "SQ", () => T[t]("SQ"));
+  add(`facebook/ads/images/landscape-1200x628/${n}.jpg`, "LS", () => T[t]("LS"));
+});
+// Pinterest
+IDS.forEach((id, i) => add(`pinterest/pins/designs/${String(i + 1).padStart(2, "0")}-${slug(TH[id].name)}.jpg`, "P23", () => T.twDesign("P23", i)));
+[["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-with-meal-choices", "rsvp"], ["04-save-the-date-first", "sdf"], ["05-simple-to-share", "share"], ["06-price-39-once", "price"]]
+  .forEach(([n, t]) => add(`pinterest/pins/topics/${n}.jpg`, "P23", () => T[t]("P23")));
+// Google Ads: image-only assets
+const CLEAN = [["01-phones", "hero"], ["02-all-designs", "designs"], ["03-rsvp-and-catering", "rsvp"], ["04-four-pages", "pages"], ["05-velvet-invitation", "velvet"]];
+CLEAN.forEach(([n, w]) => {
+  add(`google-ads/display-images/landscape-1200x628/${n}.jpg`, "LS", () => T.clean("LS", w));
+  add(`google-ads/display-images/square-1200x1200/${n}.jpg`, "SQ", () => T.clean("SQ", w), "jpg", [1200, 1200]);
+  if (w !== "pages") add(`google-ads/display-images/portrait-960x1200/${n}.jpg`, "P45", () => T.clean("P45", w), "jpg", [960, 1200]);
+});
+add("google-ads/logos/logo-landscape-1200x300.png", "LOGO", () => T.logoWide(NAVY), "png");
+add("google-ads/logos/logo-landscape-1200x300-white.png", "LOGO", () => T.logoWide("#FFFFFF"), "png");
+add("google-ads/youtube/launch-film-thumbnail-1280x720.jpg", "YT", () => T.hero("YT"));
+
+const params = new URLSearchParams(location.search);
+window.__assets = R.map(({ out, fmt, size }, i) => ({ i, out, fmt, w: size[0], h: size[1] }));
+(async () => {
+  await Promise.all([document.fonts.load("400 40px Cormorant"), document.fonts.load("italic 400 40px Cormorant")]);
+  if (params.has("i")) {
+    const a = R[+params.get("i")];
+    const [bw, bh] = KIND[a.kind];
+    const st = document.getElementById("stage");
+    st.style.width = a.size[0] + "px"; st.style.height = a.size[1] + "px";
+    a.fn();
+    document.getElementById("base").style.transform = `scale(${a.size[0] / bw})`;
+    await Promise.all([...document.images].map((im) => im.decode().catch(() => {})));
+  }
+  window.__ready = true;
+})();
+</script>
+</body>
+</html>

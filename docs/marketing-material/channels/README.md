@@ -1,0 +1,24 @@
+# Channel assets
+
+Ready-to-upload images and videos for each platform, already at the right sizes. Each folder has a short README that says what to post and how.
+
+| Folder | What's in it |
+| --- | --- |
+| [instagram/](instagram/README.md) | 3 carousels, 6 feed posts, 6 Stories, a Reel, ad images and videos, profile picture |
+| [facebook/](facebook/README.md) | Page cover and profile picture, posts, the launch film, ad images in four sizes, ad videos |
+| [pinterest/](pinterest/README.md) | 12 design pins, 6 topic pins, a video pin, profile picture |
+| [google-ads/](google-ads/README.md) | Search ad copy, display images (no text), logos, YouTube videos and thumbnail |
+| [tiktok/](tiktok/README.md) | The 10-second vertical video, with and without music, and a profile picture |
+
+Start with the [marketing setup guide](../marketing-setup-guide.md). It covers accounts, tracking, budgets and the rules on what we can say.
+
+## Rules that apply everywhere
+
+- **Only claim what's in the [features guide](../marketing-context/marketing-docs/app-features-and-screenshots-guide.md#9-what-we-can-and-cant-say).** Never mention plus-ones, reminders, QR codes, "password-protected" or "forever".
+- **Olivia & James, Grace Murphy and Charlotte Reid are fictional.** The images say "Example wedding · fictional names". Never present them as real customers, and never add testimonials or usage numbers.
+- **No paid ads until the botanical artwork licence is confirmed.** The design screenshots contain it, and its licence isn't recorded yet. Organic posts are fine.
+- **Price:** £39, in GBP only. Don't offer discounts unless the owner approves them.
+
+## Changing or regenerating these files
+
+Everything here is generated from `../source/`. Edit the copy in `statics.html`, then run `node channels.mjs` in that folder; see [source/README.md](../source/README.md). Don't hand-edit the images, because the next regeneration overwrites them.

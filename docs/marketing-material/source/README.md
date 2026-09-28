@@ -1,0 +1,42 @@
+# Marketing materials source
+
+This folder generates every video and image in `docs/marketing-material/marketing-videos/` and `docs/marketing-material/channels/`. It uses the real screenshots in `../marketing-context/images/`, so everything looks like the live product.
+
+| File | Makes |
+| --- | --- |
+| `index.html` | The launch film: 1920×1080, 60 fps, 59.4 s |
+| `ad.html` | The 10-second ad at 9:16 (Reels and Stories) and 4:5 (feeds), from one composition |
+| `score.mjs` | The original music and sound effects, synthesised and timed from cues the page exports |
+| `statics.html` | All static images: carousels, posts, Stories, pins, ad images, the Facebook cover and logos |
+| `channels.mjs` | Renders `statics.html` into `../channels/`, makes the profile pictures and copies in the videos |
+| `build.mjs`, `render.mjs`, `prep.mjs` | Build helpers |
+
+The pages are animated with GSAP. Frames are drawn one at a time in the project's Playwright Chromium and encoded with ffmpeg.
+
+## Rebuild
+
+Run the project's `npm ci` first, because the scripts use its Playwright and sharp. Then, from this folder:
+
+1. `npm install`
+2. Build the videos (each writes the video with music, a no-music version and a poster still to `../marketing-videos/`):
+   - `node build.mjs` for the launch film (about 6 minutes)
+   - `node build.mjs ad` for the 9:16 ad (about 1 minute)
+   - `node build.mjs ad45` for the 4:5 ad (about 1 minute)
+3. `node channels.mjs` renders all the static images and copies the videos into `../channels/` (about 30 seconds).
+
+`node channels.mjs --only pinterest` rebuilds one channel. `--out some/folder` writes a preview somewhere else.
+
+## Editing
+
+- **Film copy, timing and layout:** `index.html`. Each scene is marked with a `SCENE n` comment. Times are written at full speed on a 96 BPM grid (one bar is 2.5 s).
+- **Film speed:** `SPEED` near the top of `index.html`. It's `0.8`, so the film plays 20% slower (59.4 s) and the music is rebuilt at 76.8 BPM to match. Set it to `1` for the original 47.5 s cut.
+- **Ad:** `ad.html`. The `P` object at the top holds the positions for each shape. In the 9:16 layout, key text stays between about 230 px from the top and 1,480 px down, so the Reels and Stories interface doesn't cover it.
+- **Static images:** `statics.html`. The copy is in the `T.*` templates, and the list of files written (names, sizes and channel folders) is in the registry at the bottom.
+- **Music:** `score.mjs` (`arrangeFilm` and `arrangeAd`).
+- **Previewing video frames:** `node render.mjs stills out 7.5 20 45` saves PNG frames at those times. For the ad, set `FILM_PAGE=ad.html` and `FILM_SIZE=1080x1920` (or `1080x1350`) first.
+
+## Content notes
+
+- Olivia & James, Grace Murphy and Charlotte Reid are the fictional showcase names from the features guide. Every image and video that shows them says "Example wedding · fictional names".
+- The botanical artwork in the design screenshots doesn't have a recorded licence yet. Confirm it before any paid use; see section 10 of the features guide.
+- The music is original and synthesised in `score.mjs`, so it contains no third-party audio. The logo comes from the app icon (`public/icon-512.png`).

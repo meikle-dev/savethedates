@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>SaveTheDates 10-second ad (9:16)</title>
+<style>
+@font-face{font-family:"Cormorant";src:url(assets/cormorant-garamond-latin-regular.woff2) format("woff2");font-style:normal;font-weight:300 700}
+@font-face{font-family:"Cormorant";src:url(assets/cormorant-garamond-latin-italic.woff2) format("woff2");font-style:italic;font-weight:300 700}
+:root{--navy:#0B2A3D;--teal:#0F4C5C;--sage:#2F6B4F;--paper:#F8F6F0;--ink:#10283A;--cream:#F4F0E6;--mist:#D8E0DA}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100vw;height:100vh;overflow:hidden;background:var(--navy)}
+#stage{position:absolute;left:0;top:0;width:100vw;height:100vh;overflow:hidden;background:var(--navy);font-family:Arial,Helvetica,sans-serif;color:var(--cream);-webkit-font-smoothing:antialiased}
+.scene{position:absolute;inset:0;visibility:hidden}
+.abs{position:absolute}
+.serif{font-family:Georgia,"Times New Roman",serif;font-weight:400}
+.corm{font-family:"Cormorant",Georgia,serif}
+.eyebrow{font:700 20px/1 Arial,sans-serif;letter-spacing:.34em;text-transform:uppercase;white-space:nowrap}
+.ln-mask{padding:0 .1em .2em;margin:0 -.1em -.2em}
+.phone{position:absolute;left:0;top:0;width:418px;height:918px;border-radius:68px;
+  background:linear-gradient(150deg,#3a4852 0%,#141d24 22%,#0c1318 60%,#27343d 100%);
+  box-shadow:inset 0 0 0 1.5px #6b7b86,inset 0 0 0 5px #10181e,0 60px 120px -30px rgba(0,0,0,.6),0 24px 50px -16px rgba(0,0,0,.45)}
+.phone .screen{position:absolute;left:14px;top:14px;width:390px;height:890px;border-radius:54px;overflow:hidden;background:#fff;isolation:isolate}
+.phone .island{position:absolute;left:50%;top:27px;width:116px;height:33px;margin-left:-58px;border-radius:20px;background:#04070a;z-index:5}
+.phone .glare{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 32%,rgba(255,255,255,0) 70%,rgba(255,255,255,.05) 100%);pointer-events:none;z-index:4}
+.phone .side{position:absolute;width:4px;border-radius:2px;background:#2a353d}
+.layer{position:absolute;inset:0;overflow:hidden}
+.status{position:absolute;left:0;top:0;width:390px;height:46px;display:flex;justify-content:space-between;align-items:center;padding:4px 36px 0 44px;font:700 16px/1 -apple-system,"Segoe UI",Arial,sans-serif;color:#15191c;z-index:2}
+.status.dark{color:#f3efe6}
+.shot{position:absolute;left:0;top:46px;width:390px;height:844px;overflow:hidden}
+.shot img{position:absolute;left:0;top:0;width:390px;display:block}
+.chip{position:absolute;display:flex;align-items:center;gap:16px;background:#fff;border-radius:44px;padding:22px 32px;font:400 30px/1 Arial;color:#10283A;white-space:nowrap;box-shadow:0 24px 50px -14px rgba(11,42,61,.35);z-index:26}
+.chip i{display:block;width:30px;height:30px;border-radius:50%;background:#2F6B4F;position:relative}
+.chip i:after{content:"";position:absolute;left:9px;top:7px;width:7px;height:12px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg)}
+#grain{position:absolute;left:0;top:0;width:100%;height:100%;mix-blend-mode:overlay;opacity:.09;pointer-events:none;z-index:50}
+#vig{position:absolute;inset:0;pointer-events:none;z-index:49;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 58%,rgba(0,0,0,.26) 100%)}
+#caption{position:absolute;left:0;width:100%;text-align:center;z-index:48;font:700 15px/1 Arial;letter-spacing:.24em;text-transform:uppercase;color:#fff;mix-blend-mode:difference;opacity:0}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="node_modules/gsap/dist/gsap.min.js"></script>
+<script src="node_modules/gsap/dist/SplitText.min.js"></script>
+<script src="node_modules/gsap/dist/CustomEase.min.js"></script>
+<script>
+"use strict";
+gsap.registerPlugin(SplitText, CustomEase);
+gsap.config({ force3D: true });
+CustomEase.create("swoop", "M0,0 C0.76,0 0.14,1 1,1");
+(async () => {
+await Promise.all([document.fonts.load("400 40px Cormorant"), document.fonts.load("italic 400 40px Cormorant")]);
+
+// 10 seconds at 96 BPM = four bars. One beat is 0.625 s.
+const BEAT = 0.625, BAR = 2.5, DURATION = 10;
+// One composition, two layouts: 9:16 for Reels and Stories, 4:5 for the feed (set by the render size).
+const W = innerWidth, H = innerHeight, CX = W / 2, TALL = H > 1600;
+const P = TALL ? {
+  caption: 1668, bug: [236, 46], ringA: [1240, 1.22], hA: [340, 108], back: [1300, 0.78], hero: [1250, 0.9],
+  heroB: [1190, 0.94], hB: [356, 124], name: [512, 76, 58], heroC: [1130, 0.9], list: [326, 74], chips: [850, 1070, 1300, 30],
+  ring2: [720, 1.13], pitch: [540, 34], mark: [622, 138], tag: 812, price: [1180, 70], cta: 1300, url: [1432, 44],
+} : {
+  caption: 1312, bug: [40, 38], ringA: [900, 0.92], hA: [104, 88], back: [940, 0.6], hero: [900, 0.68],
+  heroB: [830, 0.72], hB: [104, 104], name: [236, 66, 50], heroC: [880, 0.7], list: [112, 58], chips: [590, 800, 1010, 26],
+  ring2: [540, 1.0], pitch: [382, 30], mark: [452, 124], tag: 622, price: [972, 60], cta: 1066, url: [1190, 40],
+};
+const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+const cues = [];
+const cue = (type, t, extra = {}) => cues.push({ type, t: +t.toFixed(4), ...extra });
+const $ = (s, r = document) => r.querySelector(s);
+function el(tag, cls, html, parent, style) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html != null) e.innerHTML = html;
+  if (style) e.style.cssText = style;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const stage = $("#stage");
+function scene(id, t0, t1, bg) {
+  const s = el("div", "scene", null, stage);
+  s.id = id;
+  if (bg) s.style.background = bg;
+  if (t0 <= 0) s.style.visibility = "visible"; else tl.set(s, { visibility: "visible" }, t0);
+  tl.set(s, { visibility: "hidden" }, t1);
+  return s;
+}
+function place(node, x, y, scale = 1, extra = {}) { gsap.set(node, { xPercent: -50, yPercent: -50, left: 0, top: 0, x, y, scale, ...extra }); }
+const splitLines = (node) => new SplitText(node, { type: "lines", mask: "lines", linesClass: "ln" });
+const splitChars = (node) => new SplitText(node, { type: "chars,lines", mask: "lines", linesClass: "ln" });
+
+const THEMES = {
+  "01-minimal": { name: "Modern Minimal", bar: "#f5f1e8", c: "#56684F" },
+  "02-romantic": { name: "Warm & Romantic", bar: "#fff4eb", c: "#733747" },
+  "03-bold": { name: "Modern & Bold", bar: "#f1f3e9", c: "#133F3E" },
+  "04-terracotta": { name: "Terracotta", bar: "#fbf6f0", c: "#A9502F" },
+  "05-heather": { name: "Heather", bar: "#faf8fb", c: "#655781" },
+  "06-coastal": { name: "Coastal", bar: "#f5f7f4", c: "#3F6C73" },
+  "07-riviera": { name: "Riviera", bar: "#fbf7ef", c: "#27468A" },
+  "08-alcantara": { name: "Alcantara", bar: "#f7f2ec", c: "#6F4330" },
+  "09-countryside": { name: "Countryside", bar: "#f6f1e6", c: "#3B4431" },
+  "10-velvet": { name: "Velvet", bar: "#faf5f1", c: "#641F2A" },
+  "11-black-tie": { name: "Black Tie", bar: "#fbfaf7", c: "#161616" },
+  "12-evening-gold": { name: "Evening Gold", bar: "#1c2533", c: "#141B26", dark: true },
+};
+const DOT_ORDER = Object.keys(THEMES);
+const STATUS_ICONS = `<span style="display:flex;gap:6px;align-items:center">
+<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="currentColor"/><rect x="10" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor"/></svg>
+<svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".45"/><rect x="2.5" y="2.5" width="19" height="8" rx="2" fill="currentColor"/></svg></span>`;
+function makePhone(parent) {
+  const root = el("div", "phone", `<div class="screen"></div><div class="island"></div>
+    <div class="side" style="left:-3px;top:170px;height:34px"></div><div class="side" style="left:-3px;top:230px;height:64px"></div>
+    <div class="side" style="right:-3px;top:250px;height:100px"></div>`, parent);
+  const screen = $(".screen", root);
+  el("div", "glare", null, screen);
+  return { root, screen };
+}
+function addShot(ph, id, page, full) {
+  const t = THEMES[id];
+  const layer = el("div", "layer", null);
+  ph.screen.insertBefore(layer, $(".glare", ph.screen));
+  el("div", "status" + (t.dark ? " dark" : ""), `<span>9:41</span>${STATUS_ICONS}`, layer, `background:${t.bar}`);
+  const img = el("img", null, null, el("div", "shot", null, layer));
+  img.src = `assets/${id}-${page}${full ? "-full" : ""}.jpg`;
+  return { layer, img };
+}
+function wipeIn(layer, t, dur = 0.4) {
+  gsap.set(layer, { clipPath: "inset(100% 0% 0% 0%)" });
+  tl.to(layer, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: "expo.inOut" }, t);
+  tl.fromTo($("img", layer), { scale: 1.12, transformOrigin: "50% 0%" }, { scale: 1, duration: dur + 0.3, ease: "expo.out", immediateRender: false }, t);
+}
+const ringSvg = `<svg width="760" height="760" viewBox="0 0 760 760" style="position:absolute;left:0;top:0;overflow:visible">
+<circle cx="380" cy="380" r="370" fill="none" stroke="#8fb1bd" stroke-opacity=".4" stroke-width="1.6" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" transform="rotate(-90 380 380)"/></svg>`;
+
+const caption = el("div", null, "Example wedding · fictional names", stage);
+caption.id = "caption";
+caption.style.top = P.caption + "px";
+tl.to(caption, { opacity: 0.55, duration: 0.4 }, 0.6);
+tl.to(caption, { opacity: 0, duration: 0.3 }, 7.1);
+
+/* ---------- persistent brand bug (top) ---------- */
+const bug = el("div", "abs serif", "SaveTheDates", stage, `left:0;width:${W}px;top:${P.bug[0]}px;text-align:center;font-size:${P.bug[1]}px;letter-spacing:-.04em;color:#F4F0E6;z-index:27`);
+gsap.set(bug, { opacity: 0, y: -16 });
+tl.to(bug, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 0.05);
+tl.to(bug, { color: "#0B2A3D", duration: 0.3, ease: "none" }, 4.95);
+tl.to(bug, { opacity: 0, duration: 0.25, ease: "none" }, 7.2);
+
+/* =========================================================
+   A — 0 to 2.5: the promise
+   ========================================================= */
+const sA = scene("sA", 0, 5.3);
+el("div", "abs", null, sA, "inset:0;background:radial-gradient(circle at 50% 62%,#15485c 0%,rgba(11,42,61,0) 55%)");
+const ring = el("div", "abs", ringSvg, sA, "width:760px;height:760px");
+place(ring, CX, P.ringA[0], P.ringA[1]);
+tl.to($("circle", ring), { attr: { "stroke-dashoffset": 0 }, duration: 1.6, ease: "power2.inOut" }, 0.1);
+const hA = el("div", "abs serif", "Your wedding<br>website,<br><i style='color:#D8E0DA'>beautifully done.</i>", sA, `left:0;width:${W}px;top:${P.hA[0]}px;text-align:center;font-size:${P.hA[1]}px;line-height:1.02;letter-spacing:-.038em;color:#F7F4EC;white-space:nowrap`);
+const hAS = splitLines(hA);
+gsap.set(hAS.lines, { yPercent: 135 });
+tl.to(hAS.lines, { yPercent: 0, duration: 0.9, ease: "expo.out", stagger: 0.12 }, 0.02);
+cue("impact", 0.02, { soft: true });
+
+const back = makePhone(stage); back.root.style.zIndex = 24;
+addShot(back, "03-bold", "save-the-date");
+place(back.root, CX - 210 * P.back[1] / 0.78, H - 20, P.back[1], { rotation: -12 });
+const hero = makePhone(stage); hero.root.style.zIndex = 25;
+const order = ["01-minimal", "03-bold", "04-terracotta", "07-riviera", "05-heather", "12-evening-gold", "06-coastal", "11-black-tie", "10-velvet"];
+const heroLayers = order.map((id) => addShot(hero, id, "save-the-date"));
+place(hero.root, CX + 150 * P.hero[1] / 0.9, H + 60, P.hero[1], { rotation: 7 });
+tl.to(back.root, { y: P.back[0], duration: 1.1, ease: "expo.out" }, 0);
+tl.to(hero.root, { y: P.hero[0], duration: 1.1, ease: "expo.out" }, 0.06);
+tl.to(back.root, { rotation: -9, y: P.back[0] - 15, duration: 1.8, ease: "sine.inOut" }, 1.0);
+tl.to(hero.root, { rotation: 5, y: P.hero[0] - 14, duration: 1.8, ease: "sine.inOut" }, 1.0);
+cue("rise", 0.05);
+
+// A -> B
+tl.to(hAS.lines, { yPercent: -105, duration: 0.45, ease: "power3.in", stagger: 0.05 }, 2.1);
+tl.to(back.root, { y: H + 600, rotation: -30, duration: 0.7, ease: "power3.in" }, 2.1);
+tl.to(ring, { scale: 2.4, opacity: 0, duration: 0.8, ease: "power2.in" }, 2.1);
+tl.to(hero.root, { x: CX, y: P.heroB[0], rotation: 0, scale: P.heroB[1], duration: 0.75, ease: "swoop" }, 2.1);
+cue("whoosh", 2.5, { len: 0.6 });
+
+/* =========================================================
+   B — 2.5 to 5: twelve designs
+   ========================================================= */
+const sB = scene("sB", 2.3, 5.3);
+const bgs = order.slice(1).map((id) => el("div", "abs", null, sB, `inset:0;background:${THEMES[id].c}`));
+gsap.set(bgs, { clipPath: `circle(0% at ${CX}px ${P.heroB[0]}px)` });
+const hB = el("div", "abs serif", "Twelve designs.", sB, `left:0;width:${W}px;top:${P.hB[0]}px;text-align:center;font-size:${P.hB[1]}px;letter-spacing:-.04em;color:#fff;white-space:nowrap`);
+const hBS = splitChars(hB);
+gsap.set(hBS.chars, { yPercent: 135 });
+tl.to(hBS.chars, { yPercent: 0, duration: 0.7, ease: "expo.out", stagger: 0.025 }, 2.35);
+const nameBox = el("div", "abs corm", null, sB, `left:0;width:${W}px;top:${P.name[0]}px;height:${P.name[1]}px;overflow:hidden;text-align:center;font-size:${P.name[2]}px;font-style:italic;color:rgba(255,255,255,.88)`);
+const names = order.slice(1).map((id) => el("div", "abs", THEMES[id].name, nameBox, `left:0;width:${W}px;top:0;height:${P.name[1]}px;white-space:nowrap`));
+gsap.set(names, { yPercent: 110 });
+const flicks = order.slice(1).map((_, k) => 2.5 + k * BEAT / 2);
+flicks.forEach((t, k) => {
+  tl.to(bgs[k], { clipPath: `circle(80% at ${CX}px ${P.heroB[0]}px)`, duration: 0.45, ease: "expo.out" }, t - 0.04);
+  wipeIn(heroLayers[k + 1].layer, t - 0.12, 0.3);
+  if (k > 0) tl.to(names[k - 1], { yPercent: -110, duration: 0.2, ease: "power3.in" }, t - 0.14);
+  tl.to(names[k], { yPercent: 0, duration: 0.3, ease: "expo.out" }, t);
+  tl.fromTo(hero.root, { scale: P.heroB[1] }, { scale: P.heroB[1] * 1.016, duration: 0.08, yoyo: true, repeat: 1, ease: "power1.out", immediateRender: false }, t - 0.03);
+  cue("theme", t, { i: k });
+});
+tl.to(hero.root, { rotationY: -10, rotationX: 5, duration: 2.3, ease: "sine.inOut" }, 2.5);
+
+/* ---------- stripe wipe to paper (4.8 – 5.2), phone stays on top ---------- */
+const stripes = ["#0F4C5C", "#2F6B4F", "#F8F6F0"].map((c, i) => el("div", "abs", null, stage, `left:-500px;top:-200px;width:2080px;height:2320px;background:${c};z-index:${20 + i};transform:skewX(-12deg)`));
+gsap.set(stripes, { xPercent: -110 });
+stripes.forEach((s, i) => {
+  tl.to(s, { xPercent: 0, duration: 0.45, ease: "power3.inOut" }, 4.72 + i * 0.07);
+  tl.set(s, { visibility: "hidden" }, 5.35);
+});
+tl.to([hBS.chars, nameBox], { opacity: 0, duration: 0.2 }, 4.8);
+tl.to(hero.root, { rotationY: 0, rotationX: 0, scale: P.heroC[1], y: P.heroC[0], duration: 0.6, ease: "swoop" }, 4.75);
+cue("whoosh", 5.0, { len: 0.6 });
+
+/* =========================================================
+   C — 5 to 7.5: everything guests need
+   ========================================================= */
+const sC = scene("sC", 5.0, 7.9, "#F8F6F0");
+const PAGES = [["save-the-date", "Save the Date"], ["invitation", "Invitation"], ["details", "Details"], ["rsvp", "RSVP"]];
+const pageLayers = PAGES.slice(1).map(([p]) => addShot(hero, "10-velvet", p, p === "details"));
+const list = el("div", "abs", null, sC, `left:0;width:${W}px;top:${P.list[0]}px;text-align:center`);
+const rows = PAGES.map(([, label], i) => el("div", "serif", `${label}`, list, `font-size:${P.list[1]}px;line-height:1.16;letter-spacing:-.03em;color:#0B2A3D;white-space:nowrap`));
+gsap.set(rows, { opacity: 0, y: 30 });
+PAGES.forEach((_, i) => {
+  const t = 5.0 + i * BEAT;
+  tl.to(rows[i], { opacity: 1, y: 0, duration: 0.45, ease: "expo.out" }, t);
+  if (i > 0) {
+    wipeIn(pageLayers[i - 1].layer, t - 0.12, 0.35);
+    tl.to(rows[i - 1], { opacity: 0.3, duration: 0.3, ease: "none" }, t);
+    cue("swap", t, { k: i - 1 });
+  }
+});
+tl.to(pageLayers[1].img, { y: -700, duration: 1.3, ease: "power1.inOut" }, 6.3);
+const chips = [
+  ["Meal choices &amp; dietary needs", `left:50px;top:${P.chips[0]}px`, 6.25],
+  ["Send by WhatsApp, text or email", `right:50px;top:${P.chips[1]}px`, 6.55],
+  ["No app or login for guests", `left:70px;top:${P.chips[2]}px`, 6.85],
+].map(([txt, pos, t]) => {
+  const c = el("div", "chip", `<i></i>${txt}`, stage, `${pos};font-size:${P.chips[3]}px`);
+  gsap.set(c, { opacity: 0, scale: 0.6, y: 20 });
+  tl.to(c, { opacity: 1, scale: 1, y: 0, duration: 0.45, ease: "back.out(1.8)" }, t);
+  tl.to(c, { opacity: 0, y: -30, duration: 0.25, ease: "power2.in" }, 7.2);
+  cue("pop", t);
+  return c;
+});
+
+/* ---------- curtain to navy (7.15 – 7.6) ---------- */
+tl.to(hero.root, { y: H + 700, rotation: 14, duration: 0.6, ease: "power3.in" }, 7.1);
+tl.to(rows, { opacity: 0, y: -30, duration: 0.3, ease: "power2.in", stagger: 0.03 }, 7.1);
+const curtain = el("div", "abs", null, stage, "left:-200px;width:1480px;top:0;height:2600px;background:#0B2A3D;border-radius:50% 50% 0 0 / 240px 240px 0 0;z-index:30");
+gsap.set(curtain, { y: H + 40 });
+tl.to(curtain, { y: -400, duration: 0.6, ease: "power3.inOut" }, 7.0);
+tl.set(curtain, { visibility: "hidden" }, 7.7);
+cue("riser", 7.5, { from: 6.2 });
+
+/* =========================================================
+   D — 7.5 to 10: the pitch
+   ========================================================= */
+const sD = scene("sD", 7.45, 11, "#0B2A3D");
+sD.style.zIndex = 40;
+el("div", "abs", null, sD, "inset:0;background:radial-gradient(circle at 50% 38%,#154a5e 0%,rgba(11,42,61,0) 52%)");
+const ring2 = el("div", "abs", ringSvg, sD, "width:760px;height:760px");
+place(ring2, CX, P.ring2[0], P.ring2[1]);
+tl.to($("circle", ring2), { attr: { "stroke-dashoffset": 0 }, duration: 1.3, ease: "power2.inOut" }, 7.5);
+tl.fromTo(ring2, { rotation: -40 }, { rotation: 0, duration: 2.5, ease: "power2.out", immediateRender: false }, 7.5);
+DOT_ORDER.forEach((id, i) => {
+  const a = (-90 + i * 30) * Math.PI / 180;
+  const d = el("div", "abs", null, ring2, `left:${380 + 370 * Math.cos(a) - 10}px;top:${380 + 370 * Math.sin(a) - 10}px;width:20px;height:20px;border-radius:50%;background:${THEMES[id].c};box-shadow:0 0 0 1.5px rgba(244,240,230,.6)`);
+  gsap.set(d, { scale: 0 });
+  tl.to(d, { scale: 1, duration: 0.4, ease: "back.out(3)" }, 7.75 + i * 0.05);
+});
+const mark = el("div", "abs serif", "SaveTheDates", sD, `left:0;width:${W}px;top:${P.mark[0]}px;text-align:center;font-size:${P.mark[1]}px;letter-spacing:-.045em;color:#F7F4EC;white-space:nowrap`);
+const markS = splitChars(mark);
+gsap.set(markS.chars, { yPercent: 110, opacity: 0 });
+tl.to(markS.chars, { yPercent: 0, opacity: 1, duration: 0.8, ease: "expo.out", stagger: 0.028 }, 7.55);
+const tag = el("div", "abs eyebrow", "For your next chapter", sD, `left:0;width:${W}px;top:${P.tag}px;text-align:center;color:#a9c3cc;font-size:19px`);
+gsap.set(tag, { opacity: 0, letterSpacing: "0.8em" });
+tl.to(tag, { opacity: 1, letterSpacing: "0.4em", duration: 1.2, ease: "expo.out" }, 7.9);
+const pitch = el("div", "abs corm", "<i>Save the Date · Invitation · Details · RSVP</i>", sD, `left:0;width:${W}px;top:${P.pitch[0]}px;text-align:center;font-size:${P.pitch[1]}px;color:#D8E0DA`);
+gsap.set(pitch, { opacity: 0, y: 16 });
+tl.to(pitch, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 8.0);
+const price = el("div", "abs serif", "Free to build. <i style='color:#D8E0DA'>£39 once.</i>", sD, `left:0;width:${W}px;top:${P.price[0]}px;text-align:center;font-size:${P.price[1]}px;letter-spacing:-.03em;color:#F7F4EC;white-space:nowrap`);
+gsap.set(price, { opacity: 0, y: 24 });
+tl.to(price, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 8.2);
+cue("pill", 8.2);
+const cta = el("div", "abs", `<div style="display:inline-flex;align-items:center;gap:26px;background:#F4F0E6;border-radius:8px;padding:0 14px 0 38px;height:92px;font:700 30px/1 Arial;color:#0B2A3D">Start building for free<span style="width:62px;height:62px;border-radius:6px;background:#0F4C5C;display:flex;align-items:center;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M6 18 18 6M8 6h10v10"/></svg></span></div>`, sD, `left:0;width:${W}px;top:${P.cta}px;text-align:center`);
+gsap.set(cta, { opacity: 0, y: 24, scale: 0.94 });
+tl.to(cta, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "back.out(1.6)" }, 8.4);
+cue("pill", 8.4);
+const url = el("div", "abs serif", "savethedates.co.uk", sD, `left:0;width:${W}px;top:${P.url[0]}px;text-align:center;font-size:${P.url[1]}px;color:#D8E0DA`);
+gsap.set(url, { opacity: 0, y: 16 });
+tl.to(url, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 8.6);
+tl.to(cta, { scale: 1.03, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, 9.3);
+cue("finale", 7.5);
+
+/* ---------- grain + export ---------- */
+const grain = el("canvas", null, null, stage); grain.id = "grain"; grain.width = W / 2; grain.height = H / 2;
+el("div", null, null, stage).id = "vig";
+const gctx = grain.getContext("2d");
+let seed = 11;
+const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const noiseFrames = Array.from({ length: 8 }, () => {
+  const img = gctx.createImageData(W / 2, H / 2);
+  for (let i = 0; i < img.data.length; i += 4) { const v = rnd() * 255 | 0; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  return img;
+});
+window.__piece = "ad";
+window.__speed = 1;
+window.__duration = DURATION;
+window.__seek = (t, frame) => {
+  tl.seek(Math.max(0, t), false);
+  gctx.putImageData(noiseFrames[(frame ?? Math.round(t * 60)) % noiseFrames.length], 0, 0);
+  return new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+};
+await Promise.all([...document.images].map((i) => i.decode().catch(() => {})));
+cues.sort((a, b) => a.t - b.t);
+window.__cues = cues;
+await window.__seek(0);
+window.__ready = true;
+})();
+</script>
+</body>
+</html>

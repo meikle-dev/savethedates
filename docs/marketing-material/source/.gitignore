@@ -1,0 +1,10 @@
+node_modules/
+assets/
+cues.json
+score.wav
+film-silent.mp4
+web.mp4
+*.cues.json
+*.score.wav
+*.master.mp4
+*.web.mp4
