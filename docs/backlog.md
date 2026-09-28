@@ -1660,6 +1660,9 @@ Add a link-preview card for valid guest URLs of published weddings (owner approv
 ## F051 - Full SEO audit and search-visibility report
 
 **Status:** In Progress (report and triage done 25 September 2026; waits for the owner's keyword-volume input, see handoff)
+
+**Live audit refresh (28 September 2026, report only):** [Current SEO report](reports/2026-09-28-seo-audit.md) checks production, source, 74 route samples, alternate/staging hosts, three acquisition pages and mobile/desktop rendering. Acquisition pages are indexable; 48 fictional example variants are noindex. New priorities: showcase mobile performance (three Lighthouse runs, 82/100 and about 4.93 s LCP), preview-image loading investigation, Search Console confirmation, canonical-host consolidation and clearer page targeting. Independent technical review incorporated. No application changes or new implementation tickets authorized by this audit. F051 remains In Progress: keyword volumes, Search Console/field data and triage of SEO-01–SEO-08 are outstanding. Exact commands, unsuccessful checks and evidence limits are in the report. Next: triage these recommendations and confirm the production sitemap/index state with Search Console access.
+
 **Priority / lead:** P2 / SEO & Growth, with the Software Engineer for technical checks. Report only; no application changes.
 **Purpose:** Find out what stops SaveTheDates appearing in Google for the searches UK and Irish couples make, and produce a prioritised fix list.
 **Depends on:** None to start. Checks that need the live domain wait for F041/F009: Search Console, real indexing, and field Core Web Vitals.
