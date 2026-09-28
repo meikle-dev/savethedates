@@ -26,6 +26,7 @@ export function PurchasePanel({ entitlement, checkout }: { entitlement: Entitlem
         : expiry && <p className="form-error mt-4" role="alert">The previous site period ended on {expiry}, so the site is private. Your draft is still saved; update the wedding date if needed before purchasing again.</p>}
       <form action={action} className="mt-5">
         <button className="button button-primary" disabled={pending}>{pending ? "Opening secure checkout…" : "Buy and continue to Stripe"}</button>
+        <p className="mt-3 text-sm text-[var(--muted)]">Have a promo code? Enter it on the Stripe checkout page.</p>
         <LegalAgreement action="buying" />
         {state.message && <p className="form-error mt-4" role="alert">{state.message}</p>}
       </form>

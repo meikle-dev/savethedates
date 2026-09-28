@@ -83,6 +83,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     const paid = signedEvent("checkout.session.completed", {
       id: `cs_test_${crypto.randomUUID()}`,
       object: "checkout.session",
+      amount_subtotal: 3900,
       amount_total: 3900,
       currency: "gbp",
       payment_intent: paymentIntent,
@@ -90,7 +91,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
       metadata: { wedding_id: wedding.data.id, owner_id: ownerId, entitlement_expires_at: "2028-03-18T00:00:00.000Z" },
     });
     expect((await page.request.post("/api/stripe/webhook", { data: paid.payload, headers: { "content-type": "application/json", "stripe-signature": "invalid" } })).status()).toBe(400);
-    const wrongTotal = signedEvent("checkout.session.completed", { ...JSON.parse(paid.payload).data.object, amount_total: 3000 });
+    const wrongTotal = signedEvent("checkout.session.completed", { ...JSON.parse(paid.payload).data.object, amount_subtotal: 3000, amount_total: 3000 });
     expect((await page.request.post("/api/stripe/webhook", { data: wrongTotal.payload, headers: { "content-type": "application/json", "stripe-signature": wrongTotal.signature } })).status()).toBe(400);
     const paidResponse = await page.request.post("/api/stripe/webhook", { data: paid.payload, headers: { "content-type": "application/json", "stripe-signature": paid.signature } });
     expect(paidResponse.status()).toBe(200);
@@ -142,6 +143,54 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     expect((await guest.request.get(home)).status()).toBe(404);
   } finally {
     await guest.close();
+    await local.admin.auth.admin.deleteUser(ownerId);
+  }
+});
+
+test("a Stripe promotion code can discount the purchase or make it free", async ({ page }) => {
+  const created = await local.admin.auth.admin.createUser({ email: `promo-e2e-${crypto.randomUUID()}@example.test`, password: crypto.randomUUID(), email_confirm: true });
+  if (created.error || !created.data.user) throw new Error("Cannot create promotion-code test owner");
+  const ownerId = created.data.user.id;
+  try {
+    const wedding = await local.admin.from("weddings").insert({ owner_id: ownerId, first_name: "Robin", second_name: "Casey", wedding_date: "2027-09-18", location: "Belfast" }).select("id").single();
+    if (wedding.error || !wedding.data) throw new Error("Cannot create promotion-code test wedding");
+    const session = (fields: Record<string, unknown>) => ({
+      id: `cs_test_${crypto.randomUUID()}`,
+      object: "checkout.session",
+      amount_subtotal: 3900,
+      currency: "gbp",
+      metadata: { wedding_id: wedding.data.id, owner_id: ownerId, entitlement_expires_at: "2028-03-18T00:00:00.000Z" },
+      ...fields,
+    });
+    const post = (event: ReturnType<typeof signedEvent>) => page.request.post("/api/stripe/webhook", { data: event.payload, headers: { "content-type": "application/json", "stripe-signature": event.signature } });
+    const recorded = async (reference: string) => (await local.admin.from("stripe_payments").select("amount_total").eq("payment_intent_id", reference).maybeSingle()).data?.amount_total;
+
+    // Rejected: a changed price, another currency, a charge above the price, or a charge with no PaymentIntent.
+    for (const object of [
+      session({ amount_subtotal: 3000, amount_total: 0, payment_status: "paid", payment_intent: null }),
+      session({ currency: "eur", amount_total: 3900, payment_status: "paid", payment_intent: `pi_test_${crypto.randomUUID()}` }),
+      session({ amount_total: 4900, payment_status: "paid", payment_intent: `pi_test_${crypto.randomUUID()}` }),
+      session({ amount_total: 1950, payment_status: "paid", payment_intent: null }),
+    ]) expect((await post(signedEvent("checkout.session.completed", object))).status()).toBe(400);
+
+    // 50% off: a normal card payment for the discounted amount.
+    const discountedIntent = `pi_test_${crypto.randomUUID()}`;
+    const discounted = await post(signedEvent("checkout.session.completed", session({ amount_total: 1950, payment_status: "paid", payment_intent: discountedIntent })));
+    expect(await discounted.json()).toMatchObject({ result: "granted" });
+    expect(await recorded(discountedIntent)).toBe(1950);
+    expect((await post(signedEvent("refund.created", { id: `re_test_${crypto.randomUUID()}`, object: "refund", payment_intent: discountedIntent }))).status()).toBe(200);
+
+    // 100% off: Stripe completes a £0 session with no PaymentIntent. API 2026-03-25 reports it
+    // as "paid" (confirmed against a real sandbox checkout); older versions say "no_payment_required".
+    for (const paymentStatus of ["paid", "no_payment_required"]) {
+      const free = session({ amount_total: 0, payment_status: paymentStatus, payment_intent: null });
+      expect(await post(signedEvent("checkout.session.completed", free)).then((response) => response.json())).toMatchObject({ result: "granted" });
+      expect(await recorded(free.id)).toBe(0);
+      // A redelivered completion (new event ID) for the same session adds no second payment.
+      expect(await post(signedEvent("checkout.session.completed", free)).then((response) => response.json())).toMatchObject({ result: "granted" });
+    }
+    expect((await local.admin.from("stripe_payments").select("payment_intent_id").eq("wedding_id", wedding.data.id)).data).toHaveLength(3);
+  } finally {
     await local.admin.auth.admin.deleteUser(ownerId);
   }
 });

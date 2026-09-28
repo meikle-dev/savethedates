@@ -16,6 +16,7 @@ describe("checkoutSessionParams", () => {
       client_reference_id: attempt.wedding_id,
       customer_email: "owner@example.test",
       payment_method_types: ["card"],
+      allow_promotion_codes: true,
       expires_at: 1789821060,
       metadata: { attempt_id: attempt.attempt_id, wedding_id: attempt.wedding_id, owner_id: "owner-1", entitlement_expires_at: attempt.entitlement_expires_at },
       payment_intent_data: { metadata: { attempt_id: attempt.attempt_id } },

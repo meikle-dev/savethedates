@@ -85,6 +85,23 @@ These are local Docker figures. Repeat the same check on F009 staging once the h
 2. In managed Auth, enable email/password confirmation, set Site URL to `APP_ORIGIN`, and allow the exact `APP_ORIGIN/auth/confirm` redirect. Copy the signup/recovery templates from `supabase/templates/`; the application expects token hashes at `/auth/confirm`. Configure verified Resend SMTP credentials in Supabase Auth, not a second application email flow. Verify signup and recovery in real external inboxes, including expired links and return to the correct host. For Google sign-in, also allow the exact `APP_ORIGIN/auth/callback` redirect, enable the Google provider with that environment's OAuth client (F041 step 2), then set `AUTH_GOOGLE_ENABLED=true` on the service. The app exchanges the returned code server-side (PKCE, verifier in an httpOnly cookie). Access and refresh tokens never appear in URLs. The single-use code does appear in the `/auth/callback` URL, including browser history and any host log that keeps query strings, but it cannot be used without that browser's verifier. Supabase's [default SMTP service is for non-production use](https://supabase.com/docs/guides/auth/auth-smtp); see its [redirect configuration](https://supabase.com/docs/guides/auth/redirect-urls).
 3. Register `/api/stripe/webhook` for `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `refund.created`, and `charge.dispute.created`. Use the endpoint-specific secret. Verify test Checkout and delivery/retries on staging. A browser success redirect alone does not grant publication. Live purchase/refund verification needs the owner's release authority and records of the actual result.
 
+### Promotion codes
+
+Codes live in Stripe, not in the app or the database. Changing them needs no deploy. Test mode (staging, local) and live mode (production) have separate lists.
+
+To create a code:
+
+1. Open the Stripe Dashboard: **Product catalogue → Coupons → Create coupon**. Live codes need live mode; staging codes need the sandbox.
+2. Enter a **Name** (customers see it on the receipt).
+3. Set **Percentage off**: `100` makes the site free, or for example `20` gives 20% off. Leave **Duration** as **Once**. Leave **Apply to specific products** off: each checkout creates its own product, so a product-restricted code never applies.
+4. Under **Redemption limits**, set an end date and a total number of uses. **Always do this for a 100% code:** anyone who has the code can use it, and every use is a free site.
+5. Turn on **Use customer-facing promotion codes** and type the **Code** customers will enter, for example `WEDDING20`. Codes are not case-sensitive. Don't rely on **Eligible for first-time orders only**; it hasn't been tested with this checkout.
+6. Click **Create coupon**.
+
+To stop a code, open the coupon, click **…** on the code's row and choose **Archive promotion code** (or delete the whole coupon). Codes that reach their use limit or expiry date stop automatically. The **Redemptions** column shows how often each coupon has been used.
+
+How it works: customers click **Add promotion code** on the Stripe checkout page. For a 100% code Stripe asks for no card and shows **Complete order**. The webhook accepts any total from £0 to £39 for the £39 product and records the amount charged (`stripe_payments.amount_total`). A free order has no PaymentIntent, so its row is keyed by the Checkout Session ID (`cs_…`). A discounted payment can be refunded as normal, and the refund unpublishes the site. A free order has nothing to refund. To withdraw a free site, set `revoked_at = now(), revoked_reason = 'refunded'` on its `stripe_payments` row and unpublish the wedding. The owner's dashboard will then say the purchase was refunded, and they can buy again. Grants made with a code are logged as `payment.entitlement.granted` with `reason` `promotion_discount` or `promotion_free`.
+
 ## Verification and promotion
 
 The launch order is set by the [launch plan](launch-plan.md). Production is created locked, reviewed by Stripe and Google, rehearsed end to end by the owner (including a live purchase and refund), and only then opened by removing the lock.
@@ -138,7 +155,7 @@ Reading one request ID should tell the story of that request (F038).
 | `payment.stripe.failed` | error | Stripe API error (`reason` is the Stripe error type) |
 | `payment.checkout.expired` | info | Signed expiry event processed |
 | `payment.webhook.received` / `.rejected` / `.duplicate` / `.recorded` / `.failed` | info / warn / info / info / error | Verified event (`stripeEventId`, `eventType`) / missing or invalid signature or incomplete event / already processed / revocation stored before its payment / database fault |
-| `payment.entitlement.granted` / `.revoked` | info | Entitlement granted / revoked by refund or dispute |
+| `payment.entitlement.granted` / `.revoked` | info | Entitlement granted (`reason` is `promotion_discount` or `promotion_free` when a Stripe promotion code was used) / revoked by refund or dispute |
 | `rsvp.submit.accepted` / `.rejected` / `.failed` | info / warn / error | Guest response saved / `reason` closed, rate_limited, capacity, invalid_link, menu_mismatch (a meal choice doesn't match the current menu, or answers a course guests aren't shown), meal_missing (a course guests are shown was left unanswered) or invalid_input / fault. A failed menu re-read after a meal rejection is logged as `.failed` and the guest sees the form's field errors |
 | `rsvp.link.rotated` / `.rejected` / `.failed` | info / warn / error | Shared link replaced / invalid shared link opened / fault |
 | `rsvp.response.corrected` / `.removed` / `.rejected` / `.failed` | info / info / warn / error | Owner corrected or removed a response / response not found / fault |

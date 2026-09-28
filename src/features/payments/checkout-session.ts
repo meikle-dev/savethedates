@@ -8,6 +8,9 @@ export type CheckoutAttempt = {
   entitlement_expires_at: string;
 };
 
+/** The full price in pence. Stripe promotion codes can discount it, down to £0. */
+export const sitePricePence = 3900;
+
 export function checkoutSessionParams(attempt: CheckoutAttempt, ownerId: string, email: string | undefined, origin: string): Stripe.Checkout.SessionCreateParams {
   const metadata = {
     attempt_id: attempt.attempt_id,
@@ -25,10 +28,12 @@ export function checkoutSessionParams(attempt: CheckoutAttempt, ownerId: string,
       quantity: 1,
       price_data: {
         currency: "gbp",
-        unit_amount: 3900,
+        unit_amount: sitePricePence,
         product_data: { name: "SaveTheDates wedding site" },
       },
     }],
+    // Codes live in the Stripe Dashboard (Product catalogue > Coupons), not in this app.
+    allow_promotion_codes: true,
     metadata,
     payment_intent_data: { metadata },
     success_url: `${origin}/dashboard/publish?checkout=success`,

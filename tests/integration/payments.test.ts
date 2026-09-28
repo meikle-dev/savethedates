@@ -41,7 +41,7 @@ afterAll(async () => {
   await local.admin.auth.admin.deleteUser(otherId);
 });
 
-async function paymentEvent(input: { id: string; type: "paid" | "refunded" | "disputed"; intent: string; session?: string; wedding?: string; owner?: string; expiry?: string; createdAt?: string }) {
+async function paymentEvent(input: { id: string; type: "paid" | "refunded" | "disputed"; intent: string; session?: string; wedding?: string; owner?: string; expiry?: string; createdAt?: string; amount?: number | null }) {
   return local.admin.rpc("process_stripe_payment_event", {
     requested_event_id: input.id,
     requested_event_created_at: input.createdAt ?? new Date().toISOString(),
@@ -51,6 +51,7 @@ async function paymentEvent(input: { id: string; type: "paid" | "refunded" | "di
     requested_wedding_id: input.wedding ?? null,
     requested_owner_id: input.owner ?? null,
     requested_checkout_session_id: input.session ?? null,
+    ...(input.amount === undefined ? {} : { requested_amount_total: input.amount }),
   });
 }
 
@@ -260,6 +261,25 @@ it("a late payment for an older session keeps the current checkout attempt", asy
     expect((await attempts()).data).toEqual([]);
   } finally {
     await local.admin.auth.admin.deleteUser(userId);
+  }
+});
+
+it("records the amount charged after a promotion code, including a free order", async () => {
+  const amount = async (reference: string) => (await local.admin.from("stripe_payments").select("amount_total").eq("payment_intent_id", reference).maybeSingle()).data?.amount_total;
+  const discounted = `pi_${crypto.randomUUID()}`;
+  expect((await paymentEvent({ id: `evt_${crypto.randomUUID()}`, type: "paid", intent: discounted, session: `cs_${crypto.randomUUID()}`, wedding: otherWeddingId, owner: otherId, amount: 3120 })).data).toBe("granted");
+  expect(await amount(discounted)).toBe(3120);
+
+  // A free order has no PaymentIntent; its Checkout Session ID is the payment reference.
+  const freeSession = `cs_${crypto.randomUUID()}`;
+  expect((await paymentEvent({ id: `evt_${crypto.randomUUID()}`, type: "paid", intent: freeSession, session: freeSession, wedding: otherWeddingId, owner: otherId, amount: 0 })).data).toBe("granted");
+  expect(await amount(freeSession)).toBe(0);
+  expect((await other.rpc("owner_entitlement")).data?.[0]).toMatchObject({ active: true, revoked_reason: null });
+
+  for (const invalid of [-1, 3901, null]) {
+    const intent = `pi_${crypto.randomUUID()}`;
+    expect((await paymentEvent({ id: `evt_${crypto.randomUUID()}`, type: "paid", intent, session: `cs_${crypto.randomUUID()}`, wedding: otherWeddingId, owner: otherId, amount: invalid })).error?.code).toBe("22023");
+    expect(await amount(intent)).toBeUndefined();
   }
 });
 

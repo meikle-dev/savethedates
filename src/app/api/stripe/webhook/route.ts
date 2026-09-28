@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { errorReason, identify, log, withLogging } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stripeClient, stripeWebhookSecret } from "@/features/payments/stripe";
+import { sitePricePence } from "@/features/payments/checkout-session";
 
 export const runtime = "nodejs";
 
@@ -53,13 +54,20 @@ async function handleWebhook(request: Request) {
   let ownerId: string | null = null;
   let checkoutSessionId: string | null = null;
   let entitlementExpiresAt: string | null = null;
+  let amountTotal: number | null = null;
 
   if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
     const session = event.data.object;
-    if (session.payment_status !== "paid") return Response.json({ received: true });
-    if (session.amount_total !== 3900 || session.currency !== "gbp") return rejected("unexpected_total", "Unexpected checkout total", { stripeEventId: event.id });
+    if (session.payment_status === "unpaid") return Response.json({ received: true });
+    const total = session.amount_total;
+    if (session.currency !== "gbp" || session.amount_subtotal !== sitePricePence || total === null || total < 0 || total > sitePricePence) {
+      return rejected("unexpected_total", "Unexpected checkout total", { stripeEventId: event.id });
+    }
     eventType = "paid";
-    paymentIntentId = id(session.payment_intent);
+    amountTotal = total;
+    // A 100% promotion code completes a £0 session with no PaymentIntent ("paid", or
+    // "no_payment_required" on older API versions); the session ID is then the payment reference.
+    paymentIntentId = id(session.payment_intent) ?? (total === 0 ? session.id : null);
     weddingId = session.metadata?.wedding_id ?? null;
     ownerId = session.metadata?.owner_id ?? null;
     entitlementExpiresAt = session.metadata?.entitlement_expires_at ?? null;
@@ -89,13 +97,17 @@ async function handleWebhook(request: Request) {
     requested_wedding_id: weddingId,
     requested_owner_id: ownerId,
     requested_checkout_session_id: checkoutSessionId,
+    requested_amount_total: amountTotal,
   });
   if (error) {
     log.error("payment.webhook.failed", { stripeEventId: event.id, reason: errorReason(error) });
     return new Response("Payment event could not be recorded", { status: 500 });
   }
   if (data === "duplicate") log.info("payment.webhook.duplicate", { stripeEventId: event.id });
-  else if (data === "granted") log.info("payment.entitlement.granted", { stripeEventId: event.id });
+  else if (data === "granted") {
+    const promotion = amountTotal === 0 ? "promotion_free" : amountTotal !== null && amountTotal < sitePricePence ? "promotion_discount" : undefined;
+    log.info("payment.entitlement.granted", { stripeEventId: event.id, reason: promotion });
+  }
   else if (data === "revoked") log.info("payment.entitlement.revoked", { stripeEventId: event.id, reason: eventType === "paid" ? "earlier_revocation" : eventType });
   else log.info("payment.webhook.recorded", { stripeEventId: event.id, reason: eventType });
   return Response.json({ received: true, result: data });
