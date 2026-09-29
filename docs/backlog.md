@@ -2867,5 +2867,5 @@ Owner, 26 September 2026: dietary answers are food preferences, not health data.
   - Deploy (see the pre-deploy check above).
   - Live price check on the homepage and at Stripe Checkout.
   - Reviewing fixed-amount promotion codes in Stripe.
-  - Replacing the published and scheduled social content that says £39: the Instagram bio, posts and Reel; the Pinterest pins, including the `06-price-39-once` pin scheduled for 12 October; and the TikTok bio if it is set. The owner will ask for that separately.
+  - Social content: Pinterest (all pins and the profile) and Instagram (bio, reposted Reel and carousel) were updated to £19 on 29 September. See the channel READMEs. The owner still needs to archive the two old £39 Instagram posts in the app.
 - **Next:** run the pre-deploy check, deploy, confirm £19 live and at Stripe Checkout, then mark Done.

@@ -28,7 +28,12 @@ Pinterest works like a visual search engine. It decides who sees a pin from its 
 - **Keep the pictures as they are.** Each shows a finished Save the Date in a clear style, which is what people save.
 - **Next content idea:** "save the date wording ideas" and "when to send save the dates" are big searches. They need a helpful guide page on the site first, which is SEO & Growth work.
 
-## Status (28 September 2026)
+## Status (29 September 2026)
+
+- **Price change to £19 (29 Sep):**
+  - Every pin description now says £19: all 16 scheduled pins and the 2 live pins. The profile's about text says £19 too. Each one was checked after a reload.
+  - The old `06-price-39-once` scheduled pin was deleted. It was replaced by `06-price-19-once`: same title (now £19), description, board and 12 Oct 8pm slot, with the link's `utm_content=price-19-once`.
+  - Schedule dates are unchanged.
 
 - **Account:** the owner's personal account, converted to a free business account with the owner's approval. The profile is `pinterest.com/savethedatesuk`, named "SaveTheDates", with the logo, the about text and the website. Business type is "Online merchant or marketplace", focus Events, and ads interest "not sure yet". The ads-sales contact form was skipped.
 - **Website claimed** on 28 Sep 2026 using a GoDaddy DNS TXT record: `@` = `pinterest-site-verification=d87482f0924eeb82078895e4c217c3c1`. Keep this record. The Pinterest tag was **not** installed, because the site is deliberately cookieless.
@@ -88,7 +93,7 @@ Spread pins out over two to three weeks (one or two a day) rather than posting e
 | 2 Oct | `02-twelve-designs` | 12 save the date and wedding invitation designs. Which one's you? | `/#themes` |
 | 6 Oct | `03-rsvps-with-meal-choices` | Online wedding RSVP with meal choices and dietary requirements | `/what-we-offer` |
 | 9 Oct | `05-simple-to-share` | Digital save the date you can send by WhatsApp, text or email | `/digital-save-the-date` |
-| 12 Oct | `06-price-19-once` | Digital save the date, wedding invitation and RSVP website: £19 once | `/#pricing` |
+| 12 Oct | `06-price-19-once` (replaced 29 Sep) | Digital save the date, wedding invitation and RSVP website: £19 once | `/#pricing` |
 
 **Video pin:** `video-pins/savethedates-ad-9x16-10s.mp4`, with `savethedates-ad-9x16-10s-cover.jpg` as the cover, linking to the homepage.
 

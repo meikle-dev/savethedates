@@ -17,14 +17,14 @@ This role sits outside the feature workflow. Use it when the request is about ma
 
 Ready-to-upload assets are in `docs/marketing-material/channels/<channel>/`. Master videos are in `marketing-videos/`, and the generator is in `source/`. Never hand-edit exported images. Change `source/` and regenerate.
 
-## Current picture (28 September 2026)
+## Current picture (29 September 2026)
 
 This is a summary only. Check the channel Status sections for detail, and update them, not this list.
 
 | Channel | State |
 | --- | --- |
-| **Instagram** `@savethedatesuk` | Business account (Wedding planning service); profile done. **Posted:** Reel + "Twelve designs" carousel. **Owner to do in the app:** bio link, then pin the Reel and the carousel. **Next:** week 2 (from about 5 Oct): carousel `2-save-the-date-first`, the price post, the Stories. |
-| **Pinterest** `@savethedatesuk` | Free business account, converted from the owner's personal account with approval. Website claimed with a GoDaddy DNS TXT record. **Strategy:** pins target save-the-date and invitation searches by style, with "wedding website" as a supporting phrase (see the README's Strategy section). 2 pins live; 16 scheduled daily at 8pm UK from 29 Sep to 15 Oct (all 12 designs + 6 topic pins), retitled for search on 28 Sep. Main board: "Save the date and wedding invitation ideas". **Not done:** the video pin; two board renames that Pinterest refused (retry later). **Next:** after 15 Oct, check Analytics, then repin or make fresh pins of the most-saved designs. Keep pinning 1–2 a day. |
+| **Instagram** `@savethedatesuk` | Business account (Wedding planning service); profile and bio link done. **Posted:** Reel + "Twelve designs" carousel, both reposted at £19 on 29 Sep. **Owner to do in the app:** archive the two old £39 posts, then pin the new Reel and carousel. **Next:** week 2 (from about 5 Oct): carousel `2-save-the-date-first`, the price post, the Stories. |
+| **Pinterest** `@savethedatesuk` | Free business account, converted from the owner's personal account with approval. Website claimed with a GoDaddy DNS TXT record. **Strategy:** pins target save-the-date and invitation searches by style, with "wedding website" as a supporting phrase (see the README's Strategy section). 2 pins live; 16 scheduled daily at 8pm UK from 29 Sep to 15 Oct (all 12 designs + 6 topic pins), retitled for search on 28 Sep. All descriptions and the profile updated to £19 on 29 Sep; the price pin was replaced with the £19 image. Main board: "Save the date and wedding invitation ideas". **Not done:** the video pin; two board renames that Pinterest refused (retry later). **Next:** after 15 Oct, check Analytics, then repin or make fresh pins of the most-saved designs. Keep pinning 1–2 a day. |
 | **Facebook** | No SaveTheDates Page yet. The Meta account holds the owner's personal profile and an unrelated Page ("Donaghadee Digital"). A Page is needed for Business Suite scheduling and for Instagram and Facebook ads. |
 | **Google Ads, TikTok** | Not started. |
 | **Paid ads** | None running. See the prerequisites below. |

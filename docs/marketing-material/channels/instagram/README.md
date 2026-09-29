@@ -2,7 +2,14 @@
 
 Everything here is ready to upload: feed images at 1080×1350 (4:5), Stories and Reels at 1080×1920 (9:16).
 
-## Status (28 September 2026)
+## Status (29 September 2026)
+
+- **Price change to £19 (29 Sep):**
+  - The bio now says £19. The website link `savethedates.co.uk` is set.
+  - Reposted the Reel from the re-rendered `savethedates-ad-9x16-10s.mp4`: original 9:16, the supplied cover, and the documented caption with £19.
+  - Reposted carousel `1-twelve-designs` at 4:5, with its caption changed to £19.
+  - "Share to Facebook" and the AI label were off for both.
+  - **Owner to do in the app:** archive the two old posts. They are the old Reel (caption just "https://savethedates.co.uk", end card shows £39) and the old "Twelve designs" carousel (last slide and caption show £39). Instagram web offers only Delete, not Archive, so they were left in place. Then pin the new Reel and carousel.
 
 - **Account:** `@savethedatesuk`, now a Business account (category: Wedding planning service, shown on profile; no contact details shown). Name "SaveTheDates", profile picture and bio are set.
 - **Posted:** carousel `1-twelve-designs` (14 slides, 4:5, caption as below) and the Reel (`savethedates-ad-9x16-10s.mp4`, original 9:16 crop, the supplied cover). The Reel caption is "Your wedding website, beautifully done.", then the approved supporting line about Save the Date, invitation, details and RSVPs, free to build, £19 once, then the hashtags. "Share to Facebook" and the AI label were off for both: the photo is from Unsplash and the botanicals are illustrations.
