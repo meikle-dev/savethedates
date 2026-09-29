@@ -7,7 +7,7 @@ const questions = [
   ["Can guests see each other’s replies?", "No. Responses are visible only in your account."],
   ["Who can see our save the date?", "Anyone with your Save the Date link. Your Invitation has its own link. Wedding pages are marked not to appear in search results, but that does not make them password-protected, so share your links only with your guests."],
   ["How long does it stay online?", "Until six months after your wedding date. After that, your links stop opening it."],
-  ["Can we try it first?", "Yes. Create an account, add your details and preview all twelve designs for free. You pay £39 once, when you’re ready to publish."],
+  ["Can we try it first?", "Yes. Create an account, add your details and preview all twelve designs for free. You pay £19 once, when you’re ready to publish."],
 ] as const;
 
 export function DigitalSaveTheDate({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
@@ -26,7 +26,7 @@ export function DigitalSaveTheDate({ isAuthenticated = false }: { isAuthenticate
             {/* Native navigation, as in the example banner, avoids a production router hash duplication. */}
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <div className="marketing-actions"><AccountAction href={accountHref} label={primaryAccountLabel} /><a className="marketing-button marketing-outline" href="/#themes">See the twelve designs</a></div>
-            <p className="hero-note">Create &amp; preview for free. £39 when you’re ready to publish.</p>
+            <p className="hero-note">Create &amp; preview for free. £19 when you’re ready to publish.</p>
           </div>
           <div className="hero-art"><div className="hero-orbit" /><div className="hero-phone-back"><PhonePreview theme="evening-gold" eager sizes="(max-width: 760px) 156px, 208px" /></div><div className="hero-phone-front"><PhonePreview theme="romantic" eager sizes="(max-width: 760px) 175px, 232px" /></div><p className="hero-art-caption">Save the date first.<br /><em>Invite them later.</em></p></div>
         </section>

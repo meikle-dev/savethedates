@@ -5,7 +5,7 @@ Everything here is ready to upload: feed images at 1080×1350 (4:5), Stories and
 ## Status (28 September 2026)
 
 - **Account:** `@savethedatesuk`, now a Business account (category: Wedding planning service, shown on profile; no contact details shown). Name "SaveTheDates", profile picture and bio are set.
-- **Posted:** carousel `1-twelve-designs` (14 slides, 4:5, caption as below) and the Reel (`savethedates-ad-9x16-10s.mp4`, original 9:16 crop, the supplied cover). The Reel caption is "Your wedding website, beautifully done.", then the approved supporting line about Save the Date, invitation, details and RSVPs, free to build, £39 once, then the hashtags. "Share to Facebook" and the AI label were off for both: the photo is from Unsplash and the botanicals are illustrations.
+- **Posted:** carousel `1-twelve-designs` (14 slides, 4:5, caption as below) and the Reel (`savethedates-ad-9x16-10s.mp4`, original 9:16 crop, the supplied cover). The Reel caption is "Your wedding website, beautifully done.", then the approved supporting line about Save the Date, invitation, details and RSVPs, free to build, £19 once, then the hashtags. "Share to Facebook" and the AI label were off for both: the photo is from Unsplash and the botanicals are illustrations.
 - **Still to do:**
   1. **Website link:** add `https://savethedates.co.uk` in the mobile app (Edit profile → Links). It can't be edited on the web.
   2. **Pin** the Reel, the carousel and later the price post. Pinning is only in the mobile app.
@@ -28,7 +28,7 @@ Everything here is ready to upload: feed images at 1080×1350 (4:5), Stories and
 ## Set up the profile
 
 - **Picture:** `profile/profile-picture-1080.png`
-- **Bio:** `Your wedding website, beautifully done. Save the Date, invitation, details & RSVPs. Free to build · £39 once.`
+- **Bio:** `Your wedding website, beautifully done. Save the Date, invitation, details & RSVPs. Free to build · £19 once.`
 - **Link:** `https://savethedates.co.uk`
 
 ## Suggested first posts, in order
@@ -36,7 +36,7 @@ Everything here is ready to upload: feed images at 1080×1350 (4:5), Stories and
 1. **Reel:** `reels/savethedates-ad-9x16-10s.mp4`. Choose `savethedates-ad-9x16-10s-cover.jpg` as the cover.
 2. **Carousel** `1-twelve-designs`. Upload the slides in file-name order.
 3. **Carousel** `2-save-the-date-first`
-4. **Feed post** `04-price-39-once.jpg`
+4. **Feed post** `04-price-19-once.jpg`
 5. **Carousel** `3-rsvps-and-catering`
 6. The remaining feed posts, one or two a week.
 
@@ -47,7 +47,7 @@ Pin items 1, 2 and 4 to the top of the profile.
 **Twelve designs**
 > Twelve designs. Which one's you?
 >
-> Every design has a matching Save the Date, Invitation, Details and RSVP. Try them all with your own words and photo, free. £39 once when you're ready to publish.
+> Every design has a matching Save the Date, Invitation, Details and RSVP. Try them all with your own words and photo, free. £19 once when you're ready to publish.
 >
 > Link in bio · savethedates.co.uk
 
@@ -62,7 +62,7 @@ Pin items 1, 2 and 4 to the top of the profile.
 > Guests choose their starter, main and dessert and tell you about dietary requirements, all online and without creating an account. Every reply lands privately in your guest list, with meal numbers ready to send to your caterer.
 
 **Price post**
-> Everything your guests need, in the design you love. £39, paid once. No subscription. Building and previewing is free.
+> Everything your guests need, in the design you love. £19, paid once. No subscription. Building and previewing is free.
 
 Add 3–5 hashtags at most, e.g. `#weddingwebsite #savethedate #weddingplanning #ukwedding #irishwedding`.
 
@@ -86,10 +86,10 @@ Instagram and Facebook ads are set up together in Meta Ads Manager. Read the [se
 Put the 9:16 and 4:5 versions in the same ad, so each placement gets the right shape.
 
 - **Primary text (pick one):**
-  - `Your wedding website, beautifully done. Save the Date, invitation, details and RSVPs. £39 once, free to build.`
+  - `Your wedding website, beautifully done. Save the Date, invitation, details and RSVPs. £19 once, free to build.`
   - `Save the date first. Invite them later. Twelve designs, with RSVPs and meal choices built in.`
   - `RSVPs without the spreadsheet chaos. Guests choose their meals online, with no app or login.`
-- **Headline:** `Your wedding website, beautifully done` or `Free to build. £39 once.`
+- **Headline:** `Your wedding website, beautifully done` or `Free to build. £19 once.`
 - **Button:** Learn more (or Sign up)
 - **Website URL:** `https://savethedates.co.uk/?utm_source=instagram&utm_medium=paid_social&utm_campaign=launch&utm_content=ad-video`. Change `utm_content` to match each ad. These tags only show up in Umami once the developer change in the setup guide is made.
 - **Audience:** UK and Ireland, ages 24–40, interests such as weddings, wedding planning and engagement. Keep it broad and let Meta optimise.

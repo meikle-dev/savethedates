@@ -65,11 +65,11 @@ Visits aren't customers. Check these every week:
 | Question | Where |
 | --- | --- |
 | How many couples signed up? | Supabase dashboard → Authentication → Users (ask the owner for access) |
-| How many paid £39? | Stripe dashboard → Payments. **This is the number that matters.** |
+| How many paid £19? | Stripe dashboard → Payments. **This is the number that matters.** |
 | How much did each platform cost? | Meta Ads Manager, Google Ads, Pinterest and TikTok dashboards |
 | Where did visitors come from? | Umami → Referrers (and UTM once the developer task is done) |
 
-Work out **ad spend ÷ paying couples** for each platform. Each couple pays £39, so aim to spend well under that per paying couple. For example, keep spending on anything under about £15 and pause anything over £30.
+Work out **ad spend ÷ paying couples** for each platform. Each couple pays £19, so aim to spend well under that per paying couple. For example, keep spending on anything under about £7 and pause anything over £15.
 
 ### Ad-platform tracking pixels: not installed, on purpose
 
@@ -92,10 +92,10 @@ The Meta Pixel, Google tag and TikTok Pixel **aren't** on the site. They set coo
 
 The full list is in section 9 of the [features guide](marketing-context/marketing-docs/app-features-and-screenshots-guide.md#9-what-we-can-and-cant-say). The short version:
 
-- **Use the approved lines**, e.g. "Your wedding website, beautifully done.", "RSVPs without the spreadsheet chaos.", "Save the date first. Invite them later.", "Free to build and preview. £39 once when you're ready to publish."
+- **Use the approved lines**, e.g. "Your wedding website, beautifully done.", "RSVPs without the spreadsheet chaos.", "Save the date first. Invite them later.", "Free to build and preview. £19 once when you're ready to publish."
 - **Never claim:** plus-ones or group RSVPs, guests editing their replies, reminders or emails to guests, QR codes, custom domains, gift lists, photo galleries, seating plans, "password-protected", "only invited guests can see it", an app, or "forever".
 - **No testimonials, reviews or customer numbers** until real ones exist, with permission. Olivia & James and their guests are fictional; the images are labelled "Example wedding · fictional names".
-- **Price:** "£39, paid once". No discounts or offers unless the owner approves them. Refunds: "Full refund within 14 days of paying, for any reason."
+- **Price:** "£19, paid once". No discounts or offers unless the owner approves them. Refunds: "Full refund within 14 days of paying, for any reason."
 - Use British English.
 
 ## 7. Brand basics

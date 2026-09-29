@@ -15,7 +15,7 @@ export function PurchasePanel({ entitlement, checkout }: { entitlement: Entitlem
   return <div className="mt-6 rounded-2xl border border-[var(--line)] bg-white/45 p-5 sm:p-6">
     <div className="flex flex-wrap items-baseline justify-between gap-3">
       <h3 className="text-lg font-medium">One wedding site</h3>
-      <p className="editorial text-3xl">£39 <span className="font-sans text-sm text-[var(--muted)]">once</span></p>
+      <p className="editorial text-3xl">£19 <span className="font-sans text-sm text-[var(--muted)]">once</span></p>
     </div>
     <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">Includes all twelve themes, one photo, the Invitation, Wedding Details and RSVP. A new purchase keeps your site online until six months after the wedding date. The expiry date is fixed when you start checkout.</p>
     {entitlement.active ? <p className="form-notice mt-4" role="status">Payment confirmed. You can publish and republish{expiry ? ` until ${expiry}` : ""}.</p> : <>

@@ -40,7 +40,7 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await openWorkspaceSection(page, "Publish");
-    await expect(page.getByText("£39", { exact: false })).toBeVisible();
+    await expect(page.getByText("£19", { exact: false })).toBeVisible();
     await expect(page.getByText(/A new purchase keeps your site online until six months after the wedding date/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Buy and continue to Stripe" })).toBeVisible();
     await expect(page.getByText("By buying you agree to our terms and refund policy", { exact: false }).getByRole("link", { name: "refund policy" })).toHaveAttribute("href", "/refunds");
@@ -84,8 +84,8 @@ test("verified payment enables publication and a refund revokes it", async ({ pa
     const paid = signedEvent("checkout.session.completed", {
       id: `cs_test_${crypto.randomUUID()}`,
       object: "checkout.session",
-      amount_subtotal: 3900,
-      amount_total: 3900,
+      amount_subtotal: 1900,
+      amount_total: 1900,
       currency: "gbp",
       payment_intent: paymentIntent,
       payment_status: "paid",
@@ -160,7 +160,7 @@ test("a Stripe promotion code can discount the purchase or make it free", async 
     const session = (fields: Record<string, unknown>) => ({
       id: `cs_test_${crypto.randomUUID()}`,
       object: "checkout.session",
-      amount_subtotal: 3900,
+      amount_subtotal: 1900,
       currency: "gbp",
       metadata: { wedding_id: wedding.data.id, owner_id: ownerId, entitlement_expires_at: "2028-03-18T00:00:00.000Z" },
       ...fields,
@@ -170,17 +170,17 @@ test("a Stripe promotion code can discount the purchase or make it free", async 
 
     // Rejected: a changed price, another currency, a charge above the price, or a charge with no PaymentIntent.
     for (const object of [
-      session({ amount_subtotal: 3000, amount_total: 0, payment_status: "paid", payment_intent: null }),
-      session({ currency: "eur", amount_total: 3900, payment_status: "paid", payment_intent: `pi_test_${crypto.randomUUID()}` }),
+      session({ amount_subtotal: 3900, amount_total: 0, payment_status: "paid", payment_intent: null }),
+      session({ currency: "eur", amount_total: 1900, payment_status: "paid", payment_intent: `pi_test_${crypto.randomUUID()}` }),
       session({ amount_total: 4900, payment_status: "paid", payment_intent: `pi_test_${crypto.randomUUID()}` }),
-      session({ amount_total: 1950, payment_status: "paid", payment_intent: null }),
+      session({ amount_total: 950, payment_status: "paid", payment_intent: null }),
     ]) expect((await post(signedEvent("checkout.session.completed", object))).status()).toBe(400);
 
     // 50% off: a normal card payment for the discounted amount.
     const discountedIntent = `pi_test_${crypto.randomUUID()}`;
-    const discounted = await post(signedEvent("checkout.session.completed", session({ amount_total: 1950, payment_status: "paid", payment_intent: discountedIntent })));
+    const discounted = await post(signedEvent("checkout.session.completed", session({ amount_total: 950, payment_status: "paid", payment_intent: discountedIntent })));
     expect(await discounted.json()).toMatchObject({ result: "granted" });
-    expect(await recorded(discountedIntent)).toBe(1950);
+    expect(await recorded(discountedIntent)).toBe(950);
     expect((await post(signedEvent("refund.created", { id: `re_test_${crypto.randomUUID()}`, object: "refund", payment_intent: discountedIntent }))).status()).toBe(200);
 
     // 100% off: Stripe completes a £0 session with no PaymentIntent. API 2026-03-25 reports it

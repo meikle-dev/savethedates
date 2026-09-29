@@ -2,7 +2,7 @@
 
 A guide for the marketing team. It covers what the product does, which features are worth showing, what we can and can't claim, and where the screenshots are.
 
-All screenshots are in [`../images/`](../images/) (258 images). They were captured on **28 September 2026** from the current application code, which is what runs on the live site at **https://savethedates.co.uk**. The price shown is **£39**.
+All screenshots are in [`../images/`](../images/) (258 images). They were captured on **28 September 2026** from the current application code, which is what runs on the live site at **https://savethedates.co.uk**. The price shown is **£19**: the screenshots that show it (the marketing pages, their homepage sections, and the publish-and-pay screen) were re-captured on 29 September 2026 after the price change.
 
 Every name, date, guest and reply in the screenshots is **fictional**.
 
@@ -14,7 +14,7 @@ Every name, date, guest and reply in the screenshots is **fictional**.
 | --- | --- |
 | **What it is** | A private wedding website for each couple, with up to four pages: Save the Date, Invitation, Details and RSVP. |
 | **Who it's for** | Couples planning a wedding, mainly in the UK and Ireland. |
-| **Price** | **£39, paid once** when the couple is ready to publish. No subscription. Building and previewing is free. |
+| **Price** | **£19, paid once** when the couple is ready to publish. No subscription. Building and previewing is free. |
 | **How long it stays online** | Until six months after the wedding date. That date is based on the wedding date at checkout and fixed when checkout starts. |
 | **Designs** | Twelve. Each has a matching Save the Date, Invitation, Details and RSVP. |
 | **How guests get it** | A private link, sent by WhatsApp, text or email. Guests need no app and no account. |
@@ -47,7 +47,7 @@ These lines are already live on the website, so you can use them word for word. 
 **Supporting lines**
 
 - Your Save the Date, wedding invitation, details and RSVPs, including meal choices and dietary requirements, on one private wedding website. Send each by WhatsApp, text or email, when the time is right.
-- Free to build and preview. £39 once when you're ready to publish.
+- Free to build and preview. £19 once when you're ready to publish.
 - No subscription · No app or login for guests · Twelve designs
 - Guests confirm whether they're coming, choose their starter, main and dessert, and tell you about dietary requirements, all online and without creating an account. Every reply lands privately in your guest list.
 - Meal numbers ready to send to your caterer.
@@ -56,7 +56,7 @@ These lines are already live on the website, so you can use them word for word. 
 - Change of plan? Same links. Saved changes show on your published site, so guests always see the latest version.
 - Posting printed invitations instead? Leave this page off.
 
-**What £39 includes** (the live pricing list, word for word):
+**What £19 includes** (the live pricing list, word for word):
 
 - All twelve wedding website designs, with a photo of your choice
 - Save the Date and wedding invitation
@@ -193,7 +193,7 @@ These are ranked by how much they sell the product. Each one lists what it does,
 
 **What it does:** Couples build everything and preview every design with their own words and photo in a private preview. They only pay when they want guests to see it.
 
-**Best images:** [`04-couple-workspace/theme-preview/`](../images/04-couple-workspace/theme-preview/) ("Private preview", "Preview only — this theme has not been applied") and [`05-getting-started/4-publish-and-pay-desktop.png`](../images/05-getting-started/4-publish-and-pay-desktop.png) (the £39 card on the Publish page of a draft wedding).
+**Best images:** [`04-couple-workspace/theme-preview/`](../images/04-couple-workspace/theme-preview/) ("Private preview", "Preview only — this theme has not been applied") and [`05-getting-started/4-publish-and-pay-desktop.png`](../images/05-getting-started/4-publish-and-pay-desktop.png) (the £19 card on the Publish page of a draft wedding).
 
 ### 3.10 A calm, simple workspace for the couple
 
@@ -229,7 +229,7 @@ The natural storyline follows a real wedding timeline:
 4. **Guests check the details:** → `details-mobile-full.png` (scroll)
 5. **Guests RSVP and choose their meal:** → [`03-guest-rsvp-journey/`](../images/03-guest-rsvp-journey/) steps 1–4
 6. **The couple sees the numbers:** → [`guests-catering-numbers.png`](../images/04-couple-workspace/feature-crops/guests-catering-numbers.png)
-7. **End card:** £39 once, no subscription → [`home-section-pricing-mobile.png`](../images/01-marketing-site/sections/home-section-pricing-mobile.png)
+7. **End card:** £19 once, no subscription → [`home-section-pricing-mobile.png`](../images/01-marketing-site/sections/home-section-pricing-mobile.png)
 
 ---
 
@@ -266,7 +266,7 @@ The wedding in the screenshots is set at Lake Como. For UK or Ireland-focused po
 | [`02-guest-pages-by-theme/`](../images/02-guest-pages-by-theme/) | One folder per design (`01-minimal` … `12-evening-gold`), each with Save the Date, Invitation, Details and RSVP on phone, phone full page and desktop. | 144 |
 | [`03-guest-rsvp-journey/`](../images/03-guest-rsvp-journey/) | A guest replying, step by step (numbered 1–4), phone and desktop. | 12 |
 | [`04-couple-workspace/`](../images/04-couple-workspace/) | All eight workspace sections (numbered 1–8), `feature-crops/` for single features, `theme-preview/` for the private design preview. | 53 |
-| [`05-getting-started/`](../images/05-getting-started/) | Create account, sign in, a new draft wedding, and the £39 publish-and-pay screen. | 8 |
+| [`05-getting-started/`](../images/05-getting-started/) | Create account, sign in, a new draft wedding, and the £19 publish-and-pay screen. | 8 |
 | [`06-link-preview-cards/`](../images/06-link-preview-cards/) | The real image shown when a guest link is shared in a chat, one per design. | 12 |
 | [`07-theme-grids/`](../images/07-theme-grids/) | All twelve designs side by side, for each page (made from the phone screenshots). | 4 |
 
@@ -307,7 +307,7 @@ These are suggestions built only from real features.
 - **Static or Story: "Sent on WhatsApp in seconds."** The share panel with the ready-written message.
 - **Carousel: "Save the date first. Invite them later."** Slide 1 is the Save the Date, slide 2 the Invitation (sent months later on its own link), slide 3 the RSVP.
 - **Objection post: "Sending printed invitations?"** Keep the Save the Date, Details and RSVP online and leave the Invitation page off.
-- **Price post: "£39. Once."** Use the pricing section and the included list word for word.
+- **Price post: "£19. Once."** Use the pricing section and the included list word for word.
 
 ---
 

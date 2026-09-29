@@ -61,7 +61,7 @@ for (const f of posts) {
     copyOut(`facebook/ads/images/feed-4x5/${f}`, `instagram/feed-posts/${f}`);
   }
 }
-for (const f of ["01-your-wedding-website.jpg", "02-twelve-designs.jpg", "03-rsvps-without-the-chaos.jpg", "05-price-39-once.jpg"]) {
+for (const f of ["01-your-wedding-website.jpg", "02-twelve-designs.jpg", "03-rsvps-without-the-chaos.jpg", "05-price-19-once.jpg"]) {
   copyOut(`instagram/ads/images/stories-9x16/${f}`, `instagram/stories/${f}`);
   copyOut(`facebook/ads/images/stories-9x16/${f}`, `instagram/stories/${f}`);
 }

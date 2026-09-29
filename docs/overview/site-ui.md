@@ -140,7 +140,7 @@ A visitor should understand what SaveTheDates does within a few seconds.
 ## Complete wedding website positioning (F071, 26 September 2026)
 
 - The product is the wedding website; the Save the Date is its first page. Marketing copy says "wedding website designs" and "your wedding website", and "Save the Date" only for that page.
-- The primary call to action is **Start building for free** (**Return to your workspace** when signed in); the price line beneath it is "Free to build and preview. £39 once when you're ready to publish." `/digital-save-the-date` keeps **Create your save the date**, which matches its search intent.
+- The primary call to action is **Start building for free** (**Return to your workspace** when signed in); the price line beneath it is "Free to build and preview. £19 once when you're ready to publish." `/digital-save-the-date` keeps **Create your save the date**, which matches its search intent.
 - Homepage order: hero, designs, four steps ("Everything your guests need, in one place"), "One website. Your whole wedding.", "RSVPs without the spreadsheet chaos." (with a labelled example of catering numbers), pricing, FAQ.
 - The Save the Date and the Invitation have separate links (F065), so never promise one link from Save the Date to RSVP. Say "one private wedding website", and "private links for your Save the Date and Invitation".
 - Name dietary options as the RSVP does: vegetarian, vegan, gluten-free and other.
@@ -161,7 +161,7 @@ The primary action for signed-out visitors is:
 
 **Create your save the date**
 
-Use this wording in the homepage hero and pricing actions and on the fictional example banner. Keep the nearby free draft and preview explanation, with the approved £39 publication price. A verified signed-in owner instead sees **Return to your workspace** on the homepage; both homepage primary actions link to the corresponding real route.
+Use this wording in the homepage hero and pricing actions and on the fictional example banner. Keep the nearby free draft and preview explanation, with the approved £19 publication price. A verified signed-in owner instead sees **Return to your workspace** on the homepage; both homepage primary actions link to the corresponding real route.
 
 On the dark Modern Luxe homepage, primary actions use a warm off-white surface, dark text, generous spacing and a clearly visible arrow in a deep-teal 32px square. Keep the label and icon aligned when the label wraps. The hero actions may stack on narrow screens; buttons have at least 44px touch height. Hover changes the surface and icon colour, and keyboard focus has a visible outline. Keep the hero and pricing treatments identical.
 

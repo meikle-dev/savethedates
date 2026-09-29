@@ -62,7 +62,7 @@ Spread pins out over two to three weeks (one or two a day) rather than posting e
 **Design pins:** link each one to its own example page, `https://savethedates.co.uk/examples/<slug>`. The slugs are `minimal`, `romantic`, `bold`, `terracotta`, `heather`, `coastal`, `riviera`, `alcantara`, `countryside`, `velvet`, `black-tie` and `evening-gold`. Build the description in this order:
 1. The design's official line from the [features guide](../../marketing-context/marketing-docs/app-features-and-screenshots-guide.md#31-twelve-designs-one-look-from-start-to-finish-lead-feature).
 2. One sentence with the style search terms.
-3. "Your Save the Date, wedding invitation, details and online RSVP all match, on one wedding website. Send by WhatsApp, text or email. Try it free with your own words and photo; £39 once to publish. Example wedding with fictional names."
+3. "Your Save the Date, wedding invitation, details and online RSVP all match, on one wedding website. Send by WhatsApp, text or email. Try it free with your own words and photo; £19 once to publish. Example wedding with fictional names."
 
 | Date | Pin | Title |
 | --- | --- | --- |
@@ -88,7 +88,7 @@ Spread pins out over two to three weeks (one or two a day) rather than posting e
 | 2 Oct | `02-twelve-designs` | 12 save the date and wedding invitation designs. Which one's you? | `/#themes` |
 | 6 Oct | `03-rsvps-with-meal-choices` | Online wedding RSVP with meal choices and dietary requirements | `/what-we-offer` |
 | 9 Oct | `05-simple-to-share` | Digital save the date you can send by WhatsApp, text or email | `/digital-save-the-date` |
-| 12 Oct | `06-price-39-once` | Digital save the date, wedding invitation and RSVP website: £39 once | `/#pricing` |
+| 12 Oct | `06-price-19-once` | Digital save the date, wedding invitation and RSVP website: £19 once | `/#pricing` |
 
 **Video pin:** `video-pins/savethedates-ad-9x16-10s.mp4`, with `savethedates-ad-9x16-10s-cover.jpg` as the cover, linking to the homepage.
 

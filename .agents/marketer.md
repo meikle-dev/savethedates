@@ -37,7 +37,7 @@ This is a summary only. Check the channel Status sections for detail, and update
 ## Rules
 
 - **Wording:** only claim what the features guide allows. Prefer the approved lines word for word. Never mention plus-ones, reminders, QR codes, custom domains, "password-protected", "forever", testimonials, reviews or customer numbers. Olivia & James are fictional; say "Example wedding with fictional names" where the image shows them.
-- **Price and English:** the price is "£39, paid once", in GBP only. No discounts without owner approval. Use British English.
+- **Price and English:** the price is "£19, paid once", in GBP only. No discounts without owner approval. Use British English.
 - **Links:** tag every link as the setup guide describes (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`; lower case, hyphens).
 - **No tracking pixels:** don't install the Meta Pixel, Google tag, Pinterest tag or TikTok Pixel, and turn down platform prompts to add them. The site is deliberately cookieless; adding a pixel is the owner's decision.
 - **Pacing:** spread organic posts out (Pinterest 1–2 a day; Instagram follows the week plan). The biggest spend season is late December to March.

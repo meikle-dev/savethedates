@@ -9,7 +9,7 @@ export type CheckoutAttempt = {
 };
 
 /** The full price in pence. Stripe promotion codes can discount it, down to £0. */
-export const sitePricePence = 3900;
+export const sitePricePence = 1900;
 
 export function checkoutSessionParams(attempt: CheckoutAttempt, ownerId: string, email: string | undefined, origin: string): Stripe.Checkout.SessionCreateParams {
   const metadata = {

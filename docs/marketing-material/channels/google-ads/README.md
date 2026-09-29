@@ -28,7 +28,7 @@ The display images have **no text on them, on purpose**. Google recommends image
 **Headlines** (paste all 15; each is under 30 characters):
 
 ```
-Wedding Website, £39 Once
+Wedding Website, £19 Once
 Digital Save the Dates
 Online RSVPs With Meal Choices
 Twelve Wedding Website Designs
@@ -48,10 +48,10 @@ Try Every Design Free
 **Descriptions** (all four; each is under 90 characters):
 
 ```
-Save the Date, invitation, details and RSVPs on one private wedding website. £39 once.
+Save the Date, invitation, details and RSVPs on one private wedding website. £19 once.
 Guests reply online with meal choices and dietary needs. No app or login for guests.
 Twelve designs, each with a matching Save the Date, invitation, details and RSVP page.
-Free to build and preview. Pay £39 once when you're ready to publish. No subscription.
+Free to build and preview. Pay £19 once when you're ready to publish. No subscription.
 ```
 
 **Sitelinks:**
@@ -59,7 +59,7 @@ Free to build and preview. Pay £39 once when you're ready to publish. No subscr
 | Text | Description lines | URL |
 | --- | --- | --- |
 | Twelve designs | See every design | `https://savethedates.co.uk/#themes` |
-| Pricing | £39 once, no subscription | `https://savethedates.co.uk/#pricing` |
+| Pricing | £19 once, no subscription | `https://savethedates.co.uk/#pricing` |
 | What we offer | Every feature in one place | `https://savethedates.co.uk/what-we-offer` |
 | Digital save the dates | Send by WhatsApp or email | `https://savethedates.co.uk/digital-save-the-date` |
 

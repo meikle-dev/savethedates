@@ -227,7 +227,7 @@ const T = {};
 T.hero = (kind) => frame(kind, {
   dark: true, example: true, eyebrow: "From Save the Date to final RSVP",
   head: kind === "LS" || kind === "SQ" || kind === "YT" ? "Your wedding website, <i>beautifully done.</i>" : "Your wedding website,<br><i>beautifully done.</i>",
-  sub: PORTRAIT(kind) ? "Save the Date, invitation, details and RSVPs with meal choices, on one private wedding website." : "Free to build and preview. £39 once when you’re ready to publish.",
+  sub: PORTRAIT(kind) ? "Save the Date, invitation, details and RSVPs with meal choices, on one private wedding website." : "Free to build and preview. £19 once when you’re ready to publish.",
   backdrop: (b) => glow(b, PORTRAIT(kind) ? 50 : 72, PORTRAIT(kind) ? 64 : 50), visual: vHero,
 });
 T.designs = (kind) => {
@@ -278,7 +278,7 @@ T.price = (kind) => {
     const tall = kind === "P916";
     const b = el("div", "t", null, base, `left:${S.side}px;width:${W - 2 * S.side}px;top:${S.top}px;z-index:20`);
     el("div", "eyebrow", "Everything you need. One simple price.", b, `font-size:${S.eb}px;color:#a9c3cc;text-align:center`);
-    el("div", "serif", `£39<span class="corm" style="font-size:.4em;font-style:italic;color:${MIST};letter-spacing:0;margin-left:.2em">once.</span>`, b, `font-size:${tall ? 300 : 250}px;line-height:1.05;letter-spacing:-.04em;color:${CREAM};text-align:center;margin-top:${tall ? 30 : 16}px`);
+    el("div", "serif", `£19<span class="corm" style="font-size:.4em;font-style:italic;color:${MIST};letter-spacing:0;margin-left:.2em">once.</span>`, b, `font-size:${tall ? 300 : 250}px;line-height:1.05;letter-spacing:-.04em;color:${CREAM};text-align:center;margin-top:${tall ? 30 : 16}px`);
     el("div", null, "Build and preview for free. Pay once when you’re ready to publish. No subscription.", b, `font:400 ${S.sub}px/1.45 Arial;color:rgba(244,240,230,.85);text-align:center;margin:${tall ? 18 : 8}px auto 0;max-width:${W * 0.8}px`);
     const list = el("div", null, null, b, `margin:${tall ? 58 : 40}px auto 0;max-width:${W * 0.82}px`);
     INCLUDED.forEach((t) => el("div", "check", `<b style="color:#8fb1bd">✓</b><span>${t}</span>`, list, `font:400 ${tall ? 29 : 24}px/1.35 Arial;color:${CREAM};margin-top:${tall ? 22 : 14}px`));
@@ -287,8 +287,8 @@ T.price = (kind) => {
   } else {
     const b = el("div", "t", null, base, `left:${S.side}px;width:${W - 2 * S.side}px;z-index:20;text-align:center`);
     el("div", "eyebrow", "Everything you need. One simple price.", b, `font-size:${S.eb}px;color:#a9c3cc`);
-    el("div", "serif", `£39<span class="corm" style="font-size:.4em;font-style:italic;color:${MIST};letter-spacing:0;margin-left:.2em">once.</span>`, b, `font-size:${kind === "LS" ? 150 : 230}px;line-height:1.05;letter-spacing:-.04em;color:${CREAM};margin-top:10px`);
-    el("div", null, "Free to build and preview. £39 once when you’re ready to publish.", b, `font:400 ${S.sub * 1.1}px/1.4 Arial;color:rgba(244,240,230,.85);margin-top:6px`);
+    el("div", "serif", `£19<span class="corm" style="font-size:.4em;font-style:italic;color:${MIST};letter-spacing:0;margin-left:.2em">once.</span>`, b, `font-size:${kind === "LS" ? 150 : 230}px;line-height:1.05;letter-spacing:-.04em;color:${CREAM};margin-top:10px`);
+    el("div", null, "Free to build and preview. £19 once when you’re ready to publish.", b, `font:400 ${S.sub * 1.1}px/1.4 Arial;color:rgba(244,240,230,.85);margin-top:6px`);
     const pills = el("div", null, null, b, `display:flex;flex-wrap:wrap;justify-content:center;gap:${kind === "LS" ? 10 : 14}px;margin-top:${kind === "LS" ? 22 : 38}px`);
     ["No subscription", "No app or login for guests", "Twelve designs", "Full refund within 14 days"].forEach((p) => el("div", null, p, pills, `border:1.5px solid #3f6173;border-radius:40px;padding:${kind === "LS" ? "10px 18px" : "15px 26px"};font:400 ${kind === "LS" ? 15 : 21}px/1 Arial;color:#E6EEF1;white-space:nowrap`));
     b.style.top = (H - (kind === "LS" ? 40 : 80) - b.offsetHeight) / 2 + "px";
@@ -307,7 +307,7 @@ T.cta = (kind, o = {}) => {
   el("div", "t serif", "SaveTheDates", base, `left:0;width:${W}px;top:${cy - (tall ? 90 : sq ? 70 : 80)}px;text-align:center;font-size:${tall ? 142 : sq ? 110 : 128}px;letter-spacing:-.045em;color:${CREAM};z-index:5`);
   el("div", "t eyebrow", "For your next chapter", base, `left:0;width:${W}px;top:${cy + (tall ? 92 : sq ? 70 : 82)}px;text-align:center;color:#a9c3cc;font-size:${tall ? 19 : 16}px;letter-spacing:.42em;z-index:5`);
   const below = cy + r + (tall ? 70 : sq ? 44 : 60);
-  el("div", "t serif", o.price || "Free to build. <i style='color:#D8E0DA'>£39 once.</i>", base, `left:0;width:${W}px;top:${below}px;text-align:center;font-size:${tall ? 62 : sq ? 44 : 54}px;letter-spacing:-.03em;color:${CREAM};z-index:5`);
+  el("div", "t serif", o.price || "Free to build. <i style='color:#D8E0DA'>£19 once.</i>", base, `left:0;width:${W}px;top:${below}px;text-align:center;font-size:${tall ? 62 : sq ? 44 : 54}px;letter-spacing:-.03em;color:${CREAM};z-index:5`);
   el("div", "t", `<div class="btn" style="${sq ? "height:66px;font-size:21px" : ""}">Start building for free<span>${ARROW}</span></div>`, base, `left:0;width:${W}px;top:${below + (tall ? 110 : sq ? 76 : 96)}px;text-align:center;z-index:5`);
   el("div", "t serif", "savethedates.co.uk", base, `left:0;width:${W}px;top:${below + (tall ? 226 : sq ? 162 : 200)}px;text-align:center;font-size:${tall ? 40 : sq ? 30 : 36}px;color:${MIST};z-index:5`);
   vignette(base, 0.26);
@@ -412,19 +412,19 @@ add(`${IGC}/3-rsvps-and-catering/02-guests-reply.jpg`, "P45", () => T.rsvpGuest(
 add(`${IGC}/3-rsvps-and-catering/03-private-replies.jpg`, "P45", () => T.rsvpThanks("P45"));
 add(`${IGC}/3-rsvps-and-catering/04-catering-numbers.jpg`, "P45", () => T.rsvpNumbers("P45"));
 add(`${IGC}/3-rsvps-and-catering/05-start-free.jpg`, "P45", () => T.cta("P45", { line: "RSVPs without the spreadsheet chaos" }));
-const POSTS = [["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-without-the-chaos", "rsvp"], ["04-price-39-once", "price"], ["05-simple-to-share", "share"], ["06-no-envelopes", "envelopes"]];
+const POSTS = [["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-without-the-chaos", "rsvp"], ["04-price-19-once", "price"], ["05-simple-to-share", "share"], ["06-no-envelopes", "envelopes"]];
 POSTS.forEach(([n, t]) => add(`instagram/feed-posts/${n}.jpg`, "P45", () => T[t]("P45")));
-[["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-without-the-chaos", "rsvp"], ["04-simple-to-share", "share"], ["05-price-39-once", "price"], ["06-start-building-free", "cta"]]
+[["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-without-the-chaos", "rsvp"], ["04-simple-to-share", "share"], ["05-price-19-once", "price"], ["06-start-building-free", "cta"]]
   .forEach(([n, t]) => add(`instagram/stories/${n}.jpg`, "P916", () => T[t]("P916")));
 // Facebook
 add("facebook/page-setup/cover-photo-1640x924.jpg", "COVER", () => T.cover());
-[["hero", "01-your-wedding-website"], ["designs", "02-twelve-designs"], ["rsvp", "03-rsvps-without-the-chaos"], ["price", "04-price-39-once"]].forEach(([t, n]) => {
+[["hero", "01-your-wedding-website"], ["designs", "02-twelve-designs"], ["rsvp", "03-rsvps-without-the-chaos"], ["price", "04-price-19-once"]].forEach(([t, n]) => {
   add(`facebook/ads/images/square-1080x1080/${n}.jpg`, "SQ", () => T[t]("SQ"));
   add(`facebook/ads/images/landscape-1200x628/${n}.jpg`, "LS", () => T[t]("LS"));
 });
 // Pinterest
 IDS.forEach((id, i) => add(`pinterest/pins/designs/${String(i + 1).padStart(2, "0")}-${slug(TH[id].name)}.jpg`, "P23", () => T.twDesign("P23", i)));
-[["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-with-meal-choices", "rsvp"], ["04-save-the-date-first", "sdf"], ["05-simple-to-share", "share"], ["06-price-39-once", "price"]]
+[["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-with-meal-choices", "rsvp"], ["04-save-the-date-first", "sdf"], ["05-simple-to-share", "share"], ["06-price-19-once", "price"]]
   .forEach(([n, t]) => add(`pinterest/pins/topics/${n}.jpg`, "P23", () => T[t]("P23")));
 // Google Ads: image-only assets
 const CLEAN = [["01-phones", "hero"], ["02-all-designs", "designs"], ["03-rsvp-and-catering", "rsvp"], ["04-four-pages", "pages"], ["05-velvet-invitation", "velvet"]];
