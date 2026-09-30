@@ -2906,6 +2906,7 @@ Owner, 26 September 2026: dietary answers are food preferences, not health data.
   - `marketing.spec.ts` checks the example tags.
   - The full `E2E_PRODUCTION=1 npx playwright test --workers=2` run passed: 154 passed, 20 skipped.
   - Footer screenshots were inspected for minimal, evening-gold, velvet, riviera, countryside and black-tie at 390 and 1440px.
+  - CI fix (30 September 2026): the production run above skips the development-only `/demo` test, which still expected no links. `tests/preview.spec.ts` now allows only the credit (tagged `preview`). `E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test tests/preview.spec.ts` against a rebuilt development container passed 12/12.
 - **Independent review (29 September 2026):** no Blocking findings; privacy passed (no secret, names or theme can reach the link or analytics, and the referrer is blocked three ways). The lowest measured contrast is 4.99:1 (terracotta).
   - Fixed: the per-theme, per-page test above (Important).
   - Recorded: credit clicks can't be told apart from direct visits until **F075** keeps UTM tags, so read F076 results only after F075 ships (Important). The `/what-we-offer` frames sharing the `example` tag was accepted.

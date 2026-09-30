@@ -16,7 +16,9 @@ test("demo shows the announcement without unavailable controls", async ({ page }
   const photo = page.getByRole("img");
   await expect(photo).toBeVisible();
   await expect(photo).toHaveJSProperty("naturalWidth", 1600);
-  await expect(page.getByRole("link")).toHaveCount(0);
+  // F076: the footer credit is the only link; no navigation to pages the fixture doesn't have.
+  await expect(page.getByRole("link")).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Made with SaveTheDates (opens in a new tab)" })).toHaveAttribute("href", "/?utm_source=preview&utm_medium=referral&utm_campaign=made-with&utm_content=save-the-date");
   await expect(page.getByRole("button")).toHaveCount(0);
   await expect(page.locator("body")).not.toHaveText(/RSVP|View Details/);
   await page.screenshot({ path: test.info().outputPath("demo.png"), fullPage: true });
