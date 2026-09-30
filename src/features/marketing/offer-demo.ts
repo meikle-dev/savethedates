@@ -12,7 +12,7 @@ const [toffee, posset] = exampleMealMenu.dessert.map(({ id }) => id);
 const food = (starter: string, main: string, dessert: string, dietary: Dietary[] = [], other = ""): GuestFood =>
   ({ meals: { starter, main, dessert }, dietary, other });
 
-/** Fictional replies already in the example guest list. */
+/** Fictional replies already in the example replies. */
 export const demoReplies: DemoReply[] = [
   { name: "Amelia Hart", attending: true, food: food(soup, beef, toffee) },
   { name: "Tom Hart", attending: true, food: food(salmon, hake, posset) },
@@ -34,7 +34,7 @@ export function demoReplyFromForm(form: FormData): DemoReply {
   };
 }
 
-/** Whether the visitor has started a reply, so their row appears in the guest list. */
+/** Whether the visitor has started a reply, so their row appears in the replies. */
 export const demoStarted = (reply: DemoReply) => reply.name !== "" || reply.attending !== null;
 
 /** The catering numbers over every attending reply, in the workspace's summary shape. */
@@ -68,7 +68,7 @@ export function demoFoodLines(reply: DemoReply) {
 /** The polite announcement after the visitor changes their reply. */
 export function demoAnnouncement(reply: DemoReply) {
   const who = reply.name || "Your reply";
-  if (reply.attending === null) return `${who} added to the guest list.`;
+  if (reply.attending === null) return `${who} added to the replies.`;
   if (!reply.attending) return `${who}: not attending. Catering numbers unchanged.`;
   const lines = demoFoodLines(reply);
   return `${who}: attending. ${lines.join(". ")}. Catering numbers updated.`;

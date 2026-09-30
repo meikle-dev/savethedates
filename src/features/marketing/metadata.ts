@@ -26,9 +26,9 @@ export function digitalSaveTheDateMetadata(): Metadata {
 }
 
 export function whatWeOfferMetadata(): Metadata {
-  return indexedPage(whatWeOfferPath, "What we offer: wedding website, invitation & RSVP with meal choices | SaveTheDates",
-    "See everything your wedding website includes: Save the Date, invitation, wedding details and RSVPs with meal choices and dietary requirements. Try it in any of twelve designs.",
-    { path: "/media/share?page=offer", alt: "SaveTheDates — Everything we offer. Save the Date, invitation, details and RSVP in twelve designs." });
+  return indexedPage(whatWeOfferPath, "Wedding website features: RSVP, meals & table plan | SaveTheDates",
+    "Save the Date, invitation, wedding details and RSVPs with meal choices, plus a private guest list and table planner. Try it all in any of twelve designs.",
+    { path: "/media/share?page=offer", alt: "SaveTheDates — Everything we offer. Save the Date, invitation, details, RSVP and table plan in twelve designs." });
 }
 
 export function saveTheDateWordingMetadata(): Metadata {

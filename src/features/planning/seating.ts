@@ -1,4 +1,4 @@
-// F079: the table planner's seating engine. Pure, so the client planner can apply changes optimistically and the
+// F078: the table planner's seating engine. Pure, so the client planner can apply changes optimistically and the
 // rules are unit tested. The database separately enforces seat range, kept-empty seats, one guest per seat and that
 // declined guests are never seated.
 

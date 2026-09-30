@@ -217,6 +217,40 @@ Sign up with Google or with an email and password. The couple adds their names, 
 
 **Best images:** [`05-getting-started/1-create-account-mobile.png`](../images/05-getting-started/1-create-account-mobile.png) ("A little beginning."), [`3-new-wedding-overview-desktop.png`](../images/05-getting-started/3-new-wedding-overview-desktop.png) (a new draft wedding).
 
+### 3.13 Guest list and table plan (couple side, private) — NOT LIVE YET
+
+> **Don't use anything in this section until the guest list and table plan are live** (F078, shipping with the F079 "What we offer" update). Until then, section 9 still applies: don't mention seating plans or guest-list import. On deploy day, record the date here, remove this warning, and make the "On deploy day" changes below.
+
+**What it does:** Two private sections in the couple's workspace. **Guest list:** bring in guests from a spreadsheet and keep their RSVP status up to date. **Table plan:** seat everyone at their tables. Guests never see either.
+
+**Facts you can state (once live):**
+
+- Import guests by pasting cells from Excel, Google Sheets or Numbers, uploading a CSV, or pasting a list of names. There's a template to start from. Every row is shown in a preview before anything is saved, and the import can be undone.
+- Each guest has a name, an optional group (such as "Bride's family") and an RSVP status. Up to 1,000 guests.
+- One action updates who's attending from the RSVP replies, with a preview first. Replies that came by post or WhatsApp can be marked by hand.
+- Tables can be round, long, square or a top table, with 1 to 30 seats each, and up to 100 tables.
+- Seat guests from a list, by choosing a seat, or by moving or swapping someone; on a computer, drag them. **Seat everyone automatically** keeps groups together and never moves anyone already seated. Undo goes back up to 20 steps.
+- Empty seats are fine and are shown on the plan. A seat can be kept empty on purpose.
+- Print the plan with an A–Z "Find your seat" list for the venue, or download it as a CSV.
+- Only the couple can see the guest list and table plan. They're included; don't promise they'll always be free.
+
+**Suggested lines:**
+
+- From guest list to table plan, in one place.
+- Paste it from your spreadsheet. Seat everyone automatically.
+- Empty seats are fine.
+
+**Best images:** none yet; capture them from the live workspace after deploy. The [What we offer](https://savethedates.co.uk/what-we-offer#table-plan) page's "07 · Try it yourself" demo shows the table plan with Olivia and James's fictional guests.
+
+**On deploy day, also update:**
+
+- Section 2, supporting lines: "Every reply lands privately in your guest list." becomes "Every reply lands privately in your account."
+- Section 2, "What £19 includes": "Private guest list, attendance totals and catering numbers" becomes "Private RSVP replies, attendance totals and catering numbers", and "Guest list import and table planner" is added before "Published until…". That matches the live pricing list after F079.
+- Section 3.6: the "private Guests page" is now the private **Replies** page.
+- Section 3.10: the sections are Overview, Basics, Design, Invitation, Details, RSVP and Publish, then a Guests group: Replies, Guest list and Table plan.
+- Section 9: remove "seating plans, guest-list import," from the "Don't say" list, and add: "Guest list and table plan limits: plus-ones or households as linked guests; notes, dietary needs or contact details on the guest list; uploading Excel (.xlsx) files (paste or CSV only); dragging on phones or tablets (tap instead); a room or floor layout; sharing the plan with the venue by link; place cards; automatically matching each new reply." Keep "printing" there: it means printed stationery, not printing the table plan at home.
+- The Instagram README and the traffic plan also say replies land "in your guest list"; change them to "in your account".
+
 ---
 
 ## 4. The story in order (for videos and carousels)
@@ -322,7 +356,7 @@ These are suggestions built only from real features.
 
 ## 9. What we can and can't say
 
-**Safe to say (true and live):** everything in [section 2](#2-approved-messaging) and the "facts you can state" in section 3.
+**Safe to say (true and live):** everything in [section 2](#2-approved-messaging) and the "facts you can state" in section 3, except section 3.13 until it's marked live.
 
 **Don't say or imply these, because the product doesn't do them:**
 

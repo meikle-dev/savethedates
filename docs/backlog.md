@@ -2717,6 +2717,7 @@ Owner, 26 September 2026: dietary answers are food preferences, not health data.
   2. Apply the migration locally (`npx supabase migration up --local`) and run `npm run test:integration` and the full E2E suite. Then apply it to staging, then production, before or with the deploy.
   3. Check that every feature shown is live in production. Meal choices are live (F068). Separate links (F065) must be in production first: deploy this after F065, or with it.
 - **Next step:** run step 2, have the owner review on staging, then deploy.
+- **Staging migration (30 September 2026):** `reserve_what_we_offer` applied to staging (`savethedates-staging`) through the Supabase connector, before F078's. No staging site used the name. Production isn't done yet.
 
 ## F010 - Post-launch extensions
 
@@ -3021,6 +3022,62 @@ Owner, 26 September 2026: dietary answers are food preferences, not health data.
 - **Blockers:** the owner's approval of the privacy notice wording.
 - **Next:**
   1. The owner approves (or edits) the privacy notice wording in `legal.tsx`.
-  2. Commit, then apply the migration to production **before** promoting the image (it only adds tables and functions, so it's backward-compatible), and to staging.
+  2. Commit, then apply the migration to production **before** promoting the image (it only adds tables and functions, so it's backward-compatible). **Staging: done 30 September 2026** through the Supabase connector (recorded as `guest_list_and_table_plan`). Both tables have RLS with four owner policies each; `anon` can't read either table or run the four functions. The security advisor showed no new findings.
   3. On staging, check both sections on a phone, including an import from the owner's own spreadsheet, then promote.
   4. Deferred items are listed in decision 10.
+
+## F079 - Show the guest list and table plan on "What we offer"
+
+**Status:** In Progress (30 September 2026). Raised by the owner the same day.
+**Priority / lead:** P1, owner request / UX/UI Designer (section and demo), SEO & Growth (copy, metadata, approved wording), then Software Engineer. Public marketing with no auth, data or payment changes, so independent review isn't required; the interactive demo gets a UX/accessibility check.
+**Purpose:** The guest list and table plan (F078) are the product's biggest new reason to choose it and to come back after publishing. "What we offer" sells the product by showing the real thing, so it should show these too.
+**Source:** Owner, 30 September 2026: "We need to update our what we offer page now that we have this table plan feature. Need to show it off, it's great."
+**Depends on:** F070 (the page) and F078 (the feature). **Ships in the same deploy as F078, never before it**, because the page must not advertise a feature customers can't use yet.
+
+**Decisions (Product Manager, 30 September 2026):**
+
+1. The Olivia & James story continues past the RSVP: replies update the guest list, then the couple seats their guests. It keeps the page's pattern: server-rendered content first, with a small interactive demo that saves nothing.
+2. The table plan demo runs the real seating logic (`src/features/planning/seating.ts`) and table drawings on fictional guests in the browser. It never calls the server.
+3. Only F078's shipped behaviour is shown or claimed. Nothing from F078 decision 10 (touch drag, room layout, place cards, `.xlsx`, sharing with the venue, plus-ones or households).
+4. The page says the guest list and table plan are **included**, not "free". Free to use is only the Product Manager default in F078 decision 9, and the owner may gate them later. "Included" stays true either way and doesn't muddy "£19 once to publish". Say "free" only if the owner confirms it.
+5. The approved-wording guide and the site UI doc are updated in the same change. The guide marks the new wording as usable only once F078 is live.
+
+**Done when:** the page shows the guest list and table plan with a working demo at 320, 390, 768 and 1440px without horizontal scrolling; the demo works with keyboard only and makes sense without JavaScript; `tests/what-we-offer.spec.ts` covers it; `npm run check` and the relevant browser tests pass; docs are updated; the owner approves the copy before deploy.
+
+**Handoff (30 September 2026):**
+
+- **What exists:**
+  - `/what-we-offer` continues the story past the RSVP. **06 · As the replies come in** covers the guest list, with a static picture of an import: pasted cells beside the preview, with skipped rows named. **07 · The final weeks · Try it yourself** is a table plan demo in a platform-styled workspace frame. It's in `src/features/marketing/offer-planner.tsx`, with data and rules in `offer-plan.ts` wrapping `src/features/planning/seating.ts`. Design details are in [site UI](overview/site-ui.md#what-we-offer-f070-26-september-2026).
+  - A visitor who accepts in the RSVP demo joins "To be seated" with a "New" pill, because the reply state now lives in `OfferShowcase`. The design switcher's sticky area ends after 05.
+  - Copy (UX/UI Designer and SEO & Growth, reconciled by the Product Manager):
+    - The hero and story heading now end "…to the table plan".
+    - The "One payment. No subscription." card adds "Your guest list and table plan are included."
+    - The pricing list (all marketing pages) reads "Private RSVP replies, attendance totals and catering numbers" and adds "Guest list import and table planner".
+    - The homepage RSVP line now ends "…lands privately in your account.", and a new FAQ "Can we plan our seating too?" links to `/what-we-offer#table-plan`.
+    - The couple's side in the RSVP demo says "Replies", not "Guest list".
+    - Title: "Wedding website features: RSVP, meals & table plan | SaveTheDates", with a new description and share-card text.
+    - The page says "included", not "free", because F078 decision 9 says free is a default the owner may change.
+  - The features guide has a new §3.13, marked **NOT LIVE YET**, with the exact edits to make on deploy day. §9 keeps "seating plans, guest-list import" forbidden until then.
+- **Checks:**
+  - `npx vitest run src/features/marketing/offer-plan.test.ts`: 6/6 passed. These confirm the demo seating: groups kept together, the kept-empty seat never used, swaps, and the visitor joining and leaving.
+  - `npm run check` passed: lint, typecheck, 198 unit tests and the build.
+  - `E2E_PRODUCTION=1 npx playwright test tests/marketing.spec.ts tests/what-we-offer.spec.ts --workers=2`: 30/30 passed on desktop and mobile. The known Windows `@emnapi/runtime` web-server message was logged.
+  - Against the development container, `tests/what-we-offer.spec.ts` passed 14/14. `marketing.spec.ts` there fails the four known development `Cache-Control` checks, plus the privacy links test once (8s first compile); both pass on the production build.
+  - Screenshots of 06 and 07 before and after automatic seating were inspected at 320, 390, 768 and 1440px, with no horizontal scroll. Fixed from inspection: the import table's RSVP header wrapping, three-column top-table names at 320px, and the duplicate "Top table · Top table" label.
+- **Independent review (30 September 2026):** UX, accessibility and claims. No Blocking findings. Everything is resolved except one Minor item, deferred below.
+  - Important, fixed:
+    - Step 07's heading lacked the step heading style.
+    - The RSVP demo still announced "added to the guest list" (now "the replies").
+    - Decision 4 said "free" (now records "included").
+  - Minor, fixed:
+    - A visitor chosen in the plan who then declines stays chosen.
+    - Escape moved focus away from the control in use.
+    - The kept-empty seat outline was under 3:1 (now `#8f8778`).
+    - The homepage FAQ could suggest `.xlsx` upload (now "paste … or upload a CSV").
+  - Minor, deferred: moving focus to the `role="status"` line after an action may make some screen readers read it twice. Check with a real screen reader when F049-style device testing happens.
+  - Tests added: the heading uses Georgia; declining while chosen leaves nothing chosen.
+  - Final checks after the last change: `npm run check` passed (198 unit tests and the build). `E2E_PRODUCTION=1 npx playwright test tests/marketing.spec.ts tests/what-we-offer.spec.ts --workers=2` passed 30/30. `tests/what-we-offer.spec.ts` passed 14/14 against the restarted development container.
+- **Next:**
+  1. The owner approves the copy, including "included" rather than "free".
+  2. Commit and ship **in the same deploy as F078**, after F078's migration is on production.
+  3. On deploy day, make the features guide §3.13 "On deploy day" edits and capture table plan screenshots. The Marketer can then plan table plan posts.

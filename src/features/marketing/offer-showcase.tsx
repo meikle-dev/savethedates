@@ -8,6 +8,7 @@ import { exampleMealMenu } from "./example-data";
 import type { ExamplePageName } from "./example-pages";
 import { offerPhonePath, whatWeOfferPath } from "./metadata";
 import { demoAnnouncement, demoFoodLines, demoReplies, demoReplyFromForm, demoStarted, demoSummary, emptyDemoReply, type DemoReply } from "./offer-demo";
+import { OfferPlanning } from "./offer-planner";
 
 const pagePath = (theme: WeddingTheme, page: ExamplePageName) => page === "save-the-date" ? offerPhonePath(theme) : `${offerPhonePath(theme)}/${page}`;
 const exampleHref = (theme: WeddingTheme, page: ExamplePageName) => page === "save-the-date" ? `/examples/${theme}` : `/examples/${theme}/${page}`;
@@ -56,7 +57,7 @@ function CoupleView({ reply, announcement }: { reply: DemoReply; announcement: s
   return <div className="offer-couple">
     <p className="offer-couple-label">The couple’s side · private to them</p>
     <div className="offer-couple-totals"><p><strong><Count value={summary.attending} /></strong> attending</p><p><strong><Count value={declined} /></strong> not attending</p></div>
-    <h4>Guest list</h4>
+    <h4>Replies</h4>
     <ul className="offer-guests">{newest.map((item, index) => {
       const mine = item === reply;
       return <li key={mine ? "you" : item.name} data-new={mine || undefined}>
@@ -81,9 +82,9 @@ function CoupleView({ reply, announcement }: { reply: DemoReply; announcement: s
   </div>;
 }
 
-function TryIt({ theme, hydrated }: { theme: WeddingTheme; hydrated: boolean }) {
+// The reply lives in OfferShowcase, so a visitor who accepts also appears in the table plan demo (F079).
+function TryIt({ theme, hydrated, reply, setReply }: { theme: WeddingTheme; hydrated: boolean; reply: DemoReply; setReply: (reply: DemoReply) => void }) {
   const frame = useRef<HTMLIFrameElement>(null);
-  const [reply, setReply] = useState(emptyDemoReply);
   const [announcement, setAnnouncement] = useState("");
   // The example RSVP is same-origin and never submits; its form is read on every change, in the browser only.
   const connect = useCallback(() => {
@@ -97,7 +98,7 @@ function TryIt({ theme, hydrated }: { theme: WeddingTheme; hydrated: boolean }) 
     form.addEventListener("input", () => read(false));
     form.addEventListener("change", () => read(true));
     read(false);
-  }, []);
+  }, [setReply]);
   // A frame that finished loading before hydration fired its load event unseen.
   useEffect(() => {
     if (frame.current?.contentDocument?.readyState === "complete" && frame.current.contentWindow?.location.href !== "about:blank") connect();
@@ -114,7 +115,7 @@ function TryIt({ theme, hydrated }: { theme: WeddingTheme; hydrated: boolean }) 
       <div className="offer-try-couple">
         <p className="marketing-kicker">05 · Your side</p>
         <h3>Every reply, in one place</h3>
-        <p className="offer-try-couple-intro">Replies arrive in your private guest list, and the catering numbers are counted for you, ready for your caterer.</p>
+        <p className="offer-try-couple-intro">Replies arrive privately in your account, and the catering numbers are counted for you, ready for your caterer.</p>
         <CoupleView reply={reply} announcement={announcement} />
       </div>
     </div>
@@ -123,8 +124,11 @@ function TryIt({ theme, hydrated }: { theme: WeddingTheme; hydrated: boolean }) 
 
 export function OfferShowcase({ initialTheme, accountHref, isAuthenticated }: { initialTheme: WeddingTheme; accountHref: string; isAuthenticated: boolean }) {
   const [theme, setTheme] = useState(initialTheme);
+  const [reply, setReply] = useState(emptyDemoReply);
   const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
   return <div className="offer-showcase" data-theme-choice={theme}>
+    {/* Bounds the sticky design switcher: the couple's workspace (06-07) isn't themed. */}
+    <div className="offer-themed">
     {/* Without JavaScript the radios submit as ?theme=, so the server renders the chosen design. */}
     <form className="offer-switcher" method="get" action={`${whatWeOfferPath}#showcase`} onSubmit={(event) => event.preventDefault()}>
       <fieldset>
@@ -149,6 +153,8 @@ export function OfferShowcase({ initialTheme, accountHref, isAuthenticated }: { 
       </div>
       <OfferPhone theme={theme} page={step.page} eager={index === 0} />
     </li>)}</ol>
-    <TryIt theme={theme} hydrated={hydrated} />
+    <TryIt theme={theme} hydrated={hydrated} reply={reply} setReply={setReply} />
+    </div>
+    <OfferPlanning reply={reply} hydrated={hydrated} />
   </div>;
 }
