@@ -190,3 +190,28 @@ test("every combination of Invitation, Details and RSVP opens only the table's p
     await local.admin.auth.admin.deleteUser(wedding.ownerId);
   }
 });
+
+test("every guest page carries the Made with SaveTheDates credit without revealing the guest link", async ({ page }) => {
+  // F076: the credit links home with campaign tags only, opens a new tab and sends no referrer.
+  const wedding = await createLiveWedding({ rsvp_enabled: true, invitation_enabled: true });
+  try {
+    const pages: [string, string][] = [[wedding.std, "save-the-date"], [`${wedding.std}/details`, "details"], [`${wedding.inv}/invitation`, "invitation"], [`${wedding.inv}/rsvp`, "rsvp"]];
+    for (const [path, type] of pages) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(200);
+      expect(response?.headers()["referrer-policy"], path).toBe("no-referrer");
+      const credit = page.getByRole("link", { name: "Made with SaveTheDates (opens in a new tab)" });
+      await expect(credit, path).toHaveAttribute("href", `/?utm_source=guest-site&utm_medium=referral&utm_campaign=made-with&utm_content=${type}`);
+      await expect(credit, path).toHaveAttribute("target", "_blank");
+      await expect(credit, path).toHaveAttribute("rel", /noreferrer/);
+      const href = (await credit.getAttribute("href"))!;
+      for (const secret of [wedding.slug, wedding.std.split("/")[2], wedding.inv.split("/")[2], "Alex", "Morgan"]) expect(href, path).not.toContain(secret);
+    }
+    const [home] = await Promise.all([page.waitForEvent("popup"), page.getByRole("link", { name: "Made with SaveTheDates (opens in a new tab)" }).click()]);
+    await expect(home).toHaveURL(/\/\?utm_source=guest-site&utm_medium=referral&utm_campaign=made-with&utm_content=rsvp$/);
+    expect(await home.evaluate(() => document.referrer)).toBe("");
+    await expect(home.getByRole("heading", { level: 1 })).toHaveText("Your wedding website,beautifully done.");
+  } finally {
+    await local.admin.auth.admin.deleteUser(wedding.ownerId);
+  }
+});

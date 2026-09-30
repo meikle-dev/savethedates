@@ -342,6 +342,24 @@ T.twDesign = (kind, i) => {
     visual: vOne(id, "save-the-date", {}),
   });
 };
+// Pinterest invitation set: light paper background so it reads differently from the Save the Date pins
+const INV = {
+  "01-minimal": "Sage green <i>&amp; minimal</i>", "02-romantic": "Blush <i>&amp; romantic</i>", "03-bold": "Modern <i>&amp; editorial</i>",
+  "04-terracotta": "Terracotta <i>&amp; olive</i>", "05-heather": "Lilac <i>&amp; heather</i>", "06-coastal": "Coastal <i>&amp; sea glass</i>",
+  "07-riviera": "Lemons <i>&amp; Riviera blue</i>", "08-alcantara": "Cognac <i>&amp; espresso</i>", "09-countryside": "Country <i>&amp; tweed</i>",
+  "10-velvet": "Burgundy <i>&amp; gold</i>", "11-black-tie": "Black tie <i>&amp; ivory</i>", "12-evening-gold": "Navy <i>&amp; champagne</i>",
+};
+T.invDesign = (kind, i) => {
+  const id = IDS[i], t = TH[id];
+  frame(kind, {
+    bg: PAPER, accent: t.c, example: true, eyebrow: `Wedding invitation · ${t.name}`,
+    head: INV[id],
+    sub: "Your own wording, the date, time and venue, and a link to RSVP. Matching Save the Date and Details. Try it free.",
+    gap: 80,
+    backdrop: (b) => { glow(b, 50, 68, `${t.c}26`, 58); },
+    visual: vOne(id, "invitation", { ring: true, ringColor: t.c, scale: 0.94 }),
+  });
+};
 // Carousel: save the date first
 const SDF = [
   ["save-the-date", "01 · Save the Date", "Send it the day<br>the date is set.", "Share it by WhatsApp, text or email. Guests open it on their phone, with nothing to download."],
@@ -424,6 +442,7 @@ add("facebook/page-setup/cover-photo-1640x924.jpg", "COVER", () => T.cover());
 });
 // Pinterest
 IDS.forEach((id, i) => add(`pinterest/pins/designs/${String(i + 1).padStart(2, "0")}-${slug(TH[id].name)}.jpg`, "P23", () => T.twDesign("P23", i)));
+IDS.forEach((id, i) => add(`pinterest/pins/invitations/${String(i + 1).padStart(2, "0")}-${slug(TH[id].name)}-invitation.jpg`, "P23", () => T.invDesign("P23", i)));
 [["01-your-wedding-website", "hero"], ["02-twelve-designs", "designs"], ["03-rsvps-with-meal-choices", "rsvp"], ["04-save-the-date-first", "sdf"], ["05-simple-to-share", "share"], ["06-price-19-once", "price"]]
   .forEach(([n, t]) => add(`pinterest/pins/topics/${n}.jpg`, "P23", () => T[t]("P23")));
 // Google Ads: image-only assets

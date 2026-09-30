@@ -109,10 +109,11 @@ test("search and social metadata use the configured origin and only market publi
   for (const path of ["/digital-save-the-date", "/examples/minimal", "/account/sign-in", "/unknown-marketing-test-wedding"]) expect(await structuredData(page, path), path).toEqual([]);
   const sitemap = await request.get("/sitemap.xml");
   const xml = await sitemap.text();
-  expect(xml.match(/<loc>/g)).toHaveLength(3);
+  expect(xml.match(/<loc>/g)).toHaveLength(4);
   expect(xml).toContain(`<loc>${baseURL}</loc>`);
   expect(xml).toContain(`<loc>${baseURL}/digital-save-the-date</loc>`);
   expect(xml).toContain(`<loc>${baseURL}/what-we-offer</loc>`);
+  expect(xml).toContain(`<loc>${baseURL}/guides/save-the-date-wording</loc>`);
   expect(xml).not.toContain("/what-we-offer/phone");
   expect(xml).not.toMatch(/dashboard|examples|demo|account/);
   const robots = await request.get("/robots.txt");
@@ -151,6 +152,71 @@ test("the digital save the date page is indexable, accurate and linked from the 
   await expect(page).toHaveURL(/\/#themes$/);
   await page.getByText("What is a digital save the date?", { exact: true }).click();
   await expect(page.getByRole("link", { name: "More about digital save the dates" })).toHaveAttribute("href", "/digital-save-the-date");
+});
+
+test("the save the date wording guide is indexable, fills in the couple's details and plans send dates", async ({ page, baseURL }) => {
+  // F077.
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/");
+  await page.getByRole("navigation", { name: "Footer navigation" }).getByRole("link", { name: "Save the date wording" }).click();
+  await expect(page).toHaveURL(/\/guides\/save-the-date-wording$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Save the date wording, ready to send.");
+  await expect(page).toHaveTitle("Save the date wording for WhatsApp, text & email | SaveTheDates");
+  expect(await servedRobots(page, "/guides/save-the-date-wording")).toEqual(["index, follow"]);
+  const served = await page.request.get("/guides/save-the-date-wording");
+  expect(served.headers()["x-robots-tag"]).toBeUndefined();
+  expect(served.headers()["cache-control"]).toMatch(/no-store/);
+  // The templates are in the server HTML, with placeholders, before any JavaScript runs.
+  expect(await served.text()).toContain("Save the date! [your names] are getting married on [wedding date] in [town or venue]. Invitation to follow. [your link]");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", `${baseURL}/guides/save-the-date-wording`);
+
+  await page.getByLabel("Your names").fill("Olivia & James");
+  await page.getByRole("group", { name: /Add your details/ }).getByLabel("Wedding date").fill("2027-06-12");
+  await page.getByLabel("Town or venue").fill("Lake Como");
+  const short = page.locator(".wording-card", { hasText: "Short and sweet" });
+  await expect(short.locator(".wording-text")).toHaveText("Save the date! Olivia & James are getting married on 12 June 2027 in Lake Como. Invitation to follow. [your link]");
+  await short.getByRole("button", { name: "Copy message: Short and sweet" }).click();
+  await expect(short.getByRole("button", { name: /^Copied/ })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("Save the date! Olivia & James are getting married on 12 June 2027 in Lake Como. Invitation to follow. [your link]");
+
+  await page.getByLabel("Your wedding date").fill("2099-06-12");
+  const plan = page.locator(".wording-plan");
+  await expect(plan).toContainText("12 June 2098 to 12 December 2098");
+  await expect(plan).toContainText("20 March 2099 to 17 April 2099");
+  await expect(plan).toContainText("1 May 2099");
+  await page.getByLabel("A destination wedding or a popular date").check();
+  await expect(plan).toContainText("12 June 2098 to 12 September 2098");
+  // A wedding four weeks away: every usual sending time has passed, so no past date is shown as advice.
+  await page.getByLabel("Your wedding date").fill(new Date(Date.now() + 28 * 86_400_000).toISOString().slice(0, 10));
+  await expect(plan.getByText("The usual time has passed, so send them as soon as you can.")).toHaveCount(2);
+  await expect(plan).toContainText("That date has passed, so ask guests to reply as soon as they can.");
+  await page.getByLabel("Your wedding date").fill("2001-06-12");
+  await expect(page.getByText("Choose a wedding date in the future.")).toBeVisible();
+
+  const createLinks = page.getByRole("link", { name: "Create your save the date", exact: true });
+  await expect(createLinks).toHaveCount(1);
+  await expect(createLinks).toHaveAttribute("href", "/account/sign-up");
+  for (const width of [320, 390, 760, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `No horizontal overflow at ${width}px`).toBe(true);
+    if (width === 390 || width === 1440) await page.screenshot({ path: test.info().outputPath(`save-the-date-wording-${width}.png`), fullPage: true });
+  }
+  await page.goto("/digital-save-the-date");
+  await page.getByText("When should we send our digital save the dates?", { exact: true }).click();
+  await expect(page.getByRole("link", { name: "Work out your dates and find the wording" })).toHaveAttribute("href", "/guides/save-the-date-wording");
+  await page.goto("/");
+  await page.getByText("When should we send our save the dates?", { exact: true }).click();
+  await expect(page.getByRole("link", { name: "Save the date wording and send dates" })).toHaveAttribute("href", "/guides/save-the-date-wording");
+});
+
+test("example pages carry the Made with SaveTheDates credit, tagged as an example", async ({ page }) => {
+  // F076: examples and previews are tagged separately from real guest sites.
+  for (const [path, type] of [["/examples/velvet", "save-the-date"], ["/examples/velvet/invitation", "invitation"], ["/examples/velvet/details", "details"], ["/examples/velvet/rsvp", "rsvp"]]) {
+    await page.goto(path);
+    const credit = page.getByRole("link", { name: "Made with SaveTheDates (opens in a new tab)" });
+    await expect(credit, path).toHaveAttribute("href", `/?utm_source=example&utm_medium=referral&utm_campaign=made-with&utm_content=${type}`);
+    await expect(credit, path).toHaveAttribute("target", "_blank");
+  }
 });
 
 test("privacy, terms and refund pages are linked from the footer and beside sign-up", async ({ page, baseURL }) => {

@@ -1,10 +1,10 @@
 import { formatWeddingDate, type Wedding } from "./wedding";
 import { WeddingPhoto } from "./wedding-photo";
-import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
+import { WeddingFrame, WeddingHeader, WeddingFooter, type CreditSource } from "./wedding-frame";
 import { BotanicalArt } from "./wedding-art";
 import { resolvePhotoFrame } from "./photo-framing";
 
-export function SaveTheDate({ wedding, homeHref = "/", invitationHref, detailsHref, rsvpHref, photoLabel }: { wedding: Wedding; homeHref?: string; invitationHref?: string; detailsHref?: string; rsvpHref?: string; photoLabel?: string }) {
+export function SaveTheDate({ wedding, homeHref = "/", invitationHref, detailsHref, rsvpHref, photoLabel, credit = "preview" }: { wedding: Wedding; homeHref?: string; invitationHref?: string; detailsHref?: string; rsvpHref?: string; photoLabel?: string; credit?: CreditSource }) {
   const theme = wedding.theme ?? "minimal";
   return <WeddingFrame theme={theme} className="announcement-shell">
     <WeddingHeader names={wedding.names} homeHref={homeHref} invitationHref={invitationHref} detailsHref={detailsHref} rsvpHref={rsvpHref} current="home" />
@@ -20,6 +20,6 @@ export function SaveTheDate({ wedding, homeHref = "/", invitationHref, detailsHr
         <BotanicalArt className="announcement-sprig" />
       </div>
     </main>
-    <WeddingFooter names={wedding.names} />
+    <WeddingFooter names={wedding.names} page="save-the-date" credit={credit} />
   </WeddingFrame>;
 }

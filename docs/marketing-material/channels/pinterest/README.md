@@ -30,6 +30,25 @@ Pinterest works like a visual search engine. It decides who sees a pin from its 
 
 ## Status (29 September 2026)
 
+- **Invitation set added (29 Sep, evening):** 12 new pins, one per design, each showing that design's **wedding invitation** on a light paper background (`pins/invitations/`, made by `T.invDesign` in `source/statics.html`). They're on a new board, **"Wedding invitation ideas"**, tagged "Wedding Invitations", and scheduled daily at **12:00 UK** from 30 Sep to 11 Oct. Together with the 8pm set, that's two pins a day until 11 Oct. Each links to the design's example invitation, `/examples/<slug>/invitation`, with `utm_campaign=invitations&utm_content=<slug>`. The profile showed 28 scheduled pins afterwards. The images include the small illustrated botanicals from the designs; under the marketer rules they aren't labelled as AI (illustrations, not realistic imagery).
+
+| Date (12:00) | Invitation pin | Title |
+| --- | --- | --- |
+| 30 Sep | Velvet | Burgundy and gold wedding invitation for a winter wedding, digital with RSVP |
+| 1 Oct | Countryside | Country wedding invitation in green tweed, rustic autumn style, digital |
+| 2 Oct | Evening Gold | Navy and gold wedding invitation for an elegant evening wedding, digital |
+| 3 Oct | Modern Minimal | Sage green minimalist wedding invitation, digital with online RSVP |
+| 4 Oct | Warm & Romantic | Blush and cream romantic wedding invitation, digital with online RSVP |
+| 5 Oct | Heather | Lilac heather wedding invitation for a Scottish or Irish wedding |
+| 6 Oct | Riviera | Lemon wedding invitation with Riviera blue stripes, Italian Amalfi style |
+| 7 Oct | Black Tie | Black tie wedding invitation, black and white formal letterpress style |
+| 8 Oct | Terracotta | Terracotta wedding invitation with olive branches, Mediterranean style |
+| 9 Oct | Coastal | Coastal beach wedding invitation in sea glass blue, digital with RSVP |
+| 10 Oct | Alcantara | Brown and cognac wedding invitation, elegant and modern, digital with RSVP |
+| 11 Oct | Modern & Bold | Modern wedding invitation in deep teal, editorial style, digital with RSVP |
+
+- **Next batch, due before 15 Oct:** nothing is scheduled after 15 Oct. Candidates: RSVP-page pins per design ("wedding RSVP ideas"), Details-page pins, and wording pins once F077 exists. See the [traffic plan](../../traffic-plan.md).
+
 - **Price change to £19 (29 Sep):**
   - Every pin description now says £19: all 16 scheduled pins and the 2 live pins. The profile's about text says £19 too. Each one was checked after a reload.
   - The old `06-price-39-once` scheduled pin was deleted. It was replaced by `06-price-19-once`: same title (now £19), description, board and 12 Oct 8pm slot, with the link's `utm_content=price-19-once`.
@@ -56,6 +75,7 @@ Pinterest works like a visual search engine. It decides who sees a pin from its 
 | Folder | Use |
 | --- | --- |
 | `pins/designs/` | One pin per design (12) |
+| `pins/invitations/` | One invitation pin per design (12), scheduled at 12:00 |
 | `pins/topics/` | 6 pins: hero, twelve designs, RSVPs, save the date first, sharing, price |
 | `video-pins/` | The 10-second vertical video and its cover |
 | `profile/` | Profile picture |

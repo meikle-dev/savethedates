@@ -8,7 +8,8 @@ This role sits outside the feature workflow. Use it when the request is about ma
 
 1. [Marketing setup guide](../docs/marketing-material/marketing-setup-guide.md): accounts, tracking, budgets, the six-week plan, and the rules on what we can say.
 2. [Features and approved wording](../docs/marketing-material/marketing-context/marketing-docs/app-features-and-screenshots-guide.md), especially section 2 (approved lines) and section 9 (what we can and can't say).
-3. The **Status** section at the top of each channel README. **These sections are the source of truth for the current marketing picture.**
+3. The [Traffic plan](../docs/marketing-material/traffic-plan.md): baseline numbers, ranked levers, the owner checklist and ready-to-paste outreach copy.
+4. The **Status** section at the top of each channel README. **These sections are the source of truth for the current marketing picture.**
    - [Instagram](../docs/marketing-material/channels/instagram/README.md)
    - [Pinterest](../docs/marketing-material/channels/pinterest/README.md)
    - [Facebook](../docs/marketing-material/channels/facebook/README.md)
@@ -24,13 +25,14 @@ This is a summary only. Check the channel Status sections for detail, and update
 | Channel | State |
 | --- | --- |
 | **Instagram** `@savethedatesuk` | Business account (Wedding planning service); profile and bio link done. **Posted:** Reel + "Twelve designs" carousel, both reposted at £19 on 29 Sep. **Owner to do in the app:** archive the two old £39 posts, then pin the new Reel and carousel. **Next:** week 2 (from about 5 Oct): carousel `2-save-the-date-first`, the price post, the Stories. |
-| **Pinterest** `@savethedatesuk` | Free business account, converted from the owner's personal account with approval. Website claimed with a GoDaddy DNS TXT record. **Strategy:** pins target save-the-date and invitation searches by style, with "wedding website" as a supporting phrase (see the README's Strategy section). 2 pins live; 16 scheduled daily at 8pm UK from 29 Sep to 15 Oct (all 12 designs + 6 topic pins), retitled for search on 28 Sep. All descriptions and the profile updated to £19 on 29 Sep; the price pin was replaced with the £19 image. Main board: "Save the date and wedding invitation ideas". **Not done:** the video pin; two board renames that Pinterest refused (retry later). **Next:** after 15 Oct, check Analytics, then repin or make fresh pins of the most-saved designs. Keep pinning 1–2 a day. |
+| **Pinterest** `@savethedatesuk` | Free business account, converted from the owner's personal account with approval. Website claimed with a GoDaddy DNS TXT record. **Strategy:** pins target save-the-date and invitation searches by style, with "wedding website" as a supporting phrase (see the README's Strategy section). 2 pins live; 16 scheduled daily at 8pm UK from 29 Sep to 15 Oct (all 12 designs + 6 topic pins), retitled for search on 28 Sep. **Plus 12 invitation pins** (new board "Wedding invitation ideas") daily at 12:00 from 30 Sep to 11 Oct, so two a day. All descriptions and the profile updated to £19 on 29 Sep; the price pin was replaced with the £19 image. Main board: "Save the date and wedding invitation ideas". **Not done:** the video pin; two board renames that Pinterest refused (retry later). **Next:** after 15 Oct, check Analytics, then repin or make fresh pins of the most-saved designs. Keep pinning 1–2 a day. |
 | **Facebook** | No SaveTheDates Page yet. The Meta account holds the owner's personal profile and an unrelated Page ("Donaghadee Digital"). A Page is needed for Business Suite scheduling and for Instagram and Facebook ads. |
 | **Google Ads, TikTok** | Not started. |
 | **Paid ads** | None running. See the prerequisites below. |
+| **Search and links** | 29 Sep baseline: 0 Google clicks, no referring sites, about 35 visitors in 30 days. Homepage indexed; indexing requested for `/what-we-offer` and `/digital-save-the-date`. Press and Wedissimo pitches were sent by the owner on 29 Sep. F076 (guest-page credit) and F077 (`/guides/save-the-date-wording`) are built and reviewed and wait for deploy; after that, make wording pins that link to the guide. F075 (UTM) is Ready. See the [traffic plan](../docs/marketing-material/traffic-plan.md). |
 
 **Prerequisites for any paid spend** (from the setup guide):
-1. **UTM developer task:** `src/lib/analytics/browser.ts` still sets `data-exclude-search="true"`, so UTM tags are thrown away. All Pinterest links already carry UTM tags, ready for when this is fixed.
+1. **UTM developer task (F075):** `src/lib/analytics/browser.ts` still sets `data-exclude-search="true"`, so UTM tags are thrown away. All Pinterest links already carry UTM tags, ready for when this is fixed.
 2. **A monthly budget and a stop rule** agreed with the owner.
 3. **A Facebook Page** before any Meta ads.
 

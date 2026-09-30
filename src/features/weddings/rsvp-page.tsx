@@ -8,7 +8,7 @@ import { courseWords, dietaryChoices, maxDietaryOtherLength, maxMealOptionLength
 import type { WeddingTheme } from "./themes";
 import { rsvpDeadline } from "./wedding";
 import { submitSharedRsvp } from "@/features/workspace/rsvp-actions";
-import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
+import { WeddingFrame, WeddingHeader, WeddingFooter, type CreditSource } from "./wedding-frame";
 import { BotanicalArt } from "./wedding-art";
 
 type RsvpWedding = { first_name: string; second_name: string; theme: WeddingTheme; details_enabled: boolean; rsvp_enabled: boolean; invitation_enabled: boolean };
@@ -23,7 +23,7 @@ const ownerPreviewNote = "Preview only. No response will be saved. Open your RSV
 // from (null while meal choices are off); food preferences are always asked of attending guests.
 // `link` is the guest link the page was opened with (F065), which decides the navigation. Marketing examples pass
 // none and show every page that is on.
-export function RsvpPage({ wedding, link, hrefs, open, closesOn = null, secret, menu = null, previewNote = ownerPreviewNote }: { wedding: RsvpWedding; link?: GuestLinkKind; hrefs: GuestHrefs; open: boolean; closesOn?: string | null; secret: string | null; menu?: MealMenu | null; previewNote?: string }) {
+export function RsvpPage({ wedding, link, hrefs, open, closesOn = null, secret, menu = null, previewNote = ownerPreviewNote, credit = "preview" }: { wedding: RsvpWedding; link?: GuestLinkKind; hrefs: GuestHrefs; open: boolean; closesOn?: string | null; secret: string | null; menu?: MealMenu | null; previewNote?: string; credit?: CreditSource }) {
   // "Reply for someone else" remounts the invitation: a fresh, empty form with no memory of the previous reply.
   const [attempt, setAttempt] = useState(0);
   const preview = secret === null;
@@ -36,7 +36,7 @@ export function RsvpPage({ wedding, link, hrefs, open, closesOn = null, secret, 
     <main id="main" className="rsvp-main">
       <RsvpInvitation key={attempt} wedding={wedding} hrefs={hrefs} open={open} closesOn={closesOn} secret={secret} menu={menu} previewNote={previewNote} focusName={attempt > 0} onReplyAgain={() => setAttempt((value) => value + 1)} />
     </main>
-    <WeddingFooter names={names} />
+    <WeddingFooter names={names} page="rsvp" credit={credit} />
   </WeddingFrame>;
 }
 

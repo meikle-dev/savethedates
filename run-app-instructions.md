@@ -100,6 +100,7 @@ Development routes:
 | --- | --- |
 | `/` | Public marketing homepage and fictional theme examples |
 | `/digital-save-the-date` | Public, indexable page about digital save the dates |
+| `/guides/save-the-date-wording` | Public, indexable save the date wording guide with a send-date planner |
 | `/demo` | Modern Minimal announcement with a local photograph |
 | `/demo-no-photo` | No photo or optional message |
 | `/demo-long-names` | Long names and no photo |
@@ -210,7 +211,7 @@ docker rm wedding-f009-verify
 docker compose start app
 ```
 
-Marketing uses runtime `APP_ORIGIN` for its canonical URL, sitemap and social-sharing URLs. Set it to the exact browser-facing origin (no path), for example `-e APP_ORIGIN=http://127.0.0.1:3001` for the local production container below; the fallback is `http://localhost:3000`. Production HTTPS/domain configuration and launch indexation checks belong to F009. Only `/` and `/digital-save-the-date` are listed in `/sitemap.xml`; fictional `/examples/minimal`, `/examples/romantic`, `/examples/bold` and their Details pages remain noindex. They work in production without database access. `/demo` and `/preview-photo` remain development-only.
+Marketing uses runtime `APP_ORIGIN` for its canonical URL, sitemap and social-sharing URLs. Set it to the exact browser-facing origin (no path), for example `-e APP_ORIGIN=http://127.0.0.1:3001` for the local production container below; the fallback is `http://localhost:3000`. Production HTTPS/domain configuration and launch indexation checks belong to F009. Only `/`, `/digital-save-the-date`, `/what-we-offer` and `/guides/save-the-date-wording` are listed in `/sitemap.xml`; fictional `/examples/minimal`, `/examples/romantic`, `/examples/bold` and their Details pages remain noindex. They work in production without database access. `/demo` and `/preview-photo` remain development-only.
 
 `npx playwright test tests/marketing.spec.ts` checks the homepage, the digital save the date page, account-entry links, every theme's example link and noindex, one fictional example walkthrough, metadata and homepage-only JSON-LD, sitemap, social image and 320-1440px layouts. Against a production container use `E2E_BASE_URL=http://127.0.0.1:3001 E2E_PRODUCTION=1 npx playwright test tests/marketing.spec.ts` (PowerShell environment syntax as below). Its local unthrottled rendering measurements are diagnostics, not real-user Core Web Vitals or a Safari compatibility claim.
 

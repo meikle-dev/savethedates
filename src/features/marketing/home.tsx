@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { themes } from "@/features/weddings/themes";
 import { AccountAction, JsonLd, MarketingFooter, MarketingHeader, PricingPanel } from "./chrome";
-import { digitalSaveTheDatePath, homeStructuredData, whatWeOfferPath } from "./metadata";
+import { digitalSaveTheDatePath, homeStructuredData, saveTheDateWordingPath, whatWeOfferPath } from "./metadata";
 import { PhonePreview } from "./phone-preview";
 
 const rsvpExample = {
@@ -67,7 +67,7 @@ export function MarketingHome({ isAuthenticated = false }: { isAuthenticated?: b
           <details><summary>Can we still send printed invitations?</summary><p>Yes. Every page apart from your Save the Date is optional. If you’re posting printed invitations, leave the Invitation page off and use your Save the Date link for the Save the Date, Details and RSVP. Or switch the Invitation on when you’re ready to invite everyone digitally, and send its own link.</p></details>
           <details><summary>How do guests RSVP?</summary><p>Send your RSVP link by WhatsApp, text or email, or let guests reply from your Invitation (or your Save the Date, if you don’t use the Invitation). Each guest opens RSVP on their phone or computer and enters their name and answer, without creating an account. Only you can see the responses.</p></details>
           <details><summary>Can guests choose their meal and tell us about dietary requirements?</summary><p>Yes. Add your menu in your account and switch on meal choices, and attending guests choose one option for each course you offer: starter, main and dessert. Every attending guest can also tell you if they’re vegetarian, vegan, gluten-free or have another food preference. Your account totals the numbers for your caterer.</p></details>
-          <details><summary>When should we send our save the dates?</summary><p>Many couples send them six to twelve months before the wedding, and earlier for a destination wedding or a popular date. You can publish once your names, date and location are saved and you’ve paid, then add or change the details later.</p></details>
+          <details><summary>When should we send our save the dates?</summary><p>Many couples send them six to twelve months before the wedding, and earlier for a destination wedding or a popular date. You can publish once your names, date and location are saved and you’ve paid, then add or change the details later. <Link className="faq-link" href={saveTheDateWordingPath}>Save the date wording and send dates</Link></p></details>
           <details><summary>Who can see our website?</summary><p>Your draft is private. Once published, anyone with one of your guest links can view the pages it opens. Wedding pages are marked not to appear in search results; this does not make them password-protected. Responses are visible only in your account.</p></details>
           <details><summary>Can we make changes after publishing?</summary><p>Yes. Update your invitation, details, photo or design and saved changes appear on your published site. You can unpublish at any time. Your guest links stay the same unless you choose to replace one.</p></details>
           <details><summary>What happens after the wedding?</summary><p>Your site stays published until six months after your wedding date. After that, your guest links stop opening it.</p></details>

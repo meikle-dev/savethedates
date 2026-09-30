@@ -55,6 +55,11 @@
 .announcement-shell[data-theme="minimal"] .photo-fade { background: linear-gradient(0deg, #292f2326, transparent 38%); }
 .wedding-footer { position: relative; display: flex; justify-content: center; align-items: center; gap: 70px; padding: 45px 40px; background: var(--theme-surface); border-top: 1px solid var(--theme-line); }
 .wedding-footer > .botanical-art { width: 100px; height: 150px; transform: rotate(-12deg); }
+/* F076: a quiet credit along the bottom edge of the footer, in each theme's own muted colour. */
+.wedding-footer { padding-bottom: 68px; }
+.wedding-credit { position: absolute; left: 0; right: 0; bottom: 14px; margin: 0; text-align: center; font-family: var(--theme-body); font-size: 11px; line-height: 1.4; letter-spacing: .08em; }
+.wedding-credit a { display: inline-flex; align-items: center; min-height: 32px; padding-inline: 8px; color: var(--theme-muted); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.wedding-credit a:hover { color: var(--theme-text); }
 .wedding-signature { max-width: 540px; text-align: center; font-family: var(--theme-heading); font-size: 31px; line-height: 1.2; font-style: italic; }
 .wedding-signature p:first-child { color: var(--theme-muted); font-size: 23px; margin-bottom: 9px; }
 .wedding-seal { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 130px; height: 130px; border: 1px solid var(--theme-line); outline: 1px solid var(--theme-line); outline-offset: -7px; border-radius: 50%; transform: rotate(-12deg); }
@@ -258,7 +263,7 @@
   .wedding-location { max-width: 290px; font-size: 10px; }
   .wedding-message { font-size: 25px; max-width: 290px; }
   .announcement-shell[data-theme="minimal"] .wedding-announcement::before { background: linear-gradient(90deg, #f5f1e8ba, #f5f1e8ed 25%, #f5f1e8ed 75%, #f5f1e8ba); }
-  .wedding-footer { padding: 32px 22px; gap: 24px; flex-wrap: wrap; }
+  .wedding-footer { padding: 32px 22px 60px; gap: 24px; flex-wrap: wrap; }
   .wedding-footer > .botanical-art { width: 58px; height: 87px; }
   .photo-fallback > .botanical-art { width: 45%; height: 72%; left: -8%; bottom: -8%; }
   .photo-fallback > .botanical-art + .botanical-art { right: -8%; top: -8%; }

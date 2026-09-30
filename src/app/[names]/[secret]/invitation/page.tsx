@@ -19,5 +19,5 @@ export default async function InvitationPage({ params }: { params: Promise<{ nam
   return <InvitationPageView
     invitation={{ ...invitation, first_name, second_name, wedding_date, location, theme }}
     {...linkNavigation(wedding.link, wedding, hrefs)} invitationHref={hrefs.invitation}
-    reply={wedding.rsvp_enabled ? { href: hrefs.rsvp, open: wedding.rsvp_open, closesOn: wedding.rsvp_closes_on } : undefined} />;
+    reply={wedding.rsvp_enabled ? { href: hrefs.rsvp, open: wedding.rsvp_open, closesOn: wedding.rsvp_closes_on } : undefined} credit="guest-site" />;
 }

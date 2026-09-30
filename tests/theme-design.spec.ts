@@ -71,3 +71,26 @@ for (const theme of themeIds) {
     }
   });
 }
+
+// F076: the credit must stay visible and uncovered on all four page types in every theme; a footer override that hid
+// or overlapped it would otherwise pass. Guest pages use the same components with a different campaign tag.
+for (const theme of themeIds) {
+  test(`${theme} shows an unobstructed Made with SaveTheDates credit on every page`, async ({ page }) => {
+    test.skip(test.info().project.name !== "desktop", "Sets its own widths, so one project covers it");
+    for (const width of [320, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const route of ["", "/invitation", "/details", "/rsvp"]) {
+        await page.goto(`/examples/${theme}${route}`);
+        const credit = page.locator(".wedding-footer .wedding-credit a");
+        await credit.scrollIntoViewIfNeeded();
+        await expect(credit, `${theme}${route} ${width}px`).toBeVisible();
+        expect(await credit.evaluate((link) => {
+          const box = link.getBoundingClientRect();
+          const footer = link.closest(".wedding-footer")!.getBoundingClientRect();
+          const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          return box.width > 0 && box.top >= footer.top && box.bottom <= footer.bottom && !!hit && link.contains(hit);
+        }), `${theme}${route} credit is inside the footer and on top at ${width}px`).toBe(true);
+      }
+    }
+  });
+}

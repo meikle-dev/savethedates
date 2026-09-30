@@ -35,7 +35,7 @@ Use the same name everywhere ("SaveTheDates") and the same handle if it's free. 
 
 ### What the site records today
 
-The site uses **Umami**, a cookieless, privacy-friendly analytics service, so it needs no cookie banner. It only counts visits to public marketing pages: the homepage, What we offer, Digital save the date, the design examples, the demo, the legal pages, sign-in and sign-up. Couples' wedding pages, dashboards and guest replies are **never** tracked.
+The site uses **Umami**, a cookieless, privacy-friendly analytics service, so it needs no cookie banner. It only counts visits to public marketing pages: the homepage, What we offer, Digital save the date, the save the date wording guide, the design examples (including their Invitation, Details and RSVP pages), the demo, the legal pages, sign-in and sign-up. Couples' wedding pages, dashboards and guest replies are **never** tracked.
 
 In the Umami dashboard you can see:
 - visitors per page, including how many reach **sign-up**

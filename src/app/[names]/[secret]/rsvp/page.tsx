@@ -17,5 +17,5 @@ export default async function GuestRsvpPage({ params }: { params: Promise<{ name
   const { first_name, second_name, theme, details_enabled, rsvp_enabled, invitation_enabled, link } = wedding;
   // The menu is projected only while RSVP is open and meal choices are on; it never includes replies.
   const menu = wedding.rsvp_open ? await guestRsvpMenu(secret) : null;
-  return <RsvpPage wedding={{ first_name, second_name, theme, details_enabled, rsvp_enabled, invitation_enabled }} link={link} hrefs={hrefs} open={wedding.rsvp_open} closesOn={wedding.rsvp_closes_on} secret={secret} menu={menu} />;
+  return <RsvpPage wedding={{ first_name, second_name, theme, details_enabled, rsvp_enabled, invitation_enabled }} link={link} hrefs={hrefs} open={wedding.rsvp_open} closesOn={wedding.rsvp_closes_on} secret={secret} menu={menu} credit="guest-site" />;
 }

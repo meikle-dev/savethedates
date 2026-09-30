@@ -1,5 +1,7 @@
 import { AccountAction, MarketingFooter, MarketingHeader, PricingPanel } from "./chrome";
 import { PhonePreview } from "./phone-preview";
+import Link from "next/link";
+import { saveTheDateWordingPath } from "./metadata";
 
 const questions = [
   ["Do guests need to download anything?", "No. The link opens in their phone’s browser. There is no app and no guest account."],
@@ -40,7 +42,7 @@ export function DigitalSaveTheDate({ isAuthenticated = false }: { isAuthenticate
           <article><h2>Digital or printed?</h2><p>A digital save the date costs nothing to post and can go out as soon as your date is set. When it’s time to invite everyone, switch on your digital invitation, or post printed invitations and leave that page off. Your link works alongside them either way.</p></article>
         </div></section>
         <section className="marketing-faq" aria-labelledby="faq-title"><div className="marketing-width faq-layout"><div><p className="marketing-kicker">GOOD TO KNOW</p><h2 id="faq-title">Digital save the date questions.</h2></div><div>
-          {questions.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}
+          {questions.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}{question === "When should we send our digital save the dates?" && <> <Link className="faq-link" href={saveTheDateWordingPath}>Work out your dates and find the wording</Link></>}</p></details>)}
         </div></div></section>
       </main>
     </div>

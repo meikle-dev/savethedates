@@ -132,7 +132,9 @@ A visitor should understand what SaveTheDates does within a few seconds.
 ## Search wording and the digital save the date page (F059, 25 September 2026)
 
 - The homepage keeps its brand headings. The lines around them say plainly what the product is: a digital save the date, invitation, wedding details and online RSVP, each sent by WhatsApp, text or email when the time is right.
-- `/digital-save-the-date` is the one extra indexed marketing page. It reuses the homepage parts in this order: dark hero, four-step "two links, up to four pages" (F060 added the Invitation; F065 gave it its own link), pricing, a light three-column explainer, FAQ, footer. There is no new visual language.
+- `/guides/save-the-date-wording` (F077) is a practical guide in the same parts: a text-only dark hero (the legal-page hero), a cream section of copyable message cards with optional detail fields, a soft-blue "when to send" section with the send-date planner, the light three-column explainer, a dark call to action, the FAQ and the footer.
+- Guest pages end with a small "Made with SaveTheDates" link along the bottom of the footer (F076), in each theme's muted text colour, so it reads as a quiet credit rather than part of the couple's content.
+- `/digital-save-the-date` is an extra indexed marketing page. It reuses the homepage parts in this order: dark hero, four-step "two links, up to four pages" (F060 added the Invitation; F065 gave it its own link), pricing, a light three-column explainer, FAQ, footer. There is no new visual language.
 - Its hero phones use different themes from the homepage.
 - The footer links to it, and so does the homepage FAQ answer "What is a digital save the date?".
 - Copy states only built features. It doesn't compare SaveTheDates with named competitors or promise refunds, retention or preview-card behaviour before those are approved.

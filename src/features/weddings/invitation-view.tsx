@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { formatInvitationDate, invitationPlace, standardInvitationWording, type InvitationPage } from "./invitation";
 import { rsvpDeadline } from "./wedding";
-import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
+import { WeddingFrame, WeddingHeader, WeddingFooter, type CreditSource } from "./wedding-frame";
 import { BotanicalArt } from "./wedding-art";
 
 type Reply = { href: string; open: boolean; closesOn: string | null };
 
 // A formal card inside each theme's RSVP surround (rsvp-shell, rsvp-main, rsvp-card), so every theme's backdrop and
 // paper card apply. `reply` is present only while RSVPs are on; the invitation never opens them.
-export function InvitationPageView({ invitation, homeHref, invitationHref, detailsHref, reply, rsvpHref = reply?.href }: {
-  invitation: InvitationPage; homeHref?: string; invitationHref: string; detailsHref?: string; reply?: Reply; rsvpHref?: string;
+export function InvitationPageView({ invitation, homeHref, invitationHref, detailsHref, reply, rsvpHref = reply?.href, credit = "preview" }: {
+  invitation: InvitationPage; homeHref?: string; invitationHref: string; detailsHref?: string; reply?: Reply; rsvpHref?: string; credit?: CreditSource;
 }) {
   const names = [invitation.first_name, invitation.second_name] as const;
   const place = invitationPlace(invitation);
@@ -43,6 +43,6 @@ export function InvitationPageView({ invitation, homeHref, invitationHref, detai
         {detailsHref && <p className="invitation-more"><Link href={detailsHref} className="rsvp-next-link">Travel, accommodation and more</Link></p>}
       </article>
     </main>
-    <WeddingFooter names={names} />
+    <WeddingFooter names={names} page="invitation" credit={credit} />
   </WeddingFrame>;
 }

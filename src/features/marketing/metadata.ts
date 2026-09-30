@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 export function marketingOrigin() { return new URL(process.env.APP_ORIGIN || "http://localhost:3000").origin; }
 export const digitalSaveTheDatePath = "/digital-save-the-date";
 export const whatWeOfferPath = "/what-we-offer";
+/** F077: the save the date wording guide. `guides` is already a reserved names part, so no migration is needed. */
+export const saveTheDateWordingPath = "/guides/save-the-date-wording";
 /** F070: the example pages shown inside the showcase phones (noindex, not in the sitemap). */
 export const offerPhonePath = (theme: string) => `${whatWeOfferPath}/phone/${theme}`;
 export const supportEmail = "hello@savethedates.co.uk";
@@ -27,6 +29,11 @@ export function whatWeOfferMetadata(): Metadata {
   return indexedPage(whatWeOfferPath, "What we offer: wedding website, invitation & RSVP with meal choices | SaveTheDates",
     "See everything your wedding website includes: Save the Date, invitation, wedding details and RSVPs with meal choices and dietary requirements. Try it in any of twelve designs.",
     { path: "/media/share?page=offer", alt: "SaveTheDates — Everything we offer. Save the Date, invitation, details and RSVP in twelve designs." });
+}
+
+export function saveTheDateWordingMetadata(): Metadata {
+  return indexedPage(saveTheDateWordingPath, "Save the date wording for WhatsApp, text & email | SaveTheDates",
+    "Copy-and-paste save the date wording for WhatsApp, text and email, from relaxed to formal, plus a free planner showing when to send your save the dates and invitations.");
 }
 
 /** Site name and publisher for Google; only on the homepage, which Google reads for the site name. */

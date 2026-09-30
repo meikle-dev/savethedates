@@ -1,6 +1,6 @@
 import type { WeddingDetailsPage } from "./details";
 import { hasVenue } from "./details";
-import { WeddingFrame, WeddingHeader, WeddingFooter } from "./wedding-frame";
+import { WeddingFrame, WeddingHeader, WeddingFooter, type CreditSource } from "./wedding-frame";
 import { WeddingPhoto } from "./wedding-photo";
 import { BotanicalArt, WeddingIcon, type WeddingIconKind } from "./wedding-art";
 import type { Wedding } from "./wedding";
@@ -36,7 +36,7 @@ function Guidance({ title, text, url, linkLabel, icon }: { title: string; text: 
   </section>;
 }
 
-export function WeddingDetailsPageView({ details, image, photoFraming, homeHref, invitationHref, detailsHref, rsvpHref, previewEmpty = false, photoLabel }: { details: WeddingDetailsPage; image?: Wedding["image"]; photoFraming?: PhotoFraming; homeHref?: string; invitationHref?: string; detailsHref: string; rsvpHref?: string; previewEmpty?: boolean; photoLabel?: string }) {
+export function WeddingDetailsPageView({ details, image, photoFraming, homeHref, invitationHref, detailsHref, rsvpHref, previewEmpty = false, photoLabel, credit = "preview" }: { details: WeddingDetailsPage; image?: Wedding["image"]; photoFraming?: PhotoFraming; homeHref?: string; invitationHref?: string; detailsHref: string; rsvpHref?: string; previewEmpty?: boolean; photoLabel?: string; credit?: CreditSource }) {
   const hasContent = hasVenue(details, "ceremony") || hasVenue(details, "reception") || details.travel || details.travel_url || details.accommodation || details.accommodation_url || details.dress_code || details.faqs.length;
   const names = [details.first_name, details.second_name] as const;
   return <WeddingFrame theme={details.theme} className="details-shell">
@@ -67,6 +67,6 @@ export function WeddingDetailsPageView({ details, image, photoFraming, homeHref,
       </div>
       </div>
     </main>
-    <WeddingFooter names={names} />
+    <WeddingFooter names={names} page="details" credit={credit} />
   </WeddingFrame>;
 }

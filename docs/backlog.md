@@ -2869,3 +2869,82 @@ Owner, 26 September 2026: dietary answers are food preferences, not health data.
   - Reviewing fixed-amount promotion codes in Stripe.
   - Social content: Pinterest (all pins and the profile) and Instagram (bio, reposted Reel and carousel) were updated to £19 on 29 September. See the channel READMEs. The owner still needs to archive the two old £39 Instagram posts in the app.
 - **Next:** run the pre-deploy check, deploy, confirm £19 live and at Stripe Checkout, then mark Done.
+
+## F075 - Keep UTM tags in visit analytics
+
+**Status:** Ready (raised by the Marketer, 29 September 2026)
+**Priority / lead:** P1, prerequisite for any paid spend / Software Engineer. Small; no independent review needed unless the analytics boundary changes.
+**Purpose:** See which pin, post or ad brought each visitor. Every Pinterest link already carries UTM tags, but the site throws them away, so Umami can only show "pinterest.com", not which pin.
+**Source:** [Marketing setup guide, section 4](marketing-material/marketing-setup-guide.md#4-measuring-what-works) ("Developer task").
+**Scope:** In `src/lib/analytics/browser.ts`, on tracked marketing pages only, keep `utm_source`, `utm_medium`, `utm_campaign`, `utm_content` and `utm_term` in the page view and keep dropping every other query parameter. Wedding, dashboard and account pages stay untracked. Update the comment in `src/lib/analytics/paths.ts`, the `UMAMI_WEBSITE_ID` note in `docs/operations.md`, the setup guide's section 4 and the analytics tests.
+**Done when:** a visit to `/examples/velvet/invitation?utm_source=pinterest&utm_medium=social&utm_campaign=invitations&utm_content=velvet&x=1` records the five UTM values and not `x`; untracked routes still send nothing; tests and `npm run check` pass.
+
+## F076 - "Made with SaveTheDates" credit on published guest pages
+
+**Status:** In Progress (29 September 2026). Built, independently reviewed and verified locally; waits for deploy and a live check. The owner approved the Marketer's recommendation the same day: wording "Made with SaveTheDates", and couples can't hide it for now. First suggested in F052.
+**Priority / lead:** P1 growth / Product Manager with the owner, then Software Engineer. Independent privacy review required (guest routes).
+**Purpose:** Each published wedding reaches its whole guest list, often 50 to 150 people, and some of them are engaged or will be soon. A small credit turns every paying couple into free, recurring referral traffic. There is no other channel where each customer brings more visitors at no cost.
+**Scope when approved:**
+
+- One discreet line at the foot of the Save the Date, Invitation, Details and RSVP guest pages in all twelve themes, for example "Made with SaveTheDates". It links to `https://savethedates.co.uk/?utm_source=guest-site&utm_medium=referral&utm_campaign=made-with&utm_content=<page-type>`.
+- **Privacy:** the link must carry no secret, wedding ID, names or theme, and must not leak the guest URL as a referrer. The site already sends `Referrer-Policy: no-referrer` (`src/proxy.ts`, checked live 29 September 2026). Keep it, and test it, so Umami never records secret guest paths. Guest pages stay `noindex`.
+- It must not look like part of the couple's content, and must stay readable in every theme at 320px.
+- Owner decides: whether couples can hide it, and the exact wording.
+
+**Done when:** it shows on all four page types in all twelve themes on mobile and desktop; a test confirms the link has no secret and sends no referrer path; the privacy review passes; `npm run check` passes.
+**Handoff (29 September 2026):**
+
+- **What exists:**
+  - `WeddingFooter` (`src/features/weddings/wedding-frame.tsx`) ends with the credit. `creditHref(source, page)` builds `/?utm_source=<guest-site|example|preview>&utm_medium=referral&utm_campaign=made-with&utm_content=<save-the-date|invitation|details|rsvp>`, from those fixed values only.
+  - It opens a new tab with `rel="noopener noreferrer"` and the accessible name "Made with SaveTheDates (opens in a new tab)".
+  - Where each tag comes from: the four guest routes pass `guest-site`; `ExamplePage` passes `example` (so `/what-we-offer/phone/*` also reports as `example`); owner previews and `/demo` use the default `preview`.
+  - Styling is in `wedding.css` (`.wedding-credit`, extra footer bottom padding), using each theme's `--theme-muted` colour.
+- **Checks:**
+  - `npm run check` passed: lint, typecheck, 136 unit tests and the build.
+  - `tests/guest-links.spec.ts` "every guest page carries the Made with SaveTheDates credit…" passed on desktop and mobile. It checks the exact href on all four guest pages, the new tab, `noreferrer`, no slug, secrets or names in the link, the `no-referrer` header, and an empty `document.referrer` on the opened homepage.
+  - The 12 `theme-design.spec.ts` "…shows an unobstructed Made with SaveTheDates credit on every page" tests passed: all four example pages in all twelve themes at 320 and 1440px, with the credit visible, inside the footer and on top at its centre.
+  - `marketing.spec.ts` checks the example tags.
+  - The full `E2E_PRODUCTION=1 npx playwright test --workers=2` run passed: 154 passed, 20 skipped.
+  - Footer screenshots were inspected for minimal, evening-gold, velvet, riviera, countryside and black-tie at 390 and 1440px.
+- **Independent review (29 September 2026):** no Blocking findings; privacy passed (no secret, names or theme can reach the link or analytics, and the referrer is blocked three ways). The lowest measured contrast is 4.99:1 (terracotta).
+  - Fixed: the per-theme, per-page test above (Important).
+  - Recorded: credit clicks can't be told apart from direct visits until **F075** keeps UTM tags, so read F076 results only after F075 ships (Important). The `/what-we-offer` frames sharing the `example` tag was accepted.
+- **Next:** deploy (no migration), then open a real published guest link on the live site, click the credit and confirm the homepage opens in a new tab.
+
+## F077 - Save the date wording page with a "when to send" date helper
+
+**Status:** In Progress (29 September 2026). Built, independently reviewed and verified locally; waits for deploy, Search Console submission and wording pins. The owner approved it the same day; raised by the Marketer.
+**Priority / lead:** P1 growth / SEO & Growth for the content, then Software Engineer. No independent review unless data is stored (it shouldn't be).
+**Purpose:** Couples search for how to word a save the date and when to send it far more often than they search for "wedding website". Pinterest's UK suggestions show the same topics (see the Pinterest README strategy). The site has no page that answers these questions, so Google has nothing to show for them. F051 said to wait until Search Console shows demand, but Search Console can't show demand for a page that doesn't exist. A genuinely useful free tool is also what wedding blogs and roundups link to, and the site has no links yet (Search Console: "Referring page: None detected", 29 September 2026).
+**Scope when approved:**
+
+- One indexable page, for example `/save-the-date-wording`. It has original British-English message templates for WhatsApp, text and email, with a copy button on each. Include formal, relaxed, destination, evening-reception and "invitation to follow" styles.
+- A small helper: the couple enters their wedding date and sees suggested dates to send the Save the Date and the invitation, and an RSVP deadline. Present these as guidance, consistent with the homepage FAQ. Runs in the browser; nothing is stored.
+- A call to action: "Put it on a Save the Date page. Free to build and preview. £19 once when you're ready to publish."
+- Add the page to the sitemap. Link to it from `/digital-save-the-date` and the homepage FAQ.
+- Rules: no thin variants per town or theme; no claims beyond the features guide.
+
+**Done when:** the page is live and indexable with a unique title and description, in the sitemap, and submitted in Search Console. It works at 320px and on desktop. Marketing tests and `npm run check` pass. Pinterest then gets wording pins that link to it.
+**Handoff (29 September 2026):**
+
+- **What exists:**
+  - `/guides/save-the-date-wording` (`src/app/guides/save-the-date-wording/page.tsx` → `src/features/marketing/save-the-date-wording.tsx`). It sits under `/guides` because `guides` is already a reserved names part, so there is no migration. Future guides go under `/guides/<topic>`.
+  - Eight original templates in three groups (`wording.ts`). They are server-rendered with visible `[placeholders]`, and optional fields (names, date, place, link) fill them in the browser, each with a copy button (`wording-tools.tsx`).
+  - The send-date planner (`sendingPlan`) uses UTC calendar dates. Save the dates: 6–12 months before (9–12 for a destination wedding or popular date). Invitations: 8–12 weeks before (3–4 months for a destination). Replies: 6 weeks before. A window that has opened reads "Now until…", and passed dates say so rather than showing as advice. Nothing is stored or sent.
+  - Metadata: title "Save the date wording for WhatsApp, text & email | SaveTheDates", self-canonical, `index, follow`.
+  - Links: added to the sitemap (now four pages), the footer nav, and the homepage and `/digital-save-the-date` "when should we send" FAQs. The proxy gives it the same private, no-store headers as the other marketing pages.
+  - Analytics: `trackedPath` counts the page, and also `/examples/<theme>/(invitation|details|rsvp)`, which the Pinterest invitation pins link to and which weren't counted before.
+  - Docs updated: `architecture.md`, `site-ui.md`, `run-app-instructions.md`, `operations.md` and `marketing-setup-guide.md`.
+- **Checks:**
+  - `npm run check` passed: 136 unit tests, including `wording.test.ts` (month clamping, leap years, destination windows, late flags and placeholders) and `paths.test.ts`.
+  - `marketing.spec.ts` "the save the date wording guide…" passed on desktop and mobile. It covers the footer link, title, robots, canonical and no-store; server-rendered templates; filling in details; the clipboard copy; planner dates, the destination option, passed dates and a past wedding; no overflow at 320–1440px; and both FAQ links.
+  - The final run of `E2E_PRODUCTION=1 npx playwright test` over the marketing, guest-links, theme-design, rsvp-preview, invitation, what-we-offer, metadata, preview and themes specs (`--workers=1`) passed 72/72. The run just before it had 9 transient failures on its first run after a fresh build. The local standalone server logged Windows `sharp`/`@emnapi/runtime` image-optimiser errors, and the failures didn't recur.
+  - Screenshots were inspected at 320, 390 and 1440px. Chromium only: iOS Safari's date inputs haven't been checked.
+- **Independent review (29 September 2026):** no Blocking findings. The route choice, date maths, hydration, SEO, analytics and wording claims all passed.
+  - Fixed: past dates were shown as advice (Important); a stale "Copied" label after editing; the destination option's label didn't match the rule text; the planner announced too much to screen readers.
+  - Open: a quick iOS Safari check of the date fields (Minor).
+- **Next:**
+  1. Deploy (no migration).
+  2. On the live site, check the page, `/sitemap.xml` and an iPhone.
+  3. Request indexing for the URL in Search Console.
+  4. The Marketer makes wording pins that link to it.

@@ -15,5 +15,5 @@ export default async function DetailsPage({ params }: { params: Promise<{ names:
   const { wedding, hrefs } = await requireGuestWedding(names, secret, "details");
   const details = await guestWeddingDetails(secret);
   if (!details) notFound();
-  return <WeddingDetailsPageView details={details} image={wedding.photo_path ? { src: `${hrefs.home}/photo`, alt: "" } : undefined} photoFraming={details.photoFraming} {...linkNavigation(wedding.link, wedding, hrefs)} detailsHref={hrefs.details} />;
+  return <WeddingDetailsPageView details={details} image={wedding.photo_path ? { src: `${hrefs.home}/photo`, alt: "" } : undefined} photoFraming={details.photoFraming} {...linkNavigation(wedding.link, wedding, hrefs)} detailsHref={hrefs.details} credit="guest-site" />;
 }
