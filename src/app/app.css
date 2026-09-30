@@ -3,5 +3,6 @@
 @import "../features/weddings/wedding-themes.css";
 @import "../features/workspace/workspace.css";
 @import "../features/workspace/preview.css";
+@import "../features/planning/planning.css";
 @import "../components/motion.css";
 @import "./base.css";

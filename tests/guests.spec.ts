@@ -172,7 +172,7 @@ test("guest responses are paginated, filtered, searched and corrected per owner"
     await expect(latest.getByRole("listitem")).toHaveCount(5);
     await expect(latest.getByRole("listitem").first()).toContainText(longName);
     await expect(page.getByText("311 responses")).toBeVisible();
-    await latest.getByRole("link", { name: "View all guests" }).click();
+    await latest.getByRole("link", { name: "View all replies" }).click();
     await expect(page).toHaveURL(/\/dashboard\/guests$/);
 
     // Long names stay readable without sideways scrolling.

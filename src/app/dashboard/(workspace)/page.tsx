@@ -94,7 +94,7 @@ export default async function Overview() {
           </ul>
         </section>}
         <section aria-labelledby="latest-title" className="ws-panel">
-          <div className="ws-panel-head"><h2 id="latest-title">Latest responses</h2><Link href="/dashboard/guests" className="button button-quiet button-flush">View all guests<Icon name="arrowRight" /></Link></div>
+          <div className="ws-panel-head"><h2 id="latest-title">Latest responses</h2><Link href="/dashboard/guests" className="button button-quiet button-flush">View all replies<Icon name="arrowRight" /></Link></div>
           {responses.length === 0
             ? <p className="ws-empty">{emptyResponses[availability]}</p>
             : <ul className="ws-responses">{responses.map((response) => <li key={response.id}>

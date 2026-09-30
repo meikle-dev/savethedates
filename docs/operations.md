@@ -144,7 +144,7 @@ Reading one request ID should tell the story of that request (F038).
 | `account.signout.failed` | error | Sign-out failed |
 | `account.google.failed` | error | Could not start Google sign-in (Supabase error or fault) |
 | `account.google_callback.succeeded` / `.rejected` / `.failed` | info / warn / error | Google sign-in completed / cancelled (`access_denied`), provider error, rejected or missing code / fault |
-| `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, invitation, theme, photo_framing, rsvp_settings, meal_choices, guest_link) / concurrent change / fault |
+| `workspace.save.succeeded` / `.rejected` / `.failed` | info / warn / error | Save per `section` (basics, details, invitation, theme, photo_framing, rsvp_settings, meal_choices, guest_link, guest_list, table_plan) / concurrent change or refused change (for example a guest list limit) / fault |
 | `workspace.ownership.denied` | warn | No session or no saved wedding for this owner |
 | `photo.upload.accepted` | info | Photo processed and stored; `durationMs` is processing time, including any wait for the processing slot |
 | `photo.upload.rejected` / `.failed` | warn / error | `reason` size, type, pixels, unreadable, busy (F040) or concurrent_change / Storage or database fault |

@@ -105,7 +105,7 @@ test("couples send a Save the Date, an Invitation and an RSVP link, and each ope
       await guestPage.setViewportSize({ width, height: 900 });
       expect(await fitsWidth(guestPage)).toBe(true);
     }
-    await openWorkspaceSection(page, "Guests");
+    await openWorkspaceSection(page, "Replies");
     await expect(page.getByText("Sam Taylor")).toBeVisible();
 
     // Replacing the Invitation link stops only that link (and the RSVP link under it). Replies are kept.
@@ -122,7 +122,7 @@ test("couples send a Save the Date, an Invitation and an RSVP link, and each ope
     for (const path of [invitation, rsvp]) expect((await guest.request.get(path)).status()).toBe(404);
     expect((await guest.request.get(newInvitation)).status()).toBe(200);
     expect((await guest.request.get(std)).status()).toBe(200);
-    await openWorkspaceSection(page, "Guests");
+    await openWorkspaceSection(page, "Replies");
     await expect(page.getByText("Sam Taylor")).toBeVisible();
 
     // Invitation off: the couple is warned which sent links stop working, then RSVP moves back to the Save the Date link.

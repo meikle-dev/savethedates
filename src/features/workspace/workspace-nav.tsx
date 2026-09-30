@@ -2,21 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Icon, type IconName } from "./workspace-icons";
 
-export const workspaceSections: { href: string; label: string; icon: IconName }[] = [
+// The site sections, then (F078) a "Guests" group: replies, the private guest list and the table plan.
+export const workspaceSections: { href: string; label: string; icon: IconName; group?: string }[] = [
   { href: "/dashboard", label: "Overview", icon: "overview" },
   { href: "/dashboard/basics", label: "Basics", icon: "basics" },
   { href: "/dashboard/design", label: "Design", icon: "design" },
   { href: "/dashboard/invitation", label: "Invitation", icon: "invitation" },
   { href: "/dashboard/details", label: "Details", icon: "details" },
   { href: "/dashboard/rsvp", label: "RSVP", icon: "rsvp" },
-  { href: "/dashboard/guests", label: "Guests", icon: "guests" },
   { href: "/dashboard/publish", label: "Publish", icon: "publish" },
+  { href: "/dashboard/guests", label: "Replies", icon: "guests", group: "Guests" },
+  { href: "/dashboard/guest-list", label: "Guest list", icon: "guestList" },
+  { href: "/dashboard/table-plan", label: "Table plan", icon: "tablePlan" },
 ];
 
-// Phones (below 768px) show the current section and a "Sections" menu; wider screens always show the full list.
+// Phones and tablets (below 1024px) show the current section and a "Sections" menu; desktops show the sidebar.
 export function WorkspaceNav() {
   const pathname = usePathname();
   const current = workspaceSections.find((section) => section.href === pathname);
@@ -61,11 +64,13 @@ export function WorkspaceNav() {
       </button>
     </div>
     <ul id="workspace-section-list" data-open={open || undefined}>
-      {workspaceSections.map((section) => <li key={section.href}>
-        <Link href={section.href} aria-current={pathname === section.href ? "page" : undefined} onClick={choose}>
+      {workspaceSections.map((section) => <Fragment key={section.href}>
+        {/* A visual heading only: every link's name already says what it is. */}
+        {section.group && <li className="ws-nav-group" aria-hidden="true">{section.group}</li>}
+        <li><Link href={section.href} aria-current={pathname === section.href ? "page" : undefined} onClick={choose}>
           <Icon name={section.icon} className="size-[1.1rem] shrink-0" />{section.label}
-        </Link>
-      </li>)}
+        </Link></li>
+      </Fragment>)}
     </ul>
   </nav>;
 }

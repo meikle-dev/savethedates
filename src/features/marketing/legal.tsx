@@ -37,12 +37,14 @@ export function PrivacyNotice() {
         <li><strong>Account:</strong> your email address and a securely hashed password. We use them to sign you in and to send account emails such as confirmation and password reset links.</li>
         <li><strong>Google sign-in:</strong> if you choose Continue with Google, Google shares your name, email address and profile picture link with us. Our sign-in provider stores these with your account; the app itself uses only your email address.</li>
         <li><strong>Your wedding site:</strong> the names, date, location, message, photo, wedding details, theme and settings you enter. Photos are re-saved when you upload them, which removes hidden data such as camera location.</li>
+        <li><strong>Guest list and table plan:</strong> if you use them, the names, groups and RSVP statuses you add for your guests, and your tables and seating. Only you can see them. Add only what you need to plan your day.</li>
         <li><strong>Payment:</strong> when you pay, Stripe collects your card details. We never see or store your card number. We keep a record of the payment (amount, date and Stripe references) to know that your site is paid for and to handle refunds.</li>
         <li><strong>Technical data:</strong> like any website, our hosting and sign-in providers record technical details such as your IP address, browser and the pages you request, to keep the service secure and working.</li>
       </ul>
       <p>We use this information to provide the service you asked for (our contract with you), and payment records also to meet tax and accounting law.</p></section>
     <section aria-labelledby="guests"><h2 id="guests">If you are a guest</h2>
       <p>When you reply to an RSVP, we store the name you enter, whether you are attending and when you replied. Our hosting provider also records technical details such as your IP address. Only the couple can see replies. We keep them for the couple, who decide what to do with them. Guests don’t need an account and we don’t ask for contact details.</p>
+      <p>The couple may also add your name to their private guest list and table plan. Only the couple can see these, and they’re deleted with the couple’s account.</p>
       <p>If you’re attending, the couple may ask you to choose your meal, and you can tell them your food preferences, such as vegetarian or gluten-free. Food preferences are optional. Only the couple can see these answers, and they’re deleted with the rest of the replies.</p>
       <p>Wedding pages open for anyone who has the couple’s link. They are marked not to appear in search results, but they are not password-protected.</p></section>
     <section aria-labelledby="providers"><h2 id="providers">Who helps us run the service</h2>
@@ -62,7 +64,7 @@ export function PrivacyNotice() {
     <section aria-labelledby="keeping"><h2 id="keeping">How long we keep it</h2>
       <ul>
         <li>Your account and wedding site stay until you ask us to delete them. When your published site period ends, guests can no longer open it, but your private draft and replies stay in your account.</li>
-        <li>When you ask us to delete your account, we delete your account, wedding site, photos, guest replies and our copy of your payment records. Stripe keeps its own payment records for as long as the law requires.</li>
+        <li>When you ask us to delete your account, we delete your account, wedding site, photos, guest replies, guest list, table plan and our copy of your payment records. Stripe keeps its own payment records for as long as the law requires.</li>
         <li>Server logs are kept for up to 30 days, and error reports for up to 90 days.</li>
       </ul></section>
     <section aria-labelledby="rights"><h2 id="rights">Your rights</h2>

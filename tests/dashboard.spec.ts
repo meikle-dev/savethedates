@@ -14,8 +14,10 @@ const sections = [
   ["Invitation", "/dashboard/invitation"],
   ["Details", "/dashboard/details"],
   ["RSVP", "/dashboard/rsvp"],
-  ["Guests", "/dashboard/guests"],
   ["Publish", "/dashboard/publish"],
+  ["Replies", "/dashboard/guests"],
+  ["Guest list", "/dashboard/guest-list"],
+  ["Table plan", "/dashboard/table-plan"],
 ] as const;
 
 async function signIn(page: Page, email: string, password: string) {
@@ -44,7 +46,7 @@ test("sections require an owner and a saved wedding", async ({ page }) => {
     await signIn(page, email, password);
     await expect(page).toHaveURL(/\/dashboard\/basics$/);
     await expect(page.getByRole("navigation", { name: "Workspace sections" })).toHaveCount(0);
-    for (const path of ["/dashboard/design", "/dashboard/invitation", "/dashboard/details", "/dashboard/rsvp", "/dashboard/guests", "/dashboard/publish"]) {
+    for (const path of ["/dashboard/design", "/dashboard/invitation", "/dashboard/details", "/dashboard/rsvp", "/dashboard/guests", "/dashboard/guest-list", "/dashboard/table-plan", "/dashboard/publish"]) {
       await page.goto(path);
       await expect(page).toHaveURL(/\/dashboard\/basics$/);
     }
@@ -121,8 +123,8 @@ test("section navigation fits phones, tablets and desktops", async ({ page }) =>
     // The phone menu fades in (F032); measure its links once that brief reveal has settled.
     const settled = () => nav.locator("ul").evaluate((list) => Promise.all(list.getAnimations().map((animation) => animation.finished.catch(() => undefined))).then(() => undefined));
 
-    // Phones: the current section is always visible, and every section is two taps away.
-    for (const width of [320, 375, 390, 767]) {
+    // Phones and tablets: the current section is always visible, and every section is two taps away.
+    for (const width of [320, 375, 390, 767, 768, 1023]) {
       await page.setViewportSize({ width, height: 740 });
       await expect(toggle).toBeVisible();
       await expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -165,11 +167,11 @@ test("section navigation fits phones, tablets and desktops", async ({ page }) =>
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
     // Choosing a section navigates, closes the menu and returns focus to the toggle.
-    await (await workspaceLink(page, "Guests")).click();
+    await (await workspaceLink(page, "Replies")).click();
     await expect(page).toHaveURL(/\/dashboard\/guests$/);
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(toggle).toBeFocused();
-    await expect(currentLabel).toHaveText("Current section: Guests");
+    await expect(currentLabel).toHaveText("Current section: Replies");
 
     // Back and forward close an open menu.
     await workspaceLink(page, "Basics");
@@ -182,27 +184,10 @@ test("section navigation fits phones, tablets and desktops", async ({ page }) =>
     await expect(page).toHaveURL(/\/dashboard\/guests$/);
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await page.screenshot({ path: test.info().outputPath("nav-390.png") });
-    await workspaceLink(page, "Guests");
+    await workspaceLink(page, "Replies");
     await page.screenshot({ path: test.info().outputPath("nav-390-open.png") });
     await page.setViewportSize({ width: 320, height: 740 });
     await page.screenshot({ path: test.info().outputPath("nav-320-open.png") });
-
-    // Tablets: all eight sections in one row, with no sideways scrolling or clipping.
-    for (const width of [768, 1023]) {
-      await page.setViewportSize({ width, height: 900 });
-      await expect(toggle).toBeHidden();
-      await expect(links).toHaveCount(sections.length);
-      const boxes = await Promise.all(sections.map(([name]) => nav.getByRole("link", { name, exact: true }).boundingBox()));
-      for (const box of boxes) {
-        expect(box!.y).toBe(boxes[0]!.y);
-        expect(box!.height).toBeGreaterThanOrEqual(44);
-        expect(box!.x).toBeGreaterThanOrEqual(0);
-        expect(box!.x + box!.width).toBeLessThanOrEqual(width);
-      }
-      expect(await nav.locator("ul").evaluate((list) => list.scrollWidth <= list.clientWidth)).toBe(true);
-      expect(await noOverflow()).toBe(true);
-      await page.screenshot({ path: test.info().outputPath(`nav-${width}.png`) });
-    }
 
     // Desktop keeps the sidebar.
     for (const width of [1024, 1440]) {
@@ -286,7 +271,7 @@ test("overview summarises the owner's own wedding and every section is reachable
       await expect(current).toHaveText(name);
       for (const width of [320, 1440]) {
         await page.setViewportSize({ width, height: 900 });
-        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name} at ${width}px`).toBe(true);
       }
     }
 

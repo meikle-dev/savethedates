@@ -138,7 +138,7 @@ export function MealChoicesForm({ enabled, menu }: { enabled: boolean; menu: Mea
             : <p className="field-help">Six options is the most for one course.</p>)}
         </fieldset>;
       })}
-      <p className="field-help mt-5">Renaming or removing an option doesn’t change replies already sent. In Guests, those replies are marked ‘no longer on the menu’. Check your menu before you share your link.</p>
+      <p className="field-help mt-5">Renaming or removing an option doesn’t change replies already sent. In Replies, those replies are marked ‘no longer on the menu’. Check your menu before you share your link.</p>
 
       {state.message && !(state.success && dirty) && <p className={`mt-5 ${state.success ? "form-notice" : "form-error"}`} role={state.success ? "status" : "alert"}>{state.message}</p>}
       <div className="mt-5 flex flex-wrap items-center gap-3">

@@ -9,7 +9,7 @@ import { showMealLines } from "@/features/workspace/catering";
 import { parseMealMenu } from "@/features/weddings/meal-menu";
 import { WorkspacePage } from "@/features/workspace/workspace-page";
 
-export const metadata: Metadata = { title: "Guests · SaveTheDates" };
+export const metadata: Metadata = { title: "Replies · SaveTheDates" };
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const filterLabels: Record<GuestFilter, string> = { all: "All", attending: "Attending", "not-attending": "Not attending" };
@@ -52,7 +52,7 @@ export default async function Guests({ searchParams }: { searchParams: Promise<R
     </>;
   }
 
-  return <WorkspacePage id="guests-title" eyebrow="Guests" title="Who’s coming" wide intro={<>Everyone who has replied, with private corrections if plans change. Share your link from the <Link href="/dashboard/rsvp" className="text-link">RSVP section</Link>.</>}>
+  return <WorkspacePage id="guests-title" eyebrow="Replies" title="Who’s coming" wide intro={<>Everyone who has replied, with private corrections if plans change. Share your link from the <Link href="/dashboard/rsvp" className="text-link">RSVP section</Link>, and keep your <Link href="/dashboard/guest-list" className="text-link">guest list</Link> up to date from these replies.</>}>
     <div className="ws-stack">
       <div className="rsvp-summary" role="group" aria-label="RSVP summary"><div><strong>{totals.total}</strong><span>Responses</span></div><div><strong>{totals.attending}</strong><span>Attending</span></div><div><strong>{totals.declined}</strong><span>Not attending</span></div></div>
       {summary && summary.attending > 0 && <CateringPanel summary={summary} menu={menu} enabled={mealsOn} />}

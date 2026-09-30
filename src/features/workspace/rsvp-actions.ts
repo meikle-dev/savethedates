@@ -71,7 +71,7 @@ export async function saveRsvpSettings(_: RsvpState, form: FormData): Promise<Rs
       refreshRsvp();
       log.info("workspace.save.succeeded", { section: "rsvp_settings" });
       // The section adds the refreshed RSVP status to this notice, so it is accurate before and after publishing.
-      return { success: true, message: enabled ? "RSVP settings saved." : "RSVP settings saved. Existing responses remain in Guests." };
+      return { success: true, message: enabled ? "RSVP settings saved." : "RSVP settings saved. Existing responses remain in Replies." };
     } catch (error) {
       if (!(error instanceof WorkspaceAccessError)) log.error("workspace.save.failed", { section: "rsvp_settings", reason: errorReason(error) });
       return { message: error instanceof Error ? error.message : "We couldn’t save your RSVP settings." };

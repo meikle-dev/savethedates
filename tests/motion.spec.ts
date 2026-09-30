@@ -155,7 +155,7 @@ test("workspace keeps its shell, menu and correction controls usable with normal
         await expect(toggle).toBeFocused();
         await expect(page.getByRole("navigation", { name: "Workspace sections" }).getByRole("link")).toHaveCount(0);
       }
-      await openWorkspaceSection(page, "Guests");
+      await openWorkspaceSection(page, "Replies");
       await expect(page).toHaveURL(/\/dashboard\/guests$/);
       const correction = page.getByRole("button", { name: "Correct or remove response from Test Guest" });
       await correction.click();

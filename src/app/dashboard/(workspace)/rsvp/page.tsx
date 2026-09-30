@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "RSVP · SaveTheDates" };
 
 export default async function Rsvp() {
   const { wedding, live, offline } = await requireWedding();
-  return <WorkspacePage id="rsvp-title" eyebrow="RSVP" title="RSVP" intro="Manage your RSVP link and settings. See named responses in Guests.">
+  return <WorkspacePage id="rsvp-title" eyebrow="RSVP" title="RSVP" intro="Manage your RSVP link and settings. See named responses in Replies.">
     <RsvpManager enabled={wedding.rsvp_enabled} closesOn={wedding.rsvp_closes_on} rsvpUrl={currentGuestLinks(wedding).rsvp} via={rsvpLink(wedding)} live={live} status={rsvpReadiness(wedding, live, offline)} meals={{ enabled: wedding.meal_choices_enabled, menu: parseMealMenu(wedding.meal_menu) }} />
   </WorkspacePage>;
 }

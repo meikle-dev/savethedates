@@ -79,14 +79,14 @@ test("one shared link collects separate named responses and can be replaced", as
     await guestPage.getByRole("button", { name: "Send RSVP" }).click();
     await expect(guestPage.getByRole("status")).toContainText("Jordan Lee");
 
-    await openSection(page, "Guests");
+    await openSection(page, "Replies");
     const guests = page.getByRole("region", { name: "Who’s coming" });
     await expect(guests.getByText("Sam Taylor")).toBeVisible();
     await expect(guests.getByText("Jordan Lee")).toBeVisible();
     await expect(guests.getByLabel("RSVP summary").getByText("2", { exact: true })).toBeVisible();
     await openSection(page, "Overview");
     await expect(page.getByRole("region", { name: "Latest responses" }).getByText("Jordan Lee")).toBeVisible();
-    await openSection(page, "Guests");
+    await openSection(page, "Replies");
     const responseList = guests.getByRole("region", { name: "Guest responses" });
     const correction = (name: string) => responseList.locator(".guest-row").filter({ hasText: name }).locator("xpath=following-sibling::tr[1]");
     const sam = correction("Sam Taylor");
@@ -112,7 +112,7 @@ test("one shared link collects separate named responses and can be replaced", as
     const updated = page.getByRole("region", { name: "RSVP", exact: true });
     await updated.getByLabel("Accept RSVPs").uncheck();
     await updated.getByRole("button", { name: "Save RSVP settings" }).click();
-    await expect(updated.getByRole("status").filter({ hasText: "RSVP settings saved. Existing responses remain in Guests. Guests can view your site but can’t reply until you open RSVPs." })).toBeVisible();
+    await expect(updated.getByRole("status").filter({ hasText: "RSVP settings saved. Existing responses remain in Replies. Guests can view your site but can’t reply until you open RSVPs." })).toBeVisible();
     await guestPage.reload();
     await expect(guestPage.getByRole("heading", { name: "RSVPs aren’t open" })).toBeVisible();
     // F065: links are replaced from their own panel on the Overview.
